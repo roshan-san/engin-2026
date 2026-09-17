@@ -2,7 +2,7 @@ import { useConvexAuth } from "@convex-dev/auth/react";
 import { Link, Navigate } from "@tanstack/react-router";
 import { GitPullRequestArrow } from "lucide-react";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
-import { GoogleButton } from "~/features/auth/ui/GoogleButton";
+import { GoogleButton } from "~/features/2-auth/ui/GoogleButton";
 
 export function LandingPage() {
 	const { isAuthenticated, isLoading } = useConvexAuth();

@@ -1,17 +1,19 @@
-import { createRouter } from "@tanstack/react-router";
-
-import { routeTree } from "./routeTree.gen";
-import { GlobalError } from "./components/globals/GlobalError";
-import { GlobalNotFound } from "./components/globals/GlobalNotFound";
+import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+import { routeTree } from './routeTree.gen'
 
 export function getRouter() {
-	return createRouter({
-		routeTree,
-		defaultPreload: "intent",
-		defaultPreloadStaleTime: 0,
-		defaultErrorComponent: GlobalError,
-		defaultNotFoundComponent: GlobalNotFound,
-		scrollRestoration: true,
-		defaultStructuralSharing: true,
-	});
+  const router = createTanStackRouter({
+    routeTree,
+    scrollRestoration: true,
+    defaultPreload: 'intent',
+    defaultPreloadStaleTime: 0,
+  })
+
+  return router
+}
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: ReturnType<typeof getRouter>
+  }
 }

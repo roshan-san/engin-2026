@@ -9,243 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ExploreIndexRouteImport } from './routes/explore/index'
-import { Route as AppIndexRouteImport } from './routes/app/index'
-import { Route as SSlugRouteImport } from './routes/s/$slug'
-import { Route as InviteTokenRouteImport } from './routes/invite/$token'
-import { Route as AppUpgradeIndexRouteImport } from './routes/app/upgrade/index'
-import { Route as AppTeamIndexRouteImport } from './routes/app/team/index'
-import { Route as AppStartupIndexRouteImport } from './routes/app/startup/index'
-import { Route as AppSprintsIndexRouteImport } from './routes/app/sprints/index'
-import { Route as AppScoreIndexRouteImport } from './routes/app/score/index'
-import { Route as AppPitchIndexRouteImport } from './routes/app/pitch/index'
-import { Route as AppExploreIndexRouteImport } from './routes/app/explore/index'
-import { Route as AppDashboardIndexRouteImport } from './routes/app/dashboard/index'
-import { Route as AppStartupsNewRouteImport } from './routes/app/startups/new'
-import { Route as AppSprintsNewRouteImport } from './routes/app/sprints/new'
-import { Route as AppSprintsSprintIdRouteImport } from './routes/app/sprints/$sprintId'
 
-const AppRouteRoute = AppRouteRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExploreIndexRoute = ExploreIndexRouteImport.update({
-  id: '/explore/',
-  path: '/explore/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const SSlugRoute = SSlugRouteImport.update({
-  id: '/s/$slug',
-  path: '/s/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InviteTokenRoute = InviteTokenRouteImport.update({
-  id: '/invite/$token',
-  path: '/invite/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppUpgradeIndexRoute = AppUpgradeIndexRouteImport.update({
-  id: '/upgrade/',
-  path: '/upgrade/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppTeamIndexRoute = AppTeamIndexRouteImport.update({
-  id: '/team/',
-  path: '/team/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppStartupIndexRoute = AppStartupIndexRouteImport.update({
-  id: '/startup/',
-  path: '/startup/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppSprintsIndexRoute = AppSprintsIndexRouteImport.update({
-  id: '/sprints/',
-  path: '/sprints/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppScoreIndexRoute = AppScoreIndexRouteImport.update({
-  id: '/score/',
-  path: '/score/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppPitchIndexRoute = AppPitchIndexRouteImport.update({
-  id: '/pitch/',
-  path: '/pitch/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppExploreIndexRoute = AppExploreIndexRouteImport.update({
-  id: '/explore/',
-  path: '/explore/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppStartupsNewRoute = AppStartupsNewRouteImport.update({
-  id: '/startups/new',
-  path: '/startups/new',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppSprintsNewRoute = AppSprintsNewRouteImport.update({
-  id: '/sprints/new',
-  path: '/sprints/new',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppSprintsSprintIdRoute = AppSprintsSprintIdRouteImport.update({
-  id: '/sprints/$sprintId',
-  path: '/sprints/$sprintId',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteRouteWithChildren
-  '/invite/$token': typeof InviteTokenRoute
-  '/s/$slug': typeof SSlugRoute
-  '/app/': typeof AppIndexRoute
-  '/explore': typeof ExploreIndexRoute
-  '/app/sprints/$sprintId': typeof AppSprintsSprintIdRoute
-  '/app/sprints/new': typeof AppSprintsNewRoute
-  '/app/startups/new': typeof AppStartupsNewRoute
-  '/app/dashboard': typeof AppDashboardIndexRoute
-  '/app/explore': typeof AppExploreIndexRoute
-  '/app/pitch': typeof AppPitchIndexRoute
-  '/app/score': typeof AppScoreIndexRoute
-  '/app/sprints': typeof AppSprintsIndexRoute
-  '/app/startup': typeof AppStartupIndexRoute
-  '/app/team': typeof AppTeamIndexRoute
-  '/app/upgrade': typeof AppUpgradeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/invite/$token': typeof InviteTokenRoute
-  '/s/$slug': typeof SSlugRoute
-  '/app': typeof AppIndexRoute
-  '/explore': typeof ExploreIndexRoute
-  '/app/sprints/$sprintId': typeof AppSprintsSprintIdRoute
-  '/app/sprints/new': typeof AppSprintsNewRoute
-  '/app/startups/new': typeof AppStartupsNewRoute
-  '/app/dashboard': typeof AppDashboardIndexRoute
-  '/app/explore': typeof AppExploreIndexRoute
-  '/app/pitch': typeof AppPitchIndexRoute
-  '/app/score': typeof AppScoreIndexRoute
-  '/app/sprints': typeof AppSprintsIndexRoute
-  '/app/startup': typeof AppStartupIndexRoute
-  '/app/team': typeof AppTeamIndexRoute
-  '/app/upgrade': typeof AppUpgradeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRouteRouteWithChildren
-  '/invite/$token': typeof InviteTokenRoute
-  '/s/$slug': typeof SSlugRoute
-  '/app/': typeof AppIndexRoute
-  '/explore/': typeof ExploreIndexRoute
-  '/app/sprints/$sprintId': typeof AppSprintsSprintIdRoute
-  '/app/sprints/new': typeof AppSprintsNewRoute
-  '/app/startups/new': typeof AppStartupsNewRoute
-  '/app/dashboard/': typeof AppDashboardIndexRoute
-  '/app/explore/': typeof AppExploreIndexRoute
-  '/app/pitch/': typeof AppPitchIndexRoute
-  '/app/score/': typeof AppScoreIndexRoute
-  '/app/sprints/': typeof AppSprintsIndexRoute
-  '/app/startup/': typeof AppStartupIndexRoute
-  '/app/team/': typeof AppTeamIndexRoute
-  '/app/upgrade/': typeof AppUpgradeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/app'
-    | '/invite/$token'
-    | '/s/$slug'
-    | '/app/'
-    | '/explore'
-    | '/app/sprints/$sprintId'
-    | '/app/sprints/new'
-    | '/app/startups/new'
-    | '/app/dashboard'
-    | '/app/explore'
-    | '/app/pitch'
-    | '/app/score'
-    | '/app/sprints'
-    | '/app/startup'
-    | '/app/team'
-    | '/app/upgrade'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/invite/$token'
-    | '/s/$slug'
-    | '/app'
-    | '/explore'
-    | '/app/sprints/$sprintId'
-    | '/app/sprints/new'
-    | '/app/startups/new'
-    | '/app/dashboard'
-    | '/app/explore'
-    | '/app/pitch'
-    | '/app/score'
-    | '/app/sprints'
-    | '/app/startup'
-    | '/app/team'
-    | '/app/upgrade'
-  id:
-    | '__root__'
-    | '/'
-    | '/app'
-    | '/invite/$token'
-    | '/s/$slug'
-    | '/app/'
-    | '/explore/'
-    | '/app/sprints/$sprintId'
-    | '/app/sprints/new'
-    | '/app/startups/new'
-    | '/app/dashboard/'
-    | '/app/explore/'
-    | '/app/pitch/'
-    | '/app/score/'
-    | '/app/sprints/'
-    | '/app/startup/'
-    | '/app/team/'
-    | '/app/upgrade/'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRouteRoute: typeof AppRouteRouteWithChildren
-  InviteTokenRoute: typeof InviteTokenRoute
-  SSlugRoute: typeof SSlugRoute
-  ExploreIndexRoute: typeof ExploreIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -253,164 +48,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/explore/': {
-      id: '/explore/'
-      path: '/explore'
-      fullPath: '/explore'
-      preLoaderRoute: typeof ExploreIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/': {
-      id: '/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/s/$slug': {
-      id: '/s/$slug'
-      path: '/s/$slug'
-      fullPath: '/s/$slug'
-      preLoaderRoute: typeof SSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/invite/$token': {
-      id: '/invite/$token'
-      path: '/invite/$token'
-      fullPath: '/invite/$token'
-      preLoaderRoute: typeof InviteTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/upgrade/': {
-      id: '/app/upgrade/'
-      path: '/upgrade'
-      fullPath: '/app/upgrade'
-      preLoaderRoute: typeof AppUpgradeIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/team/': {
-      id: '/app/team/'
-      path: '/team'
-      fullPath: '/app/team'
-      preLoaderRoute: typeof AppTeamIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/startup/': {
-      id: '/app/startup/'
-      path: '/startup'
-      fullPath: '/app/startup'
-      preLoaderRoute: typeof AppStartupIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/sprints/': {
-      id: '/app/sprints/'
-      path: '/sprints'
-      fullPath: '/app/sprints'
-      preLoaderRoute: typeof AppSprintsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/score/': {
-      id: '/app/score/'
-      path: '/score'
-      fullPath: '/app/score'
-      preLoaderRoute: typeof AppScoreIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/pitch/': {
-      id: '/app/pitch/'
-      path: '/pitch'
-      fullPath: '/app/pitch'
-      preLoaderRoute: typeof AppPitchIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/explore/': {
-      id: '/app/explore/'
-      path: '/explore'
-      fullPath: '/app/explore'
-      preLoaderRoute: typeof AppExploreIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/dashboard/': {
-      id: '/app/dashboard/'
-      path: '/dashboard'
-      fullPath: '/app/dashboard'
-      preLoaderRoute: typeof AppDashboardIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/startups/new': {
-      id: '/app/startups/new'
-      path: '/startups/new'
-      fullPath: '/app/startups/new'
-      preLoaderRoute: typeof AppStartupsNewRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/sprints/new': {
-      id: '/app/sprints/new'
-      path: '/sprints/new'
-      fullPath: '/app/sprints/new'
-      preLoaderRoute: typeof AppSprintsNewRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/sprints/$sprintId': {
-      id: '/app/sprints/$sprintId'
-      path: '/sprints/$sprintId'
-      fullPath: '/app/sprints/$sprintId'
-      preLoaderRoute: typeof AppSprintsSprintIdRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
   }
 }
 
-interface AppRouteRouteChildren {
-  AppIndexRoute: typeof AppIndexRoute
-  AppSprintsSprintIdRoute: typeof AppSprintsSprintIdRoute
-  AppSprintsNewRoute: typeof AppSprintsNewRoute
-  AppStartupsNewRoute: typeof AppStartupsNewRoute
-  AppDashboardIndexRoute: typeof AppDashboardIndexRoute
-  AppExploreIndexRoute: typeof AppExploreIndexRoute
-  AppPitchIndexRoute: typeof AppPitchIndexRoute
-  AppScoreIndexRoute: typeof AppScoreIndexRoute
-  AppSprintsIndexRoute: typeof AppSprintsIndexRoute
-  AppStartupIndexRoute: typeof AppStartupIndexRoute
-  AppTeamIndexRoute: typeof AppTeamIndexRoute
-  AppUpgradeIndexRoute: typeof AppUpgradeIndexRoute
-}
-
-const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppIndexRoute: AppIndexRoute,
-  AppSprintsSprintIdRoute: AppSprintsSprintIdRoute,
-  AppSprintsNewRoute: AppSprintsNewRoute,
-  AppStartupsNewRoute: AppStartupsNewRoute,
-  AppDashboardIndexRoute: AppDashboardIndexRoute,
-  AppExploreIndexRoute: AppExploreIndexRoute,
-  AppPitchIndexRoute: AppPitchIndexRoute,
-  AppScoreIndexRoute: AppScoreIndexRoute,
-  AppSprintsIndexRoute: AppSprintsIndexRoute,
-  AppStartupIndexRoute: AppStartupIndexRoute,
-  AppTeamIndexRoute: AppTeamIndexRoute,
-  AppUpgradeIndexRoute: AppUpgradeIndexRoute,
-}
-
-const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
-  AppRouteRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRouteRoute: AppRouteRouteWithChildren,
-  InviteTokenRoute: InviteTokenRoute,
-  SSlugRoute: SSlugRoute,
-  ExploreIndexRoute: ExploreIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
