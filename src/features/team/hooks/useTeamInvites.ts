@@ -1,22 +1,25 @@
+import { api } from "@convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { api } from "@convex/_generated/api";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
+import { inviteSchema } from "~/features/team/schemas/invite";
+import { toErrorMessage, validate } from "~/lib/validation";
 
 export function useTeamInvites() {
 	const { active: startup } = useWorkspace();
 	const startupId = startup?.startup._id;
 
 	const members = useQuery(
-		api.invitations.listMembers,
+		api.members.list,
 		startupId ? { startupId } : "skip",
 	);
 	const invites = useQuery(
 		api.invitations.listInvites,
 		startupId ? { startupId } : "skip",
 	);
-	const createInvite = useMutation(api.invitations.createInvite);
+	const createInvite = useMutation(api.invitations.create);
+	const revokeInvite = useMutation(api.invitations.revoke);
 
 	const [email, setEmail] = useState("");
 	const [isPending, setIsPending] = useState(false);
@@ -25,21 +28,19 @@ export function useTeamInvites() {
 		event.preventDefault();
 		if (!startupId) return;
 
-		const trimmedEmail = email.trim();
+		const parsed = validate(inviteSchema, { email, role: "member" });
+		if (!parsed.ok) {
+			toast.error(parsed.message);
+			return;
+		}
+
 		setIsPending(true);
 		try {
-			await createInvite({
-				startupId,
-				email: trimmedEmail,
-				role: "member",
-			});
-
+			await createInvite({ startupId, ...parsed.data });
 			setEmail("");
-			toast.success(`Invite sent to ${trimmedEmail}`);
+			toast.success(`Invite sent to ${parsed.data.email}`);
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to create invite";
-			toast.error(message);
+			toast.error(toErrorMessage(error, "Failed to create invite"));
 		} finally {
 			setIsPending(false);
 		}
@@ -53,5 +54,6 @@ export function useTeamInvites() {
 		setEmail,
 		isPending,
 		submitInvite,
+		revokeInvite,
 	};
 }

@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import type { Id } from "@convex/_generated/dataModel";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeftRight, Check, Plus } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -12,9 +13,9 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
 import { cn } from "~/lib/utils";
-import type { Id } from "@convex/_generated/dataModel";
 
 export function StartupSwitcher() {
+	const navigate = useNavigate();
 	const { active, startups, isLoading, setActiveStartup } = useWorkspace();
 
 	if (isLoading) {
@@ -43,6 +44,7 @@ export function StartupSwitcher() {
 		if (startupId !== activeId) {
 			void setActiveStartup(startupId);
 		}
+		void navigate({ to: "/app" });
 	}
 
 	return (

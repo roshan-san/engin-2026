@@ -2,126 +2,288 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+/**
+ * Convention: `_creationTime` is used for "when was this made" everywhere.
+ * Explicit timestamps only exist when they drive an indexed range query.
+ */
+
+export const planTier = v.union(v.literal("free"), v.literal("pro"));
+export const memberRole = v.union(v.literal("founder"), v.literal("member"));
+export const startupStage = v.union(
+	v.literal("idea"),
+	v.literal("pre-seed"),
+	v.literal("seed"),
+	v.literal("series-a"),
+	v.literal("growth"),
+);
+export const inviteStatus = v.union(
+	v.literal("pending"),
+	v.literal("accepted"),
+	v.literal("expired"),
+);
+export const notificationKind = v.union(
+	v.literal("invite"),
+	v.literal("pulse"),
+	v.literal("cycle"),
+	v.literal("trial_cycle"),
+	v.literal("application"),
+	v.literal("message"),
+	v.literal("billing"),
+	v.literal("offer"),
+);
+export const pulseStatus = v.union(
+	v.literal("backlog"),
+	v.literal("active"),
+	v.literal("blocked"),
+	/** A trial Pulse its assignee marked done, awaiting a Member's review. */
+	v.literal("review"),
+	v.literal("done"),
+);
+export const pulsePriority = v.union(
+	v.literal("low"),
+	v.literal("medium"),
+	v.literal("high"),
+);
+export const cycleStatus = v.union(
+	v.literal("planned"),
+	v.literal("active"),
+	v.literal("closed"),
+);
+export const openingStatus = v.union(v.literal("open"), v.literal("closed"));
+export const trialAdmission = v.union(
+	v.literal("open"),
+	v.literal("application"),
+);
+export const trialStatus = v.union(
+	v.literal("open"),
+	v.literal("active"),
+	v.literal("closed"),
+	v.literal("cancelled"),
+);
+export const trialVerdict = v.union(
+	v.literal("passed_with_offer"),
+	v.literal("passed"),
+	v.literal("not_passed"),
+);
+export const offerStatus = v.union(
+	v.literal("pending"),
+	v.literal("accepted"),
+	v.literal("declined"),
+	v.literal("withdrawn"),
+);
+export const applicationStatus = v.union(
+	v.literal("applied"),
+	v.literal("joined"),
+	v.literal("rejected"),
+	v.literal("withdrawn"),
+	v.literal("left"),
+	v.literal("completed"),
+);
+
 export default defineSchema({
 	...authTables,
-	// Google OAuth only — keep auth defaults + app fields.
+
 	users: defineTable({
 		name: v.optional(v.string()),
 		image: v.optional(v.string()),
 		email: v.optional(v.string()),
 		emailVerificationTime: v.optional(v.number()),
-		planTier: v.optional(v.union(v.literal("free"), v.literal("pro"))),
-		totalScore: v.optional(v.number()),
+		planTier: v.optional(planTier),
+		username: v.optional(v.string()),
+		bio: v.optional(v.string()),
+		skills: v.optional(v.array(v.string())),
+		headline: v.optional(v.string()),
+		location: v.optional(v.string()),
+		githubUrl: v.optional(v.string()),
+		linkedinUrl: v.optional(v.string()),
+		portfolioUrl: v.optional(v.string()),
+		/** Denormalised headline reputation. Recomputed from verified work. */
+		score: v.optional(v.number()),
 		activeStartupId: v.optional(v.id("startups")),
-	}).index("email", ["email"]),
+	})
+		.index("email", ["email"])
+		.index("by_username", ["username"]),
+
 	startups: defineTable({
+		founderUserId: v.id("users"),
 		name: v.string(),
 		slug: v.string(),
-		description: v.optional(v.string()),
 		tagline: v.optional(v.string()),
+		description: v.optional(v.string()),
+		category: v.optional(v.string()),
+		stage: v.optional(startupStage),
 		website: v.optional(v.string()),
-		founderUserId: v.id("users"),
-		isPublic: v.optional(v.boolean()),
-		pitchProblem: v.optional(v.string()),
-		pitchSolution: v.optional(v.string()),
-		pitchMarket: v.optional(v.string()),
-		pitchTraction: v.optional(v.string()),
-		pitchTeam: v.optional(v.string()),
-		publishedAt: v.optional(v.number()),
+		twitterUrl: v.optional(v.string()),
+		linkedinUrl: v.optional(v.string()),
+		githubUrl: v.optional(v.string()),
+		isPublic: v.boolean(),
+		followerCount: v.number(),
+		searchText: v.string(),
 	})
 		.index("by_slug", ["slug"])
-		.index("by_founderUserId", ["founderUserId"])
-		.index("by_isPublic", ["isPublic"]),
-	tasks: defineTable({
-		startupId: v.id("startups"),
-		title: v.string(),
-		description: v.optional(v.string()),
-		status: v.union(
-			v.literal("todo"),
-			v.literal("in_progress"),
-			v.literal("done"),
-		),
-		assigneeUserId: v.optional(v.id("users")),
-		createdByUserId: v.id("users"),
-		order: v.number(),
-	})
-		.index("by_startupId", ["startupId"])
-		.index("by_startupId_and_status", ["startupId", "status"]),
+		.index("by_founder", ["founderUserId"])
+		.index("by_public", ["isPublic"])
+		.searchIndex("search_startups", {
+			searchField: "searchText",
+			filterFields: ["isPublic"],
+		}),
+
 	memberships: defineTable({
 		startupId: v.id("startups"),
 		userId: v.id("users"),
-		role: v.union(v.literal("founder"), v.literal("member")),
+		role: memberRole,
 	})
-		.index("by_startupId_and_userId", ["startupId", "userId"])
-		.index("by_userId", ["userId"])
-		.index("by_startupId", ["startupId"]),
-	hiringSprints: defineTable({
+		.index("by_startup_and_user", ["startupId", "userId"])
+		.index("by_user", ["userId"])
+		.index("by_startup", ["startupId"]),
+
+	follows: defineTable({
+		userId: v.id("users"),
 		startupId: v.id("startups"),
-		founderUserId: v.id("users"),
-		title: v.string(),
-		description: v.string(),
-		role: v.string(),
-		taskTitles: v.array(v.string()),
-		rankingCriteria: v.optional(v.string()),
-		perks: v.optional(v.string()),
-		maxCandidates: v.number(),
-		status: v.union(
-			v.literal("open"),
-			v.literal("active"),
-			v.literal("completed"),
-			v.literal("expired"),
-		),
-		postedAt: v.number(),
-		expiresAt: v.number(),
-		directJoinEndsAt: v.number(),
-		startedAt: v.optional(v.number()),
-		hiredUserId: v.optional(v.id("users")),
 	})
-		.index("by_startupId", ["startupId"])
-		.index("by_status", ["status"])
-		.index("by_founderUserId", ["founderUserId"]),
-	sprintApplications: defineTable({
-		sprintId: v.id("hiringSprints"),
-		userId: v.id("users"),
-		status: v.union(
-			v.literal("joined"),
-			v.literal("applied"),
-			v.literal("accepted"),
-			v.literal("rejected"),
-			v.literal("withdrawn"),
-			v.literal("closed"),
-		),
-		type: v.union(v.literal("direct"), v.literal("apply")),
-		appliedAt: v.number(),
-		applicationDate: v.string(),
-		closedReason: v.optional(v.string()),
-	})
-		.index("by_sprintId", ["sprintId"])
-		.index("by_userId", ["userId"])
-		.index("by_userId_and_applicationDate", ["userId", "applicationDate"])
-		.index("by_sprintId_and_userId", ["sprintId", "userId"]),
-	sprintMessages: defineTable({
-		sprintId: v.id("hiringSprints"),
-		userId: v.id("users"),
-		content: v.string(),
-		createdAt: v.number(),
-	})
-		.index("by_sprintId", ["sprintId"]),
+		.index("by_user_and_startup", ["userId", "startupId"])
+		.index("by_user", ["userId"])
+		.index("by_startup", ["startupId"]),
+
 	invites: defineTable({
 		startupId: v.id("startups"),
 		email: v.string(),
-		role: v.union(v.literal("founder"), v.literal("member")),
+		role: memberRole,
 		token: v.string(),
 		invitedByUserId: v.id("users"),
-		status: v.union(
-			v.literal("pending"),
-			v.literal("accepted"),
-			v.literal("expired"),
-		),
+		status: inviteStatus,
 		expiresAt: v.number(),
 	})
 		.index("by_token", ["token"])
 		.index("by_email", ["email"])
-		.index("by_startupId_and_email", ["startupId", "email"])
-		.index("by_startupId", ["startupId"]),
+		.index("by_startup_and_email", ["startupId", "email"])
+		.index("by_startup", ["startupId"]),
+
+	notifications: defineTable({
+		userId: v.id("users"),
+		kind: notificationKind,
+		title: v.string(),
+		body: v.optional(v.string()),
+		href: v.optional(v.string()),
+		readAt: v.optional(v.number()),
+	}).index("by_user", ["userId"]),
+
+	pulses: defineTable({
+		startupId: v.id("startups"),
+		cycleId: v.optional(v.id("cycles")),
+		trialCycleId: v.optional(v.id("trialCycles")),
+		title: v.string(),
+		description: v.optional(v.string()),
+		status: pulseStatus,
+		priority: v.optional(pulsePriority),
+		assigneeUserId: v.optional(v.id("users")),
+		createdByUserId: v.id("users"),
+		dueAt: v.optional(v.number()),
+		evidenceUrl: v.optional(v.string()),
+		/** Why a Member sent a Submitted Pulse back. */
+		reviewNote: v.optional(v.string()),
+	})
+		.index("by_startup", ["startupId"])
+		.index("by_cycle", ["cycleId"])
+		.index("by_trial", ["trialCycleId"])
+		.index("by_trial_and_status", ["trialCycleId", "status"])
+		.index("by_assignee", ["assigneeUserId"]),
+
+	cycles: defineTable({
+		startupId: v.id("startups"),
+		title: v.string(),
+		startAt: v.number(),
+		endAt: v.number(),
+		status: cycleStatus,
+	})
+		.index("by_startup", ["startupId"])
+		.index("by_startup_and_status", ["startupId", "status"]),
+
+	roles: defineTable({
+		startupId: v.id("startups"),
+		title: v.string(),
+		type: v.string(),
+		skills: v.array(v.string()),
+		description: v.string(),
+		compensation: v.optional(v.string()),
+		equity: v.optional(v.string()),
+		location: v.optional(v.string()),
+		remote: v.optional(v.boolean()),
+		commitment: v.optional(v.string()),
+		/** Accepted Offers after which the Role is filled and closes. */
+		headcount: v.number(),
+		status: openingStatus,
+		searchText: v.string(),
+	})
+		.index("by_startup", ["startupId"])
+		.index("by_startup_and_status", ["startupId", "status"])
+		.index("by_status", ["status"])
+		.searchIndex("search_roles", {
+			searchField: "searchText",
+			filterFields: ["status"],
+		}),
+
+	trialCycles: defineTable({
+		startupId: v.id("startups"),
+		roleId: v.id("roles"),
+		title: v.string(),
+		description: v.string(),
+		admission: trialAdmission,
+		maxContributors: v.number(),
+		applicationDeadline: v.optional(v.number()),
+		startsAt: v.number(),
+		endsAt: v.number(),
+		expectedOutcome: v.optional(v.string()),
+		evaluationCriteria: v.optional(v.string()),
+		compensation: v.optional(v.string()),
+		status: trialStatus,
+		participantCount: v.number(),
+		searchText: v.string(),
+	})
+		.index("by_startup", ["startupId"])
+		.index("by_startup_and_status", ["startupId", "status"])
+		.index("by_role", ["roleId"])
+		.index("by_status", ["status"])
+		.searchIndex("search_trials", {
+			searchField: "searchText",
+			filterFields: ["status"],
+		}),
+
+	applications: defineTable({
+		userId: v.id("users"),
+		startupId: v.id("startups"),
+		roleId: v.id("roles"),
+		trialCycleId: v.id("trialCycles"),
+		status: applicationStatus,
+		message: v.optional(v.string()),
+		/** Set when a Participant leaves after the Trial Cycle started. */
+		leftAt: v.optional(v.number()),
+		verdict: v.optional(trialVerdict),
+		evaluation: v.optional(v.string()),
+		/** The Participant chose to show the Evaluation on their profile. */
+		evaluationPublic: v.optional(v.boolean()),
+	})
+		.index("by_user", ["userId"])
+		.index("by_startup", ["startupId"])
+		.index("by_role", ["roleId"])
+		.index("by_trial", ["trialCycleId"])
+		.index("by_trial_and_user", ["trialCycleId", "userId"]),
+
+	offers: defineTable({
+		applicationId: v.id("applications"),
+		trialCycleId: v.id("trialCycles"),
+		roleId: v.id("roles"),
+		startupId: v.id("startups"),
+		userId: v.id("users"),
+		status: offerStatus,
+	})
+		.index("by_role_and_status", ["roleId", "status"])
+		.index("by_user_and_status", ["userId", "status"])
+		.index("by_startup", ["startupId"]),
+
+	trialMessages: defineTable({
+		trialCycleId: v.id("trialCycles"),
+		userId: v.id("users"),
+		body: v.string(),
+	}).index("by_trial", ["trialCycleId"]),
 });

@@ -1,9 +1,7 @@
 export function GlobalSpinner() {
 	return (
-		<div className="flex ring flex-1 min-h-screen items-center justify-center">
-			<div className="text-center">
-				<div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-primary mx-auto"></div>
-			</div>
+		<div className="flex min-h-dvh items-center justify-center">
+			<div className="size-10 animate-spin rounded-full border-2 border-muted border-t-foreground" />
 		</div>
 	);
 }

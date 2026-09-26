@@ -46,7 +46,7 @@ export function CreateStartupPage() {
 						size="sm"
 						className="-ml-2 text-muted-foreground"
 					>
-						<Link to="/app/dashboard">Cancel</Link>
+						<Link to="/app">Cancel</Link>
 					</Button>
 				)}
 
@@ -55,7 +55,7 @@ export function CreateStartupPage() {
 						<span
 							key={wizardStep.id}
 							className={cn(
-								"h-1 w-6 rounded-full transition-colors",
+								"h-1 w-6 rounded-full",
 								index <= stepIndex ? "bg-primary" : "bg-muted",
 							)}
 						/>
@@ -68,17 +68,31 @@ export function CreateStartupPage() {
 			</div>
 
 			<div className="flex flex-1 flex-col justify-center pb-16">
-				<h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl">
+				<h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
 					{step.question}
 				</h1>
-				{step.hint && (
+				{step.hint ? (
 					<p className="mt-3 text-base text-muted-foreground sm:text-lg">
 						{step.hint}
 					</p>
-				)}
+				) : null}
 
 				<div className="mt-10 sm:mt-12">
-					{step.multiline ? (
+					{step.kind === "chips" && step.options ? (
+						<div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+							{step.options.map((option) => (
+								<Button
+									key={option.value}
+									type="button"
+									variant={value === option.value ? "default" : "outline"}
+									className="h-11 justify-start"
+									onClick={() => updateValue(option.value)}
+								>
+									{option.label}
+								</Button>
+							))}
+						</div>
+					) : step.multiline ? (
 						<textarea
 							ref={inputRef as React.RefObject<HTMLTextAreaElement>}
 							value={value}
@@ -107,13 +121,9 @@ export function CreateStartupPage() {
 						disabled={!canContinue || isPending}
 						onClick={continueStep}
 					>
-						{isPending
-							? "Creating…"
-							: isLast
-								? "Launch"
-								: "Continue"}
+						{isPending ? "Creating…" : isLast ? "Launch" : "Continue"}
 					</Button>
-					{step.skippable && (
+					{step.skippable ? (
 						<Button
 							type="button"
 							variant="ghost"
@@ -124,15 +134,17 @@ export function CreateStartupPage() {
 						>
 							Skip
 						</Button>
-					)}
+					) : null}
 				</div>
 
-				{isLast && data.name.trim() && (
+				{isLast && data.name.trim() ? (
 					<p className="mt-8 text-sm text-muted-foreground">
 						Launching{" "}
-						<span className="font-medium text-foreground">{data.name.trim()}</span>
+						<span className="font-medium text-foreground">
+							{data.name.trim()}
+						</span>
 					</p>
-				)}
+				) : null}
 			</div>
 		</div>
 	);

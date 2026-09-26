@@ -33,13 +33,17 @@ export function InviteAcceptPage({ token }: InviteAcceptPageProps) {
 	return (
 		<div className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-6 p-10 text-center">
 			<div className="space-y-2">
-				<h1 className="text-3xl font-bold">Join {invite.startup?.name}</h1>
+				<h1 className="text-3xl font-bold">Join {invite.startupName}</h1>
 				<p className="text-muted-foreground">
-					You were invited to join as {invite.invite.role}.
+					You were invited to join as {invite.role}.
 				</p>
 			</div>
 
-			{isAuthenticated ? (
+			{invite.isExpired || invite.status !== "pending" ? (
+				<p className="text-sm text-muted-foreground">
+					This invite is no longer valid.
+				</p>
+			) : isAuthenticated ? (
 				<Button onClick={accept} disabled={isPending}>
 					{isPending ? "Joining..." : "Accept invite"}
 				</Button>

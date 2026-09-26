@@ -10,7 +10,11 @@ import {
 import { useNotifications } from "~/features/app/hooks/useNotifications";
 
 export function NotificationBell() {
-	const { invites, count, acceptingId, accept } = useNotifications();
+	const { invites, notifications, count, acceptingId, accept, read } =
+		useNotifications();
+	const isLoading = invites === undefined || notifications === undefined;
+	const isEmpty =
+		!isLoading && invites.length === 0 && notifications.length === 0;
 
 	return (
 		<DropdownMenu>
@@ -18,7 +22,7 @@ export function NotificationBell() {
 				<Button
 					variant="outline"
 					size="icon"
-					className="relative size-10 rounded-md"
+					className="relative size-8 rounded-full"
 					aria-label={
 						count > 0
 							? `${count} pending notification${count === 1 ? "" : "s"}`
@@ -44,9 +48,9 @@ export function NotificationBell() {
 					)}
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				{invites === undefined ? (
+				{isLoading ? (
 					<p className="px-2 py-3 text-sm text-muted-foreground">Loading...</p>
-				) : invites.length === 0 ? (
+				) : isEmpty ? (
 					<p className="px-2 py-3 text-sm text-muted-foreground">
 						No notifications
 					</p>
@@ -75,6 +79,32 @@ export function NotificationBell() {
 								>
 									<Check className="size-4" />
 								</Button>
+							</li>
+						))}
+						{notifications.map((notification) => (
+							<li
+								key={notification._id}
+								className="border-b border-border/60 last:border-0"
+							>
+								{notification.href ? (
+									<a
+										href={notification.href}
+										className="block px-2 py-3 hover:bg-muted/40"
+										onClick={() => {
+											if (!notification.isRead) {
+												void read(notification._id);
+											}
+										}}
+									>
+										<p className="text-sm font-medium leading-snug">
+											{notification.title}
+										</p>
+									</a>
+								) : (
+									<p className="px-2 py-3 text-sm font-medium">
+										{notification.title}
+									</p>
+								)}
 							</li>
 						))}
 					</ul>

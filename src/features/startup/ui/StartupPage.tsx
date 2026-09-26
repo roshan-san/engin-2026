@@ -1,8 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
+import { PulseBoard } from "~/features/pulses/components/PulseBoard";
+import { WorkspaceApplicants } from "~/features/startup/components/WorkspaceApplicants";
+import { WorkspaceCycles } from "~/features/startup/components/WorkspaceCycles";
+import { WorkspaceOffers } from "~/features/startup/components/WorkspaceOffers";
+import { WorkspaceRoles } from "~/features/startup/components/WorkspaceRoles";
+import { WorkspaceTrials } from "~/features/startup/components/WorkspaceTrials";
+import { categoryLabel, stageLabel } from "~/features/startups/constants";
 
 export function StartupPage() {
 	const { active: startup, isLoading } = useWorkspace();
@@ -14,9 +20,9 @@ export function StartupPage() {
 	if (!startup) {
 		return (
 			<div className="w-full py-10">
-				<h1 className="text-2xl font-bold">Startup</h1>
+				<h1 className="text-2xl font-bold">Workspace</h1>
 				<p className="mt-2 text-muted-foreground">
-					Create your startup to manage pitch and team.
+					Create a startup to open its workspace.
 				</p>
 				<Button asChild className="mt-6">
 					<Link to="/app/startups/new">Create startup</Link>
@@ -25,38 +31,41 @@ export function StartupPage() {
 		);
 	}
 
+	const doc = startup.startup;
+	const isFounder = startup.role === "founder";
+
 	return (
-		<div className="w-full py-8 space-y-8">
-			<div>
-				<h1 className="text-2xl font-bold">{startup.startup.name}</h1>
-				<p className="mt-1 text-muted-foreground">
-					Pitch deck and team · {startup.role}
-				</p>
+		<div className="w-full space-y-10 py-8">
+			<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+				<div>
+					<h1 className="text-2xl font-bold">{doc.name}</h1>
+					<p className="mt-1 text-muted-foreground">
+						{doc.tagline ?? "Startup workspace"} · {startup.role}
+					</p>
+					<p className="mt-1 text-sm text-muted-foreground">
+						{[categoryLabel(doc.category), stageLabel(doc.stage)]
+							.filter(Boolean)
+							.join(" · ")}
+					</p>
+				</div>
+				<div className="flex flex-wrap gap-2">
+					<Button asChild>
+						<Link to="/startup/$slug" params={{ slug: doc.slug }}>
+							Public page
+						</Link>
+					</Button>
+					<Button asChild variant="outline">
+						<Link to="/app/team">Team</Link>
+					</Button>
+				</div>
 			</div>
 
-			<div className="grid gap-4 sm:grid-cols-2">
-				<Link to="/app/pitch">
-					<Card className="h-full py-4 shadow-none transition-colors hover:bg-muted/30">
-						<CardContent className="space-y-1 px-4">
-							<p className="font-medium">Pitch deck</p>
-							<p className="text-sm text-muted-foreground">
-								Edit and publish your public landing page.
-							</p>
-						</CardContent>
-					</Card>
-				</Link>
-
-				<Link to="/app/team">
-					<Card className="h-full py-4 shadow-none transition-colors hover:bg-muted/30">
-						<CardContent className="space-y-1 px-4">
-							<p className="font-medium">Team</p>
-							<p className="text-sm text-muted-foreground">
-								Invite members and manage your crew.
-							</p>
-						</CardContent>
-					</Card>
-				</Link>
-			</div>
+			<PulseBoard startupId={doc._id} canCreate />
+			<WorkspaceCycles startupId={doc._id} isFounder={isFounder} />
+			<WorkspaceRoles startupId={doc._id} isFounder={isFounder} />
+			<WorkspaceTrials startupId={doc._id} isFounder={isFounder} />
+			{isFounder ? <WorkspaceApplicants startupId={doc._id} /> : null}
+			{isFounder ? <WorkspaceOffers startupId={doc._id} /> : null}
 		</div>
 	);
 }

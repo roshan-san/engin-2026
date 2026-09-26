@@ -1,13 +1,14 @@
+import { api } from "@convex/_generated/api";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { api } from "@convex/_generated/api";
+import { toErrorMessage } from "~/lib/validation";
 
 export function useAcceptInvite(token: string) {
 	const navigate = useNavigate();
-	const invite = useQuery(api.invitations.getInviteByToken, { token });
-	const acceptInvite = useMutation(api.invitations.acceptInvite);
+	const invite = useQuery(api.invitations.getByToken, { token });
+	const acceptInvite = useMutation(api.invitations.acceptByToken);
 	const [isPending, setIsPending] = useState(false);
 
 	async function accept() {
@@ -15,19 +16,13 @@ export function useAcceptInvite(token: string) {
 		try {
 			await acceptInvite({ token });
 			toast.success("Invite accepted");
-			await navigate({ to: "/app/dashboard" });
+			await navigate({ to: "/app" });
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to accept invite";
-			toast.error(message);
+			toast.error(toErrorMessage(error, "Failed to accept invite"));
 		} finally {
 			setIsPending(false);
 		}
 	}
 
-	return {
-		invite,
-		isPending,
-		accept,
-	};
+	return { invite, isPending, accept };
 }

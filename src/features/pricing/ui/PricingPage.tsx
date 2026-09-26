@@ -16,20 +16,20 @@ import {
 import { cn } from "~/lib/utils";
 
 const freeFeatures = [
-	"Team tasks",
-	"Public pitch deck page",
-	"Team invites & collaboration",
-	"Explore startups & sprints",
-	"3 sprint applications per day",
-	"Daily 100 score claims",
+	"Public contributor profile",
+	"Explore startups",
+	"Join Trial Cycles",
+	"3 active Trial Cycle applications",
+	"Startup workspace",
+	"Team invites",
 ];
 
 const proFeatures = [
-	"Unlimited sprint applications",
-	"Sprint chat & direct hire",
-	"Post & run hiring sprints",
-	"Priority founder tools",
-	"Pro badge on Explore",
+	"More active applications",
+	"More open Roles and Trial Cycles",
+	"Advanced opportunity filters",
+	"Profile and startup analytics",
+	"Enhanced profile customization",
 ];
 
 /** Monthly list price. Yearly is billed at 67% of annualized monthly (save 33%). */
@@ -53,7 +53,8 @@ export function PricingPage() {
 				<div>
 					<h1 className="text-2xl font-bold sm:text-3xl">Pricing</h1>
 					<p className="mt-2 max-w-2xl text-muted-foreground">
-						Start free. Upgrade to Standard when you are ready to hire at scale.
+						Start free. Upgrade when you need more applications and hiring
+						capacity.
 					</p>
 				</div>
 
@@ -111,7 +112,7 @@ export function PricingPage() {
 					</CardContent>
 					<CardFooter>
 						<Button asChild variant="outline" className="w-full">
-							<Link to="/app/dashboard">Back to dashboard</Link>
+							<Link to="/app">Back to Build</Link>
 						</Button>
 					</CardFooter>
 				</Card>
@@ -141,7 +142,7 @@ export function PricingPage() {
 					<CardFooter>
 						{plan?.isPro ? (
 							<Button asChild className="w-full">
-								<Link to="/app/dashboard">Go to dashboard</Link>
+								<Link to="/app">Back to Build</Link>
 							</Button>
 						) : (
 							<Button

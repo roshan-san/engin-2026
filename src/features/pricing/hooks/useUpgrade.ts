@@ -1,8 +1,8 @@
+import { api } from "@convex/_generated/api";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { useAction, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { api } from "@convex/_generated/api";
 
 export type BillingInterval = "monthly" | "yearly";
 
@@ -21,7 +21,7 @@ export function useUpgrade() {
 		setIsLoading(true);
 		try {
 			const result = await createCheckout({
-				returnUrl: `${window.location.origin}/app/dashboard`,
+				returnUrl: `${window.location.origin}/app`,
 				interval,
 			});
 			window.location.href = result.checkoutUrl;

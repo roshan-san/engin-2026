@@ -1,15 +1,31 @@
+import { api } from "@convex/_generated/api";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { api } from "@convex/_generated/api";
+import {
+	STARTUP_CATEGORIES,
+	STARTUP_STAGES,
+	type StartupCategory,
+	type StartupStage,
+} from "~/features/startups/constants";
+import { createStartupSchema } from "~/features/startups/schemas/startup";
+import { toErrorMessage, validate } from "~/lib/validation";
 
-type StepId = "name" | "building" | "tagline" | "website";
+type StepId =
+	| "name"
+	| "building"
+	| "tagline"
+	| "category"
+	| "stage"
+	| "website";
 
 type WizardData = {
 	name: string;
 	description: string;
 	tagline: string;
+	category: string;
+	stage: string;
 	website: string;
 };
 
@@ -17,35 +33,55 @@ export const createStartupSteps: Array<{
 	id: StepId;
 	question: string;
 	hint?: string;
-	placeholder: string;
+	placeholder?: string;
 	multiline?: boolean;
 	required?: boolean;
 	skippable?: boolean;
+	kind: "text" | "chips";
+	options?: Array<{ value: string; label: string }>;
 }> = [
 	{
 		id: "name",
 		question: "What's it called?",
 		placeholder: "Acme",
 		required: true,
+		kind: "text",
 	},
 	{
 		id: "building",
 		question: "What are you building?",
-		hint: "Plain language. No pitch deck yet.",
-		placeholder: "We help founders hire in sprints…",
+		hint: "Plain language. Keep it short.",
+		placeholder: "A network where people prove they can work with startups.",
 		multiline: true,
+		kind: "text",
 	},
 	{
 		id: "tagline",
-		question: "One line pitch?",
-		placeholder: "The fast lane for founders",
+		question: "One-line pitch?",
+		placeholder: "Prove it by shipping",
 		skippable: true,
+		kind: "text",
+	},
+	{
+		id: "category",
+		question: "What category?",
+		skippable: true,
+		kind: "chips",
+		options: [...STARTUP_CATEGORIES],
+	},
+	{
+		id: "stage",
+		question: "What stage?",
+		skippable: true,
+		kind: "chips",
+		options: [...STARTUP_STAGES],
 	},
 	{
 		id: "website",
 		question: "Got a website?",
 		placeholder: "https://",
 		skippable: true,
+		kind: "text",
 	},
 ];
 
@@ -57,6 +93,10 @@ function stepValue(data: WizardData, id: StepId): string {
 			return data.description;
 		case "tagline":
 			return data.tagline;
+		case "category":
+			return data.category;
+		case "stage":
+			return data.stage;
 		case "website":
 			return data.website;
 	}
@@ -70,6 +110,10 @@ function setStepValue(data: WizardData, id: StepId, value: string): WizardData {
 			return { ...data, description: value };
 		case "tagline":
 			return { ...data, tagline: value };
+		case "category":
+			return { ...data, category: value };
+		case "stage":
+			return { ...data, stage: value };
 		case "website":
 			return { ...data, website: value };
 	}
@@ -85,6 +129,8 @@ export function useCreateStartupWizard() {
 		name: "",
 		description: "",
 		tagline: "",
+		category: "",
+		stage: "",
 		website: "",
 	});
 	const [isPending, setIsPending] = useState(false);
@@ -105,22 +151,34 @@ export function useCreateStartupWizard() {
 	}, [stepIndex]);
 
 	async function create() {
-		if (!data.name.trim()) return;
+		const result = validate(createStartupSchema, {
+			name: data.name,
+			description: data.description,
+			tagline: data.tagline,
+			category: data.category || undefined,
+			stage: (data.stage || undefined) as StartupStage | undefined,
+			website: data.website,
+		});
+
+		if (!result.ok) {
+			toast.error(result.message);
+			return;
+		}
 
 		setIsPending(true);
 		try {
 			await createStartup({
-				name: data.name.trim(),
-				description: data.description.trim() || undefined,
-				tagline: data.tagline.trim() || undefined,
-				website: data.website.trim() || undefined,
+				name: result.data.name,
+				description: result.data.description,
+				tagline: result.data.tagline,
+				category: result.data.category as StartupCategory | undefined,
+				stage: result.data.stage,
+				website: result.data.website,
 			});
 			toast.success("Startup created");
-			await navigate({ to: "/app/dashboard" });
+			await navigate({ to: "/app" });
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to create startup";
-			toast.error(message);
+			toast.error(toErrorMessage(error, "Failed to create startup"));
 		} finally {
 			setIsPending(false);
 		}
@@ -154,12 +212,10 @@ export function useCreateStartupWizard() {
 		setData((previous) => setStepValue(previous, step.id, nextValue));
 	}
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: refocus when the wizard step changes
 	useEffect(() => {
-		if (!step.id) {
-			return;
-		}
 		inputRef.current?.focus();
-	}, [step.id]);
+	}, [stepIndex]);
 
 	return {
 		inputRef,

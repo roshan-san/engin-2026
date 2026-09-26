@@ -1,29 +1,22 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
-
-import '../styles.css'
-
-export const Route = createRootRoute({
-  component: RootComponent,
-})
+import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { GlobalError } from "~/components/globals/GlobalError";
+import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
+import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
+import { Toaster } from "~/components/ui/sonner";
+import { AppProviders } from "~/features/auth/providers/AppProviders";
 
 function RootComponent() {
-  return (
-    <>
-      <Outlet />
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right',
-        }}
-        plugins={[
-          {
-            name: 'TanStack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-        ]}
-      />
-    </>
-  )
+	return (
+		<AppProviders>
+			<Outlet />
+			<Toaster richColors />
+		</AppProviders>
+	);
 }
+
+export const Route = createRootRoute({
+	component: RootComponent,
+	pendingComponent: GlobalSpinner,
+	errorComponent: GlobalError,
+	notFoundComponent: GlobalNotFound,
+});

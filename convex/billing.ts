@@ -35,9 +35,7 @@ export const setPlanTier = internalMutation({
 export const createCheckoutLink = action({
 	args: {
 		returnUrl: v.string(),
-		interval: v.optional(
-			v.union(v.literal("monthly"), v.literal("yearly")),
-		),
+		interval: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
 	},
 	handler: async (ctx, args): Promise<{ checkoutUrl: string }> => {
 		const userId = await getAuthUserId(ctx);

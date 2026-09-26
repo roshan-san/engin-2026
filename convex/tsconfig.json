@@ -1,0 +1,19 @@
+{
+	"include": ["./**/*"],
+	"exclude": ["./_generated"],
+	"compilerOptions": {
+		"target": "ESNext",
+		"lib": ["ES2022", "DOM"],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"jsx": "react-jsx",
+		"types": ["node"],
+
+		"strict": true,
+		"skipLibCheck": true,
+		"allowJs": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"forceConsistentCasingInFileNames": true
+	}
+}

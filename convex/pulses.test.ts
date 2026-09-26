@@ -1,0 +1,104 @@
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { api } from "./_generated/api";
+import {
+	createTest,
+	notificationTitles,
+	scoreOf,
+	setUpStartup,
+	signUp,
+	startedTrialWith,
+} from "./test.helpers";
+
+beforeEach(() => {
+	vi.useFakeTimers();
+});
+
+afterEach(() => {
+	vi.useRealTimers();
+});
+
+async function setUpTrialPulse() {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await signUp(t, "Alice");
+	const trialCycleId = await startedTrialWith(t, setup, [alice]);
+	const pulseId = await setup.founder.as.mutation(api.pulses.create, {
+		startupId: setup.startupId,
+		title: "Write the API",
+		trialCycleId,
+	});
+	await alice.as.mutation(api.pulses.assignToMe, { pulseId });
+	await alice.as.mutation(api.pulses.setStatus, { pulseId, status: "done" });
+
+	async function pulseStatus() {
+		const pulses = await alice.as.query(api.pulses.listForTrial, {
+			trialCycleId,
+		});
+		return pulses.find((pulse) => pulse._id === pulseId);
+	}
+
+	return { t, setup, alice, pulseId, pulseStatus };
+}
+
+test("a Participant marking a trial Pulse done submits it without earning Score", async () => {
+	const { t, alice, pulseStatus } = await setUpTrialPulse();
+
+	expect((await pulseStatus())?.status).toBe("review");
+	expect(await scoreOf(t, alice.userId)).toBe(0);
+});
+
+test("a Member verifying a Submitted Pulse gives the Participant 10 Score", async () => {
+	const { t, setup, alice, pulseId, pulseStatus } = await setUpTrialPulse();
+
+	await setup.founder.as.mutation(api.pulses.verify, { pulseId });
+
+	expect((await pulseStatus())?.status).toBe("done");
+	expect(await scoreOf(t, alice.userId)).toBe(10);
+});
+
+test("a Member rejecting a Submitted Pulse sends it back with a note", async () => {
+	const { setup, alice, pulseId, pulseStatus } = await setUpTrialPulse();
+
+	await setup.founder.as.mutation(api.pulses.reject, {
+		pulseId,
+		note: "Missing tests",
+	});
+
+	const pulse = await pulseStatus();
+	expect(pulse?.status).toBe("active");
+	expect(pulse?.reviewNote).toBe("Missing tests");
+	expect(await notificationTitles(alice.as)).toContain(
+		"Write the API needs changes",
+	);
+});
+
+test("a Participant cannot verify their own Pulse", async () => {
+	const { alice, pulseId } = await setUpTrialPulse();
+
+	await expect(
+		alice.as.mutation(api.pulses.verify, { pulseId }),
+	).rejects.toThrow("not a member");
+});
+
+test("a Participant cannot pull back a Submitted Pulse or undo a Verified one", async () => {
+	const { setup, alice, pulseId } = await setUpTrialPulse();
+
+	await expect(
+		alice.as.mutation(api.pulses.setStatus, { pulseId, status: "active" }),
+	).rejects.toThrow("awaiting review");
+
+	await setup.founder.as.mutation(api.pulses.verify, { pulseId });
+
+	await expect(
+		alice.as.mutation(api.pulses.setStatus, { pulseId, status: "backlog" }),
+	).rejects.toThrow("already verified");
+});
+
+test("deleting a Verified Pulse removes its Score", async () => {
+	const { t, setup, alice, pulseId } = await setUpTrialPulse();
+	await setup.founder.as.mutation(api.pulses.verify, { pulseId });
+
+	await setup.founder.as.mutation(api.pulses.remove, { pulseId });
+
+	expect(await scoreOf(t, alice.userId)).toBe(0);
+});

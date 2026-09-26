@@ -1,15 +1,18 @@
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
+import { toErrorMessage } from "~/lib/validation";
 
 export function useNotifications() {
-	const invites = useQuery(api.invitations.listMyPendingInvites);
-	const acceptInvite = useMutation(api.invitations.acceptInviteById);
+	const invites = useQuery(api.invitations.listMine);
+	const feed = useQuery(api.notifications.list);
+	const acceptInvite = useMutation(api.invitations.acceptById);
+	const markRead = useMutation(api.notifications.markRead);
 	const [acceptingId, setAcceptingId] = useState<Id<"invites"> | null>(null);
 
-	const count = invites?.length ?? 0;
+	const count = (invites?.length ?? 0) + (feed?.unreadCount ?? 0);
 
 	async function accept(inviteId: Id<"invites">) {
 		setAcceptingId(inviteId);
@@ -17,18 +20,26 @@ export function useNotifications() {
 			await acceptInvite({ inviteId });
 			toast.success("Invite accepted — switched to that startup");
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to accept invite";
-			toast.error(message);
+			toast.error(toErrorMessage(error, "Failed to accept invite"));
 		} finally {
 			setAcceptingId(null);
 		}
 	}
 
+	async function read(notificationId: Id<"notifications">) {
+		try {
+			await markRead({ notificationId });
+		} catch (error) {
+			toast.error(toErrorMessage(error, "Could not mark as read"));
+		}
+	}
+
 	return {
 		invites,
+		notifications: feed?.notifications,
 		count,
 		acceptingId,
 		accept,
+		read,
 	};
 }
