@@ -6,14 +6,17 @@ import { toast } from "sonner";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { PulseEvidence } from "~/features/pulses/components/PulseEvidence";
+import { PulseProofLinks } from "~/features/pulses/components/PulseProofLinks";
 import { PulseReviewControls } from "~/features/pulses/components/PulseReviewControls";
-import { PULSE_STATUSES, type PulseStatus } from "~/features/pulses/constants";
+import {
+	type PulseStatus,
+	WORKABLE_PULSE_STATUSES,
+} from "~/features/pulses/constants";
 import { toErrorMessage } from "~/lib/validation";
 
 type PulseBoardProps = {
 	readonly startupId: Id<"startups">;
-	readonly trialCycleId?: Id<"trialCycles">;
+	readonly trialCycleId: Id<"trialCycles">;
 	readonly canCreate: boolean;
 };
 
@@ -22,15 +25,7 @@ export function PulseBoard({
 	trialCycleId,
 	canCreate,
 }: PulseBoardProps) {
-	const startupPulses = useQuery(
-		api.pulses.listForStartup,
-		trialCycleId ? "skip" : { startupId },
-	);
-	const trialPulses = useQuery(
-		api.pulses.listForTrial,
-		trialCycleId ? { trialCycleId } : "skip",
-	);
-	const pulses = trialCycleId ? trialPulses : startupPulses;
+	const pulses = useQuery(api.pulses.listForTrial, { trialCycleId });
 	const createPulse = useMutation(api.pulses.create);
 	const setStatus = useMutation(api.pulses.setStatus);
 	const assignToMe = useMutation(api.pulses.assignToMe);
@@ -104,20 +99,17 @@ export function PulseBoard({
 										pulse.assignee?.username ??
 										"Unassigned"}
 								</p>
-								{pulse.reviewNote && pulse.status === "active" ? (
+								{pulse.reviewNote && pulse.status === "in_progress" ? (
 									<p className="mt-1 text-sm text-destructive">
 										Sent back: {pulse.reviewNote}
 									</p>
 								) : null}
 							</div>
 							<div className="flex flex-wrap items-center gap-2">
-								<PulseEvidence
+								<PulseProofLinks
 									pulseId={pulse._id}
-									evidenceUrl={pulse.evidenceUrl}
-									canEdit={
-										!trialCycleId ||
-										(pulse.status !== "review" && pulse.status !== "done")
-									}
+									proofLinks={pulse.proofLinks}
+									canEdit={pulse.status !== "review" && pulse.status !== "done"}
 									isPending={pendingId === pulse._id}
 									run={(action) => void run(pulse._id, action)}
 								/>
@@ -142,7 +134,7 @@ export function PulseBoard({
 										}
 										className="border-input h-8 rounded-md border bg-transparent px-2 text-sm"
 									>
-										{PULSE_STATUSES.map((status) => (
+										{WORKABLE_PULSE_STATUSES.map((status) => (
 											<option key={status.value} value={status.value}>
 												{status.label}
 											</option>

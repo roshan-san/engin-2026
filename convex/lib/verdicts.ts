@@ -76,7 +76,7 @@ export async function closeWithVerdicts(
 			review?.decision === "verify"
 				? { status: "done", reviewNote: undefined }
 				: {
-						status: "active",
+						status: "in_progress",
 						reviewNote: requireText(review?.note ?? "", "Review note"),
 					},
 		);

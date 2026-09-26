@@ -2,7 +2,10 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import { requireMembership } from "./lib/membership";
+import { MAX_PROOF_LINKS } from "./lib/limits";
 import {
+	currentStatus,
+	proofLinksOf,
 	requirePulse,
 	requireSubmittedPulse,
 	requireWorkablePulse,
@@ -13,29 +16,10 @@ import {
 import { refreshUserScore } from "./lib/score";
 import { assertUrl, requireText } from "./lib/text";
 import { isTrialLive, requireTrialAccess } from "./lib/trials";
-import { pulseStatus } from "./schema";
+import { proofLinkKind, pulseStatus } from "./schema";
 
 const PULSE_PAGE_SIZE = 80;
 const MY_PULSES_PAGE_SIZE = 50;
-
-export const listForStartup = query({
-	args: { startupId: v.id("startups") },
-	handler: async (ctx, args) => {
-		const userId = await requireUserId(ctx);
-		await requireMembership(ctx, args.startupId, userId);
-
-		const pulses = await ctx.db
-			.query("pulses")
-			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
-			.order("desc")
-			.take(PULSE_PAGE_SIZE);
-
-		return await withAssignees(
-			ctx,
-			pulses.filter((pulse) => !pulse.trialCycleId),
-		);
-	},
-});
 
 export const listForCycle = query({
 	args: { cycleId: v.id("cycles") },
@@ -48,28 +32,11 @@ export const listForCycle = query({
 
 		await requireMembership(ctx, cycle.startupId, userId);
 
-		const assigned = await ctx.db
+		const pulses = await ctx.db
 			.query("pulses")
 			.withIndex("by_cycle", (q) => q.eq("cycleId", args.cycleId))
 			.order("desc")
 			.take(PULSE_PAGE_SIZE);
-
-		const seen = new Set(assigned.map((pulse) => pulse._id));
-		const pulses = [...assigned];
-
-		if (cycle.status === "active") {
-			const startupPulses = await ctx.db
-				.query("pulses")
-				.withIndex("by_startup", (q) => q.eq("startupId", cycle.startupId))
-				.take(PULSE_PAGE_SIZE);
-
-			for (const pulse of startupPulses) {
-				if (pulse.trialCycleId || pulse.cycleId || seen.has(pulse._id)) {
-					continue;
-				}
-				pulses.push(pulse);
-			}
-		}
 
 		return await withAssignees(ctx, pulses);
 	},
@@ -137,6 +104,14 @@ export const create = mutation({
 			if (!isTrialLive(trial)) {
 				throw new Error("This Trial Cycle has ended");
 			}
+		} else {
+			if (!args.cycleId) {
+				throw new Error("A Pulse must belong to a Cycle");
+			}
+			const cycle = await ctx.db.get(args.cycleId);
+			if (!cycle || cycle.startupId !== args.startupId) {
+				throw new Error("Cycle not found");
+			}
 		}
 
 		return await ctx.db.insert("pulses", {
@@ -144,7 +119,7 @@ export const create = mutation({
 			cycleId: args.cycleId,
 			trialCycleId: args.trialCycleId,
 			title,
-			status: "backlog",
+			status: "todo",
 			createdByUserId: userId,
 		});
 	},
@@ -181,7 +156,7 @@ export const reject = mutation({
 	handler: async (ctx, args) => {
 		const pulse = await requireSubmittedPulse(ctx, args.pulseId);
 		await resolveReview(ctx, pulse, {
-			status: "active",
+			status: "in_progress",
 			reviewNote: requireText(args.note, "Review note"),
 		});
 	},
@@ -194,20 +169,41 @@ export const assignToMe = mutation({
 		const pulse = await requireWorkablePulse(ctx, args.pulseId);
 		await ctx.db.patch(pulse._id, {
 			assigneeUserId: userId,
-			status: pulse.status === "backlog" ? "active" : pulse.status,
+			status:
+				currentStatus(pulse) === "todo" ? "in_progress" : currentStatus(pulse),
 		});
 	},
 });
 
-export const setEvidence = mutation({
-	args: {
-		pulseId: v.id("pulses"),
-		evidenceUrl: v.optional(v.string()),
+export const addProofLink = mutation({
+	args: { pulseId: v.id("pulses"), kind: proofLinkKind, url: v.string() },
+	handler: async (ctx, args) => {
+		const pulse = await requireWorkablePulse(ctx, args.pulseId);
+		const url = assertUrl(args.url, "Proof Link");
+		if (!url) {
+			throw new Error("Proof Link is required");
+		}
+
+		const links = proofLinksOf(pulse).filter((link) => link.url !== url);
+		if (links.length >= MAX_PROOF_LINKS) {
+			throw new Error(
+				`A Pulse can have at most ${MAX_PROOF_LINKS} Proof Links`,
+			);
+		}
+		await ctx.db.patch(pulse._id, {
+			proofLinks: [...links, { kind: args.kind, url }],
+			evidenceUrl: undefined,
+		});
 	},
+});
+
+export const removeProofLink = mutation({
+	args: { pulseId: v.id("pulses"), url: v.string() },
 	handler: async (ctx, args) => {
 		const pulse = await requireWorkablePulse(ctx, args.pulseId);
 		await ctx.db.patch(pulse._id, {
-			evidenceUrl: assertUrl(args.evidenceUrl, "Evidence"),
+			proofLinks: proofLinksOf(pulse).filter((link) => link.url !== args.url),
+			evidenceUrl: undefined,
 		});
 	},
 });

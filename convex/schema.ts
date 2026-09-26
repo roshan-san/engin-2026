@@ -32,13 +32,31 @@ export const notificationKind = v.union(
 	v.literal("offer"),
 );
 export const pulseStatus = v.union(
-	v.literal("backlog"),
-	v.literal("active"),
-	v.literal("blocked"),
-	/** A trial Pulse its assignee marked done, awaiting a Member's review. */
+	v.literal("todo"),
+	v.literal("in_progress"),
+	/** A Submitted Pulse, awaiting a Founder's review. */
 	v.literal("review"),
 	v.literal("done"),
 );
+/**
+ * Pre-kanban states, accepted in storage only until `migrations.migratePulses`
+ * has run on every deployment. Remove together with `evidenceUrl`.
+ */
+const legacyPulseStatus = v.union(
+	v.literal("backlog"),
+	v.literal("active"),
+	v.literal("blocked"),
+);
+export const proofLinkKind = v.union(
+	v.literal("pr"),
+	v.literal("commit"),
+	v.literal("deploy"),
+	v.literal("design"),
+	v.literal("doc"),
+	v.literal("demo"),
+	v.literal("other"),
+);
+export const proofLink = v.object({ kind: proofLinkKind, url: v.string() });
 export const pulsePriority = v.union(
 	v.literal("low"),
 	v.literal("medium"),
@@ -174,19 +192,24 @@ export default defineSchema({
 		trialCycleId: v.optional(v.id("trialCycles")),
 		title: v.string(),
 		description: v.optional(v.string()),
-		status: pulseStatus,
+		status: v.union(pulseStatus, legacyPulseStatus),
 		priority: v.optional(pulsePriority),
 		assigneeUserId: v.optional(v.id("users")),
 		createdByUserId: v.id("users"),
 		dueAt: v.optional(v.number()),
+		proofLinks: v.optional(v.array(proofLink)),
+		/** Legacy single evidence link; see `legacyPulseStatus`. */
 		evidenceUrl: v.optional(v.string()),
-		/** Why a Member sent a Submitted Pulse back. */
+		/** Owner of the Board a trial Pulse is on. */
+		participantUserId: v.optional(v.id("users")),
+		/** Why a Founder sent a Submitted Pulse back. */
 		reviewNote: v.optional(v.string()),
 	})
 		.index("by_startup", ["startupId"])
 		.index("by_cycle", ["cycleId"])
 		.index("by_trial", ["trialCycleId"])
 		.index("by_trial_and_status", ["trialCycleId", "status"])
+		.index("by_trial_and_participant", ["trialCycleId", "participantUserId"])
 		.index("by_assignee", ["assigneeUserId"]),
 
 	cycles: defineTable({

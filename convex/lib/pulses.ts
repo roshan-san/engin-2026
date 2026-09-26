@@ -1,5 +1,7 @@
+import type { Infer } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import type { proofLink, pulseStatus } from "../schema";
 import { requireUserId } from "./auth";
 import { requireMembership } from "./membership";
 import { notify } from "./notify";
@@ -8,16 +10,37 @@ import { requireTrialAccess } from "./trials";
 import { loadPublicUser } from "./users";
 
 type PulseCtx = QueryCtx | MutationCtx;
+type ProofLink = Infer<typeof proofLink>;
+
+type PulseStatus = Infer<typeof pulseStatus>;
+
+const LEGACY_STATUS: Record<string, PulseStatus> = {
+	backlog: "todo",
+	active: "in_progress",
+	blocked: "in_progress",
+};
+
+/** Reads legacy states as their kanban equivalent until the migration has run. */
+export function currentStatus(pulse: Doc<"pulses">): PulseStatus {
+	return LEGACY_STATUS[pulse.status] ?? (pulse.status as PulseStatus);
+}
+
+export function proofLinksOf(pulse: Doc<"pulses">): ProofLink[] {
+	if (pulse.proofLinks) {
+		return pulse.proofLinks;
+	}
+	return pulse.evidenceUrl ? [{ kind: "other", url: pulse.evidenceUrl }] : [];
+}
 
 export function toPulse(pulse: Doc<"pulses">) {
 	return {
 		_id: pulse._id,
 		title: pulse.title,
 		description: pulse.description ?? null,
-		status: pulse.status,
+		status: currentStatus(pulse),
 		priority: pulse.priority ?? null,
 		dueAt: pulse.dueAt ?? null,
-		evidenceUrl: pulse.evidenceUrl ?? null,
+		proofLinks: proofLinksOf(pulse),
 		reviewNote: pulse.reviewNote ?? null,
 		cycleId: pulse.cycleId ?? null,
 		trialCycleId: pulse.trialCycleId ?? null,
@@ -116,7 +139,7 @@ export async function resolveReview(
 	pulse: Doc<"pulses">,
 	outcome:
 		| { status: "done"; reviewNote: undefined }
-		| { status: "active"; reviewNote: string },
+		| { status: "in_progress"; reviewNote: string },
 ): Promise<void> {
 	await ctx.db.patch(pulse._id, outcome);
 	if (!pulse.assigneeUserId) {

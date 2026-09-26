@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { Button } from "~/components/ui/button";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
-import { PulseBoard } from "~/features/pulses/components/PulseBoard";
 import { WorkspaceApplicants } from "~/features/startup/components/WorkspaceApplicants";
 import { WorkspaceCycles } from "~/features/startup/components/WorkspaceCycles";
 import { WorkspaceOffers } from "~/features/startup/components/WorkspaceOffers";
@@ -60,7 +59,6 @@ export function StartupPage() {
 				</div>
 			</div>
 
-			<PulseBoard startupId={doc._id} canCreate />
 			<WorkspaceCycles startupId={doc._id} isFounder={isFounder} />
 			<WorkspaceRoles startupId={doc._id} isFounder={isFounder} />
 			<WorkspaceTrials startupId={doc._id} isFounder={isFounder} />

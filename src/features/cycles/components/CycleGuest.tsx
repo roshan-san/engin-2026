@@ -9,9 +9,7 @@ export function CycleGuest() {
 			(item) => item.trialCycleId !== null && item.status === "joined",
 		) ?? [];
 	const activePulses =
-		pulses?.filter(
-			(pulse) => pulse.status === "active" || pulse.status === "blocked",
-		) ?? [];
+		pulses?.filter((pulse) => pulse.status === "in_progress") ?? [];
 
 	return (
 		<div className="mx-auto w-full max-w-3xl space-y-8 py-10">
