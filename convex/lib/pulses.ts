@@ -3,7 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import type { proofLink, pulseStatus } from "../schema";
 import { requireUserId } from "./auth";
-import { requireMembership } from "./membership";
+import { requireFounderMembership, requireMembership } from "./membership";
 import { notify } from "./notify";
 import { requireTrialAccess } from "./trials";
 import { loadPublicUser } from "./users";
@@ -97,8 +97,8 @@ async function requireActiveTrial(ctx: PulseCtx, pulse: Doc<"pulses">) {
 }
 
 /**
- * Loads a Pulse the current user may work on. Submitted and Verified trial
- * Pulses are locked: only a Member's review moves them.
+ * Loads a Pulse the current user may work on. Submitted and Verified Pulses
+ * are locked: only a Founder's review moves them.
  */
 export async function requireWorkablePulse(
 	ctx: MutationCtx,
@@ -109,23 +109,23 @@ export async function requireWorkablePulse(
 	await requirePulseAccess(ctx, pulse, userId);
 	await requireActiveTrial(ctx, pulse);
 
-	if (pulse.trialCycleId && pulse.status === "review") {
+	if (pulse.status === "review") {
 		throw new Error("This Pulse is awaiting review");
 	}
-	if (pulse.trialCycleId && pulse.status === "done") {
+	if (pulse.status === "done") {
 		throw new Error("This Pulse is already verified");
 	}
 	return pulse;
 }
 
-/** Loads a Submitted Pulse the current user, as a Member, may review. */
+/** Loads a Submitted Pulse the current user, as a Founder, may review. */
 export async function requireSubmittedPulse(
 	ctx: MutationCtx,
 	pulseId: Id<"pulses">,
 ): Promise<Doc<"pulses">> {
 	const userId = await requireUserId(ctx);
 	const pulse = await requirePulse(ctx, pulseId);
-	await requireMembership(ctx, pulse.startupId, userId);
+	await requireFounderMembership(ctx, pulse.startupId, userId);
 	await requireActiveTrial(ctx, pulse);
 	if (pulse.status !== "review") {
 		throw new Error("This Pulse is not awaiting review");
@@ -153,6 +153,10 @@ export async function resolveReview(
 				? `${pulse.title} was verified`
 				: `${pulse.title} needs changes`,
 		body: outcome.reviewNote,
-		href: pulse.trialCycleId ? `/app/trials/${pulse.trialCycleId}` : undefined,
+		href: pulseHref(pulse),
 	});
+}
+
+export function pulseHref(pulse: Doc<"pulses">): string {
+	return pulse.trialCycleId ? `/app/trials/${pulse.trialCycleId}` : "/app";
 }

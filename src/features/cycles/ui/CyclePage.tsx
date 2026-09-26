@@ -107,6 +107,7 @@ function CycleView() {
 					startupId={startup._id}
 					cycleId={cycle._id}
 					canCreate={cycle.status !== "closed"}
+					isFounder={isFounder}
 				/>
 			) : !isFounder ? (
 				<p className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">

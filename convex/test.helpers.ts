@@ -152,3 +152,49 @@ export async function closeWithVerdict(
 		],
 	});
 }
+
+/** Signs someone up and adds them to the setup's Startup as a Member. */
+export async function joinAsMember(
+	t: TestConvex,
+	setup: Awaited<ReturnType<typeof setUpStartup>>,
+	name: string,
+) {
+	const member = await signUp(t, name);
+	await t.run(async (ctx) => {
+		await ctx.db.insert("memberships", {
+			startupId: setup.startupId,
+			userId: member.userId,
+			role: "member",
+		});
+	});
+	return member;
+}
+
+/** An active Cycle in the setup's Startup, with one Pulse assigned to `worker`. */
+export async function cyclePulseFor(
+	t: TestConvex,
+	setup: Awaited<ReturnType<typeof setUpStartup>>,
+	worker: Awaited<ReturnType<typeof signUp>>,
+) {
+	const cycleId = await setup.founder.as.mutation(api.cycles.create, {
+		startupId: setup.startupId,
+		title: "Landing page",
+		startAt: Date.now(),
+		endAt: Date.now() + 7 * DAY,
+	});
+	const pulseId = await worker.as.mutation(api.pulses.create, {
+		startupId: setup.startupId,
+		title: "Hero section",
+		cycleId,
+	});
+	await worker.as.mutation(api.pulses.assignToMe, { pulseId });
+
+	async function statusOf() {
+		const pulses = await setup.founder.as.query(api.pulses.listForCycle, {
+			cycleId,
+		});
+		return pulses.find((pulse) => pulse._id === pulseId)?.status;
+	}
+
+	return { cycleId, pulseId, statusOf };
+}

@@ -12,3 +12,4 @@ export const FREE_ACTIVE_TRIAL_APPLICATIONS = 3;
 export const LIVE_ENTRY_STATUSES = ["applied", "joined"] as const;
 export const MAX_PROOF_LINKS = 10;
 export const MAX_USER_PULSES = 200;
+export const MAX_STARTUP_FOUNDERS = 10;

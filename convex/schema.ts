@@ -153,7 +153,8 @@ export default defineSchema({
 	})
 		.index("by_startup_and_user", ["startupId", "userId"])
 		.index("by_user", ["userId"])
-		.index("by_startup", ["startupId"]),
+		.index("by_startup", ["startupId"])
+		.index("by_startup_and_role", ["startupId", "role"]),
 
 	follows: defineTable({
 		userId: v.id("users"),

@@ -3,9 +3,11 @@ import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import { requireMembership } from "./lib/membership";
 import { MAX_PROOF_LINKS } from "./lib/limits";
+import { notifyFounders } from "./lib/notify";
 import {
 	currentStatus,
 	proofLinksOf,
+	pulseHref,
 	requirePulse,
 	requireSubmittedPulse,
 	requireWorkablePulse,
@@ -131,14 +133,31 @@ export const setStatus = mutation({
 	},
 	handler: async (ctx, args) => {
 		const pulse = await requireWorkablePulse(ctx, args.pulseId);
-		if (args.status === "review") {
-			throw new Error("Mark the Pulse done to submit it for review");
+
+		if (pulse.trialCycleId) {
+			if (args.status === "review") {
+				throw new Error("Mark the Pulse done to submit it for review");
+			}
+			await ctx.db.patch(pulse._id, {
+				status: args.status === "done" ? "review" : args.status,
+			});
+			return;
 		}
 
-		// Trial work only counts once a Member verifies it.
-		const status =
-			pulse.trialCycleId && args.status === "done" ? "review" : args.status;
-		await ctx.db.patch(pulse._id, { status });
+		// "done" means a Founder verified it, so it is only reachable via review.
+		if (args.status === "done") {
+			throw new Error(
+				"Only a Founder can verify a Pulse, once it is in review",
+			);
+		}
+		await ctx.db.patch(pulse._id, { status: args.status });
+		if (args.status === "review") {
+			await notifyFounders(ctx, pulse.startupId, {
+				kind: "pulse",
+				title: `${pulse.title} is ready for review`,
+				href: pulseHref(pulse),
+			});
+		}
 	},
 });
 

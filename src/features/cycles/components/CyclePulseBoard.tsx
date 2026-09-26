@@ -1,56 +1,49 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { KanbanColumn } from "~/features/cycles/components/KanbanColumn";
+import { PulseCard } from "~/features/cycles/components/PulseCard";
+import { useCyclePulses } from "~/features/cycles/hooks/useCyclePulses";
+import { usePointerDrag } from "~/features/cycles/hooks/usePointerDrag";
 import { PULSE_STATUSES, type PulseStatus } from "~/features/pulses/constants";
-import { cn } from "~/lib/utils";
 import { toErrorMessage } from "~/lib/validation";
 
 type CyclePulseBoardProps = {
 	readonly startupId: Id<"startups">;
 	readonly cycleId: Id<"cycles">;
 	readonly canCreate: boolean;
+	readonly isFounder: boolean;
 };
+
+type DraggedPulse = { _id: Id<"pulses">; status: PulseStatus };
 
 export function CyclePulseBoard({
 	startupId,
 	cycleId,
 	canCreate,
+	isFounder,
 }: CyclePulseBoardProps) {
-	const pulses = useQuery(api.pulses.listForCycle, { cycleId });
+	const { pulses, pendingId, run, move } = useCyclePulses(cycleId, isFounder);
 	const createPulse = useMutation(api.pulses.create);
-	const setStatus = useMutation(api.pulses.setStatus);
 	const assignToMe = useMutation(api.pulses.assignToMe);
 	const [title, setTitle] = useState("");
-	const [pendingId, setPendingId] = useState<string | null>(null);
+	const { drag, handlers, dropZoneProps } = usePointerDrag<DraggedPulse>(
+		(pulse, zone) => move(pulse._id, pulse.status, zone as PulseStatus),
+	);
 
 	async function create() {
 		if (!title.trim()) {
 			return;
 		}
 		try {
-			await createPulse({
-				startupId,
-				title: title.trim(),
-				cycleId,
-			});
+			await createPulse({ startupId, title: title.trim(), cycleId });
 			setTitle("");
 		} catch (error) {
 			toast.error(toErrorMessage(error, "Could not create Pulse"));
-		}
-	}
-
-	async function run(id: string, action: () => Promise<unknown>) {
-		setPendingId(id);
-		try {
-			await action();
-		} catch (error) {
-			toast.error(toErrorMessage(error, "Could not update Pulse"));
-		} finally {
-			setPendingId(null);
 		}
 	}
 
@@ -85,78 +78,41 @@ export function CyclePulseBoard({
 							(pulse) => pulse.status === column.value,
 						);
 						return (
-							<div
+							<KanbanColumn
 								key={column.value}
-								className="rounded-xl border border-border bg-card/40 p-3"
+								status={column.value}
+								label={column.label}
+								count={items.length}
+								dragged={drag?.item.status ?? null}
+								isOver={drag?.over === column.value}
+								isFounder={isFounder}
+								dropZone={dropZoneProps(column.value)}
 							>
-								<div className="mb-3 flex items-center justify-between gap-2">
-									<h2 className="text-sm font-medium">{column.label}</h2>
-									<span className="text-xs tabular-nums text-muted-foreground">
-										{items.length}
-									</span>
-								</div>
-								<ul className="space-y-2">
-									{items.map((pulse) => (
-										<li
+								{items.map((pulse) => {
+									const isDragging = drag?.item._id === pulse._id;
+									return (
+										<PulseCard
 											key={pulse._id}
-											className="rounded-lg border border-border bg-background p-3"
-										>
-											<p className="font-medium leading-snug">{pulse.title}</p>
-											<p className="mt-1 text-xs text-muted-foreground">
-												{pulse.assignee?.name ??
-													pulse.assignee?.username ??
-													"Unassigned"}
-											</p>
-											<div className="mt-3 flex items-center justify-between gap-2">
-												<fieldset
-													className="flex gap-1.5 border-0 p-0"
-													aria-label="Pulse status"
-												>
-													{PULSE_STATUSES.map((status) => (
-														<button
-															key={status.value}
-															type="button"
-															disabled={pendingId === pulse._id}
-															aria-label={status.label}
-															aria-pressed={pulse.status === status.value}
-															className={cn(
-																"size-2.5 rounded-full",
-																pulse.status === status.value
-																	? "bg-foreground"
-																	: "bg-muted hover:bg-muted-foreground/50",
-															)}
-															onClick={() =>
-																void run(pulse._id, () =>
-																	setStatus({
-																		pulseId: pulse._id,
-																		status: status.value as PulseStatus,
-																	}),
-																)
-															}
-														/>
-													))}
-												</fieldset>
-												{!pulse.assignee ? (
-													<Button
-														type="button"
-														size="sm"
-														variant="ghost"
-														className="h-7 px-2 text-xs"
-														disabled={pendingId === pulse._id}
-														onClick={() =>
-															void run(pulse._id, () =>
-																assignToMe({ pulseId: pulse._id }),
-															)
-														}
-													>
-														Take
-													</Button>
-												) : null}
-											</div>
-										</li>
-									))}
-								</ul>
-							</div>
+											pulse={pulse}
+											isFounder={isFounder}
+											isPending={pendingId === pulse._id}
+											isDragging={isDragging}
+											offset={isDragging ? drag : null}
+											dragHandle={handlers({
+												_id: pulse._id,
+												status: pulse.status,
+											})}
+											onMove={(to) => move(pulse._id, pulse.status, to)}
+											onTake={() =>
+												void run(pulse._id, () =>
+													assignToMe({ pulseId: pulse._id }),
+												)
+											}
+											run={(action) => void run(pulse._id, action)}
+										/>
+									);
+								})}
+							</KanbanColumn>
 						);
 					})}
 				</div>
