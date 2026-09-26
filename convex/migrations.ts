@@ -1,5 +1,6 @@
 import { internalMutation } from "./_generated/server";
 import { currentStatus, proofLinksOf } from "./lib/pulses";
+import { refreshUserScore } from "./lib/score";
 
 /**
  * One-off: moves Pulses onto the kanban states and Proof Links, and drops
@@ -19,6 +20,16 @@ export const migratePulses = internalMutation({
 				proofLinks: proofLinksOf(pulse),
 				evidenceUrl: undefined,
 			});
+		}
+	},
+});
+
+/** One-off: re-derives stored Scores after the ADR 0002 amendment. */
+export const recomputeScores = internalMutation({
+	args: {},
+	handler: async (ctx) => {
+		for await (const user of ctx.db.query("users")) {
+			await refreshUserScore(ctx, user._id);
 		}
 	},
 });

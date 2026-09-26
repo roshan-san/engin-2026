@@ -2,11 +2,9 @@ import type { Infer } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import type { trialVerdict } from "../schema";
-import { MAX_TRIAL_PULSES } from "./limits";
 import { notify } from "./notify";
-import { resolveReview } from "./pulses";
 import { refreshUserScore } from "./score";
-import { optionalText, requireText } from "./text";
+import { optionalText } from "./text";
 import { listTrialApplications } from "./trials";
 
 type TrialVerdict = Infer<typeof trialVerdict>;
@@ -17,16 +15,11 @@ type CloseInput = {
 		verdict: TrialVerdict;
 		evaluation?: string;
 	}[];
-	pulseReviews: {
-		pulseId: Id<"pulses">;
-		decision: "verify" | "reject";
-		note?: string;
-	}[];
 };
 
 /**
- * Closing is all-or-nothing: every Participant gets a Verdict and every
- * Submitted Pulse gets a decision, or nothing is written.
+ * Closing is all-or-nothing: every Participant gets a Verdict, or nothing is
+ * written. Pulses are not reviewed here; the Verdict judges the whole work.
  */
 export async function closeWithVerdicts(
 	ctx: MutationCtx,
@@ -60,28 +53,6 @@ export async function closeWithVerdicts(
 		throw new Error("This Role is filled, so it can't make Offers");
 	}
 
-	const submittedPulses = await listSubmittedPulses(ctx, trial._id);
-	const reviewsByPulse = new Map(
-		input.pulseReviews.map((review) => [review.pulseId, review]),
-	);
-	if (submittedPulses.some((pulse) => !reviewsByPulse.has(pulse._id))) {
-		throw new Error("Every Submitted Pulse needs a decision");
-	}
-
-	for (const pulse of submittedPulses) {
-		const review = reviewsByPulse.get(pulse._id);
-		await resolveReview(
-			ctx,
-			pulse,
-			review?.decision === "verify"
-				? { status: "done", reviewNote: undefined }
-				: {
-						status: "in_progress",
-						reviewNote: requireText(review?.note ?? "", "Review note"),
-					},
-		);
-	}
-
 	await ctx.db.patch(trial._id, { status: "closed" });
 
 	for (const participant of participants) {
@@ -112,16 +83,4 @@ export async function closeWithVerdicts(
 			href: `/app/trials/${trial._id}`,
 		});
 	}
-}
-
-async function listSubmittedPulses(
-	ctx: MutationCtx,
-	trialCycleId: Id<"trialCycles">,
-) {
-	return await ctx.db
-		.query("pulses")
-		.withIndex("by_trial_and_status", (q) =>
-			q.eq("trialCycleId", trialCycleId).eq("status", "review"),
-		)
-		.take(MAX_TRIAL_PULSES);
 }

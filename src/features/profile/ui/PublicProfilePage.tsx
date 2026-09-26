@@ -5,6 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
+	ProofOfWork,
+	type ProofOfWorkData,
+} from "~/features/profile/components/ProofOfWork";
+import {
 	type ScoreEvidence,
 	ScoreEvidenceCard,
 } from "~/features/profile/components/ScoreEvidence";
@@ -24,6 +28,7 @@ type PublicProfile = {
 	linkedinUrl: string | null;
 	portfolioUrl: string | null;
 	evidence: ScoreEvidence;
+	proofOfWork: ProofOfWorkData;
 	evaluations: Array<{
 		_id: string;
 		trialTitle: string;
@@ -136,6 +141,8 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 				) : null}
 
 				<ScoreEvidenceCard evidence={profile.evidence} />
+
+				<ProofOfWork proofOfWork={profile.proofOfWork} />
 
 				<TrialHistory
 					evaluations={profile.evaluations}

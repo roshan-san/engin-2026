@@ -200,13 +200,6 @@ export const close = mutation({
 				evaluation: v.optional(v.string()),
 			}),
 		),
-		pulseReviews: v.array(
-			v.object({
-				pulseId: v.id("pulses"),
-				decision: v.union(v.literal("verify"), v.literal("reject")),
-				note: v.optional(v.string()),
-			}),
-		),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);

@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { internal } from "./_generated/api";
-import { createTest, setUpStartup } from "./test.helpers";
+import { createTest, scoreOf, setUpStartup } from "./test.helpers";
 
 test("migrating Pulses maps legacy states, moves evidence to Proof Links and drops Cycle-less internal Pulses", async () => {
 	const t = createTest();
@@ -60,4 +60,20 @@ test("migrating Pulses maps legacy states, moves evidence to Proof Links and dro
 	expect(after.active?.evidenceUrl).toBeUndefined();
 	expect(after.blocked?.status).toBe("in_progress");
 	expect(after.orphan).toBeNull();
+});
+
+test("recomputing Scores drops points that no longer count", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	await t.run(async (ctx) => {
+		await ctx.db.patch(setup.founder.userId, { score: 10 });
+	});
+
+	await t.mutation(internal.migrations.recomputeScores, {});
+
+	expect(await scoreOf(t, setup.founder.userId)).toBe(0);
+	const stored = await t.run(
+		async (ctx) => (await ctx.db.get(setup.founder.userId))?.score,
+	);
+	expect(stored).toBe(0);
 });

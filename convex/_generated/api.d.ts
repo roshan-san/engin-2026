@@ -24,6 +24,7 @@ import type * as lib_limits from "../lib/limits.js";
 import type * as lib_membership from "../lib/membership.js";
 import type * as lib_notify from "../lib/notify.js";
 import type * as lib_offers from "../lib/offers.js";
+import type * as lib_proofOfWork from "../lib/proofOfWork.js";
 import type * as lib_pulses from "../lib/pulses.js";
 import type * as lib_score from "../lib/score.js";
 import type * as lib_scoreWeights from "../lib/scoreWeights.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   "lib/membership": typeof lib_membership;
   "lib/notify": typeof lib_notify;
   "lib/offers": typeof lib_offers;
+  "lib/proofOfWork": typeof lib_proofOfWork;
   "lib/pulses": typeof lib_pulses;
   "lib/score": typeof lib_score;
   "lib/scoreWeights": typeof lib_scoreWeights;

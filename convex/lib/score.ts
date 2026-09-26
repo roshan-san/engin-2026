@@ -4,12 +4,11 @@ import { MAX_USER_APPLICATIONS, MAX_USER_OFFERS } from "./limits";
 import { SCORE_WEIGHTS } from "./scoreWeights";
 import { isPassed } from "./trials";
 
+/** Score and the Trial Cycle outcomes it is derived from (ADR 0002). */
 export type ScoreEvidence = {
 	score: number;
 	trialCyclesPassed: number;
-	verifiedPulses: number;
 	startups: number;
-	completionRate: number | null;
 	teamConversions: number;
 	trialCyclesLeft: number;
 };
@@ -20,7 +19,6 @@ export function computeEnginScore(
 	return Math.max(
 		0,
 		evidence.trialCyclesPassed * SCORE_WEIGHTS.passedVerdict +
-			evidence.verifiedPulses * SCORE_WEIGHTS.verifiedPulse +
 			evidence.teamConversions * SCORE_WEIGHTS.acceptedOffer +
 			evidence.trialCyclesLeft * SCORE_WEIGHTS.leaving,
 	);
@@ -34,18 +32,6 @@ export async function loadScoreEvidence(
 		.query("memberships")
 		.withIndex("by_user", (q) => q.eq("userId", userId))
 		.take(50);
-
-	const assigned = await ctx.db
-		.query("pulses")
-		.withIndex("by_assignee", (q) => q.eq("assigneeUserId", userId))
-		.take(100);
-
-	const trialPulses = assigned.filter((pulse) => pulse.trialCycleId);
-	const verifiedPulses = trialPulses.filter(
-		(pulse) => pulse.status === "done",
-	).length;
-	const completionRate =
-		trialPulses.length === 0 ? null : verifiedPulses / trialPulses.length;
 
 	const applications = await ctx.db
 		.query("applications")
@@ -67,14 +53,11 @@ export async function loadScoreEvidence(
 			q.eq("userId", userId).eq("status", "accepted"),
 		)
 		.take(MAX_USER_OFFERS);
-	const teamConversions = acceptedOffers.length;
 
 	const signals = {
 		trialCyclesPassed,
-		verifiedPulses,
 		startups: memberships.length,
-		completionRate,
-		teamConversions,
+		teamConversions: acceptedOffers.length,
 		trialCyclesLeft,
 	};
 

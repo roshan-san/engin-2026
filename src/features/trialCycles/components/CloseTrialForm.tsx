@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -21,7 +21,6 @@ type CloseTrialFormProps = {
 };
 
 type VerdictDraft = { verdict?: Verdict; evaluation: string };
-type ReviewDraft = { decision?: "verify" | "reject"; note: string };
 
 export function CloseTrialForm({
 	trialCycleId,
@@ -29,13 +28,10 @@ export function CloseTrialForm({
 	canOffer,
 	onDone,
 }: CloseTrialFormProps) {
-	const pulses = useQuery(api.pulses.listForTrial, { trialCycleId });
 	const close = useMutation(api.trialCycles.close);
 	const [verdicts, setVerdicts] = useState<Record<string, VerdictDraft>>({});
-	const [reviews, setReviews] = useState<Record<string, ReviewDraft>>({});
 	const [isPending, setIsPending] = useState(false);
 
-	const submitted = (pulses ?? []).filter((pulse) => pulse.status === "review");
 	const verdictOptions = VERDICTS.filter(
 		(entry) => canOffer || entry.value !== "passed_with_offer",
 	);
@@ -53,18 +49,6 @@ export function CloseTrialForm({
 									applicationId: participant._id,
 									verdict: draft.verdict,
 									evaluation: draft.evaluation,
-								},
-							]
-						: [];
-				}),
-				pulseReviews: submitted.flatMap((pulse) => {
-					const draft = reviews[pulse._id];
-					return draft?.decision
-						? [
-								{
-									pulseId: pulse._id,
-									decision: draft.decision,
-									note: draft.note,
 								},
 							]
 						: [];
@@ -128,50 +112,8 @@ export function CloseTrialForm({
 				})}
 			</section>
 
-			{submitted.length > 0 ? (
-				<section className="space-y-3">
-					<h3 className="font-semibold">Submitted Pulses</h3>
-					{submitted.map((pulse) => {
-						const draft = reviews[pulse._id] ?? { note: "" };
-						const update = (next: Partial<ReviewDraft>) =>
-							setReviews({ ...reviews, [pulse._id]: { ...draft, ...next } });
-						return (
-							<div key={pulse._id} className="space-y-2">
-								<div className="flex flex-col gap-2 md:flex-row md:items-center">
-									<p className="flex-1 font-medium">{pulse.title}</p>
-									<select
-										required
-										value={draft.decision ?? ""}
-										onChange={(event) =>
-											update({
-												decision: event.target.value as "verify" | "reject",
-											})
-										}
-										className="border-input h-9 rounded-md border bg-transparent px-2 text-sm"
-									>
-										<option value="" disabled>
-											Choose
-										</option>
-										<option value="verify">Verify</option>
-										<option value="reject">Send back</option>
-									</select>
-								</div>
-								{draft.decision === "reject" ? (
-									<Textarea
-										required
-										value={draft.note}
-										onChange={(event) => update({ note: event.target.value })}
-										placeholder="What needed to change?"
-									/>
-								) : null}
-							</div>
-						);
-					})}
-				</section>
-			) : null}
-
 			<div className="flex gap-2">
-				<Button type="submit" disabled={isPending || pulses === undefined}>
+				<Button type="submit" disabled={isPending}>
 					Close with Verdicts
 				</Button>
 				<Button type="button" variant="ghost" onClick={onDone}>

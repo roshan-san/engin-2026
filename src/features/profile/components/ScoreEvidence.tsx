@@ -1,11 +1,10 @@
+import { SCORE_WEIGHTS } from "@convex/lib/scoreWeights";
 import { Badge } from "~/components/ui/badge";
 
 export type ScoreEvidence = {
 	score: number;
 	trialCyclesPassed: number;
-	verifiedPulses: number;
 	startups: number;
-	completionRate: number | null;
 	teamConversions: number;
 	trialCyclesLeft: number;
 };
@@ -15,17 +14,10 @@ type ScoreEvidenceCardProps = {
 };
 
 export function ScoreEvidenceCard({ evidence }: ScoreEvidenceCardProps) {
-	const completion =
-		evidence.completionRate === null
-			? "—"
-			: `${Math.round(evidence.completionRate * 100)}%`;
-
 	const stats = [
 		{ label: "Trial Cycles passed", value: evidence.trialCyclesPassed },
-		{ label: "Verified Pulses", value: evidence.verifiedPulses },
-		{ label: "Startups", value: evidence.startups },
-		{ label: "Completion", value: completion },
 		{ label: "Offers accepted", value: evidence.teamConversions },
+		{ label: "Startups", value: evidence.startups },
 		{ label: "Trial Cycles left", value: evidence.trialCyclesLeft },
 	];
 
@@ -45,7 +37,10 @@ export function ScoreEvidenceCard({ evidence }: ScoreEvidenceCardProps) {
 				))}
 			</ul>
 			<p className="text-sm text-muted-foreground">
-				Earned from verified work with startups. It cannot be claimed or bought.
+				Earned only from Founder Verdicts: +{SCORE_WEIGHTS.passedVerdict} per
+				passed Trial Cycle, +{SCORE_WEIGHTS.acceptedOffer} per accepted Offer,{" "}
+				{SCORE_WEIGHTS.leaving} for leaving a started Trial Cycle. It cannot be
+				claimed or bought.
 			</p>
 		</div>
 	);

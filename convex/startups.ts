@@ -122,6 +122,7 @@ export const update = mutation({
 		twitterUrl: v.optional(v.string()),
 		linkedinUrl: v.optional(v.string()),
 		githubUrl: v.optional(v.string()),
+		isPublic: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -169,6 +170,7 @@ export const update = mutation({
 				args.githubUrl === undefined
 					? startup.githubUrl
 					: assertUrl(args.githubUrl, "GitHub"),
+			isPublic: args.isPublic ?? startup.isPublic,
 			searchText: toSearchText({ name, tagline, description, category, stage }),
 		});
 

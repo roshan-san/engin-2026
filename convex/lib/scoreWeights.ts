@@ -4,7 +4,6 @@
  */
 export const SCORE_WEIGHTS = {
 	passedVerdict: 80,
-	verifiedPulse: 10,
 	acceptedOffer: 120,
 	leaving: -40,
 } as const;

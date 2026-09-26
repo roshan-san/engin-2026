@@ -5,7 +5,6 @@ import type { proofLink, pulseStatus } from "../schema";
 import { requireUserId } from "./auth";
 import { requireMembership } from "./membership";
 import { notify } from "./notify";
-import { refreshUserScore } from "./score";
 import { requireTrialAccess } from "./trials";
 import { loadPublicUser } from "./users";
 
@@ -146,7 +145,6 @@ export async function resolveReview(
 		return;
 	}
 
-	await refreshUserScore(ctx, pulse.assigneeUserId);
 	await notify(ctx, {
 		userId: pulse.assigneeUserId,
 		kind: "pulse",

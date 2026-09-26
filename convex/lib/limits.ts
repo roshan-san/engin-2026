@@ -11,3 +11,4 @@ export const FREE_ACTIVE_TRIAL_APPLICATIONS = 3;
 /** Applications that hold one of a free account's entry slots. */
 export const LIVE_ENTRY_STATUSES = ["applied", "joined"] as const;
 export const MAX_PROOF_LINKS = 10;
+export const MAX_USER_PULSES = 200;

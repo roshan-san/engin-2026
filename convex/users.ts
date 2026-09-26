@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { initUserProfile, requireUserId } from "./lib/auth";
+import { loadProofOfWork } from "./lib/proofOfWork";
 import { loadScoreEvidence } from "./lib/score";
 import { assertUrl, optionalText } from "./lib/text";
 import { loadTrialHistory } from "./lib/trialHistory";
@@ -145,6 +146,7 @@ export const getByUsername = query({
 			linkedinUrl: user.linkedinUrl ?? null,
 			portfolioUrl: user.portfolioUrl ?? null,
 			evidence,
+			proofOfWork: await loadProofOfWork(ctx, user._id),
 			startups,
 		};
 	},

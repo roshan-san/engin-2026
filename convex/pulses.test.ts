@@ -48,13 +48,13 @@ test("a Participant marking a trial Pulse done submits it without earning Score"
 	expect(await scoreOf(t, alice.userId)).toBe(0);
 });
 
-test("a Member verifying a Submitted Pulse gives the Participant 10 Score", async () => {
+test("verifying a Submitted Pulse marks it done without earning Score", async () => {
 	const { t, setup, alice, pulseId, pulseStatus } = await setUpTrialPulse();
 
 	await setup.founder.as.mutation(api.pulses.verify, { pulseId });
 
 	expect((await pulseStatus())?.status).toBe("done");
-	expect(await scoreOf(t, alice.userId)).toBe(10);
+	expect(await scoreOf(t, alice.userId)).toBe(0);
 });
 
 test("a Member rejecting a Submitted Pulse sends it back with a note", async () => {
@@ -93,15 +93,6 @@ test("a Participant cannot pull back a Submitted Pulse or undo a Verified one", 
 	await expect(
 		alice.as.mutation(api.pulses.setStatus, { pulseId, status: "todo" }),
 	).rejects.toThrow("already verified");
-});
-
-test("deleting a Verified Pulse removes its Score", async () => {
-	const { t, setup, alice, pulseId } = await setUpTrialPulse();
-	await setup.founder.as.mutation(api.pulses.verify, { pulseId });
-
-	await setup.founder.as.mutation(api.pulses.remove, { pulseId });
-
-	expect(await scoreOf(t, alice.userId)).toBe(0);
 });
 
 async function setUpCycle() {

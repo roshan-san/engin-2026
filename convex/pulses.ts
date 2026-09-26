@@ -13,7 +13,6 @@ import {
 	toPulse,
 	withAssignees,
 } from "./lib/pulses";
-import { refreshUserScore } from "./lib/score";
 import { assertUrl, requireText } from "./lib/text";
 import { isTrialLive, requireTrialAccess } from "./lib/trials";
 import { proofLinkKind, pulseStatus } from "./schema";
@@ -220,8 +219,5 @@ export const remove = mutation({
 		}
 
 		await ctx.db.delete(pulse._id);
-		if (pulse.trialCycleId && pulse.assigneeUserId) {
-			await refreshUserScore(ctx, pulse.assigneeUserId);
-		}
 	},
 });

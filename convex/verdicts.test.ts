@@ -34,12 +34,11 @@ test("a Trial Cycle cannot close until every Participant has a Verdict", async (
 					verdict: "passed",
 				},
 			],
-			pulseReviews: [],
 		}),
 	).rejects.toThrow("Every Participant needs a Verdict");
 });
 
-test("a Trial Cycle cannot close while a Submitted Pulse is unresolved", async () => {
+test("a Trial Cycle closes with Verdicts alone, and its Pulses earn no Score", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
@@ -52,19 +51,6 @@ test("a Trial Cycle cannot close while a Submitted Pulse is unresolved", async (
 	await alice.as.mutation(api.pulses.assignToMe, { pulseId });
 	await alice.as.mutation(api.pulses.setStatus, { pulseId, status: "done" });
 
-	await expect(
-		setup.founder.as.mutation(api.trialCycles.close, {
-			trialCycleId,
-			verdicts: [
-				{
-					applicationId: await applicationIdOf(t, trialCycleId, alice.userId),
-					verdict: "passed",
-				},
-			],
-			pulseReviews: [],
-		}),
-	).rejects.toThrow("Every Submitted Pulse needs a decision");
-
 	await setup.founder.as.mutation(api.trialCycles.close, {
 		trialCycleId,
 		verdicts: [
@@ -73,9 +59,9 @@ test("a Trial Cycle cannot close while a Submitted Pulse is unresolved", async (
 				verdict: "passed",
 			},
 		],
-		pulseReviews: [{ pulseId, decision: "verify" }],
 	});
-	expect(await scoreOf(t, alice.userId)).toBe(90);
+
+	expect(await scoreOf(t, alice.userId)).toBe(80);
 });
 
 test("a passed Verdict earns 80 Score and not passed earns nothing", async () => {
@@ -97,7 +83,6 @@ test("a passed Verdict earns 80 Score and not passed earns nothing", async () =>
 				verdict: "not_passed",
 			},
 		],
-		pulseReviews: [],
 	});
 
 	expect(await scoreOf(t, alice.userId)).toBe(80);
@@ -123,7 +108,6 @@ test("Leaving a started Trial Cycle costs 40 Score", async () => {
 				verdict: "passed",
 			},
 		],
-		pulseReviews: [],
 	});
 	const leftTrial = await startedTrialWith(t, setup, [alice]);
 
@@ -143,7 +127,6 @@ test("an Evaluation is private until the Participant shows it", async () => {
 	await setup.founder.as.mutation(api.trialCycles.close, {
 		trialCycleId,
 		verdicts: [{ applicationId, verdict: "passed", evaluation: "Sharp work" }],
-		pulseReviews: [],
 	});
 
 	const before = await t.query(api.users.getByUsername, { username: "alice" });

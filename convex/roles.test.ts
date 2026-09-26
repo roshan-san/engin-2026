@@ -40,7 +40,6 @@ test("reaching the Headcount fills the Role and tidies up what depended on it", 
 				verdict: "passed_with_offer",
 			},
 		],
-		pulseReviews: [],
 	});
 	const [aliceOffer] = await alice.as.query(api.offers.listMine, {});
 
@@ -75,7 +74,6 @@ test("reaching the Headcount fills the Role and tidies up what depended on it", 
 					verdict: "passed_with_offer",
 				},
 			],
-			pulseReviews: [],
 		}),
 	).rejects.toThrow("Role is filled");
 });
@@ -93,7 +91,6 @@ test("a Role with Headcount 2 stays open after one accepted Offer", async () => 
 				verdict: "passed_with_offer",
 			},
 		],
-		pulseReviews: [],
 	});
 	const [offer] = await alice.as.query(api.offers.listMine, {});
 
