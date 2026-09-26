@@ -1,4 +1,4 @@
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
 	DropdownMenu,
@@ -10,7 +10,7 @@ import {
 import { useNotifications } from "~/features/app/hooks/useNotifications";
 
 export function NotificationBell() {
-	const { invites, notifications, count, acceptingId, accept, read } =
+	const { invites, notifications, count, acceptingId, accept, decline, read } =
 		useNotifications();
 	const isLoading = invites === undefined || notifications === undefined;
 	const isEmpty =
@@ -69,6 +69,17 @@ export function NotificationBell() {
 										{invite.inviterName} invited you as {invite.role}
 									</p>
 								</div>
+								<Button
+									type="button"
+									size="icon-sm"
+									variant="outline"
+									className="shrink-0 rounded-full"
+									disabled={acceptingId === invite._id}
+									aria-label={`Decline invite to ${invite.startupName}`}
+									onClick={() => decline(invite._id)}
+								>
+									<X className="size-4" />
+								</Button>
 								<Button
 									type="button"
 									size="icon-sm"

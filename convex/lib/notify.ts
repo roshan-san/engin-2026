@@ -20,17 +20,6 @@ export async function notify(
 	await ctx.db.insert("notifications", notification);
 }
 
-export async function notifyFounder(
-	ctx: MutationCtx,
-	startupId: Id<"startups">,
-	notification: Notification,
-): Promise<void> {
-	const startup = await ctx.db.get(startupId);
-	if (startup) {
-		await notify(ctx, { ...notification, userId: startup.founderUserId });
-	}
-}
-
 /** Co-founders have equal powers, so Founder-facing news goes to all of them. */
 export async function notifyFounders(
 	ctx: MutationCtx,

@@ -89,7 +89,7 @@ test("joining by Invite earns no Score", async () => {
 	const alice = await signUp(t, "Alice");
 	const { inviteId } = await setup.founder.as.mutation(api.invitations.create, {
 		startupId: setup.startupId,
-		email: "alice@example.com",
+		invitee: "alice@example.com",
 		role: "member",
 	});
 

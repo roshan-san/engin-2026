@@ -4,7 +4,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import type { trialVerdict } from "../schema";
 import { MAX_TRIAL_APPLICATIONS } from "./limits";
 import { getMembership } from "./membership";
-import { notify, notifyFounder } from "./notify";
+import { notify, notifyFounders } from "./notify";
 
 type TrialCtx = QueryCtx | MutationCtx;
 
@@ -97,7 +97,7 @@ export async function startTrial(
 
 	if (trial.participantCount === 0) {
 		await ctx.db.patch(trial._id, { status: "cancelled" });
-		await notifyFounder(ctx, trial.startupId, {
+		await notifyFounders(ctx, trial.startupId, {
 			kind: "trial_cycle",
 			title: `${trial.title} was cancelled: nobody joined`,
 			href,

@@ -8,7 +8,7 @@ import {
 } from "./lib/entries";
 import { MAX_TRIAL_APPLICATIONS } from "./lib/limits";
 import { requireFounderMembership, requireMembership } from "./lib/membership";
-import { notify, notifyFounder } from "./lib/notify";
+import { notify, notifyFounders } from "./lib/notify";
 import { refreshUserScore } from "./lib/score";
 import { optionalText } from "./lib/text";
 import {
@@ -106,7 +106,7 @@ export const applyToTrial = mutation({
 			message: optionalText(args.message),
 		});
 
-		await notifyFounder(ctx, trial.startupId, {
+		await notifyFounders(ctx, trial.startupId, {
 			kind: "application",
 			title: `New application for ${trial.title}`,
 			href: `/app/trials/${trial._id}`,
@@ -139,7 +139,7 @@ export const joinTrial = mutation({
 			status: "joined",
 		});
 
-		await notifyFounder(ctx, trial.startupId, {
+		await notifyFounders(ctx, trial.startupId, {
 			kind: "application",
 			title: `Someone joined ${trial.title}`,
 			href: `/app/trials/${trial._id}`,
@@ -227,7 +227,7 @@ export const leaveTrial = mutation({
 			await refreshUserScore(ctx, userId);
 		}
 
-		await notifyFounder(ctx, trial.startupId, {
+		await notifyFounders(ctx, trial.startupId, {
 			kind: "application",
 			title: isLeaving
 				? `A Participant left ${trial.title}`

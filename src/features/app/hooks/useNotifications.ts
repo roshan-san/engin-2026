@@ -9,6 +9,7 @@ export function useNotifications() {
 	const invites = useQuery(api.invitations.listMine);
 	const feed = useQuery(api.notifications.list);
 	const acceptInvite = useMutation(api.invitations.acceptById);
+	const declineInvite = useMutation(api.invitations.decline);
 	const markRead = useMutation(api.notifications.markRead);
 	const [acceptingId, setAcceptingId] = useState<Id<"invites"> | null>(null);
 
@@ -21,6 +22,17 @@ export function useNotifications() {
 			toast.success("Invite accepted — switched to that startup");
 		} catch (error) {
 			toast.error(toErrorMessage(error, "Failed to accept invite"));
+		} finally {
+			setAcceptingId(null);
+		}
+	}
+
+	async function decline(inviteId: Id<"invites">) {
+		setAcceptingId(inviteId);
+		try {
+			await declineInvite({ inviteId });
+		} catch (error) {
+			toast.error(toErrorMessage(error, "Failed to decline invite"));
 		} finally {
 			setAcceptingId(null);
 		}
@@ -40,6 +52,7 @@ export function useNotifications() {
 		count,
 		acceptingId,
 		accept,
+		decline,
 		read,
 	};
 }

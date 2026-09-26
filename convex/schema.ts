@@ -19,6 +19,7 @@ export const startupStage = v.union(
 export const inviteStatus = v.union(
 	v.literal("pending"),
 	v.literal("accepted"),
+	v.literal("declined"),
 	v.literal("expired"),
 );
 export const notificationKind = v.union(

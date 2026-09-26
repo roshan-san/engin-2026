@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import { BuildFrame } from "~/features/app/layout/BuildFrame";
+import { InviteForm } from "~/features/team/components/InviteForm";
 import { MemberList } from "~/features/team/components/MemberList";
 import { useTeamInvites } from "~/features/team/hooks/useTeamInvites";
 
@@ -14,21 +14,13 @@ export function TeamPage() {
 }
 
 function TeamView() {
-	const {
-		startup,
-		members,
-		invites,
-		email,
-		setEmail,
-		isPending,
-		submitInvite,
-	} = useTeamInvites();
+	const team = useTeamInvites();
+	const { startup, members, invites, isFounder } = team;
 
 	if (!startup) {
 		return null;
 	}
 
-	const isFounder = startup.role === "founder";
 	const pendingInvites = invites?.filter(
 		(invite) => invite.status === "pending",
 	);
@@ -54,38 +46,17 @@ function TeamView() {
 			<MemberList members={members ?? []} />
 
 			{isFounder ? (
-				<section className="space-y-4">
-					<h2 className="text-sm font-medium text-muted-foreground">Invite</h2>
-					<form
-						onSubmit={submitInvite}
-						className="flex flex-col gap-2 sm:flex-row"
-					>
-						<Input
-							type="email"
-							required
-							value={email}
-							onChange={(event) => setEmail(event.target.value)}
-							placeholder="teammate@email.com"
-							className="h-11 flex-1"
-						/>
-						<Button type="submit" disabled={isPending} className="h-11">
-							{isPending ? "Sending…" : "Send invite"}
-						</Button>
-					</form>
-					{pendingInvites && pendingInvites.length > 0 ? (
-						<ul className="space-y-2">
-							{pendingInvites.map((invite) => (
-								<li
-									key={invite._id}
-									className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
-								>
-									<span className="truncate">{invite.email}</span>
-									<span className="text-muted-foreground">{invite.status}</span>
-								</li>
-							))}
-						</ul>
-					) : null}
-				</section>
+				<InviteForm
+					invitee={team.invitee}
+					onInviteeChange={team.setInvitee}
+					role={team.role}
+					onRoleChange={team.setRole}
+					isPending={team.isPending}
+					onSubmit={team.submitInvite}
+					pendingInvites={pendingInvites ?? []}
+					onRevoke={(inviteId) => void team.revoke(inviteId)}
+					onCopyLink={(token) => void team.copyLink(token)}
+				/>
 			) : null}
 		</div>
 	);

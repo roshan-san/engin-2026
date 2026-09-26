@@ -1,14 +1,20 @@
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
-import { inviteSchema } from "~/features/team/schemas/invite";
+import { type InviteRole, inviteSchema } from "~/features/team/schemas/invite";
 import { toErrorMessage, validate } from "~/lib/validation";
+
+export function inviteLink(token: string): string {
+	return `${window.location.origin}/invite/${token}`;
+}
 
 export function useTeamInvites() {
 	const { active: startup } = useWorkspace();
 	const startupId = startup?.startup._id;
+	const isFounder = startup?.role === "founder";
 
 	const members = useQuery(
 		api.members.list,
@@ -16,19 +22,20 @@ export function useTeamInvites() {
 	);
 	const invites = useQuery(
 		api.invitations.listInvites,
-		startupId ? { startupId } : "skip",
+		startupId && isFounder ? { startupId } : "skip",
 	);
 	const createInvite = useMutation(api.invitations.create);
 	const revokeInvite = useMutation(api.invitations.revoke);
 
-	const [email, setEmail] = useState("");
+	const [invitee, setInvitee] = useState("");
+	const [role, setRole] = useState<InviteRole>("member");
 	const [isPending, setIsPending] = useState(false);
 
 	async function submitInvite(event: React.FormEvent) {
 		event.preventDefault();
 		if (!startupId) return;
 
-		const parsed = validate(inviteSchema, { email, role: "member" });
+		const parsed = validate(inviteSchema, { invitee, role });
 		if (!parsed.ok) {
 			toast.error(parsed.message);
 			return;
@@ -37,8 +44,8 @@ export function useTeamInvites() {
 		setIsPending(true);
 		try {
 			await createInvite({ startupId, ...parsed.data });
-			setEmail("");
-			toast.success(`Invite sent to ${parsed.data.email}`);
+			setInvitee("");
+			toast.success(`Invite sent to ${parsed.data.invitee}`);
 		} catch (error) {
 			toast.error(toErrorMessage(error, "Failed to create invite"));
 		} finally {
@@ -46,14 +53,35 @@ export function useTeamInvites() {
 		}
 	}
 
+	async function revoke(inviteId: Id<"invites">) {
+		try {
+			await revokeInvite({ inviteId });
+		} catch (error) {
+			toast.error(toErrorMessage(error, "Failed to revoke invite"));
+		}
+	}
+
+	async function copyLink(token: string) {
+		try {
+			await navigator.clipboard.writeText(inviteLink(token));
+			toast.success("Invite link copied");
+		} catch {
+			toast.error("Could not copy the link");
+		}
+	}
+
 	return {
 		startup,
+		isFounder,
 		members,
 		invites,
-		email,
-		setEmail,
+		invitee,
+		setInvitee,
+		role,
+		setRole,
 		isPending,
 		submitInvite,
-		revokeInvite,
+		revoke,
+		copyLink,
 	};
 }

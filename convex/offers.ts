@@ -5,7 +5,7 @@ import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import { MAX_USER_OFFERS } from "./lib/limits";
 import { requireFounderMembership, requireMembership } from "./lib/membership";
-import { notifyFounder } from "./lib/notify";
+import { notifyFounders } from "./lib/notify";
 import { fillRoleIfFull, withdrawOffer } from "./lib/offers";
 import { refreshUserScore } from "./lib/score";
 import { loadPublicUser } from "./lib/users";
@@ -42,7 +42,7 @@ async function tellFounder(
 	outcome: "accepted" | "declined",
 ) {
 	const person = await ctx.db.get(offer.userId);
-	await notifyFounder(ctx, offer.startupId, {
+	await notifyFounders(ctx, offer.startupId, {
 		kind: "offer",
 		title: `${person?.name ?? "Someone"} ${outcome} your Offer`,
 		href: "/app/startup",

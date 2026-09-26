@@ -1,25 +1,18 @@
 import { v } from "convex/values";
-import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
+import {
+	generateToken,
+	inviteExpiry,
+	isInviteLive,
+	redeemInvite,
+	resolveInvitee,
+} from "./lib/invites";
+import { MAX_INVITES_PER_EMAIL } from "./lib/limits";
 import { getMembership, requireFounderMembership } from "./lib/membership";
 import { notify } from "./lib/notify";
-import { WEEK_MS } from "./lib/time";
-
-function generateToken(): string {
-	const bytes = new Uint8Array(16);
-	crypto.getRandomValues(bytes);
-	return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function normaliseEmail(email: string): string {
-	const value = email.trim().toLowerCase();
-	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-		throw new Error("Enter a valid email address");
-	}
-	return value;
-}
+import { memberRole } from "./schema";
 
 export const listInvites = query({
 	args: { startupId: v.id("startups") },
@@ -37,24 +30,34 @@ export const listInvites = query({
 export const create = mutation({
 	args: {
 		startupId: v.id("startups"),
-		email: v.string(),
-		role: v.union(v.literal("founder"), v.literal("member")),
+		/** A username (optionally "@"-prefixed) or an email address. */
+		invitee: v.string(),
+		role: memberRole,
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		await requireFounderMembership(ctx, args.startupId, userId);
 
-		const email = normaliseEmail(args.email);
+		const { email, user: invitee } = await resolveInvitee(ctx, args.invitee);
+		if (invitee && (await getMembership(ctx, args.startupId, invitee._id))) {
+			throw new Error("They are already on the team");
+		}
 
-		const existing = await ctx.db
-			.query("invites")
-			.withIndex("by_startup_and_email", (q) =>
-				q.eq("startupId", args.startupId).eq("email", email),
-			)
-			.first();
+		const pending = (
+			await ctx.db
+				.query("invites")
+				.withIndex("by_startup_and_email", (q) =>
+					q.eq("startupId", args.startupId).eq("email", email),
+				)
+				.take(MAX_INVITES_PER_EMAIL)
+		).find((invite) => invite.status === "pending");
 
-		if (existing?.status === "pending") {
-			return { inviteId: existing._id, token: existing.token };
+		if (pending) {
+			await ctx.db.patch(pending._id, {
+				role: args.role,
+				expiresAt: inviteExpiry(),
+			});
+			return { inviteId: pending._id, token: pending.token };
 		}
 
 		const token = generateToken();
@@ -65,14 +68,10 @@ export const create = mutation({
 			token,
 			invitedByUserId: userId,
 			status: "pending",
-			expiresAt: Date.now() + WEEK_MS,
+			expiresAt: inviteExpiry(),
 		});
 
-		const invitee = await ctx.db
-			.query("users")
-			.withIndex("email", (q) => q.eq("email", email))
-			.unique();
-
+		// People who haven't signed up see it in their invites once they do.
 		if (invitee) {
 			const startup = await ctx.db.get(args.startupId);
 			await notify(ctx, {
@@ -115,11 +114,10 @@ export const listMine = query({
 			.withIndex("by_email", (q) => q.eq("email", user.email as string))
 			.take(50);
 
-		const now = Date.now();
 		const results = [];
 
 		for (const invite of invites) {
-			if (invite.status !== "pending" || invite.expiresAt <= now) {
+			if (!isInviteLive(invite)) {
 				continue;
 			}
 			const startup = await ctx.db.get(invite.startupId);
@@ -165,38 +163,6 @@ export const getByToken = query({
 	},
 });
 
-async function redeem(
-	ctx: MutationCtx,
-	invite: Doc<"invites">,
-	userId: Id<"users">,
-	userEmail: string,
-) {
-	if (invite.status !== "pending") {
-		throw new Error("This invite is no longer valid");
-	}
-	if (invite.expiresAt <= Date.now()) {
-		await ctx.db.patch(invite._id, { status: "expired" });
-		throw new Error("This invite has expired");
-	}
-	if (invite.email !== userEmail.toLowerCase()) {
-		throw new Error("This invite was sent to a different email address");
-	}
-
-	const existing = await getMembership(ctx, invite.startupId, userId);
-	if (!existing) {
-		await ctx.db.insert("memberships", {
-			startupId: invite.startupId,
-			userId,
-			role: invite.role,
-		});
-	}
-
-	await ctx.db.patch(invite._id, { status: "accepted" });
-	await ctx.db.patch(userId, { activeStartupId: invite.startupId });
-
-	return { startupId: invite.startupId };
-}
-
 async function requireInvitee(ctx: MutationCtx) {
 	const userId = await requireUserId(ctx);
 	const user = await ctx.db.get(userId);
@@ -220,7 +186,7 @@ export const acceptByToken = mutation({
 			throw new Error("Invite not found");
 		}
 
-		return await redeem(ctx, invite, userId, email);
+		return await redeemInvite(ctx, invite, userId, email);
 	},
 });
 
@@ -234,6 +200,21 @@ export const acceptById = mutation({
 			throw new Error("Invite not found");
 		}
 
-		return await redeem(ctx, invite, userId, email);
+		return await redeemInvite(ctx, invite, userId, email);
+	},
+});
+
+export const decline = mutation({
+	args: { inviteId: v.id("invites") },
+	handler: async (ctx, args) => {
+		const { email } = await requireInvitee(ctx);
+		const invite = await ctx.db.get(args.inviteId);
+		if (!invite || invite.email !== email.toLowerCase()) {
+			throw new Error("Invite not found");
+		}
+		if (invite.status !== "pending") {
+			throw new Error("This invite is no longer valid");
+		}
+		await ctx.db.patch(invite._id, { status: "declined" });
 	},
 });
