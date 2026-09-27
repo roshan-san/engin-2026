@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { PublicHeader } from "~/components/shared/PublicHeader";
 import { Input } from "~/components/ui/input";
-import { useExplore } from "~/features/explore/hooks/useExplore";
+import { useExplore } from "~/features/marketing/explore/hooks/useExplore";
 
 type ExplorePageProps = {
 	readonly inApp?: boolean;

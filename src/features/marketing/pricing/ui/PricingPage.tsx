@@ -12,7 +12,7 @@ import {
 import {
 	type BillingInterval,
 	useUpgrade,
-} from "~/features/pricing/hooks/useUpgrade";
+} from "~/features/marketing/pricing/hooks/useUpgrade";
 import { cn } from "~/lib/utils";
 
 const freeFeatures = [
