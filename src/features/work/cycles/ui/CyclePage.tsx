@@ -3,9 +3,9 @@ import { useMutation } from "convex/react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { Button } from "~/components/ui/button";
 import { BuildFrame } from "~/features/app/layout/BuildFrame";
-import { CyclePulseBoard } from "~/features/cycles/components/CyclePulseBoard";
-import { StartCycleForm } from "~/features/cycles/components/StartCycleForm";
-import { useActiveCycle } from "~/features/cycles/hooks/useActiveCycle";
+import { CyclePulseBoard } from "~/features/work/cycles/components/CyclePulseBoard";
+import { StartCycleForm } from "~/features/work/cycles/components/StartCycleForm";
+import { useActiveCycle } from "~/features/work/cycles/hooks/useActiveCycle";
 import { daysRemaining, formatDateRange } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 
@@ -20,8 +20,8 @@ export function CyclePage() {
 function CycleView() {
 	const { startup, isFounder, cycles, cycle, selectCycle, isLoading } =
 		useActiveCycle();
-	const startCycle = useMutation(api.cycles.start);
-	const closeCycle = useMutation(api.cycles.close);
+	const startCycle = useMutation(api.work.cycles.start);
+	const closeCycle = useMutation(api.work.cycles.close);
 
 	if (isLoading) {
 		return <PageLoading rows={4} />;

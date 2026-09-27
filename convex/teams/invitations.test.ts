@@ -187,10 +187,13 @@ test("someone invited as a Founder has full Founder powers", async () => {
 
 	const bob = await joinAsMember(t, setup, "Bob");
 	const { pulseId } = await cyclePulseFor(t, setup, bob);
-	await bob.as.mutation(api.pulses.setStatus, { pulseId, status: "review" });
+	await bob.as.mutation(api.work.pulses.setStatus, {
+		pulseId,
+		status: "review",
+	});
 
 	expect(await notificationTitles(cofounder.as)).toContain(
 		"Hero section is ready for review",
 	);
-	await cofounder.as.mutation(api.pulses.verify, { pulseId });
+	await cofounder.as.mutation(api.work.pulses.verify, { pulseId });
 });

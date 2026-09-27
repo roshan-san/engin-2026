@@ -6,12 +6,12 @@ import { toast } from "sonner";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { PulseProofLinks } from "~/features/pulses/components/PulseProofLinks";
-import { PulseReviewControls } from "~/features/pulses/components/PulseReviewControls";
+import { PulseProofLinks } from "~/features/work/pulses/components/PulseProofLinks";
+import { PulseReviewControls } from "~/features/work/pulses/components/PulseReviewControls";
 import {
 	type PulseStatus,
 	WORKABLE_PULSE_STATUSES,
-} from "~/features/pulses/constants";
+} from "~/features/work/pulses/constants";
 import { toErrorMessage } from "~/lib/validation";
 
 type PulseBoardProps = {
@@ -25,11 +25,11 @@ export function PulseBoard({
 	trialCycleId,
 	canCreate,
 }: PulseBoardProps) {
-	const pulses = useQuery(api.pulses.listForTrial, { trialCycleId });
-	const createPulse = useMutation(api.pulses.create);
-	const setStatus = useMutation(api.pulses.setStatus);
-	const assignToMe = useMutation(api.pulses.assignToMe);
-	const removePulse = useMutation(api.pulses.remove);
+	const pulses = useQuery(api.work.pulses.listForTrial, { trialCycleId });
+	const createPulse = useMutation(api.work.pulses.create);
+	const setStatus = useMutation(api.work.pulses.setStatus);
+	const assignToMe = useMutation(api.work.pulses.assignToMe);
+	const removePulse = useMutation(api.work.pulses.remove);
 	const [title, setTitle] = useState("");
 	const [pendingId, setPendingId] = useState<string | null>(null);
 

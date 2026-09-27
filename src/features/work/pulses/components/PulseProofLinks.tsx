@@ -6,7 +6,7 @@ import {
 	inferProofLinkKind,
 	type ProofLinkKind,
 	proofLinkLabel,
-} from "~/features/pulses/constants";
+} from "~/features/work/pulses/constants";
 
 type PulseProofLinksProps = {
 	readonly pulseId: Id<"pulses">;
@@ -23,8 +23,8 @@ export function PulseProofLinks({
 	isPending,
 	run,
 }: PulseProofLinksProps) {
-	const addProofLink = useMutation(api.pulses.addProofLink);
-	const removeProofLink = useMutation(api.pulses.removeProofLink);
+	const addProofLink = useMutation(api.work.pulses.addProofLink);
+	const removeProofLink = useMutation(api.work.pulses.removeProofLink);
 
 	function add() {
 		const url = window.prompt(

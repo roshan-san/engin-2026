@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
-import { useMyWork } from "~/features/cycles/hooks/useMyWork";
+import { useMyWork } from "~/features/work/cycles/hooks/useMyWork";
 
 export function CycleGuest() {
 	const { pulses, applications, isLoading } = useMyWork();

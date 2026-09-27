@@ -1,7 +1,7 @@
 import { PageLoading } from "~/components/globals/PageLoading";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
 import { BuildNav } from "~/features/app/layout/BuildNav";
-import { CycleGuest } from "~/features/cycles/components/CycleGuest";
+import { CycleGuest } from "~/features/work/cycles/components/CycleGuest";
 
 export function BuildFrame({
 	children,

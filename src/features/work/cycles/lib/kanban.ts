@@ -1,4 +1,4 @@
-import type { PulseStatus } from "~/features/pulses/constants";
+import type { PulseStatus } from "~/features/work/pulses/constants";
 
 export type KanbanMove =
 	| { kind: "status"; status: PulseStatus }

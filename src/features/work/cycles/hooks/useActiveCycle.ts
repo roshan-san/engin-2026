@@ -7,7 +7,7 @@ import { useWorkspace } from "~/features/app/hooks/useWorkspace";
 export function useActiveCycle() {
 	const { active, isLoading: workspaceLoading, hasStartups } = useWorkspace();
 	const cycles = useQuery(
-		api.cycles.list,
+		api.work.cycles.list,
 		active ? { startupId: active.startup._id } : "skip",
 	);
 	const [selectedId, setSelectedId] = useState<Id<"cycles"> | null>(null);

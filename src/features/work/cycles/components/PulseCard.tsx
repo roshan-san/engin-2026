@@ -1,13 +1,13 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { GripVertical } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { canDrop } from "~/features/cycles/lib/kanban";
-import { PulseProofLinks } from "~/features/pulses/components/PulseProofLinks";
+import { canDrop } from "~/features/work/cycles/lib/kanban";
+import { PulseProofLinks } from "~/features/work/pulses/components/PulseProofLinks";
 import {
 	type ProofLinkKind,
 	PULSE_STATUSES,
 	type PulseStatus,
-} from "~/features/pulses/constants";
+} from "~/features/work/pulses/constants";
 import { cn } from "~/lib/utils";
 
 export type KanbanPulse = {

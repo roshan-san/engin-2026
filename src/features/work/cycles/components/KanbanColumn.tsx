@@ -1,5 +1,5 @@
-import { canDrop } from "~/features/cycles/lib/kanban";
-import type { PulseStatus } from "~/features/pulses/constants";
+import { canDrop } from "~/features/work/cycles/lib/kanban";
+import type { PulseStatus } from "~/features/work/pulses/constants";
 import { cn } from "~/lib/utils";
 
 type KanbanColumnProps = {

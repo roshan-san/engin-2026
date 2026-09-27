@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";
 import {
 	createTest,
 	DAY,
@@ -8,7 +8,7 @@ import {
 	setUpStartup,
 	signUp,
 	startedTrialWith,
-} from "./test.helpers";
+} from "../test.helpers";
 
 beforeEach(() => {
 	vi.useFakeTimers();
@@ -23,16 +23,19 @@ async function setUpTrialPulse() {
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
 	const trialCycleId = await startedTrialWith(t, setup, [alice]);
-	const pulseId = await setup.founder.as.mutation(api.pulses.create, {
+	const pulseId = await setup.founder.as.mutation(api.work.pulses.create, {
 		startupId: setup.startupId,
 		title: "Write the API",
 		trialCycleId,
 	});
-	await alice.as.mutation(api.pulses.assignToMe, { pulseId });
-	await alice.as.mutation(api.pulses.setStatus, { pulseId, status: "done" });
+	await alice.as.mutation(api.work.pulses.assignToMe, { pulseId });
+	await alice.as.mutation(api.work.pulses.setStatus, {
+		pulseId,
+		status: "done",
+	});
 
 	async function pulseStatus() {
-		const pulses = await alice.as.query(api.pulses.listForTrial, {
+		const pulses = await alice.as.query(api.work.pulses.listForTrial, {
 			trialCycleId,
 		});
 		return pulses.find((pulse) => pulse._id === pulseId);
@@ -51,7 +54,7 @@ test("a Participant marking a trial Pulse done submits it without earning Score"
 test("verifying a Submitted Pulse marks it done without earning Score", async () => {
 	const { t, setup, alice, pulseId, pulseStatus } = await setUpTrialPulse();
 
-	await setup.founder.as.mutation(api.pulses.verify, { pulseId });
+	await setup.founder.as.mutation(api.work.pulses.verify, { pulseId });
 
 	expect((await pulseStatus())?.status).toBe("done");
 	expect(await scoreOf(t, alice.userId)).toBe(0);
@@ -60,7 +63,7 @@ test("verifying a Submitted Pulse marks it done without earning Score", async ()
 test("a Member rejecting a Submitted Pulse sends it back with a note", async () => {
 	const { setup, alice, pulseId, pulseStatus } = await setUpTrialPulse();
 
-	await setup.founder.as.mutation(api.pulses.reject, {
+	await setup.founder.as.mutation(api.work.pulses.reject, {
 		pulseId,
 		note: "Missing tests",
 	});
@@ -77,7 +80,7 @@ test("a Participant cannot verify their own Pulse", async () => {
 	const { alice, pulseId } = await setUpTrialPulse();
 
 	await expect(
-		alice.as.mutation(api.pulses.verify, { pulseId }),
+		alice.as.mutation(api.work.pulses.verify, { pulseId }),
 	).rejects.toThrow("not a member");
 });
 
@@ -85,20 +88,23 @@ test("a Participant cannot pull back a Submitted Pulse or undo a Verified one", 
 	const { setup, alice, pulseId } = await setUpTrialPulse();
 
 	await expect(
-		alice.as.mutation(api.pulses.setStatus, { pulseId, status: "in_progress" }),
+		alice.as.mutation(api.work.pulses.setStatus, {
+			pulseId,
+			status: "in_progress",
+		}),
 	).rejects.toThrow("awaiting review");
 
-	await setup.founder.as.mutation(api.pulses.verify, { pulseId });
+	await setup.founder.as.mutation(api.work.pulses.verify, { pulseId });
 
 	await expect(
-		alice.as.mutation(api.pulses.setStatus, { pulseId, status: "todo" }),
+		alice.as.mutation(api.work.pulses.setStatus, { pulseId, status: "todo" }),
 	).rejects.toThrow("already verified");
 });
 
 async function setUpCycle() {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const cycleId = await setup.founder.as.mutation(api.cycles.create, {
+	const cycleId = await setup.founder.as.mutation(api.work.cycles.create, {
 		startupId: setup.startupId,
 		title: "Landing page",
 		startAt: Date.now(),
@@ -111,7 +117,7 @@ test("an internal Pulse must belong to a Cycle", async () => {
 	const { setup } = await setUpCycle();
 
 	await expect(
-		setup.founder.as.mutation(api.pulses.create, {
+		setup.founder.as.mutation(api.work.pulses.create, {
 			startupId: setup.startupId,
 			title: "Floating work",
 		}),
@@ -121,13 +127,13 @@ test("an internal Pulse must belong to a Cycle", async () => {
 test("a new internal Pulse starts in todo", async () => {
 	const { setup, cycleId } = await setUpCycle();
 
-	await setup.founder.as.mutation(api.pulses.create, {
+	await setup.founder.as.mutation(api.work.pulses.create, {
 		startupId: setup.startupId,
 		title: "Hero section",
 		cycleId,
 	});
 
-	const pulses = await setup.founder.as.query(api.pulses.listForCycle, {
+	const pulses = await setup.founder.as.query(api.work.pulses.listForCycle, {
 		cycleId,
 	});
 	expect(pulses.map((pulse) => pulse.status)).toEqual(["todo"]);
@@ -135,28 +141,28 @@ test("a new internal Pulse starts in todo", async () => {
 
 test("Proof Links can be added to and removed from a Pulse", async () => {
 	const { setup, cycleId } = await setUpCycle();
-	const pulseId = await setup.founder.as.mutation(api.pulses.create, {
+	const pulseId = await setup.founder.as.mutation(api.work.pulses.create, {
 		startupId: setup.startupId,
 		title: "Hero section",
 		cycleId,
 	});
 
-	await setup.founder.as.mutation(api.pulses.addProofLink, {
+	await setup.founder.as.mutation(api.work.pulses.addProofLink, {
 		pulseId,
 		kind: "pr",
 		url: "https://github.com/acme/web/pull/1",
 	});
-	await setup.founder.as.mutation(api.pulses.addProofLink, {
+	await setup.founder.as.mutation(api.work.pulses.addProofLink, {
 		pulseId,
 		kind: "deploy",
 		url: "https://acme.dev",
 	});
-	await setup.founder.as.mutation(api.pulses.removeProofLink, {
+	await setup.founder.as.mutation(api.work.pulses.removeProofLink, {
 		pulseId,
 		url: "https://github.com/acme/web/pull/1",
 	});
 
-	const [pulse] = await setup.founder.as.query(api.pulses.listForCycle, {
+	const [pulse] = await setup.founder.as.query(api.work.pulses.listForCycle, {
 		cycleId,
 	});
 	expect(pulse?.proofLinks).toEqual([
@@ -166,14 +172,14 @@ test("Proof Links can be added to and removed from a Pulse", async () => {
 
 test("a Proof Link must be a web address", async () => {
 	const { setup, cycleId } = await setUpCycle();
-	const pulseId = await setup.founder.as.mutation(api.pulses.create, {
+	const pulseId = await setup.founder.as.mutation(api.work.pulses.create, {
 		startupId: setup.startupId,
 		title: "Hero section",
 		cycleId,
 	});
 
 	await expect(
-		setup.founder.as.mutation(api.pulses.addProofLink, {
+		setup.founder.as.mutation(api.work.pulses.addProofLink, {
 			pulseId,
 			kind: "doc",
 			url: "not a link",

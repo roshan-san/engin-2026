@@ -5,11 +5,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { KanbanColumn } from "~/features/cycles/components/KanbanColumn";
-import { PulseCard } from "~/features/cycles/components/PulseCard";
-import { useCyclePulses } from "~/features/cycles/hooks/useCyclePulses";
-import { usePointerDrag } from "~/features/cycles/hooks/usePointerDrag";
-import { PULSE_STATUSES, type PulseStatus } from "~/features/pulses/constants";
+import { KanbanColumn } from "~/features/work/cycles/components/KanbanColumn";
+import { PulseCard } from "~/features/work/cycles/components/PulseCard";
+import { useCyclePulses } from "~/features/work/cycles/hooks/useCyclePulses";
+import { usePointerDrag } from "~/features/work/cycles/hooks/usePointerDrag";
+import {
+	PULSE_STATUSES,
+	type PulseStatus,
+} from "~/features/work/pulses/constants";
 import { toErrorMessage } from "~/lib/validation";
 
 type CyclePulseBoardProps = {
@@ -28,8 +31,8 @@ export function CyclePulseBoard({
 	isFounder,
 }: CyclePulseBoardProps) {
 	const { pulses, pendingId, run, move } = useCyclePulses(cycleId, isFounder);
-	const createPulse = useMutation(api.pulses.create);
-	const assignToMe = useMutation(api.pulses.assignToMe);
+	const createPulse = useMutation(api.work.pulses.create);
+	const assignToMe = useMutation(api.work.pulses.assignToMe);
 	const [title, setTitle] = useState("");
 	const { drag, handlers, dropZoneProps } = usePointerDrag<DraggedPulse>(
 		(pulse, zone) => move(pulse._id, pulse.status, zone as PulseStatus),

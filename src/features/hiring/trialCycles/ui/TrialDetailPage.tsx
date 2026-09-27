@@ -12,7 +12,7 @@ import { MyVerdict } from "~/features/hiring/trialCycles/components/MyVerdict";
 import { ParticipantTrialActions } from "~/features/hiring/trialCycles/components/ParticipantTrialActions";
 import { TrialApplicants } from "~/features/hiring/trialCycles/components/TrialApplicants";
 import { TrialChat } from "~/features/hiring/trialCycles/components/TrialChat";
-import { PulseBoard } from "~/features/pulses/components/PulseBoard";
+import { PulseBoard } from "~/features/work/pulses/components/PulseBoard";
 import { formatDate } from "~/lib/dates";
 import { toErrorMessage } from "~/lib/validation";
 

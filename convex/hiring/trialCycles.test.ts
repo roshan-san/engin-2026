@@ -159,20 +159,23 @@ test("work stops when a Trial Cycle is cancelled", async () => {
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
 	const trialCycleId = await startedTrialWith(t, setup, [alice]);
-	const pulseId = await setup.founder.as.mutation(api.pulses.create, {
+	const pulseId = await setup.founder.as.mutation(api.work.pulses.create, {
 		startupId: setup.startupId,
 		title: "Write the API",
 		trialCycleId,
 	});
-	await alice.as.mutation(api.pulses.assignToMe, { pulseId });
-	await alice.as.mutation(api.pulses.setStatus, { pulseId, status: "done" });
+	await alice.as.mutation(api.work.pulses.assignToMe, { pulseId });
+	await alice.as.mutation(api.work.pulses.setStatus, {
+		pulseId,
+		status: "done",
+	});
 
 	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
 		trialCycleId,
 	});
 
 	await expect(
-		setup.founder.as.mutation(api.pulses.verify, { pulseId }),
+		setup.founder.as.mutation(api.work.pulses.verify, { pulseId }),
 	).rejects.toThrow("not active");
 	expect(await scoreOf(t, alice.userId)).toBe(0);
 	expect((await evidenceOf(t, "alice"))?.trialCyclesLeft).toBe(0);

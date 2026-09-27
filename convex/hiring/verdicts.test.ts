@@ -43,13 +43,16 @@ test("a Trial Cycle closes with Verdicts alone, and its Pulses earn no Score", a
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
 	const trialCycleId = await startedTrialWith(t, setup, [alice]);
-	const pulseId = await setup.founder.as.mutation(api.pulses.create, {
+	const pulseId = await setup.founder.as.mutation(api.work.pulses.create, {
 		startupId: setup.startupId,
 		title: "Write the API",
 		trialCycleId,
 	});
-	await alice.as.mutation(api.pulses.assignToMe, { pulseId });
-	await alice.as.mutation(api.pulses.setStatus, { pulseId, status: "done" });
+	await alice.as.mutation(api.work.pulses.assignToMe, { pulseId });
+	await alice.as.mutation(api.work.pulses.setStatus, {
+		pulseId,
+		status: "done",
+	});
 
 	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId,

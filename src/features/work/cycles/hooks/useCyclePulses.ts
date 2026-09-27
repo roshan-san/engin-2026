@@ -3,15 +3,15 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { kanbanMove } from "~/features/cycles/lib/kanban";
-import type { PulseStatus } from "~/features/pulses/constants";
+import { kanbanMove } from "~/features/work/cycles/lib/kanban";
+import type { PulseStatus } from "~/features/work/pulses/constants";
 import { toErrorMessage } from "~/lib/validation";
 
 export function useCyclePulses(cycleId: Id<"cycles">, isFounder: boolean) {
-	const pulses = useQuery(api.pulses.listForCycle, { cycleId });
-	const setStatus = useMutation(api.pulses.setStatus);
-	const verify = useMutation(api.pulses.verify);
-	const reject = useMutation(api.pulses.reject);
+	const pulses = useQuery(api.work.pulses.listForCycle, { cycleId });
+	const setStatus = useMutation(api.work.pulses.setStatus);
+	const verify = useMutation(api.work.pulses.verify);
+	const reject = useMutation(api.work.pulses.reject);
 	const [pendingId, setPendingId] = useState<Id<"pulses"> | null>(null);
 
 	async function run(pulseId: Id<"pulses">, action: () => Promise<unknown>) {

@@ -1,18 +1,18 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireUserId } from "./lib/auth";
-import { MAX_CYCLE_MEMBERS } from "./lib/limits";
-import { loadPublicUser } from "./lib/people/users";
+import { mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
+import { MAX_CYCLE_MEMBERS } from "../lib/limits";
+import { loadPublicUser } from "../lib/people/users";
 import {
 	requireFounderMembership,
 	requireMembership,
-} from "./lib/teams/membership";
-import { requireText } from "./lib/text";
+} from "../lib/teams/membership";
+import { requireText } from "../lib/text";
 import {
 	addCycleMember,
 	getCycleMember,
 	requireCycleAccess,
-} from "./lib/work/cycles";
+} from "../lib/work/cycles";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

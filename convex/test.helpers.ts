@@ -176,22 +176,22 @@ export async function cyclePulseFor(
 	setup: Awaited<ReturnType<typeof setUpStartup>>,
 	worker: Awaited<ReturnType<typeof signUp>>,
 ) {
-	const cycleId = await setup.founder.as.mutation(api.cycles.create, {
+	const cycleId = await setup.founder.as.mutation(api.work.cycles.create, {
 		startupId: setup.startupId,
 		title: "Landing page",
 		startAt: Date.now(),
 		endAt: Date.now() + 7 * DAY,
 		memberUserIds: [worker.userId],
 	});
-	const pulseId = await worker.as.mutation(api.pulses.create, {
+	const pulseId = await worker.as.mutation(api.work.pulses.create, {
 		startupId: setup.startupId,
 		title: "Hero section",
 		cycleId,
 	});
-	await worker.as.mutation(api.pulses.assignToMe, { pulseId });
+	await worker.as.mutation(api.work.pulses.assignToMe, { pulseId });
 
 	async function statusOf() {
-		const pulses = await setup.founder.as.query(api.pulses.listForCycle, {
+		const pulses = await setup.founder.as.query(api.work.pulses.listForCycle, {
 			cycleId,
 		});
 		return pulses.find((pulse) => pulse._id === pulseId)?.status;

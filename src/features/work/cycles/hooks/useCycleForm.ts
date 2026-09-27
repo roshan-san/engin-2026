@@ -8,7 +8,7 @@ import { toErrorMessage } from "~/lib/validation";
 
 /** Cycle-create form state and submit, shared by every place that opens a Cycle. */
 export function useCycleForm(startupId: Id<"startups">) {
-	const createCycle = useMutation(api.cycles.create);
+	const createCycle = useMutation(api.work.cycles.create);
 	const [title, setTitle] = useState("");
 	const [startAt, setStartAt] = useState("");
 	const [endAt, setEndAt] = useState("");

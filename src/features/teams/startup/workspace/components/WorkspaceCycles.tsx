@@ -5,7 +5,7 @@ import { EmptyState } from "~/components/shared/EmptyState";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { useCycleForm } from "~/features/cycles/hooks/useCycleForm";
+import { useCycleForm } from "~/features/work/cycles/hooks/useCycleForm";
 import { formatDate } from "~/lib/dates";
 
 type WorkspaceCyclesProps = {
@@ -17,9 +17,9 @@ export function WorkspaceCycles({
 	startupId,
 	isFounder,
 }: WorkspaceCyclesProps) {
-	const cycles = useQuery(api.cycles.list, { startupId });
-	const startCycle = useMutation(api.cycles.start);
-	const closeCycle = useMutation(api.cycles.close);
+	const cycles = useQuery(api.work.cycles.list, { startupId });
+	const startCycle = useMutation(api.work.cycles.start);
+	const closeCycle = useMutation(api.work.cycles.close);
 	const {
 		title,
 		setTitle,

@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as cycles from "../cycles.js";
 import type * as dodo from "../dodo.js";
 import type * as hiring_applications from "../hiring/applications.js";
 import type * as hiring_offers from "../hiring/offers.js";
@@ -42,12 +41,13 @@ import type * as migrations from "../migrations.js";
 import type * as notifications from "../notifications.js";
 import type * as people_billing from "../people/billing.js";
 import type * as people_users from "../people/users.js";
-import type * as pulses from "../pulses.js";
 import type * as teams_explore from "../teams/explore.js";
 import type * as teams_follows from "../teams/follows.js";
 import type * as teams_invitations from "../teams/invitations.js";
 import type * as teams_members from "../teams/members.js";
 import type * as teams_startups from "../teams/startups.js";
+import type * as work_cycles from "../work/cycles.js";
+import type * as work_pulses from "../work/pulses.js";
 
 import type {
   ApiFromModules,
@@ -57,7 +57,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  cycles: typeof cycles;
   dodo: typeof dodo;
   "hiring/applications": typeof hiring_applications;
   "hiring/offers": typeof hiring_offers;
@@ -90,12 +89,13 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   "people/billing": typeof people_billing;
   "people/users": typeof people_users;
-  pulses: typeof pulses;
   "teams/explore": typeof teams_explore;
   "teams/follows": typeof teams_follows;
   "teams/invitations": typeof teams_invitations;
   "teams/members": typeof teams_members;
   "teams/startups": typeof teams_startups;
+  "work/cycles": typeof work_cycles;
+  "work/pulses": typeof work_pulses;
 }>;
 
 /**

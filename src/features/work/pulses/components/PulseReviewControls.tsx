@@ -17,8 +17,8 @@ export function PulseReviewControls({
 	isPending,
 	run,
 }: PulseReviewControlsProps) {
-	const verify = useMutation(api.pulses.verify);
-	const reject = useMutation(api.pulses.reject);
+	const verify = useMutation(api.work.pulses.verify);
+	const reject = useMutation(api.work.pulses.reject);
 
 	function sendBack() {
 		const note = window.prompt("What needs to change?");
