@@ -128,9 +128,9 @@ export const setStatus = mutation({
 		status: pulseStatus,
 	},
 	handler: async (ctx, args) => {
-		const pulse = await requireWorkablePulse(ctx, args.pulseId);
+		const { pulse, context } = await requireWorkablePulse(ctx, args.pulseId);
 
-		if (pulse.trialCycleId) {
+		if (context.kind === "trial") {
 			if (args.status === "review") {
 				throw new Error("Mark the Pulse done to submit it for review");
 			}
@@ -180,7 +180,7 @@ export const assignToMe = mutation({
 	args: { pulseId: v.id("pulses") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const pulse = await requireWorkablePulse(ctx, args.pulseId);
+		const { pulse } = await requireWorkablePulse(ctx, args.pulseId);
 		await ctx.db.patch(pulse._id, {
 			assigneeUserId: userId,
 			status:
@@ -192,7 +192,7 @@ export const assignToMe = mutation({
 export const addProofLink = mutation({
 	args: { pulseId: v.id("pulses"), kind: proofLinkKind, url: v.string() },
 	handler: async (ctx, args) => {
-		const pulse = await requireWorkablePulse(ctx, args.pulseId);
+		const { pulse } = await requireWorkablePulse(ctx, args.pulseId);
 		const url = assertUrl(args.url, "Proof Link");
 		if (!url) {
 			throw new Error("Proof Link is required");
@@ -214,7 +214,7 @@ export const addProofLink = mutation({
 export const removeProofLink = mutation({
 	args: { pulseId: v.id("pulses"), url: v.string() },
 	handler: async (ctx, args) => {
-		const pulse = await requireWorkablePulse(ctx, args.pulseId);
+		const { pulse } = await requireWorkablePulse(ctx, args.pulseId);
 		await ctx.db.patch(pulse._id, {
 			proofLinks: proofLinksOf(pulse).filter((link) => link.url !== args.url),
 			evidenceUrl: undefined,

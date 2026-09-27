@@ -6,10 +6,7 @@ import { requireUserId } from "../auth";
 import { requireTrialAccess } from "../hiring/trialCycles";
 import { notify } from "../notify";
 import { loadPublicUser } from "../people/users";
-import {
-	requireFounderMembership,
-	requireMembership,
-} from "../teams/membership";
+import { requireFounderMembership } from "../teams/membership";
 import { requireCycleAccess } from "./cycles";
 
 type PulseCtx = QueryCtx | MutationCtx;
@@ -61,26 +58,39 @@ export async function withAssignees(ctx: QueryCtx, pulses: Doc<"pulses">[]) {
 	return results;
 }
 
-export async function requirePulseAccess(
+/** Which kanban a Pulse lives on: a Trial Cycle's Board or a Startup's Cycle. */
+export type PulseContext =
+	| { kind: "trial"; trial: Doc<"trialCycles"> }
+	| { kind: "cycle"; cycleId: Id<"cycles"> };
+
+/** Classifies a Pulse and loads what its kind needs, in one fetch. */
+export async function loadPulseContext(
 	ctx: PulseCtx,
 	pulse: Doc<"pulses">,
-	userId: Id<"users">,
-) {
+): Promise<PulseContext> {
 	if (pulse.trialCycleId) {
 		const trial = await ctx.db.get(pulse.trialCycleId);
 		if (!trial) {
 			throw new Error("Trial Cycle not found");
 		}
-		await requireTrialAccess(ctx, trial, userId);
-		return;
+		return { kind: "trial", trial };
 	}
-
 	if (pulse.cycleId) {
-		await requireCycleAccess(ctx, pulse.cycleId, userId);
+		return { kind: "cycle", cycleId: pulse.cycleId };
+	}
+	throw new Error("Pulse has no Cycle or Trial Cycle");
+}
+
+async function requirePulseAccess(
+	ctx: PulseCtx,
+	pulseContext: PulseContext,
+	userId: Id<"users">,
+): Promise<void> {
+	if (pulseContext.kind === "trial") {
+		await requireTrialAccess(ctx, pulseContext.trial, userId);
 		return;
 	}
-
-	await requireMembership(ctx, pulse.startupId, userId);
+	await requireCycleAccess(ctx, pulseContext.cycleId, userId);
 }
 
 export async function requirePulse(
@@ -95,28 +105,25 @@ export async function requirePulse(
 }
 
 /** Trial Pulses can only be worked on while their Trial Cycle is active. */
-async function requireActiveTrial(ctx: PulseCtx, pulse: Doc<"pulses">) {
-	if (!pulse.trialCycleId) {
-		return;
-	}
-	const trial = await ctx.db.get(pulse.trialCycleId);
-	if (trial?.status !== "active") {
+function requireActiveTrial(pulseContext: PulseContext): void {
+	if (pulseContext.kind === "trial" && pulseContext.trial.status !== "active") {
 		throw new Error("This Trial Cycle is not active");
 	}
 }
 
 /**
- * Loads a Pulse the current user may work on. Submitted and Verified Pulses
- * are locked: only a Founder's review moves them.
+ * Loads a Pulse the current user may work on, plus which kanban it lives on.
+ * Submitted and Verified Pulses are locked: only a Founder's review moves them.
  */
 export async function requireWorkablePulse(
 	ctx: MutationCtx,
 	pulseId: Id<"pulses">,
-): Promise<Doc<"pulses">> {
+): Promise<{ pulse: Doc<"pulses">; context: PulseContext }> {
 	const userId = await requireUserId(ctx);
 	const pulse = await requirePulse(ctx, pulseId);
-	await requirePulseAccess(ctx, pulse, userId);
-	await requireActiveTrial(ctx, pulse);
+	const context = await loadPulseContext(ctx, pulse);
+	await requirePulseAccess(ctx, context, userId);
+	requireActiveTrial(context);
 
 	if (pulse.status === "review") {
 		throw new Error("This Pulse is awaiting review");
@@ -124,7 +131,7 @@ export async function requireWorkablePulse(
 	if (pulse.status === "done") {
 		throw new Error("This Pulse is already verified");
 	}
-	return pulse;
+	return { pulse, context };
 }
 
 /** Loads a Submitted Pulse the current user, as a Founder, may review. */
@@ -135,7 +142,7 @@ export async function requireSubmittedPulse(
 	const userId = await requireUserId(ctx);
 	const pulse = await requirePulse(ctx, pulseId);
 	await requireFounderMembership(ctx, pulse.startupId, userId);
-	await requireActiveTrial(ctx, pulse);
+	requireActiveTrial(await loadPulseContext(ctx, pulse));
 	if (pulse.status !== "review") {
 		throw new Error("This Pulse is not awaiting review");
 	}
