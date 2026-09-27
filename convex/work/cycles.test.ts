@@ -1,8 +1,9 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
 	createTest,
+	cyclePulseFor,
 	DAY,
 	joinAsMember,
 	notificationTitles,
@@ -150,4 +151,137 @@ test("Founders see who is in a Cycle", async () => {
 	});
 
 	expect(members.map((member) => member.username)).toEqual(["bob"]);
+});
+
+test("a Cycle becomes active at its start date", async () => {
+	vi.useFakeTimers();
+	try {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const startAt = Date.now() + DAY;
+		const cycleId = await setup.founder.as.mutation(api.work.cycles.create, {
+			startupId: setup.startupId,
+			title: "Sprint",
+			startAt,
+			endAt: startAt + 7 * DAY,
+		});
+
+		vi.advanceTimersByTime(DAY + 1000);
+		await t.finishInProgressScheduledFunctions();
+
+		const cycle = await t.run(async (ctx) => await ctx.db.get(cycleId));
+		expect(cycle?.status).toBe("active");
+	} finally {
+		vi.useRealTimers();
+	}
+});
+
+test("closing with a carry-over target moves only unfinished Pulses", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await joinAsMember(t, setup, "Alice");
+	const { cycleId: fromCycleId, pulseId: donePulseId } = await cyclePulseFor(
+		t,
+		setup,
+		alice,
+	);
+	const unfinishedPulseId = await alice.as.mutation(api.work.pulses.create, {
+		startupId: setup.startupId,
+		title: "Still going",
+		cycleId: fromCycleId,
+	});
+	await setup.founder.as.mutation(api.work.pulses.setStatus, {
+		pulseId: donePulseId,
+		status: "review",
+	});
+	await setup.founder.as.mutation(api.work.pulses.verify, {
+		pulseId: donePulseId,
+	});
+
+	const toCycleId = await setup.founder.as.mutation(api.work.cycles.create, {
+		startupId: setup.startupId,
+		title: "Next up",
+		startAt: Date.now(),
+		endAt: Date.now() + 7 * DAY,
+	});
+
+	await setup.founder.as.mutation(api.work.cycles.close, {
+		cycleId: fromCycleId,
+		carryOverToCycleId: toCycleId,
+	});
+
+	const donePulse = await t.run(async (ctx) => await ctx.db.get(donePulseId));
+	const unfinishedPulse = await t.run(
+		async (ctx) => await ctx.db.get(unfinishedPulseId),
+	);
+	expect(donePulse?.cycleId).toBe(fromCycleId);
+	expect(unfinishedPulse?.cycleId).toBe(toCycleId);
+});
+
+test("closing without a carry-over target leaves unfinished Pulses in place", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await joinAsMember(t, setup, "Alice");
+	const { cycleId } = await cyclePulseFor(t, setup, alice);
+	const unfinishedPulseId = await alice.as.mutation(api.work.pulses.create, {
+		startupId: setup.startupId,
+		title: "Still going",
+		cycleId,
+	});
+
+	await setup.founder.as.mutation(api.work.cycles.close, { cycleId });
+
+	const pulse = await t.run(async (ctx) => await ctx.db.get(unfinishedPulseId));
+	expect(pulse?.cycleId).toBe(cycleId);
+	expect(pulse?.status).not.toBe("done");
+});
+
+test("removal unassigns unfinished Pulses and keeps Verified Pulse attribution", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await joinAsMember(t, setup, "Alice");
+	const { cycleId, pulseId: donePulseId } = await cyclePulseFor(
+		t,
+		setup,
+		alice,
+	);
+	await setup.founder.as.mutation(api.work.pulses.setStatus, {
+		pulseId: donePulseId,
+		status: "review",
+	});
+	await setup.founder.as.mutation(api.work.pulses.verify, {
+		pulseId: donePulseId,
+	});
+
+	const unfinishedPulseId = await alice.as.mutation(api.work.pulses.create, {
+		startupId: setup.startupId,
+		title: "Half done",
+		cycleId,
+	});
+	await alice.as.mutation(api.work.pulses.assignToMe, {
+		pulseId: unfinishedPulseId,
+	});
+
+	const membership = await t.run(
+		async (ctx) =>
+			await ctx.db
+				.query("memberships")
+				.withIndex("by_startup_and_user", (q) =>
+					q.eq("startupId", setup.startupId).eq("userId", alice.userId),
+				)
+				.unique(),
+	);
+	if (!membership) {
+		throw new Error("No membership");
+	}
+	await setup.founder.as.mutation(api.teams.members.remove, {
+		membershipId: membership._id,
+	});
+
+	const donePulse = await t.run(async (ctx) => await ctx.db.get(donePulseId));
+	const unfinishedPulse = await t.run(
+		async (ctx) => await ctx.db.get(unfinishedPulseId),
+	);
+	expect(donePulse?.assigneeUserId).toBe(alice.userId);
+	expect(unfinishedPulse?.assigneeUserId).toBeUndefined();
 });

@@ -176,3 +176,61 @@ export async function resolveReview(
 export function pulseHref(pulse: Doc<"pulses">): string {
 	return pulse.trialCycleId ? `/app/trials/${pulse.trialCycleId}` : "/app";
 }
+
+function isUnfinished(pulse: Doc<"pulses">): boolean {
+	return currentStatus(pulse) !== "done";
+}
+
+/** Verified Pulses keep their attribution; only unfinished ones are unassigned. */
+export async function unassignPulsesInCycle(
+	ctx: MutationCtx,
+	cycleId: Id<"cycles">,
+	userId: Id<"users">,
+): Promise<void> {
+	const pulses = await ctx.db
+		.query("pulses")
+		.withIndex("by_cycle", (q) => q.eq("cycleId", cycleId))
+		.collect();
+
+	for (const pulse of pulses) {
+		if (pulse.assigneeUserId === userId && isUnfinished(pulse)) {
+			await ctx.db.patch(pulse._id, { assigneeUserId: undefined });
+		}
+	}
+}
+
+/** Same, across every Cycle of a Startup — used when someone leaves the team. */
+export async function unassignPulsesInStartup(
+	ctx: MutationCtx,
+	startupId: Id<"startups">,
+	userId: Id<"users">,
+): Promise<void> {
+	const pulses = await ctx.db
+		.query("pulses")
+		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
+		.collect();
+
+	for (const pulse of pulses) {
+		if (pulse.assigneeUserId === userId && isUnfinished(pulse)) {
+			await ctx.db.patch(pulse._id, { assigneeUserId: undefined });
+		}
+	}
+}
+
+/** Unfinished Pulses move to `toCycleId`; Verified ones stay in the closed Cycle. */
+export async function moveUnfinishedPulses(
+	ctx: MutationCtx,
+	fromCycleId: Id<"cycles">,
+	toCycleId: Id<"cycles">,
+): Promise<void> {
+	const pulses = await ctx.db
+		.query("pulses")
+		.withIndex("by_cycle", (q) => q.eq("cycleId", fromCycleId))
+		.collect();
+
+	for (const pulse of pulses) {
+		if (isUnfinished(pulse)) {
+			await ctx.db.patch(pulse._id, { cycleId: toCycleId });
+		}
+	}
+}

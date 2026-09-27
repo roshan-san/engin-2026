@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "../_generated/server";
+import { internal } from "../_generated/api";
+import { internalMutation, mutation, query } from "../_generated/server";
 import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import { MAX_CYCLE_MEMBERS } from "../lib/limits";
@@ -14,6 +15,10 @@ import {
 	getCycleMember,
 	requireCycleAccess,
 } from "../lib/work/cycles";
+import {
+	moveUnfinishedPulses,
+	unassignPulsesInCycle,
+} from "../lib/work/pulses";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -72,7 +77,39 @@ export const create = mutation({
 			}
 		}
 
+		await ctx.scheduler.runAt(args.startAt, internal.work.cycles.autoStart, {
+			cycleId,
+		});
+
 		return cycleId;
+	},
+});
+
+export const autoStart = internalMutation({
+	args: { cycleId: v.id("cycles") },
+	handler: async (ctx, args) => {
+		const cycle = await ctx.db.get(args.cycleId);
+		if (cycle?.status !== "planned") {
+			return;
+		}
+
+		const active = await ctx.db
+			.query("cycles")
+			.withIndex("by_startup_and_status", (q) =>
+				q.eq("startupId", cycle.startupId).eq("status", "active"),
+			)
+			.take(10);
+		for (const open of active) {
+			await ctx.db.patch(open._id, { status: "closed" });
+		}
+
+		await ctx.db.patch(args.cycleId, { status: "active" });
+		await logActivity(ctx, {
+			startupId: cycle.startupId,
+			kind: "cycle_started",
+			cycleId: cycle._id,
+			summary: `Cycle "${cycle.title}" started`,
+		});
 	},
 });
 
@@ -103,6 +140,7 @@ export const removeMember = mutation({
 		const cycleMember = await getCycleMember(ctx, args.cycleId, args.userId);
 		if (cycleMember) {
 			await ctx.db.delete(cycleMember._id);
+			await unassignPulsesInCycle(ctx, args.cycleId, args.userId);
 		}
 	},
 });
@@ -163,7 +201,10 @@ export const start = mutation({
 });
 
 export const close = mutation({
-	args: { cycleId: v.id("cycles") },
+	args: {
+		cycleId: v.id("cycles"),
+		carryOverToCycleId: v.optional(v.id("cycles")),
+	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const cycle = await ctx.db.get(args.cycleId);
@@ -172,6 +213,19 @@ export const close = mutation({
 		}
 
 		await requireFounderMembership(ctx, cycle.startupId, userId);
+
+		if (args.carryOverToCycleId) {
+			const target = await ctx.db.get(args.carryOverToCycleId);
+			if (
+				!target ||
+				target.startupId !== cycle.startupId ||
+				target.status === "closed"
+			) {
+				throw new Error("Choose a planned or active Cycle to carry work into");
+			}
+			await moveUnfinishedPulses(ctx, cycle._id, target._id);
+		}
+
 		await ctx.db.patch(args.cycleId, { status: "closed" });
 		await logActivity(ctx, {
 			startupId: cycle.startupId,

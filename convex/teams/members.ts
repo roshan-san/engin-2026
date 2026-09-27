@@ -6,6 +6,7 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "../lib/teams/membership";
+import { unassignPulsesInStartup } from "../lib/work/pulses";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -50,5 +51,6 @@ export const remove = mutation({
 		}
 
 		await ctx.db.delete(args.membershipId);
+		await unassignPulsesInStartup(ctx, membership.startupId, membership.userId);
 	},
 });
