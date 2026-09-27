@@ -3,6 +3,7 @@ import { useMutation } from "convex/react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { Button } from "~/components/ui/button";
 import { BuildFrame } from "~/features/app/layout/BuildFrame";
+import { ActivityDashboard } from "~/features/teams/startup/workspace/components/ActivityDashboard";
 import { CyclePulseBoard } from "~/features/work/cycles/components/CyclePulseBoard";
 import { StartCycleForm } from "~/features/work/cycles/components/StartCycleForm";
 import { useActiveCycle } from "~/features/work/cycles/hooks/useActiveCycle";
@@ -35,6 +36,8 @@ function CycleView() {
 
 	return (
 		<div className="space-y-8">
+			<ActivityDashboard startupId={startup._id} />
+
 			<div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
 				<div className="min-w-0 space-y-3">
 					{cycle ? (

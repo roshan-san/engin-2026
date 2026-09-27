@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
+import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import { fillRoleIfFull, withdrawOffer } from "../lib/hiring/offers";
 import { MAX_USER_OFFERS } from "../lib/limits";
@@ -122,7 +123,23 @@ export const accept = mutation({
 				userId: offer.userId,
 				role: "member",
 			});
+			const person = await ctx.db.get(offer.userId);
+			await logActivity(ctx, {
+				startupId: offer.startupId,
+				kind: "member_joined",
+				actorUserId: offer.userId,
+				summary: `${person?.name ?? "Someone"} joined the team`,
+			});
 		}
+
+		const acceptedBy = await ctx.db.get(offer.userId);
+		await logActivity(ctx, {
+			startupId: offer.startupId,
+			kind: "offer_accepted",
+			actorUserId: offer.userId,
+			roleId: offer.roleId,
+			summary: `${acceptedBy?.name ?? "Someone"} accepted their Offer`,
+		});
 
 		await refreshUserScore(ctx, offer.userId);
 		await tellFounder(ctx, offer, "accepted");

@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx } from "../../_generated/server";
+import { logActivity } from "../activity";
 import { INVITE_TTL_MS } from "../limits";
 import { getMembership } from "./membership";
 
@@ -80,6 +81,13 @@ export async function redeemInvite(
 			startupId: invite.startupId,
 			userId,
 			role: invite.role,
+		});
+		const user = await ctx.db.get(userId);
+		await logActivity(ctx, {
+			startupId: invite.startupId,
+			kind: "member_joined",
+			actorUserId: userId,
+			summary: `${user?.name ?? "Someone"} joined the team`,
 		});
 	}
 

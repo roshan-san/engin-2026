@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import {
 	requireFounderMembership,
@@ -66,7 +67,7 @@ export const create = mutation({
 		const description = requireText(args.description, "Role description");
 		const skills = parseSkills(args.skills);
 
-		return await ctx.db.insert("roles", {
+		const roleId = await ctx.db.insert("roles", {
 			startupId: args.startupId,
 			title,
 			type,
@@ -81,6 +82,16 @@ export const create = mutation({
 			status: "open",
 			searchText: buildSearchText(title, type, description, ...skills),
 		});
+
+		await logActivity(ctx, {
+			startupId: args.startupId,
+			kind: "role_posted",
+			actorUserId: userId,
+			roleId,
+			summary: `Role "${title}" posted`,
+		});
+
+		return roleId;
 	},
 });
 

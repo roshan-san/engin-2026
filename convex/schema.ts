@@ -90,6 +90,16 @@ export const offerStatus = v.union(
 	v.literal("declined"),
 	v.literal("withdrawn"),
 );
+export const activityKind = v.union(
+	v.literal("member_joined"),
+	v.literal("cycle_started"),
+	v.literal("cycle_closed"),
+	v.literal("pulse_verified"),
+	v.literal("role_posted"),
+	v.literal("trial_cycle_started"),
+	v.literal("trial_cycle_closed"),
+	v.literal("offer_accepted"),
+);
 export const applicationStatus = v.union(
 	v.literal("applied"),
 	v.literal("joined"),
@@ -222,6 +232,19 @@ export default defineSchema({
 		.index("by_trial_and_status", ["trialCycleId", "status"])
 		.index("by_trial_and_participant", ["trialCycleId", "participantUserId"])
 		.index("by_assignee", ["assigneeUserId"]),
+
+	activity: defineTable({
+		startupId: v.id("startups"),
+		kind: activityKind,
+		actorUserId: v.optional(v.id("users")),
+		cycleId: v.optional(v.id("cycles")),
+		pulseId: v.optional(v.id("pulses")),
+		roleId: v.optional(v.id("roles")),
+		trialCycleId: v.optional(v.id("trialCycles")),
+		summary: v.string(),
+	})
+		.index("by_startup", ["startupId"])
+		.index("by_startup_and_cycle", ["startupId", "cycleId"]),
 
 	cycles: defineTable({
 		startupId: v.id("startups"),

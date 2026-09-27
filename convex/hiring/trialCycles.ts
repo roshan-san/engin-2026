@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalMutation, mutation, query } from "../_generated/server";
+import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import {
 	cancelTrial,
@@ -173,6 +174,12 @@ export const start = internalMutation({
 		}
 
 		await startTrial(ctx, trial);
+		await logActivity(ctx, {
+			startupId: trial.startupId,
+			kind: "trial_cycle_started",
+			trialCycleId: trial._id,
+			summary: `Trial Cycle "${trial.title}" started`,
+		});
 	},
 });
 
@@ -214,5 +221,12 @@ export const close = mutation({
 
 		await requireFounderMembership(ctx, trial.startupId, userId);
 		await closeWithVerdicts(ctx, trial, args);
+		await logActivity(ctx, {
+			startupId: trial.startupId,
+			kind: "trial_cycle_closed",
+			actorUserId: userId,
+			trialCycleId: trial._id,
+			summary: `Trial Cycle "${trial.title}" closed`,
+		});
 	},
 });

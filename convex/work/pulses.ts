@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import { isTrialLive, requireTrialAccess } from "../lib/hiring/trialCycles";
 import { MAX_PROOF_LINKS } from "../lib/limits";
@@ -162,6 +163,14 @@ export const verify = mutation({
 	handler: async (ctx, args) => {
 		const pulse = await requireSubmittedPulse(ctx, args.pulseId);
 		await resolveReview(ctx, pulse, { status: "done", reviewNote: undefined });
+		await logActivity(ctx, {
+			startupId: pulse.startupId,
+			kind: "pulse_verified",
+			actorUserId: await requireUserId(ctx),
+			cycleId: pulse.cycleId,
+			pulseId: pulse._id,
+			summary: `Pulse "${pulse.title}" verified`,
+		});
 	},
 });
 

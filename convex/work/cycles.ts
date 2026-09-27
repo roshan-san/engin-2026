@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import { MAX_CYCLE_MEMBERS } from "../lib/limits";
 import { loadPublicUser } from "../lib/people/users";
@@ -151,6 +152,13 @@ export const start = mutation({
 		}
 
 		await ctx.db.patch(args.cycleId, { status: "active" });
+		await logActivity(ctx, {
+			startupId: cycle.startupId,
+			kind: "cycle_started",
+			actorUserId: userId,
+			cycleId: cycle._id,
+			summary: `Cycle "${cycle.title}" started`,
+		});
 	},
 });
 
@@ -165,6 +173,13 @@ export const close = mutation({
 
 		await requireFounderMembership(ctx, cycle.startupId, userId);
 		await ctx.db.patch(args.cycleId, { status: "closed" });
+		await logActivity(ctx, {
+			startupId: cycle.startupId,
+			kind: "cycle_closed",
+			actorUserId: userId,
+			cycleId: cycle._id,
+			summary: `Cycle "${cycle.title}" closed`,
+		});
 	},
 });
 
