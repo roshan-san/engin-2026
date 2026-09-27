@@ -1,10 +1,11 @@
 import { v } from "convex/values";
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { query } from "../_generated/server";
 import { buildSearchText } from "../lib/text";
 
 const PAGE_SIZE = 30;
+const CONTRIBUTOR_SCAN_LIMIT = 200;
 
 async function findStartups(
 	ctx: QueryCtx,
@@ -41,6 +42,84 @@ async function findStartups(
 		})
 		.slice(0, PAGE_SIZE);
 }
+
+/** A Verdict, a Verified Pulse, or a membership: the evidence Explore requires. */
+async function hasEvidence(
+	ctx: QueryCtx,
+	userId: Id<"users">,
+): Promise<boolean> {
+	const membership = await ctx.db
+		.query("memberships")
+		.withIndex("by_user", (q) => q.eq("userId", userId))
+		.first();
+	if (membership) {
+		return true;
+	}
+
+	const verifiedPulse = await ctx.db
+		.query("pulses")
+		.withIndex("by_assignee", (q) => q.eq("assigneeUserId", userId))
+		.filter((q) => q.eq(q.field("status"), "done"))
+		.first();
+	if (verifiedPulse) {
+		return true;
+	}
+
+	const verdictApplication = await ctx.db
+		.query("applications")
+		.withIndex("by_user", (q) => q.eq("userId", userId))
+		.filter((q) => q.neq(q.field("verdict"), undefined))
+		.first();
+	return verdictApplication !== null;
+}
+
+export const contributors = query({
+	args: {
+		skill: v.optional(v.string()),
+		location: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const skill = args.skill?.trim().toLowerCase();
+		const location = args.location?.trim().toLowerCase();
+
+		const candidates = await ctx.db
+			.query("users")
+			.order("desc")
+			.take(CONTRIBUTOR_SCAN_LIMIT);
+
+		const results = [];
+		for (const user of candidates) {
+			if (!user.username || user.hideFromExplore) {
+				continue;
+			}
+			if (
+				skill &&
+				!(user.skills ?? []).some((s) => s.toLowerCase().includes(skill))
+			) {
+				continue;
+			}
+			if (location && !(user.location ?? "").toLowerCase().includes(location)) {
+				continue;
+			}
+			if (!(await hasEvidence(ctx, user._id))) {
+				continue;
+			}
+
+			results.push({
+				_id: user._id,
+				name: user.name ?? null,
+				username: user.username,
+				headline: user.headline ?? null,
+				location: user.location ?? null,
+				skills: user.skills ?? [],
+				score: user.score ?? 0,
+			});
+		}
+
+		results.sort((a, b) => b.score - a.score);
+		return results.slice(0, PAGE_SIZE);
+	},
+});
 
 export const search = query({
 	args: {

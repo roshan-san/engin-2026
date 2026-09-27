@@ -123,6 +123,16 @@ export function EditProfilePage() {
 						placeholder="https://"
 					/>
 				</Field>
+				<label className="flex items-center gap-2 text-sm">
+					<input
+						type="checkbox"
+						checked={values.hideFromExplore}
+						onChange={(event) =>
+							editor.setHideFromExplore(event.target.checked)
+						}
+					/>
+					Hide my profile from Explore's contributors list
+				</label>
 				<Button type="submit" disabled={editor.isPending}>
 					{editor.isPending ? "Saving…" : "Save profile"}
 				</Button>

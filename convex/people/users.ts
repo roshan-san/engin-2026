@@ -28,6 +28,7 @@ type ProfilePatch = Partial<
 		| "githubUrl"
 		| "linkedinUrl"
 		| "portfolioUrl"
+		| "hideFromExplore"
 	>
 >;
 
@@ -91,6 +92,7 @@ export const getMe = query({
 			linkedinUrl: user.linkedinUrl ?? null,
 			portfolioUrl: user.portfolioUrl ?? null,
 			activeStartupId: user.activeStartupId ?? null,
+			hideFromExplore: user.hideFromExplore ?? false,
 			evidence,
 			score: evidence.score,
 		};
@@ -192,6 +194,7 @@ export const updateProfile = mutation({
 		githubUrl: v.optional(v.string()),
 		linkedinUrl: v.optional(v.string()),
 		portfolioUrl: v.optional(v.string()),
+		hideFromExplore: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -239,6 +242,9 @@ export const updateProfile = mutation({
 		}
 		if (args.portfolioUrl !== undefined) {
 			patch.portfolioUrl = assertUrl(args.portfolioUrl, "Portfolio");
+		}
+		if (args.hideFromExplore !== undefined) {
+			patch.hideFromExplore = args.hideFromExplore;
 		}
 
 		await ctx.db.patch(userId, patch);

@@ -20,6 +20,7 @@ export function useProfileEditor() {
 	const [githubUrl, setGithubUrl] = useState<string | null>(null);
 	const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
 	const [portfolioUrl, setPortfolioUrl] = useState<string | null>(null);
+	const [hideFromExplore, setHideFromExplore] = useState<boolean | null>(null);
 
 	const values = {
 		name: name ?? user?.name ?? "",
@@ -31,6 +32,7 @@ export function useProfileEditor() {
 		githubUrl: githubUrl ?? user?.githubUrl ?? "",
 		linkedinUrl: linkedinUrl ?? user?.linkedinUrl ?? "",
 		portfolioUrl: portfolioUrl ?? user?.portfolioUrl ?? "",
+		hideFromExplore: hideFromExplore ?? user?.hideFromExplore ?? false,
 	};
 
 	async function save() {
@@ -52,6 +54,7 @@ export function useProfileEditor() {
 				githubUrl: result.data.githubUrl ?? "",
 				linkedinUrl: result.data.linkedinUrl ?? "",
 				portfolioUrl: result.data.portfolioUrl ?? "",
+				hideFromExplore: result.data.hideFromExplore,
 			});
 			toast.success("Profile saved");
 		} catch (error) {
@@ -75,6 +78,7 @@ export function useProfileEditor() {
 		setGithubUrl,
 		setLinkedinUrl,
 		setPortfolioUrl,
+		setHideFromExplore,
 		save,
 	};
 }

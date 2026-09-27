@@ -64,6 +64,7 @@ export const profileSchema = z.object({
 	githubUrl: optionalUrl,
 	linkedinUrl: optionalUrl,
 	portfolioUrl: optionalUrl,
+	hideFromExplore: z.boolean(),
 });
 
 export type ProfileInput = z.infer<typeof profileSchema>;
