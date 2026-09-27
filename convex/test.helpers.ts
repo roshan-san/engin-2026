@@ -77,7 +77,7 @@ export async function createTrial(
 
 export async function scoreOf(t: TestConvex, userId: Id<"users">) {
 	const user = await t.run(async (ctx) => await ctx.db.get(userId));
-	const profile = await t.query(api.users.getByUsername, {
+	const profile = await t.query(api.people.users.getByUsername, {
 		username: user?.username ?? "",
 	});
 	return profile?.evidence.score ?? 0;

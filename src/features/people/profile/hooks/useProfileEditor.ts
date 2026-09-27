@@ -3,12 +3,12 @@ import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCurrentUser } from "~/features/app/hooks/useCurrentUser";
-import { profileSchema } from "~/features/profile/schemas/profile";
+import { profileSchema } from "~/features/people/profile/schemas/profile";
 import { toErrorMessage, validate } from "~/lib/validation";
 
 export function useProfileEditor() {
 	const { user, isLoading } = useCurrentUser();
-	const updateProfile = useMutation(api.users.updateProfile);
+	const updateProfile = useMutation(api.people.users.updateProfile);
 	const [isPending, setIsPending] = useState(false);
 
 	const [name, setName] = useState<string | null>(null);

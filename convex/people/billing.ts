@@ -1,13 +1,13 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
-import { action, internalMutation, query } from "./_generated/server";
+import { internal } from "../_generated/api";
+import { action, internalMutation, query } from "../_generated/server";
 import {
 	type BillingInterval,
 	checkout,
 	getProductIdForInterval,
-} from "./dodo";
-import { isProUser, requireUserId } from "./lib/auth";
+} from "../dodo";
+import { isProUser, requireUserId } from "../lib/auth";
 
 export const getPlan = query({
 	args: {},
@@ -43,7 +43,7 @@ export const createCheckoutLink = action({
 			throw new Error("Not authenticated");
 		}
 
-		const user = await ctx.runQuery(internal.users.getById, { userId });
+		const user = await ctx.runQuery(internal.people.users.getById, { userId });
 		if (!user?.email) {
 			throw new Error("Add an email to your account before upgrading");
 		}

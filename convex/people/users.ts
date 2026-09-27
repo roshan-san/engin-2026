@@ -1,14 +1,14 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
-import { internalQuery, mutation, query } from "./_generated/server";
-import { initUserProfile, requireUserId } from "./lib/auth";
-import { requireUsername } from "./lib/people/username";
-import { toPublicUser } from "./lib/people/users";
-import { loadProofOfWork } from "./lib/reputation/proofOfWork";
-import { loadScoreEvidence } from "./lib/reputation/score";
-import { loadTrialHistory } from "./lib/reputation/trialHistory";
-import { assertUrl, optionalText } from "./lib/text";
+import type { Doc } from "../_generated/dataModel";
+import { internalQuery, mutation, query } from "../_generated/server";
+import { initUserProfile, requireUserId } from "../lib/auth";
+import { requireUsername } from "../lib/people/username";
+import { toPublicUser } from "../lib/people/users";
+import { loadProofOfWork } from "../lib/reputation/proofOfWork";
+import { loadScoreEvidence } from "../lib/reputation/score";
+import { loadTrialHistory } from "../lib/reputation/trialHistory";
+import { assertUrl, optionalText } from "../lib/text";
 
 const MAX_BIO = 280;
 const MAX_HEADLINE = 80;

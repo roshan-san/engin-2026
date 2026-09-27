@@ -3,7 +3,7 @@ import { GlobalError } from "~/components/globals/GlobalError";
 import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { Toaster } from "~/components/ui/sonner";
-import { AppProviders } from "~/features/auth/providers/AppProviders";
+import { AppProviders } from "~/features/people/auth/providers/AppProviders";
 
 function RootComponent() {
 	return (

@@ -8,12 +8,12 @@ import type { Verdict } from "~/features/hiring/trialCycles/constants";
 import {
 	ProofOfWork,
 	type ProofOfWorkData,
-} from "~/features/profile/components/ProofOfWork";
+} from "~/features/people/profile/components/ProofOfWork";
 import {
 	type ScoreEvidence,
 	ScoreEvidenceCard,
-} from "~/features/profile/components/ScoreEvidence";
-import { TrialHistory } from "~/features/profile/components/TrialHistory";
+} from "~/features/people/profile/components/ScoreEvidence";
+import { TrialHistory } from "~/features/people/profile/components/TrialHistory";
 import { initials } from "~/lib/initials";
 
 type PublicProfile = {

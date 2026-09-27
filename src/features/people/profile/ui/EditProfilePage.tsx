@@ -4,8 +4,8 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { ScoreEvidenceCard } from "~/features/profile/components/ScoreEvidence";
-import { useProfileEditor } from "~/features/profile/hooks/useProfileEditor";
+import { ScoreEvidenceCard } from "~/features/people/profile/components/ScoreEvidence";
+import { useProfileEditor } from "~/features/people/profile/hooks/useProfileEditor";
 
 export function EditProfilePage() {
 	const editor = useProfileEditor();

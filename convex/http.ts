@@ -24,7 +24,7 @@ async function setPlanFromWebhook(
 	let userId = payload.data.metadata?.userId as Id<"users"> | undefined;
 
 	if (!userId && payload.data.customer?.email) {
-		const user = await ctx.runQuery(internal.users.getByEmail, {
+		const user = await ctx.runQuery(internal.people.users.getByEmail, {
 			email: payload.data.customer.email,
 		});
 		userId = user?._id;
@@ -34,7 +34,10 @@ async function setPlanFromWebhook(
 		return;
 	}
 
-	await ctx.runMutation(internal.billing.setPlanTier, { userId, planTier });
+	await ctx.runMutation(internal.people.billing.setPlanTier, {
+		userId,
+		planTier,
+	});
 }
 
 http.route({

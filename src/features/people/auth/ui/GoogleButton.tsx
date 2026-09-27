@@ -1,6 +1,6 @@
 import { FaGoogle } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { useGoogleSignIn } from "~/features/auth/hooks/useGoogleSignIn";
+import { useGoogleSignIn } from "~/features/people/auth/hooks/useGoogleSignIn";
 
 export function GoogleButton({ label = "Join Engin" }: { label?: string }) {
 	const { signInWithGoogle, isPending } = useGoogleSignIn();

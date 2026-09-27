@@ -10,7 +10,6 @@
 
 import type * as applications from "../applications.js";
 import type * as auth from "../auth.js";
-import type * as billing from "../billing.js";
 import type * as cycles from "../cycles.js";
 import type * as dodo from "../dodo.js";
 import type * as explore from "../explore.js";
@@ -42,12 +41,13 @@ import type * as migrations from "../migrations.js";
 import type * as notifications from "../notifications.js";
 import type * as offers from "../offers.js";
 import type * as opportunities from "../opportunities.js";
+import type * as people_billing from "../people/billing.js";
+import type * as people_users from "../people/users.js";
 import type * as pulses from "../pulses.js";
 import type * as roles from "../roles.js";
 import type * as startups from "../startups.js";
 import type * as trialCycles from "../trialCycles.js";
 import type * as trialMessages from "../trialMessages.js";
-import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -58,7 +58,6 @@ import type {
 declare const fullApi: ApiFromModules<{
   applications: typeof applications;
   auth: typeof auth;
-  billing: typeof billing;
   cycles: typeof cycles;
   dodo: typeof dodo;
   explore: typeof explore;
@@ -90,12 +89,13 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   offers: typeof offers;
   opportunities: typeof opportunities;
+  "people/billing": typeof people_billing;
+  "people/users": typeof people_users;
   pulses: typeof pulses;
   roles: typeof roles;
   startups: typeof startups;
   trialCycles: typeof trialCycles;
   trialMessages: typeof trialMessages;
-  users: typeof users;
 }>;
 
 /**

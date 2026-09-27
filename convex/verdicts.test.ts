@@ -129,7 +129,9 @@ test("an Evaluation is private until the Participant shows it", async () => {
 		verdicts: [{ applicationId, verdict: "passed", evaluation: "Sharp work" }],
 	});
 
-	const before = await t.query(api.users.getByUsername, { username: "alice" });
+	const before = await t.query(api.people.users.getByUsername, {
+		username: "alice",
+	});
 	expect(before?.evaluations).toEqual([]);
 
 	await alice.as.mutation(api.applications.setEvaluationVisibility, {
@@ -137,7 +139,9 @@ test("an Evaluation is private until the Participant shows it", async () => {
 		isPublic: true,
 	});
 
-	const after = await t.query(api.users.getByUsername, { username: "alice" });
+	const after = await t.query(api.people.users.getByUsername, {
+		username: "alice",
+	});
 	expect(after?.evaluations.map((item) => item.evaluation)).toEqual([
 		"Sharp work",
 	]);

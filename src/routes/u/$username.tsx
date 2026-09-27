@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { PublicProfilePage } from "~/features/profile/ui/PublicProfilePage";
+import { PublicProfilePage } from "~/features/people/profile/ui/PublicProfilePage";
 
 export const Route = createFileRoute("/u/$username")({
 	component: PublicProfileRoute,
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/u/$username")({
 
 function PublicProfileRoute() {
 	const { username } = Route.useParams();
-	const profile = useQuery(api.users.getByUsername, { username });
+	const profile = useQuery(api.people.users.getByUsername, { username });
 
 	return <PublicProfilePage profile={profile} />;
 }

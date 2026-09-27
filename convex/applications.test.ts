@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 async function evidenceOf(t: TestConvex, username: string) {
-	const profile = await t.query(api.users.getByUsername, { username });
+	const profile = await t.query(api.people.users.getByUsername, { username });
 	return profile?.evidence;
 }
 

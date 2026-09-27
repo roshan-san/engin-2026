@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
-import { api } from "./_generated/api";
-import type { Id } from "./_generated/dataModel";
-import { createTest, DAY, setUpStartup, signUp } from "./test.helpers";
+import { api } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
+import { createTest, DAY, setUpStartup, signUp } from "../test.helpers";
 
 /** A closed Cycle with one Verified Pulse per given title, all by `userId`. */
 async function shipInClosedCycle(
@@ -43,7 +43,7 @@ test("a profile shows internal Verified Pulses and Cycles as Proof of Work per p
 		"Pricing",
 	]);
 
-	const profile = await t.query(api.users.getByUsername, {
+	const profile = await t.query(api.people.users.getByUsername, {
 		username: "founder",
 	});
 
@@ -67,7 +67,7 @@ test("work at a private Startup is shown only as aggregate counts", async () => 
 	await shipInClosedCycle(t, setup.startupId, setup.founder.userId, ["Hero"]);
 
 	const profile = await (await signUp(t, "Visitor")).as.query(
-		api.users.getByUsername,
+		api.people.users.getByUsername,
 		{ username: "founder" },
 	);
 
