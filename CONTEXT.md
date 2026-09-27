@@ -8,14 +8,22 @@ A platform where people join startups by proving themselves in time-boxed, real-
 Anyone signed in (Google sign-in, no onboarding; the profile is completed later).
 
 **Contributor**:
-UI-only word for a User as shown in Explore and on profiles. In the domain, a Contributor is a Member of a Startup or a Participant in a Trial Cycle.
+UI-only word for a User as shown in Discover and on profiles. In the domain, a Contributor is a Member of a Startup or a Participant in a Trial Cycle.
 _Avoid in code_: use Member or Participant
+
+**Inbox**:
+Where a User receives everything addressed to them: notifications, Offers and Invites. Offers and Invites are answered in place.
+_Avoid_: Notifications page, bell
 
 ## Startups and teams
 
 **Startup**:
 A company on Engin, owned by one or more Founders.
 _Avoid_: Company, project, workspace
+
+**Focused Startup**:
+The one Startup a User has open at a time, among those they belong to; they switch between them. Inbox, My Pulses and Threads are never limited to it.
+_Avoid_: Active startup, current workspace
 
 **Founder**:
 A Startup team member with authority to create Cycles and manage their Cycle Members, verify Pulses, create Roles and Trial Cycles, give Verdicts, and make Offers. A Startup can have several Founders with equal powers.
@@ -30,15 +38,23 @@ A Founder's direct invitation for someone to become a Member (or a Founder), byp
 _Avoid_: Invitation link
 
 **Pitch**:
-A Startup's public page: fixed, optional sections (problem, solution, product, traction, team, links, media) plus its open Roles, Trial Cycles and, if the Founders choose, Public Stats. Visible without login when the Startup is public; actions and deeper details require login.
+A Startup's public page: fixed, optional sections (problem, solution, product, traction, team, links, media) plus its open Roles, Trial Cycles and, if the Founders choose, Public Stats. Visible without login unless the Startup is in Stealth; actions and deeper details require login.
 _Avoid_: Pitch deck, landing page
+
+**Stealth**:
+A Startup hidden from everyone outside its team: no public Pitch and no listing in Discover. A Pro feature. A Startup is never taken out of Stealth automatically.
+_Avoid_: Private startup, hidden
 
 **Public Stats**:
 Headline execution numbers shown on a Pitch: team size, Verified Pulses in the last 30 days, Cycles completed, Trial Cycles run, and hires from Trial Cycles.
 
 **Follow**:
-A User following a Startup. The only "like/star" mechanism; follower count drives sorting in Explore.
+A User following a Startup. The only "like/star" mechanism; follower count drives sorting in Discover.
 _Avoid_: Star, like
+
+**Discover**:
+The public place to browse open Trial Cycles, Startups and Contributors. It is ranked on merit only: nobody can pay to be listed higher.
+_Avoid_: Explore, Opportunities
 
 ## Hiring
 
@@ -56,6 +72,10 @@ _Avoid_: Trial, tryout, test project, hackathon
 
 **Admission**:
 How people enter a Trial Cycle: _open_ (join directly, first come first served) or _application_ (a Founder picks from Applicants).
+
+**Capacity**:
+The most Participants a Trial Cycle admits. Founders set it, up to their Plan's limit.
+_Avoid_: Seats, slots, max contributors
 
 **Applicant**:
 Someone who has applied to an application-admission Trial Cycle and is awaiting a decision.
@@ -116,6 +136,10 @@ A Member added to a Cycle by a Founder. Members see only Cycles they are Cycle M
 A single unit of work, on a Cycle's kanban or a Participant's Board. Every internal Pulse belongs to a Cycle. Cycle kanban: _todo → in progress → review → done_.
 _Avoid_: Task, ticket, issue
 
+**My Pulses**:
+Every Pulse a User is working on, across all their Startups and Trial Cycles: Cycle Pulses assigned to them plus the Pulses on their Boards.
+_Avoid_: My work, my tasks
+
 **Proof Link**:
 A typed link attached to a Pulse or Submission as evidence of work: _pr, commit, deploy, design, doc, demo, other_. Optional on Pulses; a Submission needs at least one.
 _Avoid_: Evidence URL
@@ -134,8 +158,14 @@ A person's public reputation number, derived only from Trial Cycle outcomes: pas
 _Avoid_: Engin score, rating, karma
 
 **Proof of Work**:
-The execution history behind a profile: Verified Pulses and Cycles completed per Startup, Trial Cycles, Verdicts and Offers. For private Startups only aggregate counts are shown.
+The execution history behind a profile: Verified Pulses and Cycles completed per Startup, Trial Cycles, Verdicts and Offers. For Startups in Stealth, only aggregate counts are shown.
 
 **Activity**:
 An append-only record of Startup events (member joined, Cycle started/closed, Pulse verified, Role posted…). Founders see all of it; Members see Startup-wide events plus those from their Cycles. The raw material for Public Stats and, later, investor-facing execution signals.
 _Avoid_: Log, feed (in code)
+
+## Plans
+
+**Plan**:
+What a Startup pays for: _Free_ or _Pro_. A Plan only limits what a Startup can do. Everything a person does as talent (finding and joining Trial Cycles, building Score, their profile) is free, whatever Plan any Startup is on.
+_Avoid_: Subscription tier, account type, "Pro user"
