@@ -181,6 +181,7 @@ export async function cyclePulseFor(
 		title: "Landing page",
 		startAt: Date.now(),
 		endAt: Date.now() + 7 * DAY,
+		memberUserIds: [worker.userId],
 	});
 	const pulseId = await worker.as.mutation(api.pulses.create, {
 		startupId: setup.startupId,

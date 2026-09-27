@@ -19,6 +19,7 @@ import type * as http from "../http.js";
 import type * as invitations from "../invitations.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_catalog from "../lib/catalog.js";
+import type * as lib_cycles from "../lib/cycles.js";
 import type * as lib_entries from "../lib/entries.js";
 import type * as lib_invites from "../lib/invites.js";
 import type * as lib_limits from "../lib/limits.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   invitations: typeof invitations;
   "lib/auth": typeof lib_auth;
   "lib/catalog": typeof lib_catalog;
+  "lib/cycles": typeof lib_cycles;
   "lib/entries": typeof lib_entries;
   "lib/invites": typeof lib_invites;
   "lib/limits": typeof lib_limits;

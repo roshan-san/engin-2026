@@ -1,20 +1,39 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
+import {
+	addCycleMember,
+	getCycleMember,
+	requireCycleAccess,
+} from "./lib/cycles";
+import { MAX_CYCLE_MEMBERS } from "./lib/limits";
 import { requireFounderMembership, requireMembership } from "./lib/membership";
 import { requireText } from "./lib/text";
+import { loadPublicUser } from "./lib/users";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireMembership(ctx, args.startupId, userId);
+		const membership = await requireMembership(ctx, args.startupId, userId);
 
-		return await ctx.db
+		const cycles = await ctx.db
 			.query("cycles")
 			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
 			.order("desc")
 			.take(30);
+
+		if (membership.role === "founder") {
+			return cycles;
+		}
+
+		const visible = [];
+		for (const cycle of cycles) {
+			if (await getCycleMember(ctx, cycle._id, userId)) {
+				visible.push(cycle);
+			}
+		}
+		return visible;
 	},
 });
 
@@ -24,6 +43,7 @@ export const create = mutation({
 		title: v.string(),
 		startAt: v.number(),
 		endAt: v.number(),
+		memberUserIds: v.optional(v.array(v.id("users"))),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -33,13 +53,75 @@ export const create = mutation({
 			throw new Error("Cycle end must be after start");
 		}
 
-		return await ctx.db.insert("cycles", {
+		const cycleId = await ctx.db.insert("cycles", {
 			startupId: args.startupId,
 			title: requireText(args.title, "Cycle title"),
 			startAt: args.startAt,
 			endAt: args.endAt,
 			status: "planned",
 		});
+
+		const cycle = await ctx.db.get(cycleId);
+		if (cycle) {
+			for (const memberUserId of args.memberUserIds ?? []) {
+				await addCycleMember(ctx, cycle, memberUserId);
+			}
+		}
+
+		return cycleId;
+	},
+});
+
+export const addMember = mutation({
+	args: { cycleId: v.id("cycles"), userId: v.id("users") },
+	handler: async (ctx, args) => {
+		const founderId = await requireUserId(ctx);
+		const cycle = await ctx.db.get(args.cycleId);
+		if (!cycle) {
+			throw new Error("Cycle not found");
+		}
+		await requireFounderMembership(ctx, cycle.startupId, founderId);
+
+		await addCycleMember(ctx, cycle, args.userId);
+	},
+});
+
+export const removeMember = mutation({
+	args: { cycleId: v.id("cycles"), userId: v.id("users") },
+	handler: async (ctx, args) => {
+		const founderId = await requireUserId(ctx);
+		const cycle = await ctx.db.get(args.cycleId);
+		if (!cycle) {
+			throw new Error("Cycle not found");
+		}
+		await requireFounderMembership(ctx, cycle.startupId, founderId);
+
+		const cycleMember = await getCycleMember(ctx, args.cycleId, args.userId);
+		if (cycleMember) {
+			await ctx.db.delete(cycleMember._id);
+		}
+	},
+});
+
+export const listMembers = query({
+	args: { cycleId: v.id("cycles") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireCycleAccess(ctx, args.cycleId, userId);
+
+		const members = await ctx.db
+			.query("cycleMembers")
+			.withIndex("by_cycle", (q) => q.eq("cycleId", args.cycleId))
+			.take(MAX_CYCLE_MEMBERS);
+
+		const users = [];
+		for (const member of members) {
+			const user = await loadPublicUser(ctx, member.userId);
+			if (user) {
+				users.push(user);
+			}
+		}
+		return users;
 	},
 });
 

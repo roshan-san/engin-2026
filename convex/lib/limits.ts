@@ -13,5 +13,6 @@ export const LIVE_ENTRY_STATUSES = ["applied", "joined"] as const;
 export const MAX_PROOF_LINKS = 10;
 export const MAX_USER_PULSES = 200;
 export const MAX_STARTUP_FOUNDERS = 10;
+export const MAX_CYCLE_MEMBERS = 50;
 export const INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 export const MAX_INVITES_PER_EMAIL = 20;

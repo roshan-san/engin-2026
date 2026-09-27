@@ -224,6 +224,14 @@ export default defineSchema({
 		.index("by_startup", ["startupId"])
 		.index("by_startup_and_status", ["startupId", "status"]),
 
+	/** Members (not Founders, who belong to every Cycle implicitly) added to a Cycle. */
+	cycleMembers: defineTable({
+		cycleId: v.id("cycles"),
+		userId: v.id("users"),
+	})
+		.index("by_cycle_and_user", ["cycleId", "userId"])
+		.index("by_cycle", ["cycleId"]),
+
 	roles: defineTable({
 		startupId: v.id("startups"),
 		title: v.string(),

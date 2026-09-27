@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import type { proofLink, pulseStatus } from "../schema";
 import { requireUserId } from "./auth";
+import { requireCycleAccess } from "./cycles";
 import { requireFounderMembership, requireMembership } from "./membership";
 import { notify } from "./notify";
 import { requireTrialAccess } from "./trials";
@@ -62,16 +63,21 @@ export async function requirePulseAccess(
 	pulse: Doc<"pulses">,
 	userId: Id<"users">,
 ) {
-	if (!pulse.trialCycleId) {
-		await requireMembership(ctx, pulse.startupId, userId);
+	if (pulse.trialCycleId) {
+		const trial = await ctx.db.get(pulse.trialCycleId);
+		if (!trial) {
+			throw new Error("Trial Cycle not found");
+		}
+		await requireTrialAccess(ctx, trial, userId);
 		return;
 	}
 
-	const trial = await ctx.db.get(pulse.trialCycleId);
-	if (!trial) {
-		throw new Error("Trial Cycle not found");
+	if (pulse.cycleId) {
+		await requireCycleAccess(ctx, pulse.cycleId, userId);
+		return;
 	}
-	await requireTrialAccess(ctx, trial, userId);
+
+	await requireMembership(ctx, pulse.startupId, userId);
 }
 
 export async function requirePulse(

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
+import { requireCycleAccess } from "./lib/cycles";
 import { requireMembership } from "./lib/membership";
 import { MAX_PROOF_LINKS } from "./lib/limits";
 import { notifyFounders } from "./lib/notify";
@@ -26,12 +27,7 @@ export const listForCycle = query({
 	args: { cycleId: v.id("cycles") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const cycle = await ctx.db.get(args.cycleId);
-		if (!cycle) {
-			return [];
-		}
-
-		await requireMembership(ctx, cycle.startupId, userId);
+		await requireCycleAccess(ctx, args.cycleId, userId);
 
 		const pulses = await ctx.db
 			.query("pulses")
@@ -109,8 +105,8 @@ export const create = mutation({
 			if (!args.cycleId) {
 				throw new Error("A Pulse must belong to a Cycle");
 			}
-			const cycle = await ctx.db.get(args.cycleId);
-			if (!cycle || cycle.startupId !== args.startupId) {
+			const { cycle } = await requireCycleAccess(ctx, args.cycleId, userId);
+			if (cycle.startupId !== args.startupId) {
 				throw new Error("Cycle not found");
 			}
 		}
