@@ -4,8 +4,8 @@ import { Button } from "~/components/ui/button";
 import { canDrop } from "~/features/cycles/lib/kanban";
 import { PulseProofLinks } from "~/features/pulses/components/PulseProofLinks";
 import {
-	PULSE_STATUSES,
 	type ProofLinkKind,
+	PULSE_STATUSES,
 	type PulseStatus,
 } from "~/features/pulses/constants";
 import { cn } from "~/lib/utils";

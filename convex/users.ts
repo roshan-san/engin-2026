@@ -3,12 +3,12 @@ import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { initUserProfile, requireUserId } from "./lib/auth";
-import { loadProofOfWork } from "./lib/proofOfWork";
-import { loadScoreEvidence } from "./lib/score";
+import { requireUsername } from "./lib/people/username";
+import { toPublicUser } from "./lib/people/users";
+import { loadProofOfWork } from "./lib/reputation/proofOfWork";
+import { loadScoreEvidence } from "./lib/reputation/score";
+import { loadTrialHistory } from "./lib/reputation/trialHistory";
 import { assertUrl, optionalText } from "./lib/text";
-import { loadTrialHistory } from "./lib/trialHistory";
-import { requireUsername } from "./lib/username";
-import { toPublicUser } from "./lib/users";
 
 const MAX_BIO = 280;
 const MAX_HEADLINE = 80;

@@ -4,6 +4,7 @@ import { PublicHeader } from "~/components/shared/PublicHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import type { Verdict } from "~/features/hiring/trialCycles/constants";
 import {
 	ProofOfWork,
 	type ProofOfWorkData,
@@ -13,7 +14,6 @@ import {
 	ScoreEvidenceCard,
 } from "~/features/profile/components/ScoreEvidence";
 import { TrialHistory } from "~/features/profile/components/TrialHistory";
-import type { Verdict } from "~/features/trialCycles/constants";
 import { initials } from "~/lib/initials";
 
 type PublicProfile = {

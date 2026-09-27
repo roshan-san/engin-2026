@@ -1,6 +1,6 @@
 import { internalMutation } from "./_generated/server";
-import { currentStatus, proofLinksOf } from "./lib/pulses";
-import { refreshUserScore } from "./lib/score";
+import { refreshUserScore } from "./lib/reputation/score";
+import { currentStatus, proofLinksOf } from "./lib/work/pulses";
 
 /**
  * One-off: moves Pulses onto the kanban states and Proof Links, and drops

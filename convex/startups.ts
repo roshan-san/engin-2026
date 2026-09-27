@@ -4,15 +4,15 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
-import { parseCategory, startupStage } from "./lib/catalog";
+import { toPublicUser } from "./lib/people/users";
+import { parseCategory, startupStage } from "./lib/teams/catalog";
 import {
 	getMembership,
 	requireFounderMembership,
 	requireMembership,
-} from "./lib/membership";
-import { toSearchText, uniqueSlug } from "./lib/startupWrite";
+} from "./lib/teams/membership";
+import { toSearchText, uniqueSlug } from "./lib/teams/startupWrite";
 import { assertUrl, optionalText, requireText } from "./lib/text";
-import { toPublicUser } from "./lib/users";
 
 type WorkspaceEntry = {
 	startup: Doc<"startups">;

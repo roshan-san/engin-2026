@@ -1,42 +1,23 @@
-import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { fromDateInput } from "~/lib/dates";
-import { toErrorMessage } from "~/lib/validation";
+import { useCycleForm } from "~/features/cycles/hooks/useCycleForm";
 
 type StartCycleFormProps = {
 	readonly startupId: Id<"startups">;
 };
 
 export function StartCycleForm({ startupId }: StartCycleFormProps) {
-	const createCycle = useMutation(api.cycles.create);
-	const [title, setTitle] = useState("");
-	const [startAt, setStartAt] = useState("");
-	const [endAt, setEndAt] = useState("");
-	const [isPending, setIsPending] = useState(false);
-
-	async function create() {
-		setIsPending(true);
-		try {
-			await createCycle({
-				startupId,
-				title,
-				startAt: fromDateInput(startAt),
-				endAt: fromDateInput(endAt),
-			});
-			setTitle("");
-			setStartAt("");
-			setEndAt("");
-		} catch (error) {
-			toast.error(toErrorMessage(error, "Could not create Cycle"));
-		} finally {
-			setIsPending(false);
-		}
-	}
+	const {
+		title,
+		setTitle,
+		startAt,
+		setStartAt,
+		endAt,
+		setEndAt,
+		isPending,
+		create,
+	} = useCycleForm(startupId);
 
 	return (
 		<form

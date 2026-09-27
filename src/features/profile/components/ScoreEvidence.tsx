@@ -1,4 +1,4 @@
-import { SCORE_WEIGHTS } from "@convex/lib/scoreWeights";
+import { SCORE_WEIGHTS } from "@convex/lib/reputation/scoreWeights";
 import { Badge } from "~/components/ui/badge";
 
 export type ScoreEvidence = {

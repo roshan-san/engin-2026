@@ -6,7 +6,7 @@ import { NotificationBell } from "~/features/app/ui/NotificationBell";
 import { ScoreChip } from "~/features/app/ui/ScoreChip";
 import { StartupSwitcher } from "~/features/app/ui/StartupSwitcher";
 import { UserMenu } from "~/features/app/ui/UserMenu";
-import { PendingOffers } from "~/features/offers/components/PendingOffers";
+import { PendingOffers } from "~/features/hiring/offers/components/PendingOffers";
 
 export function AppShell({ children }: { readonly children: React.ReactNode }) {
 	const { user: me } = useCurrentUser();

@@ -5,17 +5,20 @@ import {
 	releaseParticipantSpot,
 	requireCanEnter,
 	takeParticipantSpot,
-} from "./lib/entries";
-import { MAX_TRIAL_APPLICATIONS } from "./lib/limits";
-import { requireFounderMembership, requireMembership } from "./lib/membership";
-import { notify, notifyFounders } from "./lib/notify";
-import { refreshUserScore } from "./lib/score";
-import { optionalText } from "./lib/text";
+} from "./lib/hiring/entries";
 import {
 	getTrialApplication,
 	isTrialLive,
 	requireAcceptingEntries,
-} from "./lib/trials";
+} from "./lib/hiring/trialCycles";
+import { MAX_TRIAL_APPLICATIONS } from "./lib/limits";
+import { notify, notifyFounders } from "./lib/notify";
+import { refreshUserScore } from "./lib/reputation/score";
+import {
+	requireFounderMembership,
+	requireMembership,
+} from "./lib/teams/membership";
+import { optionalText } from "./lib/text";
 
 export const listMine = query({
 	args: {},

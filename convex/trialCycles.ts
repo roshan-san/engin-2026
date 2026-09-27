@@ -2,21 +2,21 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
-import { MAX_LISTED_TRIALS, MAX_TRIAL_PARTICIPANTS } from "./lib/limits";
-import {
-	getMembership,
-	requireFounderMembership,
-	requireMembership,
-} from "./lib/membership";
-import { buildSearchText, optionalText, requireText } from "./lib/text";
 import {
 	cancelTrial,
 	getTrialApplication,
 	listTrialApplications,
 	startTrial,
-} from "./lib/trials";
-import { loadPublicUser } from "./lib/users";
-import { closeWithVerdicts } from "./lib/verdicts";
+} from "./lib/hiring/trialCycles";
+import { closeWithVerdicts } from "./lib/hiring/verdicts";
+import { MAX_LISTED_TRIALS, MAX_TRIAL_PARTICIPANTS } from "./lib/limits";
+import { loadPublicUser } from "./lib/people/users";
+import {
+	getMembership,
+	requireFounderMembership,
+	requireMembership,
+} from "./lib/teams/membership";
+import { buildSearchText, optionalText, requireText } from "./lib/text";
 import { trialAdmission, trialVerdict } from "./schema";
 
 export const list = query({

@@ -1,4 +1,7 @@
-import { type Verdict, verdictLabel } from "~/features/trialCycles/constants";
+import {
+	type Verdict,
+	verdictLabel,
+} from "~/features/hiring/trialCycles/constants";
 
 type TrialHistoryProps = {
 	readonly evaluations: Array<{

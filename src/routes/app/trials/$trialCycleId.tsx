@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { TrialDetailPage } from "~/features/trialCycles/ui/TrialDetailPage";
+import { TrialDetailPage } from "~/features/hiring/trialCycles/ui/TrialDetailPage";
 
 export const Route = createFileRoute("/app/trials/$trialCycleId")({
 	component: TrialDetailRoute,

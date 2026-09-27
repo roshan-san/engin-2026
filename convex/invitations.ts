@@ -2,16 +2,19 @@ import { v } from "convex/values";
 import type { MutationCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
+import { MAX_INVITES_PER_EMAIL } from "./lib/limits";
+import { notify } from "./lib/notify";
 import {
 	generateToken,
 	inviteExpiry,
 	isInviteLive,
 	redeemInvite,
 	resolveInvitee,
-} from "./lib/invites";
-import { MAX_INVITES_PER_EMAIL } from "./lib/limits";
-import { getMembership, requireFounderMembership } from "./lib/membership";
-import { notify } from "./lib/notify";
+} from "./lib/teams/invites";
+import {
+	getMembership,
+	requireFounderMembership,
+} from "./lib/teams/membership";
 import { memberRole } from "./schema";
 
 export const listInvites = query({

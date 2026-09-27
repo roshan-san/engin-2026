@@ -3,12 +3,15 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
+import { fillRoleIfFull, withdrawOffer } from "./lib/hiring/offers";
 import { MAX_USER_OFFERS } from "./lib/limits";
-import { requireFounderMembership, requireMembership } from "./lib/membership";
 import { notifyFounders } from "./lib/notify";
-import { fillRoleIfFull, withdrawOffer } from "./lib/offers";
-import { refreshUserScore } from "./lib/score";
-import { loadPublicUser } from "./lib/users";
+import { loadPublicUser } from "./lib/people/users";
+import { refreshUserScore } from "./lib/reputation/score";
+import {
+	requireFounderMembership,
+	requireMembership,
+} from "./lib/teams/membership";
 
 async function requirePendingOffer(
 	ctx: MutationCtx,

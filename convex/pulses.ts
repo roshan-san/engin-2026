@@ -1,10 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
-import { requireCycleAccess } from "./lib/cycles";
+import { isTrialLive, requireTrialAccess } from "./lib/hiring/trialCycles";
 import { MAX_PROOF_LINKS } from "./lib/limits";
-import { requireMembership } from "./lib/membership";
 import { notifyFounders } from "./lib/notify";
+import { requireMembership } from "./lib/teams/membership";
+import { assertUrl, requireText } from "./lib/text";
+import { requireCycleAccess } from "./lib/work/cycles";
 import {
 	currentStatus,
 	proofLinksOf,
@@ -15,9 +17,7 @@ import {
 	resolveReview,
 	toPulse,
 	withAssignees,
-} from "./lib/pulses";
-import { assertUrl, requireText } from "./lib/text";
-import { isTrialLive, requireTrialAccess } from "./lib/trials";
+} from "./lib/work/pulses";
 import { proofLinkKind, pulseStatus } from "./schema";
 
 const PULSE_PAGE_SIZE = 80;
