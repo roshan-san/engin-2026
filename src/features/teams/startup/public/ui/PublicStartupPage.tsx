@@ -97,6 +97,22 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 							))}
 						</div>
 					) : null}
+					{startup.location || startup.remote ? (
+						<p className="text-sm text-muted-foreground">
+							{[startup.location, startup.remote ? "Remote-friendly" : null]
+								.filter(Boolean)
+								.join(" · ")}
+						</p>
+					) : null}
+					{startup.techStack.length > 0 ? (
+						<div className="flex flex-wrap gap-2">
+							{startup.techStack.map((tech) => (
+								<Badge key={tech} variant="outline">
+									{tech}
+								</Badge>
+							))}
+						</div>
+					) : null}
 				</section>
 
 				{startup.description ? (
@@ -108,33 +124,59 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 					</section>
 				) : null}
 
-				<section className="space-y-3">
-					<h2 className="text-lg font-semibold">Team</h2>
-					<ul className="space-y-2">
-						{startup.team.map((member) => (
-							<li
-								key={member.user._id}
-								className="flex items-center justify-between rounded-lg border px-4 py-3"
-							>
-								<div>
-									<p className="font-medium">
-										{member.user.name ?? member.user.username ?? "Member"}
-									</p>
-									{member.user.username ? (
-										<Link
-											to="/u/$username"
-											params={{ username: member.user.username }}
-											className="text-sm text-muted-foreground hover:text-foreground"
-										>
-											@{member.user.username}
-										</Link>
-									) : null}
-								</div>
-								<Badge variant="secondary">{member.role}</Badge>
-							</li>
-						))}
-					</ul>
-				</section>
+				{[
+					{ heading: "Problem", body: startup.problem },
+					{ heading: "Solution", body: startup.solution },
+					{ heading: "Product", body: startup.product },
+					{ heading: "Traction", body: startup.traction },
+					{ heading: "Team", body: startup.teamBlurb },
+				].map(({ heading, body }) =>
+					body ? (
+						<section key={heading} className="space-y-2">
+							<h2 className="text-lg font-semibold">{heading}</h2>
+							<p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+								{body}
+							</p>
+						</section>
+					) : null,
+				)}
+
+				{startup.isAuthenticated ? (
+					<section className="space-y-3">
+						<h2 className="text-lg font-semibold">Meet the team</h2>
+						<ul className="space-y-2">
+							{startup.team.map((member) => (
+								<li
+									key={member.user._id}
+									className="flex items-center justify-between rounded-lg border px-4 py-3"
+								>
+									<div>
+										<p className="font-medium">
+											{member.user.name ?? member.user.username ?? "Member"}
+										</p>
+										{member.user.username ? (
+											<Link
+												to="/u/$username"
+												params={{ username: member.user.username }}
+												className="text-sm text-muted-foreground hover:text-foreground"
+											>
+												@{member.user.username}
+											</Link>
+										) : null}
+									</div>
+									<Badge variant="secondary">{member.role}</Badge>
+								</li>
+							))}
+						</ul>
+					</section>
+				) : (
+					<section className="space-y-3">
+						<h2 className="text-lg font-semibold">Meet the team</h2>
+						<Button asChild variant="outline">
+							<Link to="/">Sign in to see the team</Link>
+						</Button>
+					</section>
+				)}
 
 				<PublicOpenings
 					startupId={startup._id}

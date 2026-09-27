@@ -1,8 +1,6 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { PitchEditorPage } from "~/features/teams/startup/workspace/ui/PitchEditorPage";
 
 export const Route = createFileRoute("/app/startup/")({
-	beforeLoad: () => {
-		throw redirect({ to: "/app" });
-	},
-	component: () => null,
+	component: PitchEditorPage,
 });

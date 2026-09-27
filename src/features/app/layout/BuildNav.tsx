@@ -8,6 +8,12 @@ const items = [
 		isActive: (path: string) => path === "/app" || path === "/app/",
 	},
 	{
+		label: "Pitch",
+		to: "/app/startup",
+		isActive: (path: string) =>
+			path === "/app/startup" || path === "/app/startup/",
+	},
+	{
 		label: "Team",
 		to: "/app/team",
 		isActive: (path: string) => path.startsWith("/app/team"),

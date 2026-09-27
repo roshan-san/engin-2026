@@ -14,6 +14,44 @@ import {
 import { toSearchText, uniqueSlug } from "../lib/teams/startupWrite";
 import { assertUrl, optionalText, requireText } from "../lib/text";
 
+const MAX_PITCH_SECTION = 2000;
+const MAX_TEAM_BLURB = 500;
+const MAX_LOCATION = 80;
+const MAX_TECH_STACK_ITEMS = 12;
+const MAX_TECH_ITEM_LENGTH = 24;
+
+function normalizeTechStack(
+	techStack: string[] | undefined,
+): string[] | undefined {
+	if (!techStack) {
+		return undefined;
+	}
+
+	const unique = [
+		...new Set(
+			techStack
+				.map((item) => item.trim())
+				.filter(
+					(item) => item.length > 0 && item.length <= MAX_TECH_ITEM_LENGTH,
+				),
+		),
+	].slice(0, MAX_TECH_STACK_ITEMS);
+
+	return unique.length > 0 ? unique : undefined;
+}
+
+function limitText(
+	value: string | undefined,
+	field: string,
+	max: number,
+): string | undefined {
+	const text = optionalText(value);
+	if (text && text.length > max) {
+		throw new Error(`${field} must be under ${max} characters`);
+	}
+	return text;
+}
+
 type WorkspaceEntry = {
 	startup: Doc<"startups">;
 	role: Doc<"memberships">["role"];
@@ -122,6 +160,14 @@ export const update = mutation({
 		twitterUrl: v.optional(v.string()),
 		linkedinUrl: v.optional(v.string()),
 		githubUrl: v.optional(v.string()),
+		problem: v.optional(v.string()),
+		solution: v.optional(v.string()),
+		product: v.optional(v.string()),
+		traction: v.optional(v.string()),
+		teamBlurb: v.optional(v.string()),
+		techStack: v.optional(v.array(v.string())),
+		location: v.optional(v.string()),
+		remote: v.optional(v.boolean()),
 		isPublic: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
@@ -170,6 +216,35 @@ export const update = mutation({
 				args.githubUrl === undefined
 					? startup.githubUrl
 					: assertUrl(args.githubUrl, "GitHub"),
+			problem:
+				args.problem === undefined
+					? startup.problem
+					: limitText(args.problem, "Problem", MAX_PITCH_SECTION),
+			solution:
+				args.solution === undefined
+					? startup.solution
+					: limitText(args.solution, "Solution", MAX_PITCH_SECTION),
+			product:
+				args.product === undefined
+					? startup.product
+					: limitText(args.product, "Product", MAX_PITCH_SECTION),
+			traction:
+				args.traction === undefined
+					? startup.traction
+					: limitText(args.traction, "Traction", MAX_PITCH_SECTION),
+			teamBlurb:
+				args.teamBlurb === undefined
+					? startup.teamBlurb
+					: limitText(args.teamBlurb, "Team blurb", MAX_TEAM_BLURB),
+			techStack:
+				args.techStack === undefined
+					? startup.techStack
+					: normalizeTechStack(args.techStack),
+			location:
+				args.location === undefined
+					? startup.location
+					: limitText(args.location, "Location", MAX_LOCATION),
+			remote: args.remote === undefined ? startup.remote : args.remote,
 			isPublic: args.isPublic ?? startup.isPublic,
 			searchText: toSearchText({ name, tagline, description, category, stage }),
 		});
@@ -201,28 +276,33 @@ export const getPublic = query({
 		}
 
 		const userId = await getAuthUserId(ctx);
-		const membership = userId
-			? await getMembership(ctx, startup._id, userId)
-			: null;
 
-		const memberships = await ctx.db
-			.query("memberships")
-			.withIndex("by_startup", (q) => q.eq("startupId", startup._id))
-			.take(50);
-
-		const team = [];
-		for (const member of memberships) {
-			const user = await ctx.db.get(member.userId);
-			if (user) {
-				team.push({
-					role: member.role,
-					user: toPublicUser(user),
-				});
-			}
-		}
-
+		// Team member profiles and membership/follow state are signed-in only.
+		const team: {
+			role: Doc<"memberships">["role"];
+			user: ReturnType<typeof toPublicUser>;
+		}[] = [];
 		let isFollowing = false;
+		let membership: Doc<"memberships"> | null = null;
+
 		if (userId) {
+			membership = await getMembership(ctx, startup._id, userId);
+
+			const memberships = await ctx.db
+				.query("memberships")
+				.withIndex("by_startup", (q) => q.eq("startupId", startup._id))
+				.take(50);
+
+			for (const member of memberships) {
+				const user = await ctx.db.get(member.userId);
+				if (user) {
+					team.push({
+						role: member.role,
+						user: toPublicUser(user),
+					});
+				}
+			}
+
 			const follow = await ctx.db
 				.query("follows")
 				.withIndex("by_user_and_startup", (q) =>
@@ -244,6 +324,14 @@ export const getPublic = query({
 			twitterUrl: startup.twitterUrl ?? null,
 			linkedinUrl: startup.linkedinUrl ?? null,
 			githubUrl: startup.githubUrl ?? null,
+			problem: startup.problem ?? null,
+			solution: startup.solution ?? null,
+			product: startup.product ?? null,
+			traction: startup.traction ?? null,
+			teamBlurb: startup.teamBlurb ?? null,
+			techStack: startup.techStack ?? [],
+			location: startup.location ?? null,
+			remote: startup.remote ?? null,
 			followerCount: startup.followerCount,
 			isAuthenticated: userId !== null,
 			isMember: membership !== null,
