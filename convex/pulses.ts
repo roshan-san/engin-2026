@@ -2,8 +2,8 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import { requireCycleAccess } from "./lib/cycles";
-import { requireMembership } from "./lib/membership";
 import { MAX_PROOF_LINKS } from "./lib/limits";
+import { requireMembership } from "./lib/membership";
 import { notifyFounders } from "./lib/notify";
 import {
 	currentStatus,

@@ -182,6 +182,12 @@ export const listMine = query({
 				.take(20);
 			const startup = await ctx.db.get(membership.startupId);
 			for (const cycle of items) {
+				if (
+					membership.role !== "founder" &&
+					!(await getCycleMember(ctx, cycle._id, userId))
+				) {
+					continue;
+				}
 				cycles.push({
 					...cycle,
 					startupName: startup?.name ?? "Startup",
