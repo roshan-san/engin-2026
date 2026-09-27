@@ -4,7 +4,7 @@ import { Button } from "~/components/ui/button";
 import {
 	createStartupSteps,
 	useCreateStartupWizard,
-} from "~/features/startup/public/hooks/useCreateStartupWizard";
+} from "~/features/teams/startup/public/hooks/useCreateStartupWizard";
 import { cn } from "~/lib/utils";
 
 export function CreateStartupPage() {

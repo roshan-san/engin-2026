@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
 import { BuildFrame } from "~/features/app/layout/BuildFrame";
-import { InviteForm } from "~/features/team/components/InviteForm";
-import { MemberList } from "~/features/team/components/MemberList";
-import { useTeamInvites } from "~/features/team/hooks/useTeamInvites";
+import { InviteForm } from "~/features/teams/team/components/InviteForm";
+import { MemberList } from "~/features/teams/team/components/MemberList";
+import { useTeamInvites } from "~/features/teams/team/hooks/useTeamInvites";
 
 export function TeamPage() {
 	return (

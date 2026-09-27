@@ -1,7 +1,7 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
-import { useAcceptInvite } from "~/features/team/hooks/useAcceptInvite";
+import { useAcceptInvite } from "~/features/teams/team/hooks/useAcceptInvite";
 
 type InviteAcceptPageProps = {
 	readonly token: string;

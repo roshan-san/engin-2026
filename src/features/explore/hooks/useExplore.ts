@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export function useExplore() {
 	const [term, setTerm] = useState("");
-	const results = useQuery(api.explore.search, {
+	const results = useQuery(api.teams.explore.search, {
 		term: term || undefined,
 	});
 

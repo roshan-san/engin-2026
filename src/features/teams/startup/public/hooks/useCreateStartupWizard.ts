@@ -8,8 +8,8 @@ import {
 	STARTUP_STAGES,
 	type StartupCategory,
 	type StartupStage,
-} from "~/features/startup/constants";
-import { createStartupSchema } from "~/features/startup/public/schemas/startup";
+} from "~/features/teams/startup/constants";
+import { createStartupSchema } from "~/features/teams/startup/public/schemas/startup";
 import { toErrorMessage, validate } from "~/lib/validation";
 
 type StepId =
@@ -121,7 +121,7 @@ function setStepValue(data: WizardData, id: StepId, value: string): WizardData {
 
 export function useCreateStartupWizard() {
 	const navigate = useNavigate();
-	const createStartup = useMutation(api.startups.create);
+	const createStartup = useMutation(api.teams.startups.create);
 	const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
 	const [stepIndex, setStepIndex] = useState(0);

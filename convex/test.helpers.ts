@@ -34,7 +34,7 @@ export async function signUp(
 
 export async function setUpStartup(t: TestConvex, headcount = 1) {
 	const founder = await signUp(t, "Founder");
-	const { startupId } = await founder.as.mutation(api.startups.create, {
+	const { startupId } = await founder.as.mutation(api.teams.startups.create, {
 		name: "Acme",
 	});
 	const roleId = await founder.as.mutation(api.roles.create, {

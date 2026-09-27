@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import { toErrorMessage } from "~/lib/validation";
 
 export function useNotifications() {
-	const invites = useQuery(api.invitations.listMine);
+	const invites = useQuery(api.teams.invitations.listMine);
 	const feed = useQuery(api.notifications.list);
-	const acceptInvite = useMutation(api.invitations.acceptById);
-	const declineInvite = useMutation(api.invitations.decline);
+	const acceptInvite = useMutation(api.teams.invitations.acceptById);
+	const declineInvite = useMutation(api.teams.invitations.decline);
 	const markRead = useMutation(api.notifications.markRead);
 	const [acceptingId, setAcceptingId] = useState<Id<"invites"> | null>(null);
 

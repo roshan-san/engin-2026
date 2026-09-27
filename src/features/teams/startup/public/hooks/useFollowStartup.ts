@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { toErrorMessage } from "~/lib/validation";
 
 export function useFollowStartup(startupId: Id<"startups"> | undefined) {
-	const toggleFollow = useMutation(api.follows.toggle);
+	const toggleFollow = useMutation(api.teams.follows.toggle);
 	const [isPending, setIsPending] = useState(false);
 
 	async function toggle() {

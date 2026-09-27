@@ -34,7 +34,7 @@ async function shipInClosedCycle(
 test("a profile shows internal Verified Pulses and Cycles as Proof of Work per public Startup", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await setup.founder.as.mutation(api.startups.update, {
+	await setup.founder.as.mutation(api.teams.startups.update, {
 		startupId: setup.startupId,
 		isPublic: true,
 	});
@@ -60,7 +60,7 @@ test("a profile shows internal Verified Pulses and Cycles as Proof of Work per p
 test("work at a private Startup is shown only as aggregate counts", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await setup.founder.as.mutation(api.startups.update, {
+	await setup.founder.as.mutation(api.teams.startups.update, {
 		startupId: setup.startupId,
 		isPublic: false,
 	});

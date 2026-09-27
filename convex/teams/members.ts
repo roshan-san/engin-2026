@@ -1,11 +1,11 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireUserId } from "./lib/auth";
-import { toMemberUser } from "./lib/people/users";
+import { mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
+import { toMemberUser } from "../lib/people/users";
 import {
 	requireFounderMembership,
 	requireMembership,
-} from "./lib/teams/membership";
+} from "../lib/teams/membership";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

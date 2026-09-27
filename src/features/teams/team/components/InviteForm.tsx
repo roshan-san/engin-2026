@@ -1,7 +1,10 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { INVITE_ROLES, type InviteRole } from "~/features/team/schemas/invite";
+import {
+	INVITE_ROLES,
+	type InviteRole,
+} from "~/features/teams/team/schemas/invite";
 
 type PendingInvite = {
 	_id: Id<"invites">;

@@ -2,12 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { Button } from "~/components/ui/button";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
-import { categoryLabel, stageLabel } from "~/features/startup/constants";
-import { WorkspaceApplicants } from "~/features/startup/workspace/components/WorkspaceApplicants";
-import { WorkspaceCycles } from "~/features/startup/workspace/components/WorkspaceCycles";
-import { WorkspaceOffers } from "~/features/startup/workspace/components/WorkspaceOffers";
-import { WorkspaceRoles } from "~/features/startup/workspace/components/WorkspaceRoles";
-import { WorkspaceTrials } from "~/features/startup/workspace/components/WorkspaceTrials";
+import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
+import { WorkspaceApplicants } from "~/features/teams/startup/workspace/components/WorkspaceApplicants";
+import { WorkspaceCycles } from "~/features/teams/startup/workspace/components/WorkspaceCycles";
+import { WorkspaceOffers } from "~/features/teams/startup/workspace/components/WorkspaceOffers";
+import { WorkspaceRoles } from "~/features/teams/startup/workspace/components/WorkspaceRoles";
+import { WorkspaceTrials } from "~/features/teams/startup/workspace/components/WorkspaceTrials";
 
 export function StartupPage() {
 	const { active: startup, isLoading } = useWorkspace();

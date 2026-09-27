@@ -4,7 +4,10 @@ import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
-import { type InviteRole, inviteSchema } from "~/features/team/schemas/invite";
+import {
+	type InviteRole,
+	inviteSchema,
+} from "~/features/teams/team/schemas/invite";
 import { toErrorMessage, validate } from "~/lib/validation";
 
 export function inviteLink(token: string): string {
@@ -17,15 +20,15 @@ export function useTeamInvites() {
 	const isFounder = startup?.role === "founder";
 
 	const members = useQuery(
-		api.members.list,
+		api.teams.members.list,
 		startupId ? { startupId } : "skip",
 	);
 	const invites = useQuery(
-		api.invitations.listInvites,
+		api.teams.invitations.listInvites,
 		startupId && isFounder ? { startupId } : "skip",
 	);
-	const createInvite = useMutation(api.invitations.create);
-	const revokeInvite = useMutation(api.invitations.revoke);
+	const createInvite = useMutation(api.teams.invitations.create);
+	const revokeInvite = useMutation(api.teams.invitations.revoke);
 
 	const [invitee, setInvitee] = useState("");
 	const [role, setRole] = useState<InviteRole>("member");

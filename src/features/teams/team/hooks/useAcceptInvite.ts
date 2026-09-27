@@ -7,8 +7,8 @@ import { toErrorMessage } from "~/lib/validation";
 
 export function useAcceptInvite(token: string) {
 	const navigate = useNavigate();
-	const invite = useQuery(api.invitations.getByToken, { token });
-	const acceptInvite = useMutation(api.invitations.acceptByToken);
+	const invite = useQuery(api.teams.invitations.getByToken, { token });
+	const acceptInvite = useMutation(api.teams.invitations.acceptByToken);
 	const [isPending, setIsPending] = useState(false);
 
 	async function accept() {

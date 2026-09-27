@@ -3,8 +3,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 
 export function useWorkspace() {
-	const workspace = useQuery(api.startups.getWorkspace);
-	const setActive = useMutation(api.startups.setActive);
+	const workspace = useQuery(api.teams.startups.getWorkspace);
+	const setActive = useMutation(api.teams.startups.setActive);
 
 	const active = workspace?.active ?? null;
 	const startups = workspace?.startups ?? [];

@@ -5,16 +5,16 @@ import { PageLoading } from "~/components/globals/PageLoading";
 import { PublicHeader } from "~/components/shared/PublicHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { categoryLabel, stageLabel } from "~/features/startup/constants";
-import { PublicOpenings } from "~/features/startup/public/components/PublicOpenings";
-import { useFollowStartup } from "~/features/startup/public/hooks/useFollowStartup";
+import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
+import { PublicOpenings } from "~/features/teams/startup/public/components/PublicOpenings";
+import { useFollowStartup } from "~/features/teams/startup/public/hooks/useFollowStartup";
 
 type PublicStartupPageProps = {
 	readonly slug: string;
 };
 
 export function PublicStartupPage({ slug }: PublicStartupPageProps) {
-	const startup = useQuery(api.startups.getPublic, { slug });
+	const startup = useQuery(api.teams.startups.getPublic, { slug });
 	const { toggle, isPending } = useFollowStartup(startup?._id);
 
 	if (startup === undefined) {

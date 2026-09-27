@@ -1,8 +1,8 @@
 import { useWorkspace } from "~/features/app/hooks/useWorkspace";
 import { BuildFrame } from "~/features/app/layout/BuildFrame";
-import { WorkspaceApplicants } from "~/features/startup/workspace/components/WorkspaceApplicants";
-import { WorkspaceRoles } from "~/features/startup/workspace/components/WorkspaceRoles";
-import { WorkspaceTrials } from "~/features/startup/workspace/components/WorkspaceTrials";
+import { WorkspaceApplicants } from "~/features/teams/startup/workspace/components/WorkspaceApplicants";
+import { WorkspaceRoles } from "~/features/teams/startup/workspace/components/WorkspaceRoles";
+import { WorkspaceTrials } from "~/features/teams/startup/workspace/components/WorkspaceTrials";
 
 export function TrialsPage() {
 	return (

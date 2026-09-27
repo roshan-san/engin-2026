@@ -32,7 +32,7 @@ async function isMemberOf(
 	as: Awaited<ReturnType<typeof signUp>>["as"],
 	startupName: string,
 ) {
-	const workspace = await as.query(api.startups.getWorkspace, {});
+	const workspace = await as.query(api.teams.startups.getWorkspace, {});
 	return (workspace?.startups ?? []).some(
 		(entry) => entry.startup.name === startupName,
 	);
@@ -87,13 +87,16 @@ test("joining by Invite earns no Score", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
-	const { inviteId } = await setup.founder.as.mutation(api.invitations.create, {
-		startupId: setup.startupId,
-		invitee: "alice@example.com",
-		role: "member",
-	});
+	const { inviteId } = await setup.founder.as.mutation(
+		api.teams.invitations.create,
+		{
+			startupId: setup.startupId,
+			invitee: "alice@example.com",
+			role: "member",
+		},
+	);
 
-	await alice.as.mutation(api.invitations.acceptById, { inviteId });
+	await alice.as.mutation(api.teams.invitations.acceptById, { inviteId });
 
 	expect(await isMemberOf(alice.as, "Acme")).toBe(true);
 	expect(await scoreOf(t, alice.userId)).toBe(0);

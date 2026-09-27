@@ -1,8 +1,8 @@
 import { v } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
-import type { QueryCtx } from "./_generated/server";
-import { query } from "./_generated/server";
-import { buildSearchText } from "./lib/text";
+import type { Doc } from "../_generated/dataModel";
+import type { QueryCtx } from "../_generated/server";
+import { query } from "../_generated/server";
+import { buildSearchText } from "../lib/text";
 
 const PAGE_SIZE = 30;
 
