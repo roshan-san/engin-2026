@@ -24,7 +24,9 @@ export function MyVerdict({
 	isPending,
 	run,
 }: MyVerdictProps) {
-	const setVisibility = useMutation(api.applications.setEvaluationVisibility);
+	const setVisibility = useMutation(
+		api.hiring.applications.setEvaluationVisibility,
+	);
 
 	return (
 		<section className="space-y-3 rounded-lg border p-4">

@@ -12,8 +12,8 @@ type WorkspaceOffersProps = {
 };
 
 export function WorkspaceOffers({ startupId }: WorkspaceOffersProps) {
-	const offers = useQuery(api.offers.listForStartup, { startupId });
-	const withdraw = useMutation(api.offers.withdraw);
+	const offers = useQuery(api.hiring.offers.listForStartup, { startupId });
+	const withdraw = useMutation(api.hiring.offers.withdraw);
 	const [pendingId, setPendingId] = useState<Id<"offers"> | null>(null);
 
 	if (!offers || offers.length === 0) {

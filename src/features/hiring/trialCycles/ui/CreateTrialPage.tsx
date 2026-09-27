@@ -17,10 +17,10 @@ export function CreateTrialPage() {
 	const navigate = useNavigate();
 	const { active, isLoading } = useWorkspace();
 	const roles = useQuery(
-		api.roles.list,
+		api.hiring.roles.list,
 		active ? { startupId: active.startup._id } : "skip",
 	);
-	const createTrial = useMutation(api.trialCycles.create);
+	const createTrial = useMutation(api.hiring.trialCycles.create);
 	const [roleId, setRoleId] = useState("");
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");

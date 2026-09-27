@@ -16,8 +16,10 @@ export function PublicOpenings({
 	startupId,
 	isAuthenticated,
 }: PublicOpeningsProps) {
-	const roles = useQuery(api.roles.listOpenByStartup, { startupId });
-	const trials = useQuery(api.trialCycles.listOpenByStartup, { startupId });
+	const roles = useQuery(api.hiring.roles.listOpenByStartup, { startupId });
+	const trials = useQuery(api.hiring.trialCycles.listOpenByStartup, {
+		startupId,
+	});
 
 	return (
 		<div className="space-y-8">

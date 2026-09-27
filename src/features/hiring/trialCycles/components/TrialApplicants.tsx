@@ -24,7 +24,7 @@ type TrialApplicantsProps = {
 };
 
 export function TrialApplicants({ applicants }: TrialApplicantsProps) {
-	const decide = useMutation(api.applications.decide);
+	const decide = useMutation(api.hiring.applications.decide);
 	const [pendingId, setPendingId] = useState<string | null>(null);
 
 	async function setDecision(

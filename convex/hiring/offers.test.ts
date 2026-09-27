@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";
 import {
 	closeWithVerdict,
 	createTest,
@@ -9,7 +9,7 @@ import {
 	signUp,
 	startedTrialWith,
 	type TestConvex,
-} from "./test.helpers";
+} from "../test.helpers";
 
 beforeEach(() => {
 	vi.useFakeTimers();
@@ -24,7 +24,7 @@ async function setUpOffer(t: TestConvex) {
 	const alice = await signUp(t, "Alice");
 	const trialCycleId = await startedTrialWith(t, setup, [alice]);
 	await closeWithVerdict(t, setup, trialCycleId, alice, "passed_with_offer");
-	const [offer] = await alice.as.query(api.offers.listMine, {});
+	const [offer] = await alice.as.query(api.hiring.offers.listMine, {});
 	return { setup, alice, offer };
 }
 
@@ -50,7 +50,7 @@ test("accepting an Offer makes the Participant a Member and earns 120 Score", as
 	const t = createTest();
 	const { setup, alice, offer } = await setUpOffer(t);
 
-	await alice.as.mutation(api.offers.accept, { offerId: offer._id });
+	await alice.as.mutation(api.hiring.offers.accept, { offerId: offer._id });
 
 	expect(await isMemberOf(alice.as, "Acme")).toBe(true);
 	expect(await scoreOf(t, alice.userId)).toBe(200);
@@ -63,7 +63,7 @@ test("declining an Offer keeps the passed Verdict's Score", async () => {
 	const t = createTest();
 	const { alice, offer } = await setUpOffer(t);
 
-	await alice.as.mutation(api.offers.decline, { offerId: offer._id });
+	await alice.as.mutation(api.hiring.offers.decline, { offerId: offer._id });
 
 	expect(await isMemberOf(alice.as, "Acme")).toBe(false);
 	expect(await scoreOf(t, alice.userId)).toBe(80);
@@ -73,13 +73,15 @@ test("a withdrawn Offer can no longer be accepted", async () => {
 	const t = createTest();
 	const { setup, alice, offer } = await setUpOffer(t);
 
-	await setup.founder.as.mutation(api.offers.withdraw, { offerId: offer._id });
+	await setup.founder.as.mutation(api.hiring.offers.withdraw, {
+		offerId: offer._id,
+	});
 
 	expect(await notificationTitles(alice.as)).toContain(
 		"Your Offer from Acme was withdrawn",
 	);
 	await expect(
-		alice.as.mutation(api.offers.accept, { offerId: offer._id }),
+		alice.as.mutation(api.hiring.offers.accept, { offerId: offer._id }),
 	).rejects.toThrow("no longer pending");
 });
 

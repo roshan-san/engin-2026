@@ -37,7 +37,7 @@ export async function setUpStartup(t: TestConvex, headcount = 1) {
 	const { startupId } = await founder.as.mutation(api.teams.startups.create, {
 		name: "Acme",
 	});
-	const roleId = await founder.as.mutation(api.roles.create, {
+	const roleId = await founder.as.mutation(api.hiring.roles.create, {
 		startupId,
 		title: "Engineer",
 		type: "full-time",
@@ -59,7 +59,7 @@ export async function createTrial(
 ) {
 	const now = Date.now();
 	const startsAt = now + (overrides.startsInMs ?? DAY);
-	return await setup.founder.as.mutation(api.trialCycles.create, {
+	return await setup.founder.as.mutation(api.hiring.trialCycles.create, {
 		startupId: setup.startupId,
 		roleId: setup.roleId,
 		title: "Build a feature",
@@ -103,7 +103,7 @@ export async function startedTrialWith(
 ) {
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	for (const participant of participants) {
-		await participant.as.mutation(api.applications.joinTrial, {
+		await participant.as.mutation(api.hiring.applications.joinTrial, {
 			trialCycleId,
 		});
 	}
@@ -138,7 +138,7 @@ export async function closeWithVerdict(
 	participant: Awaited<ReturnType<typeof signUp>>,
 	verdict: "passed_with_offer" | "passed" | "not_passed",
 ) {
-	await setup.founder.as.mutation(api.trialCycles.close, {
+	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId,
 		verdicts: [
 			{

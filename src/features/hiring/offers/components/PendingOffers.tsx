@@ -7,9 +7,9 @@ import { Button } from "~/components/ui/button";
 import { toErrorMessage } from "~/lib/validation";
 
 export function PendingOffers() {
-	const offers = useQuery(api.offers.listMine, {});
-	const accept = useMutation(api.offers.accept);
-	const decline = useMutation(api.offers.decline);
+	const offers = useQuery(api.hiring.offers.listMine, {});
+	const accept = useMutation(api.hiring.offers.accept);
+	const decline = useMutation(api.hiring.offers.decline);
 	const [pendingId, setPendingId] = useState<Id<"offers"> | null>(null);
 
 	const pending = offers?.filter((offer) => offer.status === "pending") ?? [];

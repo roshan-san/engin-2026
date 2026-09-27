@@ -12,7 +12,7 @@ import { formatDateRange } from "~/lib/dates";
 
 export function OpportunitiesPage() {
 	const [term, setTerm] = useState("");
-	const results = useQuery(api.opportunities.search, {
+	const results = useQuery(api.hiring.opportunities.search, {
 		term: term || undefined,
 	});
 

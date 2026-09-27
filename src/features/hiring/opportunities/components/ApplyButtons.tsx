@@ -13,8 +13,8 @@ type ApplyButtonsProps = {
 };
 
 export function ApplyButtons({ trialCycleId, admission }: ApplyButtonsProps) {
-	const applyToTrial = useMutation(api.applications.applyToTrial);
-	const joinTrial = useMutation(api.applications.joinTrial);
+	const applyToTrial = useMutation(api.hiring.applications.applyToTrial);
+	const joinTrial = useMutation(api.hiring.applications.joinTrial);
 	const [isPending, setIsPending] = useState(false);
 
 	async function run(action: () => Promise<unknown>, success: string) {

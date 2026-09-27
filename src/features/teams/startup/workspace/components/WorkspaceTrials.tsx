@@ -16,7 +16,7 @@ export function WorkspaceTrials({
 	startupId,
 	isFounder,
 }: WorkspaceTrialsProps) {
-	const trials = useQuery(api.trialCycles.list, { startupId });
+	const trials = useQuery(api.hiring.trialCycles.list, { startupId });
 
 	return (
 		<section className="space-y-4">

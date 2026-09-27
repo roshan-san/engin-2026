@@ -14,8 +14,8 @@ type WorkspaceRolesProps = {
 };
 
 export function WorkspaceRoles({ startupId, isFounder }: WorkspaceRolesProps) {
-	const roles = useQuery(api.roles.list, { startupId });
-	const closeRoleMutation = useMutation(api.roles.close);
+	const roles = useQuery(api.hiring.roles.list, { startupId });
+	const closeRoleMutation = useMutation(api.hiring.roles.close);
 
 	async function closeRole(roleId: Id<"roles">) {
 		try {

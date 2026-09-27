@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";
 import {
 	applicationIdOf,
 	createTest,
@@ -8,7 +8,7 @@ import {
 	setUpStartup,
 	signUp,
 	startedTrialWith,
-} from "./test.helpers";
+} from "../test.helpers";
 
 beforeEach(() => {
 	vi.useFakeTimers();
@@ -26,7 +26,7 @@ test("a Trial Cycle cannot close until every Participant has a Verdict", async (
 	const trialCycleId = await startedTrialWith(t, setup, [alice, bob]);
 
 	await expect(
-		setup.founder.as.mutation(api.trialCycles.close, {
+		setup.founder.as.mutation(api.hiring.trialCycles.close, {
 			trialCycleId,
 			verdicts: [
 				{
@@ -51,7 +51,7 @@ test("a Trial Cycle closes with Verdicts alone, and its Pulses earn no Score", a
 	await alice.as.mutation(api.pulses.assignToMe, { pulseId });
 	await alice.as.mutation(api.pulses.setStatus, { pulseId, status: "done" });
 
-	await setup.founder.as.mutation(api.trialCycles.close, {
+	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId,
 		verdicts: [
 			{
@@ -71,7 +71,7 @@ test("a passed Verdict earns 80 Score and not passed earns nothing", async () =>
 	const bob = await signUp(t, "Bob");
 	const trialCycleId = await startedTrialWith(t, setup, [alice, bob]);
 
-	await setup.founder.as.mutation(api.trialCycles.close, {
+	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId,
 		verdicts: [
 			{
@@ -87,7 +87,9 @@ test("a passed Verdict earns 80 Score and not passed earns nothing", async () =>
 
 	expect(await scoreOf(t, alice.userId)).toBe(80);
 	expect(await scoreOf(t, bob.userId)).toBe(0);
-	const trial = await alice.as.query(api.trialCycles.get, { trialCycleId });
+	const trial = await alice.as.query(api.hiring.trialCycles.get, {
+		trialCycleId,
+	});
 	expect(trial?.status).toBe("closed");
 	expect(trial?.myVerdict).toBe("passed");
 	expect(await notificationTitles(bob.as)).toContain(
@@ -100,7 +102,7 @@ test("Leaving a started Trial Cycle costs 40 Score", async () => {
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
 	const passedTrial = await startedTrialWith(t, setup, [alice]);
-	await setup.founder.as.mutation(api.trialCycles.close, {
+	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId: passedTrial,
 		verdicts: [
 			{
@@ -111,7 +113,7 @@ test("Leaving a started Trial Cycle costs 40 Score", async () => {
 	});
 	const leftTrial = await startedTrialWith(t, setup, [alice]);
 
-	await alice.as.mutation(api.applications.leaveTrial, {
+	await alice.as.mutation(api.hiring.applications.leaveTrial, {
 		trialCycleId: leftTrial,
 	});
 
@@ -124,7 +126,7 @@ test("an Evaluation is private until the Participant shows it", async () => {
 	const alice = await signUp(t, "Alice");
 	const trialCycleId = await startedTrialWith(t, setup, [alice]);
 	const applicationId = await applicationIdOf(t, trialCycleId, alice.userId);
-	await setup.founder.as.mutation(api.trialCycles.close, {
+	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId,
 		verdicts: [{ applicationId, verdict: "passed", evaluation: "Sharp work" }],
 	});
@@ -134,7 +136,7 @@ test("an Evaluation is private until the Participant shows it", async () => {
 	});
 	expect(before?.evaluations).toEqual([]);
 
-	await alice.as.mutation(api.applications.setEvaluationVisibility, {
+	await alice.as.mutation(api.hiring.applications.setEvaluationVisibility, {
 		applicationId,
 		isPublic: true,
 	});

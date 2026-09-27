@@ -8,10 +8,15 @@
  * @module
  */
 
-import type * as applications from "../applications.js";
 import type * as auth from "../auth.js";
 import type * as cycles from "../cycles.js";
 import type * as dodo from "../dodo.js";
+import type * as hiring_applications from "../hiring/applications.js";
+import type * as hiring_offers from "../hiring/offers.js";
+import type * as hiring_opportunities from "../hiring/opportunities.js";
+import type * as hiring_roles from "../hiring/roles.js";
+import type * as hiring_trialCycles from "../hiring/trialCycles.js";
+import type * as hiring_trialMessages from "../hiring/trialMessages.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_hiring_entries from "../lib/hiring/entries.js";
@@ -35,19 +40,14 @@ import type * as lib_work_cycles from "../lib/work/cycles.js";
 import type * as lib_work_pulses from "../lib/work/pulses.js";
 import type * as migrations from "../migrations.js";
 import type * as notifications from "../notifications.js";
-import type * as offers from "../offers.js";
-import type * as opportunities from "../opportunities.js";
 import type * as people_billing from "../people/billing.js";
 import type * as people_users from "../people/users.js";
 import type * as pulses from "../pulses.js";
-import type * as roles from "../roles.js";
 import type * as teams_explore from "../teams/explore.js";
 import type * as teams_follows from "../teams/follows.js";
 import type * as teams_invitations from "../teams/invitations.js";
 import type * as teams_members from "../teams/members.js";
 import type * as teams_startups from "../teams/startups.js";
-import type * as trialCycles from "../trialCycles.js";
-import type * as trialMessages from "../trialMessages.js";
 
 import type {
   ApiFromModules,
@@ -56,10 +56,15 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  applications: typeof applications;
   auth: typeof auth;
   cycles: typeof cycles;
   dodo: typeof dodo;
+  "hiring/applications": typeof hiring_applications;
+  "hiring/offers": typeof hiring_offers;
+  "hiring/opportunities": typeof hiring_opportunities;
+  "hiring/roles": typeof hiring_roles;
+  "hiring/trialCycles": typeof hiring_trialCycles;
+  "hiring/trialMessages": typeof hiring_trialMessages;
   http: typeof http;
   "lib/auth": typeof lib_auth;
   "lib/hiring/entries": typeof lib_hiring_entries;
@@ -83,19 +88,14 @@ declare const fullApi: ApiFromModules<{
   "lib/work/pulses": typeof lib_work_pulses;
   migrations: typeof migrations;
   notifications: typeof notifications;
-  offers: typeof offers;
-  opportunities: typeof opportunities;
   "people/billing": typeof people_billing;
   "people/users": typeof people_users;
   pulses: typeof pulses;
-  roles: typeof roles;
   "teams/explore": typeof teams_explore;
   "teams/follows": typeof teams_follows;
   "teams/invitations": typeof teams_invitations;
   "teams/members": typeof teams_members;
   "teams/startups": typeof teams_startups;
-  trialCycles: typeof trialCycles;
-  trialMessages: typeof trialMessages;
 }>;
 
 /**

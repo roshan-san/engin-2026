@@ -1,24 +1,24 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireUserId } from "./lib/auth";
+import { mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
 import {
 	releaseParticipantSpot,
 	requireCanEnter,
 	takeParticipantSpot,
-} from "./lib/hiring/entries";
+} from "../lib/hiring/entries";
 import {
 	getTrialApplication,
 	isTrialLive,
 	requireAcceptingEntries,
-} from "./lib/hiring/trialCycles";
-import { MAX_TRIAL_APPLICATIONS } from "./lib/limits";
-import { notify, notifyFounders } from "./lib/notify";
-import { refreshUserScore } from "./lib/reputation/score";
+} from "../lib/hiring/trialCycles";
+import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
+import { notify, notifyFounders } from "../lib/notify";
+import { refreshUserScore } from "../lib/reputation/score";
 import {
 	requireFounderMembership,
 	requireMembership,
-} from "./lib/teams/membership";
-import { optionalText } from "./lib/text";
+} from "../lib/teams/membership";
+import { optionalText } from "../lib/text";
 
 export const listMine = query({
 	args: {},

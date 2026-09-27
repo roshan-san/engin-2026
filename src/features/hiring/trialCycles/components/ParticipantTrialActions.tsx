@@ -25,9 +25,9 @@ export function ParticipantTrialActions({
 	isPending,
 	run,
 }: ParticipantTrialActionsProps) {
-	const applyToTrial = useMutation(api.applications.applyToTrial);
-	const joinTrial = useMutation(api.applications.joinTrial);
-	const leaveTrial = useMutation(api.applications.leaveTrial);
+	const applyToTrial = useMutation(api.hiring.applications.applyToTrial);
+	const joinTrial = useMutation(api.hiring.applications.joinTrial);
+	const leaveTrial = useMutation(api.hiring.applications.leaveTrial);
 
 	if (!myStatus) {
 		if (trialStatus !== "open") {

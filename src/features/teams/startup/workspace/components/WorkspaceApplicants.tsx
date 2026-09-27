@@ -14,8 +14,10 @@ type WorkspaceApplicantsProps = {
 };
 
 export function WorkspaceApplicants({ startupId }: WorkspaceApplicantsProps) {
-	const applications = useQuery(api.applications.listForStartup, { startupId });
-	const decide = useMutation(api.applications.decide);
+	const applications = useQuery(api.hiring.applications.listForStartup, {
+		startupId,
+	});
+	const decide = useMutation(api.hiring.applications.decide);
 	const [pendingId, setPendingId] = useState<string | null>(null);
 
 	async function setDecision(

@@ -1,11 +1,11 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireUserId } from "./lib/auth";
+import { mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
 import {
 	requireFounderMembership,
 	requireMembership,
-} from "./lib/teams/membership";
-import { buildSearchText, optionalText, requireText } from "./lib/text";
+} from "../lib/teams/membership";
+import { buildSearchText, optionalText, requireText } from "../lib/text";
 
 function parseSkills(skills: string[]): string[] {
 	return [

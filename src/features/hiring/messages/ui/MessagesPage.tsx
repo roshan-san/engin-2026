@@ -5,7 +5,7 @@ import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
 
 export function MessagesPage() {
-	const rooms = useQuery(api.trialMessages.listRooms);
+	const rooms = useQuery(api.hiring.trialMessages.listRooms);
 
 	return (
 		<div className="mx-auto w-full max-w-2xl space-y-6 py-8">

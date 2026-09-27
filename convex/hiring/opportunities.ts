@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import type { QueryCtx } from "./_generated/server";
-import { query } from "./_generated/server";
-import { buildSearchText } from "./lib/text";
+import type { QueryCtx } from "../_generated/server";
+import { query } from "../_generated/server";
+import { buildSearchText } from "../lib/text";
 
 const PAGE_SIZE = 30;
 

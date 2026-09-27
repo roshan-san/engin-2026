@@ -12,8 +12,8 @@ type TrialChatProps = {
 };
 
 export function TrialChat({ trialCycleId }: TrialChatProps) {
-	const messages = useQuery(api.trialMessages.list, { trialCycleId });
-	const send = useMutation(api.trialMessages.send);
+	const messages = useQuery(api.hiring.trialMessages.list, { trialCycleId });
+	const send = useMutation(api.hiring.trialMessages.send);
 	const [body, setBody] = useState("");
 	const [isPending, setIsPending] = useState(false);
 

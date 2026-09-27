@@ -31,7 +31,7 @@ export function CloseTrialForm({
 	canOffer,
 	onDone,
 }: CloseTrialFormProps) {
-	const close = useMutation(api.trialCycles.close);
+	const close = useMutation(api.hiring.trialCycles.close);
 	const [verdicts, setVerdicts] = useState<Record<string, VerdictDraft>>({});
 	const [isPending, setIsPending] = useState(false);
 

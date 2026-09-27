@@ -1,9 +1,9 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireUserId } from "./lib/auth";
-import { isTrialLive, requireTrialAccess } from "./lib/hiring/trialCycles";
-import { loadPublicUser } from "./lib/people/users";
-import { requireText } from "./lib/text";
+import { mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
+import { isTrialLive, requireTrialAccess } from "../lib/hiring/trialCycles";
+import { loadPublicUser } from "../lib/people/users";
+import { requireText } from "../lib/text";
 
 export const list = query({
 	args: { trialCycleId: v.id("trialCycles") },

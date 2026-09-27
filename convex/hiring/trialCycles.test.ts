@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
+import { api } from "../_generated/api";
 import {
 	advancePast,
 	applicationIdOf,
@@ -13,7 +13,7 @@ import {
 	signUp,
 	startedTrialWith,
 	type TestConvex,
-} from "./test.helpers";
+} from "../test.helpers";
 
 beforeEach(() => {
 	vi.useFakeTimers();
@@ -34,9 +34,11 @@ test("a person can join an open-admission Trial Cycle", async () => {
 	const trialCycleId = await createTrial(setup);
 	const alice = await signUp(t, "Alice");
 
-	await alice.as.mutation(api.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
 
-	const trial = await alice.as.query(api.trialCycles.get, { trialCycleId });
+	const trial = await alice.as.query(api.hiring.trialCycles.get, {
+		trialCycleId,
+	});
 	expect(trial?.isParticipant).toBe(true);
 });
 
@@ -45,11 +47,13 @@ test("a Trial Cycle with Participants becomes active at its start time", async (
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
 
 	await advancePast(t, DAY + HOUR);
 
-	const trial = await alice.as.query(api.trialCycles.get, { trialCycleId });
+	const trial = await alice.as.query(api.hiring.trialCycles.get, {
+		trialCycleId,
+	});
 	expect(trial?.status).toBe("active");
 });
 
@@ -60,7 +64,7 @@ test("a Trial Cycle nobody joined is cancelled at its start time and the Founder
 
 	await advancePast(t, DAY + HOUR);
 
-	const trial = await setup.founder.as.query(api.trialCycles.get, {
+	const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
 		trialCycleId,
 	});
 	expect(trial?.status).toBe("cancelled");
@@ -74,7 +78,7 @@ test("Participants are told when a Trial Cycle starts", async () => {
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
 
 	await advancePast(t, DAY + HOUR);
 
@@ -88,12 +92,16 @@ test("a Founder can cancel an active Trial Cycle and Participants are told", asy
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
 	await advancePast(t, DAY + HOUR);
 
-	await setup.founder.as.mutation(api.trialCycles.cancel, { trialCycleId });
+	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
+		trialCycleId,
+	});
 
-	const trial = await alice.as.query(api.trialCycles.get, { trialCycleId });
+	const trial = await alice.as.query(api.hiring.trialCycles.get, {
+		trialCycleId,
+	});
 	expect(trial?.status).toBe("cancelled");
 	expect(await notificationTitles(alice.as)).toContain(
 		"Build a feature was cancelled",
@@ -105,12 +113,16 @@ test("a cancelled Trial Cycle stays cancelled when its start time passes", async
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.applications.joinTrial, { trialCycleId });
-	await setup.founder.as.mutation(api.trialCycles.cancel, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
+		trialCycleId,
+	});
 
 	await advancePast(t, DAY + HOUR);
 
-	const trial = await alice.as.query(api.trialCycles.get, { trialCycleId });
+	const trial = await alice.as.query(api.hiring.trialCycles.get, {
+		trialCycleId,
+	});
 	expect(trial?.status).toBe("cancelled");
 });
 
@@ -131,12 +143,12 @@ test("nobody can apply to or join a Trial Cycle after its application deadline",
 	vi.advanceTimersByTime(DAY + HOUR);
 
 	await expect(
-		alice.as.mutation(api.applications.joinTrial, {
+		alice.as.mutation(api.hiring.applications.joinTrial, {
 			trialCycleId: openTrial,
 		}),
 	).rejects.toThrow("no longer accepting");
 	await expect(
-		alice.as.mutation(api.applications.applyToTrial, {
+		alice.as.mutation(api.hiring.applications.applyToTrial, {
 			trialCycleId: applicationTrial,
 		}),
 	).rejects.toThrow("no longer accepting");
@@ -155,7 +167,9 @@ test("work stops when a Trial Cycle is cancelled", async () => {
 	await alice.as.mutation(api.pulses.assignToMe, { pulseId });
 	await alice.as.mutation(api.pulses.setStatus, { pulseId, status: "done" });
 
-	await setup.founder.as.mutation(api.trialCycles.cancel, { trialCycleId });
+	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
+		trialCycleId,
+	});
 
 	await expect(
 		setup.founder.as.mutation(api.pulses.verify, { pulseId }),
@@ -173,16 +187,20 @@ test("pending applications are rejected when a Trial Cycle starts", async () => 
 	});
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
-	await alice.as.mutation(api.applications.applyToTrial, { trialCycleId });
-	await bob.as.mutation(api.applications.applyToTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.applyToTrial, {
+		trialCycleId,
+	});
+	await bob.as.mutation(api.hiring.applications.applyToTrial, { trialCycleId });
 	const aliceApplication = await applicationIdOf(t, trialCycleId, alice.userId);
-	await setup.founder.as.mutation(api.applications.decide, {
+	await setup.founder.as.mutation(api.hiring.applications.decide, {
 		applicationId: aliceApplication,
 		status: "joined",
 	});
 
 	await advancePast(t, DAY + HOUR);
 
-	const trial = await bob.as.query(api.trialCycles.get, { trialCycleId });
+	const trial = await bob.as.query(api.hiring.trialCycles.get, {
+		trialCycleId,
+	});
 	expect(trial?.myStatus).toBe("rejected");
 });

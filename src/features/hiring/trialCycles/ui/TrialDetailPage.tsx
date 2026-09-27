@@ -22,8 +22,8 @@ type TrialDetailPageProps = {
 
 export function TrialDetailPage({ trialCycleId }: TrialDetailPageProps) {
 	const id = trialCycleId as Id<"trialCycles">;
-	const trial = useQuery(api.trialCycles.get, { trialCycleId: id });
-	const cancel = useMutation(api.trialCycles.cancel);
+	const trial = useQuery(api.hiring.trialCycles.get, { trialCycleId: id });
+	const cancel = useMutation(api.hiring.trialCycles.cancel);
 	const [isPending, setIsPending] = useState(false);
 	const [isClosing, setIsClosing] = useState(false);
 

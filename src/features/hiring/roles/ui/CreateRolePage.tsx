@@ -15,7 +15,7 @@ import { toErrorMessage } from "~/lib/validation";
 export function CreateRolePage() {
 	const navigate = useNavigate();
 	const { active, isLoading } = useWorkspace();
-	const createRole = useMutation(api.roles.create);
+	const createRole = useMutation(api.hiring.roles.create);
 	const [title, setTitle] = useState("");
 	const [type, setType] = useState<(typeof ROLE_TYPES)[number]["value"]>(
 		ROLE_TYPES[0].value,
