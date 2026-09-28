@@ -37,7 +37,7 @@ product, and a small Playwright suite locks in the critical flows across every p
   4. The interface renders dark-only with the new accent colour and typeface, replacing the old shell.
   5. A signed-in User opens a Pitch, a profile or Discover without leaving the app shell; a signed-out visitor sees the same pages with a simple public header.
 
-**Plans**: 7/9 plans executed
+**Plans**: 8/9 plans executed
 
 Plans:
 **Wave 1**
@@ -54,7 +54,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [x] 01-07-PLAN.md — Mobile tab bar, Startup sheet, top bar, account sheet, Inbox/Threads segments (wave 4)
-- [ ] 01-08-PLAN.md — Remove the old /app app; last ui/ to pages/ moves; kept code repointed (wave 4)
+- [x] 01-08-PLAN.md — Remove the old /app app; last ui/ to pages/ moves; kept code repointed (wave 4)
 
 **Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 01-09-PLAN.md — Shortcut registry, ⌘K palette, ? sheet, / search, hints (wave 5)
@@ -139,7 +139,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Shell & Navigation Foundation | 7/9 | In Progress|  |
+| 1. Shell & Navigation Foundation | 8/9 | In Progress|  |
 | 2. My Pulses & Cycle Boards | 0/TBD | Not started | - |
 | 3. Team Workspace | 0/TBD | Not started | - |
 | 4. Complete Trial Cycles | 0/TBD | Not started | - |
