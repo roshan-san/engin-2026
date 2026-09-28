@@ -16,7 +16,7 @@ export function useAcceptInvite(token: string) {
 		try {
 			await acceptInvite({ token });
 			toast.success("Invite accepted");
-			await navigate({ to: "/app" });
+			await navigate({ to: "/my-pulses" });
 		} catch (error) {
 			toast.error(toErrorMessage(error, "Failed to accept invite"));
 		} finally {

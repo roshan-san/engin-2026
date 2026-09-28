@@ -112,7 +112,7 @@ export function PricingPage() {
 					</CardContent>
 					<CardFooter>
 						<Button asChild variant="outline" className="w-full">
-							<Link to="/app">Back to Build</Link>
+							<Link to="/my-pulses">Back to My Pulses</Link>
 						</Button>
 					</CardFooter>
 				</Card>
@@ -142,7 +142,7 @@ export function PricingPage() {
 					<CardFooter>
 						{plan?.isPro ? (
 							<Button asChild className="w-full">
-								<Link to="/app">Back to Build</Link>
+								<Link to="/my-pulses">Back to My Pulses</Link>
 							</Button>
 						) : (
 							<Button

@@ -24,7 +24,7 @@ export function useUpgrade() {
 		setIsLoading(true);
 		try {
 			const result = await createCheckout({
-				returnUrl: `${window.location.origin}/app`,
+				returnUrl: `${window.location.origin}/my-pulses`,
 				interval,
 			});
 			window.location.href = result.checkoutUrl;

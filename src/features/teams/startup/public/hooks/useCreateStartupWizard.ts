@@ -167,7 +167,7 @@ export function useCreateStartupWizard() {
 
 		setIsPending(true);
 		try {
-			await createStartup({
+			const created = await createStartup({
 				name: result.data.name,
 				description: result.data.description,
 				tagline: result.data.tagline,
@@ -176,7 +176,10 @@ export function useCreateStartupWizard() {
 				website: result.data.website,
 			});
 			toast.success("Startup created");
-			await navigate({ to: "/app" });
+			await navigate({
+				to: "/s/$slug/cycles",
+				params: { slug: created.slug },
+			});
 		} catch (error) {
 			toast.error(toErrorMessage(error, "Failed to create startup"));
 		} finally {
