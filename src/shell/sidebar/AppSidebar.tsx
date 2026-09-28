@@ -2,14 +2,18 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarHeader,
 	SidebarMenu,
+	SidebarMenuBadge,
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "~/components/ui/sidebar";
-import { DISCOVER_NAV, PERSONAL_NAV, STARTUP_NAV } from "~/shell/nav";
+import { AccountMenu } from "~/shell/account/AccountMenu";
 import { useFocusedStartup } from "~/shell/hooks/useFocusedStartup";
+import { useNotifications } from "~/shell/hooks/useNotifications";
+import { DISCOVER_NAV, PERSONAL_NAV, STARTUP_NAV } from "~/shell/nav";
 import { StartupSwitcher } from "~/shell/sidebar/StartupSwitcher";
 
 /**
@@ -22,6 +26,7 @@ export function AppSidebar() {
 		select: (state) => state.location.pathname,
 	});
 	const { focused } = useFocusedStartup();
+	const { count, isLoading: notificationsLoading } = useNotifications();
 	const DiscoverIcon = DISCOVER_NAV.icon;
 
 	return (
@@ -42,6 +47,8 @@ export function AppSidebar() {
 					<SidebarMenu>
 						{PERSONAL_NAV.map(({ label, to, icon: Icon }) => {
 							const active = pathname.startsWith(to);
+							const showBadge =
+								label === "Inbox" && !notificationsLoading && count > 0;
 							return (
 								<SidebarMenuItem key={to}>
 									<SidebarMenuButton asChild isActive={active}>
@@ -54,6 +61,11 @@ export function AppSidebar() {
 											<span>{label}</span>
 										</Link>
 									</SidebarMenuButton>
+									{showBadge ? (
+										<SidebarMenuBadge className="bg-primary text-primary-foreground rounded-md tabular-nums">
+											{count}
+										</SidebarMenuBadge>
+									) : null}
 								</SidebarMenuItem>
 							);
 						})}
@@ -108,6 +120,9 @@ export function AppSidebar() {
 					</SidebarMenu>
 				</SidebarGroup>
 			</SidebarContent>
+			<SidebarFooter>
+				<AccountMenu />
+			</SidebarFooter>
 		</Sidebar>
 	);
 }
