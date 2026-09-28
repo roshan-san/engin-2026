@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as AppRouteRouteImport } from './routes/app/route'
+import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as ExploreIndexRouteImport } from './routes/explore/index'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
@@ -27,6 +29,7 @@ import { Route as AppTrialsIndexRouteImport } from './routes/app/trials/index'
 import { Route as AppTrialsTrialCycleIdRouteImport } from './routes/app/trials/$trialCycleId'
 import { Route as AppUpgradeIndexRouteImport } from './routes/app/upgrade/index'
 import { Route as AppWorkIndexRouteImport } from './routes/app/work/index'
+import { Route as ShellAuthedMyPulsesIndexRouteImport } from './routes/_shell/_authed/my-pulses/index'
 import { Route as AppStartupRolesNewRouteImport } from './routes/app/startup/roles/new'
 import { Route as AppStartupTrialsNewRouteImport } from './routes/app/startup/trials/new'
 
@@ -35,10 +38,18 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShellRouteRoute = ShellRouteRouteImport.update({
+  id: '/_shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
   path: '/app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ShellAuthedRouteRoute = ShellAuthedRouteRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => ShellRouteRoute,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
@@ -120,6 +131,12 @@ const AppWorkIndexRoute = AppWorkIndexRouteImport.update({
   path: '/work/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const ShellAuthedMyPulsesIndexRoute =
+  ShellAuthedMyPulsesIndexRouteImport.update({
+    id: '/my-pulses/',
+    path: '/my-pulses/',
+    getParentRoute: () => ShellAuthedRouteRoute,
+  } as any)
 const AppStartupRolesNewRoute = AppStartupRolesNewRouteImport.update({
   id: '/startup/roles/new',
   path: '/startup/roles/new',
@@ -152,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/app/work/': typeof AppWorkIndexRoute
   '/app/startup/roles/new': typeof AppStartupRolesNewRoute
   '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
+  '/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -173,11 +191,14 @@ export interface FileRoutesByTo {
   '/app/work': typeof AppWorkIndexRoute
   '/app/startup/roles/new': typeof AppStartupRolesNewRoute
   '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
+  '/my-pulses': typeof ShellAuthedMyPulsesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_shell': typeof ShellRouteRouteWithChildren
   '/app': typeof AppRouteRouteWithChildren
+  '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
   '/invite/$token': typeof InviteTokenRoute
   '/startup/$slug': typeof StartupSlugRoute
   '/u/$username': typeof UUsernameRoute
@@ -196,6 +217,7 @@ export interface FileRoutesById {
   '/app/work/': typeof AppWorkIndexRoute
   '/app/startup/roles/new': typeof AppStartupRolesNewRoute
   '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
+  '/_shell/_authed/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,6 +242,7 @@ export interface FileRouteTypes {
     | '/app/work/'
     | '/app/startup/roles/new'
     | '/app/startup/trials/new'
+    | '/my-pulses/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -241,10 +264,13 @@ export interface FileRouteTypes {
     | '/app/work'
     | '/app/startup/roles/new'
     | '/app/startup/trials/new'
+    | '/my-pulses'
   id:
     | '__root__'
     | '/'
+    | '/_shell'
     | '/app'
+    | '/_shell/_authed'
     | '/invite/$token'
     | '/startup/$slug'
     | '/u/$username'
@@ -263,10 +289,12 @@ export interface FileRouteTypes {
     | '/app/work/'
     | '/app/startup/roles/new'
     | '/app/startup/trials/new'
+    | '/_shell/_authed/my-pulses/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ShellRouteRoute: typeof ShellRouteRouteWithChildren
   AppRouteRoute: typeof AppRouteRouteWithChildren
   InviteTokenRoute: typeof InviteTokenRoute
   StartupSlugRoute: typeof StartupSlugRoute
@@ -283,12 +311,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_shell': {
+      id: '/_shell'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ShellRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_shell/_authed': {
+      id: '/_shell/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ShellAuthedRouteRouteImport
+      parentRoute: typeof ShellRouteRoute
     }
     '/app/': {
       id: '/app/'
@@ -402,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_shell/_authed/my-pulses/': {
+      id: '/_shell/_authed/my-pulses/'
+      path: '/my-pulses'
+      fullPath: '/my-pulses/'
+      preLoaderRoute: typeof ShellAuthedMyPulsesIndexRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
+    }
     '/app/startup/roles/new': {
       id: '/app/startup/roles/new'
       path: '/startup/roles/new'
@@ -418,6 +467,29 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface ShellAuthedRouteRouteChildren {
+  ShellAuthedMyPulsesIndexRoute: typeof ShellAuthedMyPulsesIndexRoute
+}
+
+const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
+  ShellAuthedMyPulsesIndexRoute: ShellAuthedMyPulsesIndexRoute,
+}
+
+const ShellAuthedRouteRouteWithChildren =
+  ShellAuthedRouteRoute._addFileChildren(ShellAuthedRouteRouteChildren)
+
+interface ShellRouteRouteChildren {
+  ShellAuthedRouteRoute: typeof ShellAuthedRouteRouteWithChildren
+}
+
+const ShellRouteRouteChildren: ShellRouteRouteChildren = {
+  ShellAuthedRouteRoute: ShellAuthedRouteRouteWithChildren,
+}
+
+const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
+  ShellRouteRouteChildren,
+)
 
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
@@ -459,6 +531,7 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ShellRouteRoute: ShellRouteRouteWithChildren,
   AppRouteRoute: AppRouteRouteWithChildren,
   InviteTokenRoute: InviteTokenRoute,
   StartupSlugRoute: StartupSlugRoute,
