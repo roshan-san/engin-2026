@@ -11,6 +11,7 @@ import {
 	isTrialLive,
 	requireAcceptingEntries,
 } from "../lib/hiring/trialCycles";
+import { trialCycleHref } from "../lib/links";
 import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
 import { notify, notifyFounders } from "../lib/notify";
 import { refreshUserScore } from "../lib/reputation/score";
@@ -112,7 +113,7 @@ export const applyToTrial = mutation({
 		await notifyFounders(ctx, trial.startupId, {
 			kind: "application",
 			title: `New application for ${trial.title}`,
-			href: `/app/trials/${trial._id}`,
+			href: await trialCycleHref(ctx, trial),
 		});
 
 		return applicationId;
@@ -145,7 +146,7 @@ export const joinTrial = mutation({
 		await notifyFounders(ctx, trial.startupId, {
 			kind: "application",
 			title: `Someone joined ${trial.title}`,
-			href: `/app/trials/${trial._id}`,
+			href: await trialCycleHref(ctx, trial),
 		});
 	},
 });
@@ -178,7 +179,7 @@ export const decide = mutation({
 				userId: application.userId,
 				kind: "application",
 				title: `Your application to ${trial.title} was not accepted`,
-				href: `/app/trials/${trial._id}`,
+				href: await trialCycleHref(ctx, trial),
 			});
 			return;
 		}
@@ -189,7 +190,7 @@ export const decide = mutation({
 			userId: application.userId,
 			kind: "application",
 			title: `You were accepted to ${trial.title}`,
-			href: `/app/trials/${trial._id}`,
+			href: await trialCycleHref(ctx, trial),
 		});
 	},
 });
@@ -235,7 +236,7 @@ export const leaveTrial = mutation({
 			title: isLeaving
 				? `A Participant left ${trial.title}`
 				: `An application to ${trial.title} was withdrawn`,
-			href: `/app/trials/${trial._id}`,
+			href: await trialCycleHref(ctx, trial),
 		});
 	},
 });
