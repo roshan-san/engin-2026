@@ -37,33 +37,51 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-destructive-foreground: var(--destructive-foreground);
 }
 
+/* Dark-only by design: :root is the single palette, no light variant or toggle. */
 :root {
-	--radius: 0.75rem;
+	--radius: 0.375rem;
 
-	--foreground: hsl(0 0% 95%);
-	--primary-foreground: hsl(0 0% 100%);
-	--secondary-foreground: hsl(0 0% 90%);
-	--card-foreground: hsl(0 0% 95%);
-	--popover-foreground: hsl(0 0% 95%);
-	--accent-foreground: hsl(0 0% 100%);
-	--muted-foreground: hsl(0 0% 60%);
-	--destructive-foreground: hsl(0 0% 100%);
+	--background: #000000;
+	--foreground: #e7e9ea;
 
-	--background: hsl(0 0% 5%);
-	--secondary: hsl(0 0% 10%);
-	--card: hsl(0 0% 10%);
-	--popover: hsl(0 0% 10%);
-	--input: hsl(0 0% 15%);
-	--muted: hsl(0 0% 15%);
-	--border: hsl(0 0% 20%);
+	--card: #16181c;
+	--card-foreground: #e7e9ea;
+	--popover: #16181c;
+	--popover-foreground: #e7e9ea;
+	--secondary: #16181c;
+	--secondary-foreground: #e7e9ea;
+	--muted: #16181c;
+	--muted-foreground: #71767b;
 
-	--primary: hsl(200 90% 50%);
-	--accent: hsl(200 90% 50%);
-	--ring: hsl(200 90% 50%);
+	--border: #2f3336;
+	--input: #2f3336;
 
-	--destructive: hsl(0 60% 50%);
+	--primary: #1d9bf0;
+	--primary-foreground: #ffffff;
+	--accent: #1d9bf0;
+	--accent-foreground: #ffffff;
+	--ring: #1d9bf0;
+
+	--destructive: #f4212e;
+	--destructive-foreground: #ffffff;
+
+	--success: #00ba7c;
+	--success-foreground: #ffffff;
+
+	--sidebar: #000000;
+	--sidebar-foreground: #e7e9ea;
+	--sidebar-primary: #1d9bf0;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #16181c;
+	--sidebar-accent-foreground: #e7e9ea;
+	--sidebar-border: #2f3336;
+	--sidebar-ring: #1d9bf0;
 
 	--chart-1: hsl(200 70% 50%);
 	--chart-2: hsl(160 60% 45%);
@@ -78,10 +96,13 @@
 	}
 	html {
 		-webkit-tap-highlight-color: transparent;
+		color-scheme: dark;
 	}
 	body {
 		background-color: var(--background);
 		color: var(--foreground);
+		font-size: 0.875rem;
+		line-height: 1.5;
 		font-feature-settings:
 			"rlig" 1,
 			"calt" 1;

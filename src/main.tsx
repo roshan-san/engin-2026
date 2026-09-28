@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { routeTree } from "~/routeTree.gen";
+import "@fontsource-variable/geist";
 import "~/styles/globals.css";
 
 const router = createRouter({
