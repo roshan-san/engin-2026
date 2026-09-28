@@ -35,7 +35,18 @@ product, and a small Playwright suite locks in the critical flows across every p
   3. Pressing ⌘K/Ctrl+K opens a command palette that jumps to any screen, Startup or Cycle; pressing `?` lists every keyboard shortcut, sourced from one shortcut registry.
   4. The interface renders dark-only with the new accent colour and typeface, replacing the old shell.
   5. A signed-in User opens a Pitch, a profile or Discover without leaving the app shell; a signed-out visitor sees the same pages with a simple public header.
-**Plans**: TBD
+**Plans**: 9 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Backend: rename to focusedStartupId, getBySlug (role + Plan block), listMemberships, focus, clear on Member removal (wave 1)
+- [ ] 01-02-PLAN.md — Backend: every notification link carries the Startup slug via convex/lib/links.ts (wave 1)
+- [ ] 01-03-PLAN.md — Dark-only tokens, Geist, soft-square primitives, shadcn shell primitives (wave 1)
+- [ ] 01-04-PLAN.md — New route tree: _shell/_authed layouts, /s/$slug resolution + focus, _member gate, stubs, sign-in lands on /my-pulses (wave 2)
+- [ ] 01-05-PLAN.md — Public pages (Pitch, profile, Discover, Invite) inside the shell; public header with Sign in (wave 3)
+- [ ] 01-06-PLAN.md — Desktop sidebar, Startup switcher, account menu with Score, Inbox badge (wave 3)
+- [ ] 01-07-PLAN.md — Mobile tab bar, Startup sheet, top bar, account sheet, Inbox/Threads segments (wave 4)
+- [ ] 01-08-PLAN.md — Remove the old /app app; last ui/ to pages/ moves; kept code repointed (wave 4)
+- [ ] 01-09-PLAN.md — Shortcut registry, ⌘K palette, ? sheet, / search, hints (wave 5)
 **UI hint**: yes
 
 ### Phase 2: My Pulses & Cycle Boards
@@ -106,7 +117,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Shell & Navigation Foundation | 0/TBD | Not started | - |
+| 1. Shell & Navigation Foundation | 0/9 | Planned | - |
 | 2. My Pulses & Cycle Boards | 0/TBD | Not started | - |
 | 3. Team Workspace | 0/TBD | Not started | - |
 | 4. Complete Trial Cycles | 0/TBD | Not started | - |
