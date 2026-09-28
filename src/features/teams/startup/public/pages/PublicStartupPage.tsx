@@ -2,7 +2,6 @@ import { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { PageLoading } from "~/components/globals/PageLoading";
-import { PublicHeader } from "~/components/shared/PublicHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
@@ -18,24 +17,16 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 	const { toggle, isPending } = useFollowStartup(startup?._id);
 
 	if (startup === undefined) {
-		return (
-			<div className="min-h-dvh bg-background">
-				<PublicHeader />
-				<PageLoading />
-			</div>
-		);
+		return <PageLoading />;
 	}
 
 	if (!startup) {
 		return (
-			<div className="min-h-dvh bg-background">
-				<PublicHeader />
-				<div className="mx-auto max-w-lg px-4 py-20 text-center">
-					<h1 className="text-2xl font-bold">Startup not found</h1>
-					<Button asChild variant="outline" className="mt-6">
-						<Link to="/explore">Back to Explore</Link>
-					</Button>
-				</div>
+			<div className="mx-auto max-w-lg px-4 py-20 text-center">
+				<h1 className="text-2xl font-bold">Startup not found</h1>
+				<Button asChild variant="outline" className="mt-6">
+					<Link to="/discover">Back to Discover</Link>
+				</Button>
 			</div>
 		);
 	}
@@ -50,9 +41,7 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 	);
 
 	return (
-		<div className="min-h-dvh bg-background">
-			<PublicHeader />
-			<main className="mx-auto max-w-2xl space-y-10 px-4 py-10">
+		<div className="mx-auto max-w-2xl space-y-10 px-4 py-10">
 				<section className="space-y-4">
 					<div className="flex flex-wrap gap-2">
 						{categoryLabel(startup.category) ? (
@@ -178,11 +167,11 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 					</section>
 				)}
 
-				<PublicOpenings
-					startupId={startup._id}
-					isAuthenticated={startup.isAuthenticated}
-				/>
-			</main>
+			<PublicOpenings
+				slug={startup.slug}
+				startupId={startup._id}
+				isAuthenticated={startup.isAuthenticated}
+			/>
 		</div>
 	);
 }

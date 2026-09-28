@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PublicStartupPage } from "~/features/teams/startup/public/ui/PublicStartupPage";
+import { PublicStartupPage } from "~/features/teams/startup/public/pages/PublicStartupPage";
 
-export const Route = createFileRoute("/startup/$slug")({
+export const Route = createFileRoute("/_shell/startup/$slug")({
 	component: PublicStartupRoute,
 });
 

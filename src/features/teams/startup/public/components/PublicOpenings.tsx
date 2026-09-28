@@ -8,11 +8,13 @@ import { ApplyButtons } from "~/features/hiring/opportunities/components/ApplyBu
 import { formatDate } from "~/lib/dates";
 
 type PublicOpeningsProps = {
+	readonly slug: string;
 	readonly startupId: Id<"startups">;
 	readonly isAuthenticated: boolean;
 };
 
 export function PublicOpenings({
+	slug,
 	startupId,
 	isAuthenticated,
 }: PublicOpeningsProps) {
@@ -69,8 +71,8 @@ export function PublicOpenings({
 								<div className="min-w-0 flex-1">
 									{isAuthenticated ? (
 										<Link
-											to="/app/trials/$trialCycleId"
-											params={{ trialCycleId: trial._id }}
+											to="/s/$slug/trials/$trialCycleId"
+											params={{ slug, trialCycleId: trial._id }}
 											className="font-medium hover:underline"
 										>
 											{trial.title}

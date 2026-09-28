@@ -16,10 +16,10 @@ import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/ro
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as ExploreIndexRouteImport } from './routes/explore/index'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
-import { Route as StartupSlugRouteImport } from './routes/startup/$slug'
 import { Route as UUsernameRouteImport } from './routes/u/$username'
 import { Route as ShellDiscoverIndexRouteImport } from './routes/_shell/discover/index'
 import { Route as ShellPricingIndexRouteImport } from './routes/_shell/pricing/index'
+import { Route as ShellStartupSlugRouteImport } from './routes/_shell/startup/$slug'
 import { Route as AppExploreIndexRouteImport } from './routes/app/explore/index'
 import { Route as AppMessagesIndexRouteImport } from './routes/app/messages/index'
 import { Route as AppOpportunitiesIndexRouteImport } from './routes/app/opportunities/index'
@@ -83,11 +83,6 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
   path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StartupSlugRoute = StartupSlugRouteImport.update({
-  id: '/startup/$slug',
-  path: '/startup/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UUsernameRoute = UUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
@@ -101,6 +96,11 @@ const ShellDiscoverIndexRoute = ShellDiscoverIndexRouteImport.update({
 const ShellPricingIndexRoute = ShellPricingIndexRouteImport.update({
   id: '/pricing/',
   path: '/pricing/',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellStartupSlugRoute = ShellStartupSlugRouteImport.update({
+  id: '/startup/$slug',
+  path: '/startup/$slug',
   getParentRoute: () => ShellRouteRoute,
 } as any)
 const AppExploreIndexRoute = AppExploreIndexRouteImport.update({
@@ -262,10 +262,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/invite/$token': typeof InviteTokenRoute
-  '/startup/$slug': typeof StartupSlugRoute
   '/u/$username': typeof UUsernameRoute
   '/app/': typeof AppIndexRoute
   '/explore/': typeof ExploreIndexRoute
+  '/startup/$slug': typeof ShellStartupSlugRoute
   '/app/startups/new': typeof AppStartupsNewRoute
   '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
   '/discover/': typeof ShellDiscoverIndexRoute
@@ -300,10 +300,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/invite/$token': typeof InviteTokenRoute
-  '/startup/$slug': typeof StartupSlugRoute
   '/u/$username': typeof UUsernameRoute
   '/app': typeof AppIndexRoute
   '/explore': typeof ExploreIndexRoute
+  '/startup/$slug': typeof ShellStartupSlugRoute
   '/app/startups/new': typeof AppStartupsNewRoute
   '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
   '/discover': typeof ShellDiscoverIndexRoute
@@ -341,10 +341,10 @@ export interface FileRoutesById {
   '/app': typeof AppRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
   '/invite/$token': typeof InviteTokenRoute
-  '/startup/$slug': typeof StartupSlugRoute
   '/u/$username': typeof UUsernameRoute
   '/app/': typeof AppIndexRoute
   '/explore/': typeof ExploreIndexRoute
+  '/_shell/startup/$slug': typeof ShellStartupSlugRoute
   '/app/startups/new': typeof AppStartupsNewRoute
   '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
   '/_shell/discover/': typeof ShellDiscoverIndexRoute
@@ -383,10 +383,10 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/invite/$token'
-    | '/startup/$slug'
     | '/u/$username'
     | '/app/'
     | '/explore/'
+    | '/startup/$slug'
     | '/app/startups/new'
     | '/app/trials/$trialCycleId'
     | '/discover/'
@@ -421,10 +421,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/invite/$token'
-    | '/startup/$slug'
     | '/u/$username'
     | '/app'
     | '/explore'
+    | '/startup/$slug'
     | '/app/startups/new'
     | '/app/trials/$trialCycleId'
     | '/discover'
@@ -461,10 +461,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/_shell/_authed'
     | '/invite/$token'
-    | '/startup/$slug'
     | '/u/$username'
     | '/app/'
     | '/explore/'
+    | '/_shell/startup/$slug'
     | '/app/startups/new'
     | '/app/trials/$trialCycleId'
     | '/_shell/discover/'
@@ -503,7 +503,6 @@ export interface RootRouteChildren {
   ShellRouteRoute: typeof ShellRouteRouteWithChildren
   AppRouteRoute: typeof AppRouteRouteWithChildren
   InviteTokenRoute: typeof InviteTokenRoute
-  StartupSlugRoute: typeof StartupSlugRoute
   UUsernameRoute: typeof UUsernameRoute
   ExploreIndexRoute: typeof ExploreIndexRoute
 }
@@ -559,13 +558,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/startup/$slug': {
-      id: '/startup/$slug'
-      path: '/startup/$slug'
-      fullPath: '/startup/$slug'
-      preLoaderRoute: typeof StartupSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/u/$username': {
       id: '/u/$username'
       path: '/u/$username'
@@ -585,6 +577,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing/'
       preLoaderRoute: typeof ShellPricingIndexRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/startup/$slug': {
+      id: '/_shell/startup/$slug'
+      path: '/startup/$slug'
+      fullPath: '/startup/$slug'
+      preLoaderRoute: typeof ShellStartupSlugRouteImport
       parentRoute: typeof ShellRouteRoute
     }
     '/app/explore/': {
@@ -867,12 +866,14 @@ const ShellAuthedRouteRouteWithChildren =
 
 interface ShellRouteRouteChildren {
   ShellAuthedRouteRoute: typeof ShellAuthedRouteRouteWithChildren
+  ShellStartupSlugRoute: typeof ShellStartupSlugRoute
   ShellDiscoverIndexRoute: typeof ShellDiscoverIndexRoute
   ShellPricingIndexRoute: typeof ShellPricingIndexRoute
 }
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellAuthedRouteRoute: ShellAuthedRouteRouteWithChildren,
+  ShellStartupSlugRoute: ShellStartupSlugRoute,
   ShellDiscoverIndexRoute: ShellDiscoverIndexRoute,
   ShellPricingIndexRoute: ShellPricingIndexRoute,
 }
@@ -924,7 +925,6 @@ const rootRouteChildren: RootRouteChildren = {
   ShellRouteRoute: ShellRouteRouteWithChildren,
   AppRouteRoute: AppRouteRouteWithChildren,
   InviteTokenRoute: InviteTokenRoute,
-  StartupSlugRoute: StartupSlugRoute,
   UUsernameRoute: UUsernameRoute,
   ExploreIndexRoute: ExploreIndexRoute,
 }
