@@ -84,25 +84,6 @@ async function loadMemberships(
 	return entries;
 }
 
-export const getWorkspace = query({
-	args: {},
-	handler: async (ctx) => {
-		const userId = await requireUserId(ctx);
-		const user = await ctx.db.get(userId);
-		const startups = await loadMemberships(ctx, userId);
-
-		if (startups.length === 0) {
-			return { active: null, startups: [] };
-		}
-
-		const active =
-			startups.find((entry) => entry.startup._id === user?.focusedStartupId) ??
-			startups[0];
-
-		return { active, startups };
-	},
-});
-
 /** Every Startup the caller belongs to, for the switcher and palette (SHELL-07). */
 export const listMemberships = query({
 	args: {},
@@ -279,19 +260,8 @@ export const update = mutation({
 	},
 });
 
-export const setActive = mutation({
-	args: { startupId: v.id("startups") },
-	handler: async (ctx, args) => {
-		const userId = await requireUserId(ctx);
-		await requireMembership(ctx, args.startupId, userId);
-		await ctx.db.patch(userId, { focusedStartupId: args.startupId });
-		return args.startupId;
-	},
-});
-
 /**
- * Sets the caller's Focused Startup (SHELL-07). Renamed from `setActive` for
- * the new shell; `setActive` stays until plan 01-08 removes its last caller.
+ * Sets the caller's Focused Startup (SHELL-07).
  */
 export const focus = mutation({
 	args: { startupId: v.id("startups") },

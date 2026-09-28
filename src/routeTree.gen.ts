@@ -11,33 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
-import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
-import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as ShellDiscoverIndexRouteImport } from './routes/_shell/discover/index'
 import { Route as ShellInviteTokenRouteImport } from './routes/_shell/invite/$token'
 import { Route as ShellPricingIndexRouteImport } from './routes/_shell/pricing/index'
 import { Route as ShellStartupSlugRouteImport } from './routes/_shell/startup/$slug'
 import { Route as ShellUUsernameRouteImport } from './routes/_shell/u/$username'
-import { Route as AppExploreIndexRouteImport } from './routes/app/explore/index'
-import { Route as AppMessagesIndexRouteImport } from './routes/app/messages/index'
-import { Route as AppOpportunitiesIndexRouteImport } from './routes/app/opportunities/index'
-import { Route as AppProfileIndexRouteImport } from './routes/app/profile/index'
-import { Route as AppStartupIndexRouteImport } from './routes/app/startup/index'
-import { Route as AppStartupsNewRouteImport } from './routes/app/startups/new'
-import { Route as AppTeamIndexRouteImport } from './routes/app/team/index'
-import { Route as AppTrialsIndexRouteImport } from './routes/app/trials/index'
-import { Route as AppTrialsTrialCycleIdRouteImport } from './routes/app/trials/$trialCycleId'
-import { Route as AppUpgradeIndexRouteImport } from './routes/app/upgrade/index'
-import { Route as AppWorkIndexRouteImport } from './routes/app/work/index'
 import { Route as ShellAuthedInboxIndexRouteImport } from './routes/_shell/_authed/inbox/index'
 import { Route as ShellAuthedMyPulsesIndexRouteImport } from './routes/_shell/_authed/my-pulses/index'
 import { Route as ShellAuthedProfileIndexRouteImport } from './routes/_shell/_authed/profile/index'
 import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_authed/s/$slug/route'
 import { Route as ShellAuthedStartupsNewRouteImport } from './routes/_shell/_authed/startups/new'
 import { Route as ShellAuthedThreadsIndexRouteImport } from './routes/_shell/_authed/threads/index'
-import { Route as AppStartupRolesNewRouteImport } from './routes/app/startup/roles/new'
-import { Route as AppStartupTrialsNewRouteImport } from './routes/app/startup/trials/new'
 import { Route as ShellAuthedSSlugIndexRouteImport } from './routes/_shell/_authed/s/$slug/index'
 import { Route as ShellAuthedSSlugMemberRouteRouteImport } from './routes/_shell/_authed/s/$slug/_member/route'
 import { Route as ShellAuthedSSlugTrialsTrialCycleIdRouteImport } from './routes/_shell/_authed/s/$slug/trials/$trialCycleId'
@@ -58,19 +43,9 @@ const ShellRouteRoute = ShellRouteRouteImport.update({
   id: '/_shell',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRouteRoute = AppRouteRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShellAuthedRouteRoute = ShellAuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => ShellRouteRoute,
-} as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRouteRoute,
 } as any)
 const ShellDiscoverIndexRoute = ShellDiscoverIndexRouteImport.update({
   id: '/discover/',
@@ -96,61 +71,6 @@ const ShellUUsernameRoute = ShellUUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
   getParentRoute: () => ShellRouteRoute,
-} as any)
-const AppExploreIndexRoute = AppExploreIndexRouteImport.update({
-  id: '/explore/',
-  path: '/explore/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppMessagesIndexRoute = AppMessagesIndexRouteImport.update({
-  id: '/messages/',
-  path: '/messages/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppOpportunitiesIndexRoute = AppOpportunitiesIndexRouteImport.update({
-  id: '/opportunities/',
-  path: '/opportunities/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
-  id: '/profile/',
-  path: '/profile/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppStartupIndexRoute = AppStartupIndexRouteImport.update({
-  id: '/startup/',
-  path: '/startup/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppStartupsNewRoute = AppStartupsNewRouteImport.update({
-  id: '/startups/new',
-  path: '/startups/new',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppTeamIndexRoute = AppTeamIndexRouteImport.update({
-  id: '/team/',
-  path: '/team/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppTrialsIndexRoute = AppTrialsIndexRouteImport.update({
-  id: '/trials/',
-  path: '/trials/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppTrialsTrialCycleIdRoute = AppTrialsTrialCycleIdRouteImport.update({
-  id: '/trials/$trialCycleId',
-  path: '/trials/$trialCycleId',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppUpgradeIndexRoute = AppUpgradeIndexRouteImport.update({
-  id: '/upgrade/',
-  path: '/upgrade/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppWorkIndexRoute = AppWorkIndexRouteImport.update({
-  id: '/work/',
-  path: '/work/',
-  getParentRoute: () => AppRouteRoute,
 } as any)
 const ShellAuthedInboxIndexRoute = ShellAuthedInboxIndexRouteImport.update({
   id: '/inbox/',
@@ -182,16 +102,6 @@ const ShellAuthedThreadsIndexRoute = ShellAuthedThreadsIndexRouteImport.update({
   id: '/threads/',
   path: '/threads/',
   getParentRoute: () => ShellAuthedRouteRoute,
-} as any)
-const AppStartupRolesNewRoute = AppStartupRolesNewRouteImport.update({
-  id: '/startup/roles/new',
-  path: '/startup/roles/new',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppStartupTrialsNewRoute = AppStartupTrialsNewRouteImport.update({
-  id: '/startup/trials/new',
-  path: '/startup/trials/new',
-  getParentRoute: () => AppRouteRoute,
 } as any)
 const ShellAuthedSSlugIndexRoute = ShellAuthedSSlugIndexRouteImport.update({
   id: '/',
@@ -254,28 +164,13 @@ const ShellAuthedSSlugMemberTeamIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteRouteWithChildren
-  '/app/': typeof AppIndexRoute
   '/invite/$token': typeof ShellInviteTokenRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
-  '/app/startups/new': typeof AppStartupsNewRoute
-  '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
   '/discover/': typeof ShellDiscoverIndexRoute
   '/pricing/': typeof ShellPricingIndexRoute
-  '/app/explore/': typeof AppExploreIndexRoute
-  '/app/messages/': typeof AppMessagesIndexRoute
-  '/app/opportunities/': typeof AppOpportunitiesIndexRoute
-  '/app/profile/': typeof AppProfileIndexRoute
-  '/app/startup/': typeof AppStartupIndexRoute
-  '/app/team/': typeof AppTeamIndexRoute
-  '/app/trials/': typeof AppTrialsIndexRoute
-  '/app/upgrade/': typeof AppUpgradeIndexRoute
-  '/app/work/': typeof AppWorkIndexRoute
   '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/startups/new': typeof ShellAuthedStartupsNewRoute
-  '/app/startup/roles/new': typeof AppStartupRolesNewRoute
-  '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
   '/inbox/': typeof ShellAuthedInboxIndexRoute
   '/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
   '/profile/': typeof ShellAuthedProfileIndexRoute
@@ -292,26 +187,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppIndexRoute
   '/invite/$token': typeof ShellInviteTokenRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
-  '/app/startups/new': typeof AppStartupsNewRoute
-  '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
   '/discover': typeof ShellDiscoverIndexRoute
   '/pricing': typeof ShellPricingIndexRoute
-  '/app/explore': typeof AppExploreIndexRoute
-  '/app/messages': typeof AppMessagesIndexRoute
-  '/app/opportunities': typeof AppOpportunitiesIndexRoute
-  '/app/profile': typeof AppProfileIndexRoute
-  '/app/startup': typeof AppStartupIndexRoute
-  '/app/team': typeof AppTeamIndexRoute
-  '/app/trials': typeof AppTrialsIndexRoute
-  '/app/upgrade': typeof AppUpgradeIndexRoute
-  '/app/work': typeof AppWorkIndexRoute
   '/startups/new': typeof ShellAuthedStartupsNewRoute
-  '/app/startup/roles/new': typeof AppStartupRolesNewRoute
-  '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
   '/inbox': typeof ShellAuthedInboxIndexRoute
   '/my-pulses': typeof ShellAuthedMyPulsesIndexRoute
   '/profile': typeof ShellAuthedProfileIndexRoute
@@ -330,29 +211,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
-  '/app': typeof AppRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
-  '/app/': typeof AppIndexRoute
   '/_shell/invite/$token': typeof ShellInviteTokenRoute
   '/_shell/startup/$slug': typeof ShellStartupSlugRoute
   '/_shell/u/$username': typeof ShellUUsernameRoute
-  '/app/startups/new': typeof AppStartupsNewRoute
-  '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
   '/_shell/discover/': typeof ShellDiscoverIndexRoute
   '/_shell/pricing/': typeof ShellPricingIndexRoute
-  '/app/explore/': typeof AppExploreIndexRoute
-  '/app/messages/': typeof AppMessagesIndexRoute
-  '/app/opportunities/': typeof AppOpportunitiesIndexRoute
-  '/app/profile/': typeof AppProfileIndexRoute
-  '/app/startup/': typeof AppStartupIndexRoute
-  '/app/team/': typeof AppTeamIndexRoute
-  '/app/trials/': typeof AppTrialsIndexRoute
-  '/app/upgrade/': typeof AppUpgradeIndexRoute
-  '/app/work/': typeof AppWorkIndexRoute
   '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/_shell/_authed/startups/new': typeof ShellAuthedStartupsNewRoute
-  '/app/startup/roles/new': typeof AppStartupRolesNewRoute
-  '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
   '/_shell/_authed/inbox/': typeof ShellAuthedInboxIndexRoute
   '/_shell/_authed/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
   '/_shell/_authed/profile/': typeof ShellAuthedProfileIndexRoute
@@ -372,28 +238,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/app'
-    | '/app/'
     | '/invite/$token'
     | '/startup/$slug'
     | '/u/$username'
-    | '/app/startups/new'
-    | '/app/trials/$trialCycleId'
     | '/discover/'
     | '/pricing/'
-    | '/app/explore/'
-    | '/app/messages/'
-    | '/app/opportunities/'
-    | '/app/profile/'
-    | '/app/startup/'
-    | '/app/team/'
-    | '/app/trials/'
-    | '/app/upgrade/'
-    | '/app/work/'
     | '/s/$slug'
     | '/startups/new'
-    | '/app/startup/roles/new'
-    | '/app/startup/trials/new'
     | '/inbox/'
     | '/my-pulses/'
     | '/profile/'
@@ -410,26 +261,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app'
     | '/invite/$token'
     | '/startup/$slug'
     | '/u/$username'
-    | '/app/startups/new'
-    | '/app/trials/$trialCycleId'
     | '/discover'
     | '/pricing'
-    | '/app/explore'
-    | '/app/messages'
-    | '/app/opportunities'
-    | '/app/profile'
-    | '/app/startup'
-    | '/app/team'
-    | '/app/trials'
-    | '/app/upgrade'
-    | '/app/work'
     | '/startups/new'
-    | '/app/startup/roles/new'
-    | '/app/startup/trials/new'
     | '/inbox'
     | '/my-pulses'
     | '/profile'
@@ -447,29 +284,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_shell'
-    | '/app'
     | '/_shell/_authed'
-    | '/app/'
     | '/_shell/invite/$token'
     | '/_shell/startup/$slug'
     | '/_shell/u/$username'
-    | '/app/startups/new'
-    | '/app/trials/$trialCycleId'
     | '/_shell/discover/'
     | '/_shell/pricing/'
-    | '/app/explore/'
-    | '/app/messages/'
-    | '/app/opportunities/'
-    | '/app/profile/'
-    | '/app/startup/'
-    | '/app/team/'
-    | '/app/trials/'
-    | '/app/upgrade/'
-    | '/app/work/'
     | '/_shell/_authed/s/$slug'
     | '/_shell/_authed/startups/new'
-    | '/app/startup/roles/new'
-    | '/app/startup/trials/new'
     | '/_shell/_authed/inbox/'
     | '/_shell/_authed/my-pulses/'
     | '/_shell/_authed/profile/'
@@ -489,7 +311,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShellRouteRoute: typeof ShellRouteRouteWithChildren
-  AppRouteRoute: typeof AppRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -508,26 +329,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_shell/_authed': {
       id: '/_shell/_authed'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ShellAuthedRouteRouteImport
       parentRoute: typeof ShellRouteRoute
-    }
-    '/app/': {
-      id: '/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRouteRoute
     }
     '/_shell/discover/': {
       id: '/_shell/discover/'
@@ -563,83 +370,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/u/$username'
       preLoaderRoute: typeof ShellUUsernameRouteImport
       parentRoute: typeof ShellRouteRoute
-    }
-    '/app/explore/': {
-      id: '/app/explore/'
-      path: '/explore'
-      fullPath: '/app/explore/'
-      preLoaderRoute: typeof AppExploreIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/messages/': {
-      id: '/app/messages/'
-      path: '/messages'
-      fullPath: '/app/messages/'
-      preLoaderRoute: typeof AppMessagesIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/opportunities/': {
-      id: '/app/opportunities/'
-      path: '/opportunities'
-      fullPath: '/app/opportunities/'
-      preLoaderRoute: typeof AppOpportunitiesIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/profile/': {
-      id: '/app/profile/'
-      path: '/profile'
-      fullPath: '/app/profile/'
-      preLoaderRoute: typeof AppProfileIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/startup/': {
-      id: '/app/startup/'
-      path: '/startup'
-      fullPath: '/app/startup/'
-      preLoaderRoute: typeof AppStartupIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/startups/new': {
-      id: '/app/startups/new'
-      path: '/startups/new'
-      fullPath: '/app/startups/new'
-      preLoaderRoute: typeof AppStartupsNewRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/team/': {
-      id: '/app/team/'
-      path: '/team'
-      fullPath: '/app/team/'
-      preLoaderRoute: typeof AppTeamIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/trials/': {
-      id: '/app/trials/'
-      path: '/trials'
-      fullPath: '/app/trials/'
-      preLoaderRoute: typeof AppTrialsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/trials/$trialCycleId': {
-      id: '/app/trials/$trialCycleId'
-      path: '/trials/$trialCycleId'
-      fullPath: '/app/trials/$trialCycleId'
-      preLoaderRoute: typeof AppTrialsTrialCycleIdRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/upgrade/': {
-      id: '/app/upgrade/'
-      path: '/upgrade'
-      fullPath: '/app/upgrade/'
-      preLoaderRoute: typeof AppUpgradeIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/work/': {
-      id: '/app/work/'
-      path: '/work'
-      fullPath: '/app/work/'
-      preLoaderRoute: typeof AppWorkIndexRouteImport
-      parentRoute: typeof AppRouteRoute
     }
     '/_shell/_authed/inbox/': {
       id: '/_shell/_authed/inbox/'
@@ -682,20 +412,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/threads/'
       preLoaderRoute: typeof ShellAuthedThreadsIndexRouteImport
       parentRoute: typeof ShellAuthedRouteRoute
-    }
-    '/app/startup/roles/new': {
-      id: '/app/startup/roles/new'
-      path: '/startup/roles/new'
-      fullPath: '/app/startup/roles/new'
-      preLoaderRoute: typeof AppStartupRolesNewRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/startup/trials/new': {
-      id: '/app/startup/trials/new'
-      path: '/startup/trials/new'
-      fullPath: '/app/startup/trials/new'
-      preLoaderRoute: typeof AppStartupTrialsNewRouteImport
-      parentRoute: typeof AppRouteRoute
     }
     '/_shell/_authed/s/$slug/': {
       id: '/_shell/_authed/s/$slug/'
@@ -864,48 +580,9 @@ const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
   ShellRouteRouteChildren,
 )
 
-interface AppRouteRouteChildren {
-  AppIndexRoute: typeof AppIndexRoute
-  AppStartupsNewRoute: typeof AppStartupsNewRoute
-  AppTrialsTrialCycleIdRoute: typeof AppTrialsTrialCycleIdRoute
-  AppExploreIndexRoute: typeof AppExploreIndexRoute
-  AppMessagesIndexRoute: typeof AppMessagesIndexRoute
-  AppOpportunitiesIndexRoute: typeof AppOpportunitiesIndexRoute
-  AppProfileIndexRoute: typeof AppProfileIndexRoute
-  AppStartupIndexRoute: typeof AppStartupIndexRoute
-  AppTeamIndexRoute: typeof AppTeamIndexRoute
-  AppTrialsIndexRoute: typeof AppTrialsIndexRoute
-  AppUpgradeIndexRoute: typeof AppUpgradeIndexRoute
-  AppWorkIndexRoute: typeof AppWorkIndexRoute
-  AppStartupRolesNewRoute: typeof AppStartupRolesNewRoute
-  AppStartupTrialsNewRoute: typeof AppStartupTrialsNewRoute
-}
-
-const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppIndexRoute: AppIndexRoute,
-  AppStartupsNewRoute: AppStartupsNewRoute,
-  AppTrialsTrialCycleIdRoute: AppTrialsTrialCycleIdRoute,
-  AppExploreIndexRoute: AppExploreIndexRoute,
-  AppMessagesIndexRoute: AppMessagesIndexRoute,
-  AppOpportunitiesIndexRoute: AppOpportunitiesIndexRoute,
-  AppProfileIndexRoute: AppProfileIndexRoute,
-  AppStartupIndexRoute: AppStartupIndexRoute,
-  AppTeamIndexRoute: AppTeamIndexRoute,
-  AppTrialsIndexRoute: AppTrialsIndexRoute,
-  AppUpgradeIndexRoute: AppUpgradeIndexRoute,
-  AppWorkIndexRoute: AppWorkIndexRoute,
-  AppStartupRolesNewRoute: AppStartupRolesNewRoute,
-  AppStartupTrialsNewRoute: AppStartupTrialsNewRoute,
-}
-
-const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
-  AppRouteRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShellRouteRoute: ShellRouteRouteWithChildren,
-  AppRouteRoute: AppRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -2,10 +2,12 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useState } from "react";
-import { useWorkspace } from "~/features/app/hooks/useWorkspace";
+import { useFocusedStartup } from "~/shell/hooks/useFocusedStartup";
+import { useStartupRoute } from "~/shell/startup/StartupRoute";
 
 export function useActiveCycle() {
-	const { active, isLoading: workspaceLoading, hasStartups } = useWorkspace();
+	const { member: active, isLoading: workspaceLoading } = useStartupRoute();
+	const { hasStartups } = useFocusedStartup();
 	const cycles = useQuery(
 		api.work.cycles.list,
 		active ? { startupId: active.startup._id } : "skip",

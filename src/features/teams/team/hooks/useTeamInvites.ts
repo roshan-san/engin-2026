@@ -3,19 +3,19 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useWorkspace } from "~/features/app/hooks/useWorkspace";
 import {
 	type InviteRole,
 	inviteSchema,
 } from "~/features/teams/team/schemas/invite";
 import { toErrorMessage, validate } from "~/lib/validation";
+import { useStartupRoute } from "~/shell/startup/StartupRoute";
 
 export function inviteLink(token: string): string {
 	return `${window.location.origin}/invite/${token}`;
 }
 
 export function useTeamInvites() {
-	const { active: startup } = useWorkspace();
+	const { member: startup } = useStartupRoute();
 	const startupId = startup?.startup._id;
 	const isFounder = startup?.role === "founder";
 

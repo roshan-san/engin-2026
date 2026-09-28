@@ -2,12 +2,12 @@ import { api } from "@convex/_generated/api";
 import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useWorkspace } from "~/features/app/hooks/useWorkspace";
 import { pitchSchema } from "~/features/teams/startup/public/schemas/startup";
 import { toErrorMessage, validate } from "~/lib/validation";
+import { useStartupRoute } from "~/shell/startup/StartupRoute";
 
 export function usePitchEditor() {
-	const { active, isLoading } = useWorkspace();
+	const { member: active, isLoading } = useStartupRoute();
 	const updateStartup = useMutation(api.teams.startups.update);
 	const [isPending, setIsPending] = useState(false);
 

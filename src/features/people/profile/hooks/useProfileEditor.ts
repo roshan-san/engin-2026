@@ -2,9 +2,9 @@ import { api } from "@convex/_generated/api";
 import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useCurrentUser } from "~/features/app/hooks/useCurrentUser";
 import { profileSchema } from "~/features/people/profile/schemas/profile";
 import { toErrorMessage, validate } from "~/lib/validation";
+import { useCurrentUser } from "~/shell/hooks/useCurrentUser";
 
 export function useProfileEditor() {
 	const { user, isLoading } = useCurrentUser();
