@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Mobile chrome sits flush with the device's bottom safe area (D-14). */
+@utility pb-safe {
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
 @theme inline {
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
