@@ -1,0 +1,56 @@
+import type { LucideIcon } from "lucide-react";
+import {
+	Activity,
+	Compass,
+	Inbox,
+	ListChecks,
+	MessagesSquare,
+	Presentation,
+	RefreshCw,
+	UserPlus,
+	Users,
+} from "lucide-react";
+
+type PersonalNavItem = {
+	readonly label: "Inbox" | "My Pulses" | "Threads";
+	readonly to: "/inbox" | "/my-pulses" | "/threads";
+	readonly icon: LucideIcon;
+};
+
+type StartupNavItem = {
+	readonly label: "Cycles" | "Hiring" | "Team" | "Pitch" | "Activity";
+	readonly to:
+		| "/s/$slug/cycles"
+		| "/s/$slug/hiring"
+		| "/s/$slug/team"
+		| "/s/$slug/pitch"
+		| "/s/$slug/activity";
+	readonly icon: LucideIcon;
+};
+
+/** Personal nav items, spanning every Startup — sidebar order per #19. */
+export const PERSONAL_NAV: readonly PersonalNavItem[] = [
+	{ label: "Inbox", to: "/inbox", icon: Inbox },
+	{ label: "My Pulses", to: "/my-pulses", icon: ListChecks },
+	{ label: "Threads", to: "/threads", icon: MessagesSquare },
+];
+
+/** Focused-Startup nav items, rendered under the switcher. */
+export const STARTUP_NAV: readonly StartupNavItem[] = [
+	{ label: "Cycles", to: "/s/$slug/cycles", icon: RefreshCw },
+	{ label: "Hiring", to: "/s/$slug/hiring", icon: UserPlus },
+	{ label: "Team", to: "/s/$slug/team", icon: Users },
+	{ label: "Pitch", to: "/s/$slug/pitch", icon: Presentation },
+	{ label: "Activity", to: "/s/$slug/activity", icon: Activity },
+];
+
+/** Final sidebar group — every Startup's contributors. */
+export const DISCOVER_NAV: {
+	label: "Discover";
+	to: "/discover";
+	icon: LucideIcon;
+} = {
+	label: "Discover",
+	to: "/discover",
+	icon: Compass,
+};
