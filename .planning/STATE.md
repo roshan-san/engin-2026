@@ -20,10 +20,10 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-28)
+See: .planning/PROJECT.md (updated 2026-09-29)
 
 **Core value:** People join startups by proving themselves in time-boxed, real-work Trial Cycles, and build a public reputation (Score) from verified work.
-**Current focus:** Phase 01 — Shell & Navigation Foundation
+**Current focus:** Phase 02 — My Pulses & Cycle Boards
 
 ## Current Position
 

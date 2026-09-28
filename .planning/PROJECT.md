@@ -44,13 +44,13 @@ public reputation (Score) from verified work.
 - ✓ Explore contributors tab with base filters/sorts — shipped (issue #13)
 - ✓ Cycle lifecycle: auto-start, close-with-carry-over, member removal — shipped (issue #14)
 - ✓ Roles, Trial Cycles (open/application Admission), Applications, Offers, and an all-at-once Verdict close — shipped pre-existing, superseded by this milestone's Phase 4
+- ✓ Linear-style shell: sidebar, Startup switcher, mobile tab bar, ⌘K palette, keyboard shortcuts, `/s/$slug` routing, dark-only theme; old `/app` removed (ADR-0006) — Phase 1
 - ✓ Per-user Dodo Payments billing (Pro tier on `users.planTier`) — shipped pre-existing, superseded by this milestone's Phase 6 (Plan moves to the Startup, ADR-0005)
 
 ### Active
 
 <!-- This milestone's scope, sourced from GitHub issue #19 (primary spec) and the open slices of #2. See REQUIREMENTS.md for the full, ID-level breakdown and ROADMAP.md for phase mapping. -->
 
-- [ ] Rebuild the signed-in frontend as a Linear-style shell: sidebar, Startup switcher, command palette, keyboard shortcuts, `/s/$slug` routing, dark-only theme (ADR-0006)
 - [ ] Redesign My Pulses (home screen) and Cycle Board/List views with a drag-and-drop kanban and a peek panel
 - [ ] Build the Inbox (notifications/Offers/Invites answered in place), finish Invites by username/email with co-Founders, rebuild the Team/Pitch/Activity screens, add Pitch media and Public Stats
 - [ ] Complete Trial Cycles: Challenges (incl. mid-trial), Submissions, per-Participant Verdicts with a `J`/`K` review screen, Announcements and Threads surfaced in the new shell
@@ -94,10 +94,10 @@ public reputation (Score) from verified work.
   issues via `gh issue view` at the user's direction: issue #19 (primary, newest, ~39k chars) plus
   the open child slices of parent spec #2 (#4, #9, #15, #16, #17, #18). Issue #1 is reference only
   — all of its slices are already shipped.
-- **ADR-0006 is locked but not yet implemented.** The mapped codebase still has `/app/*` routes,
-  `src/features/app/` as the shell, `ui/` folders and separate Explore/Opportunities pages — none
-  of `src/shell/`, `/s/$slug` routing or the merged `/discover` page exist yet. This milestone is
-  what implements ADR-0006, not a milestone that assumes it's already done.
+- **ADR-0006 is implemented (Phase 1).** `src/shell/` is the app frame, routes live under
+  `_shell`/`_authed`/`s/$slug/_member`, `ui/` folders are now `pages/`, Discover is its own
+  frontend-only surface, and `/app` plus `getWorkspace`/`setActive` are gone. Most Startup screens
+  are still stubs, to be filled by Phases 2–5. `.planning/codebase/` predates this and is stale.
 - Issue #19 is explicitly the newer, overlapping-superseding spec versus #2's open slices: where
   both touch the same ground (Trial Submission/Verdict timing vs. per-Participant Verdicts;
   Explore/Opportunities vs. Discover), #19's version is what's built, with both issues cited on the
@@ -128,8 +128,8 @@ public reputation (Score) from verified work.
 | Scope this milestone from GitHub issues, not PRD files | Repo has no PRD/SPEC docs; issues #19 and #2's open slices are the only source of committed-but-unbuilt scope | ✓ Good — issues are detailed enough to act as specs |
 | Issue #19 wins over overlapping #2 slices | #19 is the newer, more complete spec (per user); merging avoids duplicate/contradictory requirements | ✓ Good |
 | Treat ADR-0001–0006 as locked, including ADR-0006 (not yet implemented) | ADRs document already-decided direction; ADR-0006 is this milestone's actual shell work, not prior art to preserve | ✓ Good — confirmed against mapped codebase, which predates the redesign |
-| Phase order follows #19's own build order (shell → domain slices → billing) | The spec's authors already reasoned through the dependency chain; app-shell must exist before the screens that live in it | — Pending (validate once Phase 1 ships) |
+| Phase order follows #19's own build order (shell → domain slices → billing) | The spec's authors already reasoned through the dependency chain; app-shell must exist before the screens that live in it | ✓ Good — Phase 1 shipped the shell; later screens now mount into it |
 | Fold Playwright e2e tests into the final phase rather than a standalone phase | The 5 required flows each span every domain slice; they can't be written until all of them exist | — Pending |
 
 ---
-*Last updated: 2026-09-28 after initial roadmap creation (new-project-from-ingest)*
+*Last updated: 2026-09-29 after Phase 1*
