@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Shell & Navigation Foundation
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-09-28T16:01:52.202Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-09-28T16:20:23.002Z"
 last_activity: 2026-09-28
 last_activity_desc: Phase 01 execution started
-state_head: 869ba5c3ee34f58e4e91153af8bd7d1cfb883408
+state_head: 533157e21a09a11284d04b4fef68109300ba93f6
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 9
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-28)
 ## Current Position
 
 Phase: 01 (Shell & Navigation Foundation) — EXECUTING
-Plan: 2 of 9
+Plan: 3 of 9
 Status: Ready to execute
 Last activity: 2026-09-28 — Phase 01 execution started
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 01 P01 | 30min | 3 tasks | 11 files |
+| Phase 01 P02 | 20min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,7 @@ Recent decisions affecting current work:
 - [Roadmap]: Phase order follows #19's own build order (shell foundation → domain slices → billing), and Playwright e2e coverage (TEST-01) is folded into the final phase since its 5 flows span every domain.
 - [Phase 01]: D-13 executed as a plain field rename (users.activeStartupId -> focusedStartupId), no migration
 - [Phase 01]: A1: Startup Plan tier is Pro when any Founder's planTier is pro (interim derivation until Phase 6)
+- [Phase 01]: pulseHref moved into convex/lib/links.ts, threadHref deleted (trialCycleHref covers it)
 
 ### Pending Todos
 
@@ -91,6 +93,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T16:01:52.062Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-09-28T16:20:22.865Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
