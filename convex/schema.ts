@@ -196,7 +196,8 @@ export default defineSchema({
 		.index("by_token", ["token"])
 		.index("by_email", ["email"])
 		.index("by_startup_and_email", ["startupId", "email"])
-		.index("by_startup", ["startupId"]),
+		.index("by_startup", ["startupId"])
+		.index("by_startup_and_status", ["startupId", "status"]),
 
 	notifications: defineTable({
 		userId: v.id("users"),
@@ -353,7 +354,8 @@ export default defineSchema({
 	})
 		.index("by_role_and_status", ["roleId", "status"])
 		.index("by_user_and_status", ["userId", "status"])
-		.index("by_startup", ["startupId"]),
+		.index("by_startup", ["startupId"])
+		.index("by_startup_and_status", ["startupId", "status"]),
 
 	/**
 	 * A message in one Participant's Thread with the Founders, or, without

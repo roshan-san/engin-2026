@@ -11,6 +11,7 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "../lib/teams/membership";
+import { loadStartupPlan } from "../lib/teams/plan";
 import { toSearchText, uniqueSlug } from "../lib/teams/startupWrite";
 import { assertUrl, optionalText, requireText } from "../lib/text";
 
@@ -336,6 +337,7 @@ export const getBySlug = query({
 				},
 				role: null,
 				isFocused: false as const,
+				plan: null,
 			};
 		}
 
@@ -344,6 +346,7 @@ export const getBySlug = query({
 			startup,
 			role: membership.role,
 			isFocused: user?.focusedStartupId === startup._id,
+			plan: await loadStartupPlan(ctx, startup),
 		};
 	},
 });

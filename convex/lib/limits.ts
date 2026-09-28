@@ -22,3 +22,33 @@ export const INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 export const MAX_INVITES_PER_EMAIL = 20;
 /** A Cycle shows "ending soon" within this window of its end date. */
 export const CYCLE_ENDING_SOON_MS = 2 * 24 * 60 * 60 * 1000;
+
+/** A Plan's limits (issue #19). `null` means unlimited — Convex values cannot
+ * encode `Infinity` (edge SHELL-07/encoding). */
+export type PlanLimits = {
+	capacity: number;
+	openRoles: number | null;
+	liveTrialCycles: number | null;
+	members: number;
+	stealth: boolean;
+};
+
+export const PLAN_LIMITS: { free: PlanLimits; pro: PlanLimits } = {
+	free: {
+		capacity: 5,
+		openRoles: 1,
+		liveTrialCycles: 1,
+		members: 5,
+		stealth: false,
+	},
+	pro: {
+		capacity: 20,
+		openRoles: null,
+		liveTrialCycles: null,
+		members: 50,
+		stealth: true,
+	},
+};
+
+/** The bound on every Plan usage read (roles, Trial Cycles, Members, Invites, Offers). */
+export const MAX_PLAN_USAGE_SCAN = 200;
