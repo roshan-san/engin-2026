@@ -3,6 +3,7 @@ import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import type { proofLink, pulseStatus } from "../../schema";
 import { requireUserId } from "../auth";
+import { pulseHref } from "../links";
 import { notify } from "../notify";
 import { loadPublicUser } from "../people/users";
 import { requireFounderMembership } from "../teams/membership";
@@ -157,12 +158,8 @@ export async function resolveReview(
 				? `${pulse.title} was verified`
 				: `${pulse.title} needs changes`,
 		body: outcome.reviewNote,
-		href: pulseHref(pulse),
+		href: await pulseHref(ctx, pulse),
 	});
-}
-
-export function pulseHref(pulse: Doc<"pulses">): string {
-	return pulse.trialCycleId ? `/app/trials/${pulse.trialCycleId}` : "/app";
 }
 
 function isUnfinished(pulse: Doc<"pulses">): boolean {

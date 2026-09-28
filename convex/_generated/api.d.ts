@@ -27,6 +27,7 @@ import type * as lib_hiring_threads from "../lib/hiring/threads.js";
 import type * as lib_hiring_trialCycles from "../lib/hiring/trialCycles.js";
 import type * as lib_hiring_verdicts from "../lib/hiring/verdicts.js";
 import type * as lib_limits from "../lib/limits.js";
+import type * as lib_links from "../lib/links.js";
 import type * as lib_notify from "../lib/notify.js";
 import type * as lib_people_username from "../lib/people/username.js";
 import type * as lib_people_users from "../lib/people/users.js";
@@ -37,6 +38,7 @@ import type * as lib_reputation_trialHistory from "../lib/reputation/trialHistor
 import type * as lib_teams_catalog from "../lib/teams/catalog.js";
 import type * as lib_teams_invites from "../lib/teams/invites.js";
 import type * as lib_teams_membership from "../lib/teams/membership.js";
+import type * as lib_teams_plan from "../lib/teams/plan.js";
 import type * as lib_teams_startupWrite from "../lib/teams/startupWrite.js";
 import type * as lib_text from "../lib/text.js";
 import type * as lib_work_boards from "../lib/work/boards.js";
@@ -81,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   "lib/hiring/trialCycles": typeof lib_hiring_trialCycles;
   "lib/hiring/verdicts": typeof lib_hiring_verdicts;
   "lib/limits": typeof lib_limits;
+  "lib/links": typeof lib_links;
   "lib/notify": typeof lib_notify;
   "lib/people/username": typeof lib_people_username;
   "lib/people/users": typeof lib_people_users;
@@ -91,6 +94,7 @@ declare const fullApi: ApiFromModules<{
   "lib/teams/catalog": typeof lib_teams_catalog;
   "lib/teams/invites": typeof lib_teams_invites;
   "lib/teams/membership": typeof lib_teams_membership;
+  "lib/teams/plan": typeof lib_teams_plan;
   "lib/teams/startupWrite": typeof lib_teams_startupWrite;
   "lib/text": typeof lib_text;
   "lib/work/boards": typeof lib_work_boards;

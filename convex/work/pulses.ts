@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
+import { pulseHref } from "../lib/links";
 import { MAX_BOARD_PULSES, MAX_PROOF_LINKS } from "../lib/limits";
 import { notifyFounders } from "../lib/notify";
 import { requireMembership } from "../lib/teams/membership";
@@ -16,7 +17,6 @@ import {
 	currentStatus,
 	loadPulseContext,
 	proofLinksOf,
-	pulseHref,
 	requirePulse,
 	requireSubmittedPulse,
 	requireWorkablePulse,
@@ -181,7 +181,7 @@ export const setStatus = mutation({
 			await notifyFounders(ctx, pulse.startupId, {
 				kind: "pulse",
 				title: `${pulse.title} is ready for review`,
-				href: pulseHref(pulse),
+				href: await pulseHref(ctx, pulse),
 			});
 		}
 	},

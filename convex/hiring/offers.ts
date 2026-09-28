@@ -5,6 +5,7 @@ import { mutation, query } from "../_generated/server";
 import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import { fillRoleIfFull, withdrawOffer } from "../lib/hiring/offers";
+import { startupHref } from "../lib/links";
 import { MAX_USER_OFFERS } from "../lib/limits";
 import { notifyFounders } from "../lib/notify";
 import { loadPublicUser } from "../lib/people/users";
@@ -49,7 +50,7 @@ async function tellFounder(
 	await notifyFounders(ctx, offer.startupId, {
 		kind: "offer",
 		title: `${person?.name ?? "Someone"} ${outcome} your Offer`,
-		href: "/app/startup",
+		href: await startupHref(ctx, offer.startupId, "team"),
 	});
 }
 

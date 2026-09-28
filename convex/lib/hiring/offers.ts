@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx } from "../../_generated/server";
+import { INBOX_HREF } from "../links";
 import { MAX_ROLE_OFFERS, MAX_ROLE_TRIALS } from "../limits";
 import { notify } from "../notify";
 import { cancelTrial } from "./trialCycles";
@@ -14,7 +15,7 @@ export async function withdrawOffer(
 		userId: offer.userId,
 		kind: "offer",
 		title: `Your Offer from ${startup?.name ?? "a Startup"} was withdrawn`,
-		href: "/app",
+		href: INBOX_HREF,
 	});
 }
 

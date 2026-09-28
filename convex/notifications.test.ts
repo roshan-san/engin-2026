@@ -121,9 +121,9 @@ test("a passed Verdict notifies the Participant with a slug-carrying link", asyn
 	await closeWithVerdict(t, setup, trialCycleId, alice, "passed");
 
 	const notifications = await notificationsFor(alice.as);
-	expect(
-		hrefOf(notifications, "Your Verdict for Build a feature is in"),
-	).toBe(`/s/${slug}/trials/${trialCycleId}`);
+	expect(hrefOf(notifications, "Your Verdict for Build a feature is in")).toBe(
+		`/s/${slug}/trials/${trialCycleId}`,
+	);
 });
 
 test("a Thread message and its Announcement counterpart carry a slug-carrying link", async () => {
@@ -215,9 +215,9 @@ test("a Cycle Pulse moving to review, then verified, carries the Cycle's slug-ca
 		status: "review",
 	});
 	const founderNotifications = await notificationsFor(setup.founder.as);
-	expect(
-		hrefOf(founderNotifications, "Hero section is ready for review"),
-	).toBe(`/s/${slug}/cycles/${cycleId}`);
+	expect(hrefOf(founderNotifications, "Hero section is ready for review")).toBe(
+		`/s/${slug}/cycles/${cycleId}`,
+	);
 
 	await setup.founder.as.mutation(api.work.pulses.verify, { pulseId });
 	const bobNotifications = await notificationsFor(bob.as);

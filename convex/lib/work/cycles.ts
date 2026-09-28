@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
+import { cycleHref } from "../links";
 import { notify } from "../notify";
 import { getMembership, requireMembership } from "../teams/membership";
 
@@ -66,6 +67,6 @@ export async function addCycleMember(
 		userId: targetUserId,
 		kind: "cycle",
 		title: `You were added to the Cycle ${cycle.title}`,
-		href: "/app",
+		href: await cycleHref(ctx, cycle),
 	});
 }
