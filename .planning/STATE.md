@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Shell & Navigation Foundation
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-09-28T16:38:47.524Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-09-28T20:52:09.240Z"
 last_activity: 2026-09-28
 last_activity_desc: Phase 01 execution started
-state_head: 6389761c9669924ea1c12b2b7c08e60f6445923c
+state_head: 5ec678e2fde8f7292adc78f5c27efe7c9c198037
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 9
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-28)
 ## Current Position
 
 Phase: 01 (Shell & Navigation Foundation) — EXECUTING
-Plan: 4 of 9
+Plan: 5 of 9
 Status: Ready to execute
 Last activity: 2026-09-28 — Phase 01 execution started
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01 | 30min | 3 tasks | 11 files |
 | Phase 01 P02 | 20min | 3 tasks | 11 files |
 | Phase 01 P03 | 35min | 2 tasks | 14 files |
+| Phase 01 P04 | 55min | 3 tasks | 32 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 01]: pulseHref moved into convex/lib/links.ts, threadHref deleted (trialCycleHref covers it)
 - [Phase 01]: Rewrote shadcn CLI's generated 'import { cn } from "cn"' to ~/lib/utils and removed the stray cn dependency (T-01-SC mitigation applied literally)
 - [Phase 01]: Deleted the CLI's .dark/@custom-variant dark block to preserve the single dark-only palette contract
+- [Phase 01]: AppShell ships with no header in Phase 1 — plan 01-06 mounts the sidebar as the outer row's first child
+- [Phase 01]: Non-Member gating is per-gate-route (MemberGate) rather than baked into s/$slug's resolver, so the Trial Cycle route can sit outside it
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T16:38:47.392Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-09-28T20:52:09.142Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None
