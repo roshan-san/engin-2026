@@ -7,4 +7,4 @@ Communication follows the same isolation: a private Thread per Participant with 
 ## Consequences
 
 - Pulses on a Board carry the owning Participant; Challenges are separate template records, copied at start and again when added mid-trial. Editing a Challenge never changes copies.
-- Boards use todo → in progress → done with no review step; the Participant's Submission (summary + Proof Links) is what the Founder judges (see ADR 0002 amendment). A Verdict, or the end date, locks the Board and Submission.
+- Boards use todo → in progress → done with no review step; the Participant's Submission (summary + Proof Links) is what the Founder judges. A Verdict, or the end date, locks the Board and Submission.

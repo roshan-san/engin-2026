@@ -1,0 +1,25 @@
+{
+  "source_path": "D:/codex/engin-2026/docs/adr/0004-code-is-grouped-by-domain-not-listed-flat.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Code is grouped by domain, not listed flat",
+  "summary": "Code reorganized from flat structure into six domain buckets (people, teams, hiring, work, app, marketing) to improve codebase scannability.",
+  "scope": [
+    "code organization",
+    "domain grouping",
+    "src/features/",
+    "convex/",
+    "API surface",
+    "people",
+    "teams",
+    "hiring",
+    "work",
+    "app",
+    "marketing"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": "Status field indicates partial superseding by ADR 0006 (frontend half). Backend grouping remains valid."
+}

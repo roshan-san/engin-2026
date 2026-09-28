@@ -1,0 +1,12 @@
+{
+  "source_path": "D:/codex/engin-2026/CONTEXT.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Engin",
+  "summary": "Domain glossary defining terminology for the Engin platform covering people, startups, hiring, work, and reputation.",
+  "scope": ["User", "Startup", "Founder", "Member", "Role", "Trial Cycle", "Cycle", "Pulse", "Participant", "Offer", "Verdict", "Score", "Board", "Reputation"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null
+}

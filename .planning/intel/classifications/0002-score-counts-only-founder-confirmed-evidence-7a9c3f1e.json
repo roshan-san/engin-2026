@@ -1,0 +1,23 @@
+{
+  "source_path": "D:/codex/engin-2026/docs/adr/0002-score-counts-only-founder-confirmed-evidence.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Score counts only Founder-confirmed evidence",
+  "summary": "Score increases only from Founder-confirmed evidence like passed Verdicts and accepted Offers, not from self-marked work or trial participation.",
+  "scope": [
+    "Score",
+    "Founder-confirmed evidence",
+    "Trial Cycles",
+    "Verdicts",
+    "Offers",
+    "Pulses",
+    "Participant Boards",
+    "Internal Cycles"
+  ],
+  "cross_refs": [
+    "docs/adr/0003-per-participant-boards.md"
+  ],
+  "locked": false,
+  "precedence": null
+}

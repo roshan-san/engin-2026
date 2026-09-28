@@ -1,0 +1,22 @@
+{
+  "source_path": "D:/codex/engin-2026/docs/adr/0005-startups-pay-talent-and-visibility-are-never-for-sale.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Startups pay; talent and visibility are never for sale",
+  "summary": "Billing model: startups pay for Pro subscription; all talent actions (trials, profiles, scoring) are free. No paid messaging, visibility, or promoted placements.",
+  "scope": [
+    "billing",
+    "pricing",
+    "talent features",
+    "marketplace",
+    "Trial Cycle limits",
+    "Pro subscription",
+    "Stealth mode"
+  ],
+  "cross_refs": [
+    "convex/lib/limits.ts"
+  ],
+  "locked": false,
+  "precedence": null
+}
