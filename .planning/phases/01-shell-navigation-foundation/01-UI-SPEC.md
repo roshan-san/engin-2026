@@ -198,28 +198,95 @@ switcher's own empty state ("Create Startup") — they never reach their own `Em
 
 ## UI Considerations
 
-Applicable state considerations resolved: 15 covered, 3 backstop, 0 unresolved.
+Resolved by the UI-consideration probe after checker approval: 11 surfaces, 65 applicable
+considerations, of which 41 are resolved (explicit), 4 are resolved (backstop) and 20 are dismissed
+with a reason. 0 are unresolved. Empty-state and error copy lives in the Copywriting Contract, and
+the rows below refer to it rather than repeating it.
 
-| Category | Element(s) | Status | Resolution / Reason |
-|----------|------------|--------|---------------------|
-| empty | Startup switcher (list-collection) | ✅ covered | Zero Startups renders the "Create Startup" primary CTA row (Copywriting Contract) instead of a list |
-| loading | Startup switcher (list-collection) | ✅ covered | Existing `Skeleton` pattern (`h-8 w-24 rounded-md`, already in `StartupSwitcher.tsx`) carries over unchanged |
-| loading | Sidebar / mobile shell chrome (nav) | ✅ covered | `useConvexAuth()` `isLoading` renders `GlobalSpinner` before any shell chrome mounts (Pattern 1, RESEARCH.md) — no half-rendered sidebar state exists |
-| error | Sidebar, switcher, palette (nav, list-collection) | ✅ covered | Query failures surface via `GlobalError.tsx`'s existing toast + inline message pattern (Copywriting Contract "Error state" row) — no new error UI invented |
-| populated | Startup switcher (list-collection) | ✅ covered | Each row shows Startup name (truncated) + role `Badge`, matching today's `StartupSwitcher.tsx` composition |
-| overflow | Startup switcher (list-collection) | 🧪 backstop | Many Startups: dropdown content scrolls (`DropdownMenuContent` already scrolls past viewport height by default); no fixed cap declared — flag for a visual check once a test account has 10+ Startups |
-| zero-one-many | Startup switcher (list-collection) | ✅ covered | Zero → "Create Startup" CTA; one → switcher still renders as a clickable trigger (no special single-item treatment); many → scrollable list per overflow row above |
-| long-text | Startup switcher, sidebar Focused-Startup name (list-collection, nav) | ✅ covered | `truncate` class on the name span (already present in `StartupSwitcher.tsx`), carried into the rebuilt `AppSidebar.tsx`/`StartupSwitcher.tsx` |
-| empty | Command palette results (list-collection) | ✅ covered | `cmdk`'s built-in `CommandEmpty` renders "No results found." for a query that matches nothing |
-| loading | Command palette Cycle results (list-collection) | 🧪 backstop | Focused-Startup Cycles (D-18) load async into the palette; no skeleton row specified — flag for a visual check that a brief loading flicker doesn't show an empty "No results" before data arrives |
-| populated | Command palette (list-collection) | ✅ covered | Screens, Startups and Focused-Startup Cycles list under their own `CommandGroup` headings (standard `cmdk` composition) |
-| overflow | Command palette (list-collection) | ✅ covered | `CommandDialog`'s list area scrolls internally (shadcn default `max-h` + `overflow-y-auto` on `CommandList`) |
-| long-text | Command palette rows (list-collection) | ✅ covered | Row text truncates with `truncate`; the shortcut hint (Tooltip, SHELL-05) stays right-aligned and unaffected |
-| empty | `?` shortcut sheet (list-collection) | ✅ covered | Never empty — the registry always holds at least the `mod+k` and `?` entries per D-19; dismissed as not applicable |
-| populated | `?` shortcut sheet (list-collection) | ✅ covered | Renders one row per registry entry, grouped by `scope`; Phase 1's ~4–6 entries fit without scrolling |
-| empty | Stub screens (list-collection / static-content, all `/s/$slug/...` and personal routes) | ✅ covered | Every stub route's `EmptyState` copy is fully declared in the Copywriting Contract's "Stub Screen Copy" table — this is the *designed* state, not a gap |
-| zero-one-many | Mobile Inbox unread badge (interactive-control) | ✅ covered | Zero → badge hidden entirely (no "0" ever shown); one-or-more → numeral shown, capped visually via tabular-nums width, no "99+" cap declared this phase (Inbox has no real data source yet — Phase 3 owns the count logic) |
-| loading | Mobile Inbox unread badge (interactive-control) | 🧪 backstop | While the notification count query is loading, the badge is hidden (same as zero) rather than showing a skeleton dot — flag for a visual check that this doesn't read as "definitely zero unread" during a slow load |
+**Surfaces probed:** E1 Startup switcher · E2 desktop sidebar · E3 mobile bottom tab bar ·
+E4 mobile Startup sheet · E5 mobile top bar · E6 mobile account sheet · E7 ⌘K command palette ·
+E8 `?` shortcut sheet · E9 stub screens · E10 mobile Inbox Notifications/Threads toggle ·
+E11 signed-out public header.
+
+### Resolved (explicit): plan-phase lifts these into `must_haves.truths`
+
+| Surface | Category | Truth |
+|---------|----------|-------|
+| E1 | empty | With zero Startups the switcher shows the "Create Startup" row instead of a list |
+| E1 | loading | While memberships load, the switcher shows the existing `Skeleton` (`h-8 w-24 rounded-md`) |
+| E1 | error | A failed memberships query surfaces through the route error boundary (Copywriting "Error state" row) |
+| E1 | populated | Each switcher row shows the Startup's rounded-square avatar, its truncated name and a role `Badge`, and the Focused Startup is marked |
+| E1 | zero-one-many | Zero → "Create Startup"; one → the trigger stays clickable with that Startup plus "Create Startup"; many → a scrolling list |
+| E1 | long-text | Startup names truncate with an ellipsis (`truncate`) in the trigger and in every row |
+| E2 | empty | With no Focused Startup, the sidebar's Focused-Startup section shows only "Create Startup"; the personal items and Discover always render |
+| E2 | loading | While auth loads, `GlobalSpinner` renders instead of the shell; while memberships load, only the switcher slot shows its skeleton |
+| E2 | error | Sidebar query failures surface through the route error boundary |
+| E2 | populated | Order is Inbox, My Pulses, Threads → switcher + Cycles, Hiring, Team, Pitch, Activity → Discover; the active item has a `#16181C` fill, white text and a blue icon |
+| E2 | overflow | Sidebar content scrolls inside its own column when the viewport is shorter than the nav; the page never scrolls the sidebar away |
+| E2 | long-text | The Focused Startup's name truncates in the sidebar |
+| E3 | error | A failed Inbox count query surfaces through the route error boundary, like every other query |
+| E4 | empty | With no Startup, the Startup sheet shows only "Create Startup" |
+| E4 | loading | The sheet's switcher row shows the skeleton while memberships load; the nav links render immediately |
+| E4 | error | Startup-sheet query failures surface through the route error boundary |
+| E4 | populated | The sheet shows the current Startup (tap to change) at the top, then Cycles, Hiring, Team, Pitch, Activity |
+| E4 | overflow | The sheet body scrolls when its content is taller than the viewport |
+| E4 | zero-one-many | The sheet's switcher follows E1's zero/one/many rules |
+| E4 | long-text | The Startup name truncates in the sheet |
+| E5 | empty | The avatar falls back to the User's initials when there is no image |
+| E5 | loading | The avatar shows its initials fallback until the image loads |
+| E5 | error | Top-bar query failures surface through the route error boundary |
+| E5 | populated | Avatar button top-left, screen title centred (Display 20px/600), search icon top-right; both buttons are 44px targets |
+| E5 | overflow | The centred title truncates between the two 44px buttons and never pushes them off-screen |
+| E5 | long-text | A long screen title truncates with an ellipsis |
+| E6 | empty | The account sheet's avatar falls back to initials when there is no image |
+| E6 | loading | Name, username and Score chip show `Skeleton` placeholders while the current User loads |
+| E6 | error | Account-sheet query failures surface through the route error boundary |
+| E6 | populated | The account sheet shows avatar + name + username (links to the profile), the Score chip, and "Sign out" |
+| E6 | long-text | The name and username truncate in the account sheet |
+| E7 | empty | A query that matches nothing shows `CommandEmpty` "No results found." |
+| E7 | error | A failed Cycles query surfaces through the route error boundary |
+| E7 | populated | Results are grouped under Screens, Startups and Cycles `CommandGroup`s, each row showing its shortcut hint right-aligned |
+| E7 | overflow | `CommandList` scrolls internally; the dialog never grows past its max height |
+| E7 | zero-one-many | A group with zero matches is hidden; a User with zero Startups sees no Startups group but still sees "Create Startup" |
+| E7 | long-text | Row labels truncate; the shortcut hint stays right-aligned and never wraps |
+| E8 | populated | The `?` sheet lists one row per registry entry, grouped by `scope`, with the label left and the keycap right (`tabular-nums`) |
+| E8 | overflow | The `?` sheet body scrolls when entries exceed its height (later phases add entries) |
+| E8 | long-text | Labels truncate and keycaps never wrap |
+| E11 | loading | While auth is loading the root renders `GlobalSpinner`, so neither the public header nor the app shell flashes before the other |
+
+### Resolved (backstop): visual checks the verifier must confirm with evidence
+
+```yaml
+- { statement: "E1 overflow: with 10+ Startups the switcher's DropdownMenuContent scrolls and stays within the viewport", verification: backstop }
+- { statement: "E3 loading: the Inbox badge stays hidden while the count loads and does not read as a definite zero during a slow load", verification: backstop }
+- { statement: "E7 loading: while Focused-Startup Cycles load, the palette does not flash 'No results found.' before data arrives", verification: backstop }
+- { statement: "E11 overflow: at 360px width the public header does not wrap or overflow horizontally", verification: backstop }
+```
+
+### Dismissed (with reason)
+
+| Surface | Category | Reason |
+|---------|----------|--------|
+| E1 | partial | Each membership row comes whole from one query; name and role are always present |
+| E2 | partial | Nav items are static; the only data (Focused Startup name) arrives with the switcher query |
+| E2 | zero-one-many | The nav items are a fixed set; the only collection in the sidebar is the switcher (E1) |
+| E3 | overflow | Exactly four fixed, equal-width tabs; nothing grows |
+| E3 | long-text | Tab labels are fixed one- or two-word glossary terms |
+| E4 | partial | Same as E1: membership rows arrive whole |
+| E7 | partial | Every result is a whole record from a single query or the static registry; the Cycles still loading are covered by the E7 loading backstop |
+| E8 | empty | The registry always holds at least the ⌘K and `?` entries (D-19) |
+| E8 | loading | The registry is static client-side data; nothing loads |
+| E8 | error | Nothing is fetched |
+| E8 | partial | Every registry entry has `key` and `label` by type |
+| E8 | zero-one-many | Never zero; growth is covered by the E8 overflow row |
+| E9 | overflow | Stub copy is fixed and short (Stub Screen Copy table) |
+| E9 | long-text | Stub copy is fixed and short (Stub Screen Copy table) |
+| E10 | loading | Static two-segment control; no data |
+| E10 | error | Static two-segment control; no data |
+| E10 | overflow | Two fixed segments sharing the full width |
+| E10 | long-text | Fixed labels "Notifications" and "Threads" |
+| E11 | error | Static links and a sign-in button; nothing is fetched |
+| E11 | long-text | Fixed labels; width is covered by the E11 overflow backstop |
 
 ---
 
@@ -236,12 +303,12 @@ instructions both rule them out). The vetting gate does not apply.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: FLAG (non-blocking: no explicit primary visual anchor is named for the main signed-in screen)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-09-28 (gsd-ui-checker)
