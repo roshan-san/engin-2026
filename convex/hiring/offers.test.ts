@@ -32,10 +32,8 @@ async function isMemberOf(
 	as: Awaited<ReturnType<typeof signUp>>["as"],
 	startupName: string,
 ) {
-	const workspace = await as.query(api.teams.startups.getWorkspace, {});
-	return (workspace?.startups ?? []).some(
-		(entry) => entry.startup.name === startupName,
-	);
+	const memberships = await as.query(api.teams.startups.listMemberships, {});
+	return memberships.some((entry) => entry.startup.name === startupName);
 }
 
 test("a passed-with-offer Verdict gives the Participant a pending Offer", async () => {

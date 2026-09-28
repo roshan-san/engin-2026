@@ -246,9 +246,9 @@ test("listMemberships lists every Startup in name order with roles and isFocused
 test("a User with no Startups gets an empty memberships list", async () => {
 	const t = createTest();
 	const solo = await signUp(t, "Solo");
-	expect(
-		await solo.as.query(api.teams.startups.listMemberships, {}),
-	).toEqual([]);
+	expect(await solo.as.query(api.teams.startups.listMemberships, {})).toEqual(
+		[],
+	);
 });
 
 test("getBySlug, listMemberships and focus throw when signed out", async () => {
@@ -258,9 +258,9 @@ test("getBySlug, listMemberships and focus throw when signed out", async () => {
 	await expect(
 		t.query(api.teams.startups.getBySlug, { slug: "acme" }),
 	).rejects.toThrow("Not authenticated");
-	await expect(
-		t.query(api.teams.startups.listMemberships, {}),
-	).rejects.toThrow("Not authenticated");
+	await expect(t.query(api.teams.startups.listMemberships, {})).rejects.toThrow(
+		"Not authenticated",
+	);
 	await expect(
 		t.mutation(api.teams.startups.focus, { startupId: setup.startupId }),
 	).rejects.toThrow("Not authenticated");

@@ -52,5 +52,12 @@ export const remove = mutation({
 
 		await ctx.db.delete(args.membershipId);
 		await unassignPulsesInStartup(ctx, membership.startupId, membership.userId);
+
+		// The Focused Startup must be one the User still belongs to (#19:
+		// "cleared when they stop belonging to it").
+		const removedUser = await ctx.db.get(membership.userId);
+		if (removedUser?.focusedStartupId === membership.startupId) {
+			await ctx.db.patch(membership.userId, { focusedStartupId: undefined });
+		}
 	},
 });

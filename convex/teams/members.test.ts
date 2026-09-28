@@ -31,9 +31,9 @@ test("removing a Member clears their Focused Startup", async () => {
 
 	const me = await bob.as.query(api.people.users.getMe, {});
 	expect(me?.focusedStartupId).toBeNull();
-	expect(
-		await bob.as.query(api.teams.startups.listMemberships, {}),
-	).toEqual([]);
+	expect(await bob.as.query(api.teams.startups.listMemberships, {})).toEqual(
+		[],
+	);
 });
 
 test("removing a Member from a Startup they're not focused on leaves their Focused Startup unchanged", async () => {

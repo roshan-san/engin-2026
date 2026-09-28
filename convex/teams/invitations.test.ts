@@ -23,9 +23,12 @@ async function myInvites(person: Awaited<ReturnType<typeof signUp>>) {
 	return await person.as.query(api.teams.invitations.listMine, {});
 }
 
-async function workspaceNames(person: Awaited<ReturnType<typeof signUp>>) {
-	const workspace = await person.as.query(api.teams.startups.getWorkspace, {});
-	return workspace.startups.map((entry) => entry.startup.name);
+async function startupNames(person: Awaited<ReturnType<typeof signUp>>) {
+	const memberships = await person.as.query(
+		api.teams.startups.listMemberships,
+		{},
+	);
+	return memberships.map((entry) => entry.startup.name);
 }
 
 test("a Founder invites someone by username, who accepts from their notifications", async () => {
@@ -44,13 +47,13 @@ test("a Founder invites someone by username, who accepts from their notification
 	);
 	const [invite] = await myInvites(bob);
 	expect(invite?.startupName).toBe("Acme");
-	expect(await workspaceNames(bob)).toEqual([]);
+	expect(await startupNames(bob)).toEqual([]);
 
 	await bob.as.mutation(api.teams.invitations.acceptById, {
 		inviteId: invite?._id ?? ("" as never),
 	});
 
-	expect(await workspaceNames(bob)).toEqual(["Acme"]);
+	expect(await startupNames(bob)).toEqual(["Acme"]);
 	expect(await myInvites(bob)).toEqual([]);
 });
 
@@ -70,7 +73,7 @@ test("an email Invite for someone not yet on Engin is waiting when they sign up"
 	await carol.as.mutation(api.teams.invitations.acceptById, {
 		inviteId: invite?._id ?? ("" as never),
 	});
-	expect(await workspaceNames(carol)).toEqual(["Acme"]);
+	expect(await startupNames(carol)).toEqual(["Acme"]);
 });
 
 test("inviting an unknown username is refused", async () => {
@@ -126,7 +129,7 @@ test("re-inviting refreshes the pending Invite instead of duplicating it", async
 	await bob.as.mutation(api.teams.invitations.acceptById, {
 		inviteId: first.inviteId,
 	});
-	expect(await workspaceNames(bob)).toEqual(["Acme"]);
+	expect(await startupNames(bob)).toEqual(["Acme"]);
 });
 
 test("an Invite expires after 14 days", async () => {

@@ -96,9 +96,8 @@ export const getWorkspace = query({
 		}
 
 		const active =
-			startups.find(
-				(entry) => entry.startup._id === user?.focusedStartupId,
-			) ?? startups[0];
+			startups.find((entry) => entry.startup._id === user?.focusedStartupId) ??
+			startups[0];
 
 		return { active, startups };
 	},
