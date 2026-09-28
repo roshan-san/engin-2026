@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Shell & Navigation Foundation
-status: executing
-stopped_at: Completed 01-08-PLAN.md
-last_updated: "2026-09-28T22:00:58.610Z"
+status: verifying
+stopped_at: Completed 01-09-PLAN.md
+last_updated: "2026-09-28T22:18:43.148Z"
 last_activity: 2026-09-28
 last_activity_desc: Phase 01 execution started
-state_head: 6adfefdbf86e80c05d8d08d11513fb8317c804e8
+state_head: 79d406d97447f9433fcac4d121672d995aafa798
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-09-28)
 
 Phase: 01 (Shell & Navigation Foundation) — EXECUTING
 Plan: 9 of 9
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-28 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P05 | 45min | 3 tasks | 14 files |
 | Phase 01 P06 | 20min | 2 tasks | 10 files |
 | Phase 01 P08 | 14min | 3 tasks | 59 files |
+| Phase 01 P09 | 12min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,7 @@ Recent decisions affecting current work:
 - [Phase 01]: ScoreChip dropped its isPro prop entirely rather than defaulting it - no per-user Pro variant exists in the new shell (#19, ADR-0005)
 - [Phase 01]: [Phase 01] Two still-live /app routes had stale ui/ imports after Task 1's git mv; repointed imports to pages/ rather than deleting early, since Task 3 owns the whole /app deletion together
 - [Phase 01]: [Phase 01] convex/teams/startups.ts now exposes exactly one Focused-Startup API (getBySlug, listMemberships, focus); getWorkspace and setActive deleted (T-01-22)
+- [Phase 01]: SHELL-05 registry pattern: one SHORTCUTS array with findShortcut; ShortcutHint is the only component that prints a label; useShortcuts reads context via a ref so the keydown listener attaches once
 
 ### Pending Todos
 
@@ -108,6 +110,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T22:00:58.521Z
-Stopped at: Completed 01-08-PLAN.md
+Last session: 2026-09-28T22:18:43.062Z
+Stopped at: Completed 01-09-PLAN.md
 Resume file: None
