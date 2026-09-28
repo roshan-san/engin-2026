@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { InviteAcceptPage } from "~/features/teams/team/ui/InviteAcceptPage";
+import { InviteAcceptPage } from "~/features/teams/team/pages/InviteAcceptPage";
 
-export const Route = createFileRoute("/invite/$token")({
+export const Route = createFileRoute("/_shell/invite/$token")({
 	component: InviteAcceptRoute,
 });
 

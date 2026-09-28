@@ -13,7 +13,7 @@ export function InviteAcceptPage({ token }: InviteAcceptPageProps) {
 
 	if (isLoading || invite === undefined) {
 		return (
-			<div className="flex min-h-dvh items-center justify-center">
+			<div className="flex items-center justify-center py-10">
 				<p className="text-muted-foreground">Loading invite...</p>
 			</div>
 		);
@@ -21,7 +21,7 @@ export function InviteAcceptPage({ token }: InviteAcceptPageProps) {
 
 	if (!invite) {
 		return (
-			<div className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-4 p-10 text-center">
+			<div className="mx-auto flex max-w-lg flex-col items-center justify-center gap-4 py-10 text-center">
 				<h1 className="text-2xl font-bold">Invite not found</h1>
 				<Button asChild>
 					<Link to="/">Go home</Link>
@@ -31,7 +31,7 @@ export function InviteAcceptPage({ token }: InviteAcceptPageProps) {
 	}
 
 	return (
-		<div className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-6 p-10 text-center">
+		<div className="mx-auto flex max-w-lg flex-col items-center justify-center gap-6 py-10 text-center">
 			<div className="space-y-2">
 				<h1 className="text-3xl font-bold">Join {invite.startupName}</h1>
 				<p className="text-muted-foreground">
