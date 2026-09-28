@@ -4,6 +4,7 @@ import {
 	CommandProvider,
 	ShellKeyboard,
 } from "~/shell/command/CommandProvider";
+import { ShortcutSheet } from "~/shell/command/ShortcutSheet";
 import { BottomTabBar } from "~/shell/mobile/BottomTabBar";
 import { MobileTopBar } from "~/shell/mobile/MobileTopBar";
 import { AppSidebar } from "~/shell/sidebar/AppSidebar";
@@ -33,6 +34,7 @@ export function AppShell({ children }: { readonly children: React.ReactNode }) {
 			</SidebarProvider>
 			<ShellKeyboard />
 			<CommandPalette />
+			<ShortcutSheet />
 		</CommandProvider>
 	);
 }

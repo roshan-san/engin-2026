@@ -23,7 +23,7 @@ type CommandContextValue = {
 const CommandContext = createContext<CommandContextValue | null>(null);
 
 /**
- * Owns the ⌘K palette and `?` sheet open state. `togglePalette` and
+ * Owns the mod+K palette and `?` sheet open state. `togglePalette` and
  * `openShortcutSheet` are mutually exclusive (edge SHELL-05/concurrency): at
  * most one of the palette and the sheet is ever open.
  */
