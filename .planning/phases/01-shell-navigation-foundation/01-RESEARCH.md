@@ -458,22 +458,25 @@ export function modKeyLabel(): string {
 
 **If this table is empty:** N/A — see above; none of these change the *shape* of the plan, only small tidiness/naming details.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Which Founder's `planTier` decides the interim Plan block's `isPro`?**
    - What we know: today Plan is 100% per-User (`isProUser` checks the *caller's* own `planTier`; `convex/people/billing.ts`'s `getPlan` has no notion of "the Startup's plan" at all) `[VERIFIED: convex/people/billing.ts:12-23]`. CONTEXT.md says derive from "the Founders' `planTier` via `isProUser`" (plural).
    - What's unclear: the aggregation rule across multiple Founders.
    - Recommendation: "any Founder is Pro → Startup shows Pro limits" (matches issue #19 user story 97, "Pro belongs to the Startup ... the whole team benefits"). Confirm with the user before building — this is A1 above.
+   - RESOLVED: any Founder with `planTier === "pro"` makes the Startup Pro, per CONTEXT.md Claude's Discretion ("derive it from existing data (the Founders' `planTier` via `isProUser`)"). It is implemented in plan 01-01 Task 2 (`loadStartupPlan`) and recorded there as flagged assumption A1 for the user to overturn if needed. Phase 6 swaps the source, not the shape.
 
 2. **Where should `/` redirect signed-in Users to, exactly — `/my-pulses` or something else?**
    - What we know: the glossary and issue #19 both call it "My Pulses" as the landing screen; no URL is specified anywhere in the source material.
    - What's unclear: nothing blocking, purely a naming choice.
    - Recommendation: `/my-pulses`, for symmetry with `/inbox` and `/threads`.
+   - RESOLVED: `/my-pulses`. Plan 01-04 Task 1 creates the route; Task 3 points LandingPage's `<Navigate>` and Google sign-in's `redirectTo` at it.
 
 3. **Does the mobile top bar (D-17) live inside `_shell`'s `AppShell` or is it a separate `MobileShell` swapped in alongside `BottomTabBar`?**
    - What we know: D-17 describes mobile-only chrome (slim top bar with avatar-sheet and search icon) that's materially different from the desktop header (which barely exists — the sidebar carries most of what the old top header held).
    - What's unclear: whether "AppShell" should internally branch mobile/desktop via CSS (`md:hidden`/`hidden md:flex`) or via two separate React components chosen by the `useIsMobile` hook.
    - Recommendation: CSS-based branching (matches this repo's existing `AppNav.tsx` pattern of one component rendering both `placement="header"` and `placement="dock"` variants) — avoids a hook-driven remount/flash and keeps both layouts in the DOM for smooth breakpoint transitions. Low-stakes either way; planner's call.
+   - RESOLVED: CSS-based branching inside one `AppShell`. Plan 01-06 mounts the desktop sidebar in a `hidden md:flex` wrapper; plan 01-07 mounts `MobileTopBar`, `BottomTabBar` and `InboxSegments` with `md:hidden`, so both switch at the same `md` breakpoint (edge SHELL-01/adjacency). No `useIsMobile` branch is used for layout.
 
 ## Environment Availability
 
