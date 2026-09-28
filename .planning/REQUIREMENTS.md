@@ -16,12 +16,12 @@ Plans). Each maps to exactly one roadmap phase.
 ### Navigation & Shell (SHELL)
 
 - [ ] **SHELL-01**: Signed-in User sees a sidebar with Inbox/My Pulses/Threads (spanning every Startup they're in), a Startup switcher, and a Focused-Startup section (Cycles, Hiring, Team, Pitch, Activity); on mobile, a bottom tab bar (Inbox · My Pulses · Startup · Discover). *(src: #19)*
-- [ ] **SHELL-02**: Every Startup-scoped screen's URL carries the Startup's slug (`/s/$slug/...`), with no `/app` prefix; the app reopens on the User's last Focused Startup; a User with no Startup sees "Create a Startup" in the switcher. *(src: #19)*
+- [x] **SHELL-02**: Every Startup-scoped screen's URL carries the Startup's slug (`/s/$slug/...`), with no `/app` prefix; the app reopens on the User's last Focused Startup; a User with no Startup sees "Create a Startup" in the switcher. *(src: #19)*
 - [ ] **SHELL-03**: Signed-in Users browse public pages (a Pitch, a profile, Discover) inside the app shell; signed-out visitors see the same pages under a simple public header with a sign-in button; a page requiring sign-in redirects there instead of breaking. *(src: #19)*
 - [ ] **SHELL-04**: The interface renders dark-only with one semantic-token accent colour and typeface, replacing the current stock dark theme. *(src: #19)*
 - [ ] **SHELL-05**: ⌘K/Ctrl+K opens a command palette (jump to screens/Startups/Cycles, create things); `C` creates a Pulse in context; `/` focuses search; `?` opens a shortcuts sheet; every tooltip/menu item/palette row shows its shortcut; single-key shortcuts are ignored while typing in a field. One shortcut registry feeds all four surfaces. *(src: #19)*
 - [ ] **SHELL-06**: The frontend is reorganised per ADR-0006 — `src/shell/` (app frame, no backend counterpart), `src/features/<domain>/<feature>/pages/` (renamed from `ui/`), and frontend-only `discover`/`marketing` surfaces. *(src: #19, ADR-0006)*
-- [ ] **SHELL-07**: A backend query looks up a Startup by slug and returns the Startup, the caller's role (or none), and the Startup's Plan/limits/usage in one call; the switcher is fed by the caller's memberships; `users.activeStartupId` is renamed to match "Focused Startup" and is cleared when the User stops belonging to that Startup. *(src: #19)*
+- [x] **SHELL-07**: A backend query looks up a Startup by slug and returns the Startup, the caller's role (or none), and the Startup's Plan/limits/usage in one call; the switcher is fed by the caller's memberships; `users.activeStartupId` is renamed to match "Focused Startup" and is cleared when the User stops belonging to that Startup. *(src: #19)*
 
 ### Work: My Pulses & Cycles (WORK)
 
@@ -112,12 +112,12 @@ them gets a quick "already decided" answer.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SHELL-01 | Phase 1 | Pending |
-| SHELL-02 | Phase 1 | Pending |
+| SHELL-02 | Phase 1 | Complete |
 | SHELL-03 | Phase 1 | Pending |
 | SHELL-04 | Phase 1 | Pending |
 | SHELL-05 | Phase 1 | Pending |
 | SHELL-06 | Phase 1 | Pending |
-| SHELL-07 | Phase 1 | Pending |
+| SHELL-07 | Phase 1 | Complete |
 | WORK-01 | Phase 2 | Pending |
 | WORK-02 | Phase 2 | Pending |
 | WORK-03 | Phase 2 | Pending |

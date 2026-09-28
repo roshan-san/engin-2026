@@ -37,11 +37,11 @@ product, and a small Playwright suite locks in the critical flows across every p
   4. The interface renders dark-only with the new accent colour and typeface, replacing the old shell.
   5. A signed-in User opens a Pitch, a profile or Discover without leaving the app shell; a signed-out visitor sees the same pages with a simple public header.
 
-**Plans**: 9 plans
+**Plans**: 1/9 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 01-01-PLAN.md — Backend: rename to focusedStartupId, getBySlug (role + Plan block), listMemberships, focus, clear on Member removal (wave 1)
+- [x] 01-01-PLAN.md — Backend: rename to focusedStartupId, getBySlug (role + Plan block), listMemberships, focus, clear on Member removal (wave 1)
 - [ ] 01-02-PLAN.md — Backend: every notification link carries the Startup slug via convex/lib/links.ts (wave 1)
 - [ ] 01-03-PLAN.md — Dark-only tokens, Geist, soft-square primitives, shadcn shell primitives (wave 1)
 
@@ -139,7 +139,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Shell & Navigation Foundation | 0/9 | Planned | - |
+| 1. Shell & Navigation Foundation | 1/9 | In Progress|  |
 | 2. My Pulses & Cycle Boards | 0/TBD | Not started | - |
 | 3. Team Workspace | 0/TBD | Not started | - |
 | 4. Complete Trial Cycles | 0/TBD | Not started | - |
