@@ -14,7 +14,6 @@ import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
 import { Route as AppIndexRouteImport } from './routes/app/index'
-import { Route as ExploreIndexRouteImport } from './routes/explore/index'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
 import { Route as UUsernameRouteImport } from './routes/u/$username'
 import { Route as ShellDiscoverIndexRouteImport } from './routes/_shell/discover/index'
@@ -72,11 +71,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRouteRoute,
-} as any)
-const ExploreIndexRoute = ExploreIndexRouteImport.update({
-  id: '/explore/',
-  path: '/explore/',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
@@ -264,7 +258,6 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/u/$username': typeof UUsernameRoute
   '/app/': typeof AppIndexRoute
-  '/explore/': typeof ExploreIndexRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/app/startups/new': typeof AppStartupsNewRoute
   '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
@@ -302,7 +295,6 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/u/$username': typeof UUsernameRoute
   '/app': typeof AppIndexRoute
-  '/explore': typeof ExploreIndexRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/app/startups/new': typeof AppStartupsNewRoute
   '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
@@ -343,7 +335,6 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/u/$username': typeof UUsernameRoute
   '/app/': typeof AppIndexRoute
-  '/explore/': typeof ExploreIndexRoute
   '/_shell/startup/$slug': typeof ShellStartupSlugRoute
   '/app/startups/new': typeof AppStartupsNewRoute
   '/app/trials/$trialCycleId': typeof AppTrialsTrialCycleIdRoute
@@ -385,7 +376,6 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/u/$username'
     | '/app/'
-    | '/explore/'
     | '/startup/$slug'
     | '/app/startups/new'
     | '/app/trials/$trialCycleId'
@@ -423,7 +413,6 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/u/$username'
     | '/app'
-    | '/explore'
     | '/startup/$slug'
     | '/app/startups/new'
     | '/app/trials/$trialCycleId'
@@ -463,7 +452,6 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/u/$username'
     | '/app/'
-    | '/explore/'
     | '/_shell/startup/$slug'
     | '/app/startups/new'
     | '/app/trials/$trialCycleId'
@@ -504,7 +492,6 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   InviteTokenRoute: typeof InviteTokenRoute
   UUsernameRoute: typeof UUsernameRoute
-  ExploreIndexRoute: typeof ExploreIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -543,13 +530,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRouteRoute
-    }
-    '/explore/': {
-      id: '/explore/'
-      path: '/explore'
-      fullPath: '/explore/'
-      preLoaderRoute: typeof ExploreIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/invite/$token': {
       id: '/invite/$token'
@@ -926,7 +906,6 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   InviteTokenRoute: InviteTokenRoute,
   UUsernameRoute: UUsernameRoute,
-  ExploreIndexRoute: ExploreIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

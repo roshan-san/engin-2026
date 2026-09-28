@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ExplorePage } from "~/features/marketing/explore/ui/ExplorePage";
+import { DiscoverPage } from "~/features/discover/pages/DiscoverPage";
 
 export const Route = createFileRoute("/app/explore/")({
-	component: () => <ExplorePage inApp />,
+	component: () => <DiscoverPage />,
 });
