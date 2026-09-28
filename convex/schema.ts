@@ -128,7 +128,7 @@ export default defineSchema({
 		portfolioUrl: v.optional(v.string()),
 		/** Denormalised headline reputation. Recomputed from verified work. */
 		score: v.optional(v.number()),
-		activeStartupId: v.optional(v.id("startups")),
+		focusedStartupId: v.optional(v.id("startups")),
 		hideFromExplore: v.optional(v.boolean()),
 	})
 		.index("email", ["email"])

@@ -52,21 +52,21 @@ function limitText(
 	return text;
 }
 
-type WorkspaceEntry = {
+type MembershipEntry = {
 	startup: Doc<"startups">;
 	role: Doc<"memberships">["role"];
 };
 
-async function loadWorkspace(
+async function loadMemberships(
 	ctx: QueryCtx,
 	userId: Id<"users">,
-): Promise<WorkspaceEntry[]> {
+): Promise<MembershipEntry[]> {
 	const memberships = await ctx.db
 		.query("memberships")
 		.withIndex("by_user", (q) => q.eq("userId", userId))
 		.take(50);
 
-	const entries: WorkspaceEntry[] = [];
+	const entries: MembershipEntry[] = [];
 	for (const membership of memberships) {
 		const startup = await ctx.db.get(membership.startupId);
 		if (startup) {
@@ -74,7 +74,12 @@ async function loadWorkspace(
 		}
 	}
 
-	entries.sort((a, b) => a.startup.name.localeCompare(b.startup.name));
+	// Stable order for the switcher (edge SHELL-01/ordering): break ties on slug.
+	entries.sort(
+		(a, b) =>
+			a.startup.name.localeCompare(b.startup.name) ||
+			a.startup.slug.localeCompare(b.startup.slug),
+	);
 	return entries;
 }
 
@@ -83,17 +88,38 @@ export const getWorkspace = query({
 	handler: async (ctx) => {
 		const userId = await requireUserId(ctx);
 		const user = await ctx.db.get(userId);
-		const startups = await loadWorkspace(ctx, userId);
+		const startups = await loadMemberships(ctx, userId);
 
 		if (startups.length === 0) {
 			return { active: null, startups: [] };
 		}
 
 		const active =
-			startups.find((entry) => entry.startup._id === user?.activeStartupId) ??
-			startups[0];
+			startups.find(
+				(entry) => entry.startup._id === user?.focusedStartupId,
+			) ?? startups[0];
 
 		return { active, startups };
+	},
+});
+
+/** Every Startup the caller belongs to, for the switcher and palette (SHELL-07). */
+export const listMemberships = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await requireUserId(ctx);
+		const user = await ctx.db.get(userId);
+		const memberships = await loadMemberships(ctx, userId);
+
+		return memberships.map((entry) => ({
+			startup: {
+				_id: entry.startup._id,
+				name: entry.startup.name,
+				slug: entry.startup.slug,
+			},
+			role: entry.role,
+			isFocused: user?.focusedStartupId === entry.startup._id,
+		}));
 	},
 });
 
@@ -142,7 +168,7 @@ export const create = mutation({
 			role: "founder",
 		});
 
-		await ctx.db.patch(userId, { activeStartupId: startupId });
+		await ctx.db.patch(userId, { focusedStartupId: startupId });
 
 		return { startupId, slug };
 	},
@@ -258,8 +284,67 @@ export const setActive = mutation({
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		await requireMembership(ctx, args.startupId, userId);
-		await ctx.db.patch(userId, { activeStartupId: args.startupId });
+		await ctx.db.patch(userId, { focusedStartupId: args.startupId });
 		return args.startupId;
+	},
+});
+
+/**
+ * Sets the caller's Focused Startup (SHELL-07). Renamed from `setActive` for
+ * the new shell; `setActive` stays until plan 01-08 removes its last caller.
+ */
+export const focus = mutation({
+	args: { startupId: v.id("startups") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireMembership(ctx, args.startupId, userId);
+		await ctx.db.patch(userId, { focusedStartupId: args.startupId });
+		return args.startupId;
+	},
+});
+
+/**
+ * Resolves a Startup by slug for `/s/$slug` routing (SHELL-02/SHELL-07).
+ * Never throws on "no such Startup" or "not a Member" — both return the same
+ * shape a caller can't distinguish, so a non-Member can't probe Stealth
+ * Startups for existence (T-01-02).
+ */
+export const getBySlug = query({
+	args: { slug: v.string() },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const startup = await ctx.db
+			.query("startups")
+			.withIndex("by_slug", (q) => q.eq("slug", args.slug))
+			.unique();
+
+		if (!startup) {
+			return null;
+		}
+
+		const membership = await getMembership(ctx, startup._id, userId);
+
+		if (!membership) {
+			if (!startup.isPublic) {
+				return null;
+			}
+			return {
+				startup: {
+					_id: startup._id,
+					name: startup.name,
+					slug: startup.slug,
+				},
+				role: null,
+				isFocused: false as const,
+			};
+		}
+
+		const user = await ctx.db.get(userId);
+		return {
+			startup,
+			role: membership.role,
+			isFocused: user?.focusedStartupId === startup._id,
+		};
 	},
 });
 

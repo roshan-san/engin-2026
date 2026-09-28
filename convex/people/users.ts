@@ -91,7 +91,7 @@ export const getMe = query({
 			githubUrl: user.githubUrl ?? null,
 			linkedinUrl: user.linkedinUrl ?? null,
 			portfolioUrl: user.portfolioUrl ?? null,
-			activeStartupId: user.activeStartupId ?? null,
+			focusedStartupId: user.focusedStartupId ?? null,
 			hideFromExplore: user.hideFromExplore ?? false,
 			evidence,
 			score: evidence.score,

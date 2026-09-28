@@ -92,7 +92,7 @@ export async function redeemInvite(
 	}
 
 	await ctx.db.patch(invite._id, { status: "accepted" });
-	await ctx.db.patch(userId, { activeStartupId: invite.startupId });
+	await ctx.db.patch(userId, { focusedStartupId: invite.startupId });
 
 	return { startupId: invite.startupId };
 }
