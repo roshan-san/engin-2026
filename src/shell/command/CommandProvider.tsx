@@ -3,6 +3,7 @@ import {
 	createContext,
 	useCallback,
 	useContext,
+	useRef,
 	useState,
 	type ReactNode,
 } from "react";
@@ -18,6 +19,7 @@ type CommandContextValue = {
 	setSheetOpen: (open: boolean) => void;
 	openShortcutSheet: () => void;
 	focusSearch: () => void;
+	registerSearch: (el: HTMLInputElement | null) => void;
 };
 
 const CommandContext = createContext<CommandContextValue | null>(null);
@@ -34,6 +36,7 @@ export function CommandProvider({
 }) {
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	const [sheetOpen, setSheetOpen] = useState(false);
+	const searchRef = useRef<HTMLInputElement | null>(null);
 
 	const togglePalette = useCallback(() => {
 		setSheetOpen(false);
@@ -45,9 +48,19 @@ export function CommandProvider({
 		setSheetOpen(true);
 	}, []);
 
-	// Placeholder until page search registration lands: `/` always opens the
-	// palette. Wired to the registered search input separately.
+	const registerSearch = useCallback((el: HTMLInputElement | null) => {
+		searchRef.current = el;
+	}, []);
+
+	// D-20: focus the page's registered search input if it's mounted,
+	// otherwise open the palette — so `/` always does something.
 	const focusSearch = useCallback(() => {
+		const el = searchRef.current;
+		if (el?.isConnected) {
+			el.focus();
+			el.select();
+			return;
+		}
 		setSheetOpen(false);
 		setPaletteOpen(true);
 	}, []);
@@ -62,6 +75,7 @@ export function CommandProvider({
 				setSheetOpen,
 				openShortcutSheet,
 				focusSearch,
+				registerSearch,
 			}}
 		>
 			{children}
@@ -69,12 +83,24 @@ export function CommandProvider({
 	);
 }
 
-export function useCommands(): CommandContextValue {
+export function useCommands(): Omit<CommandContextValue, "registerSearch"> {
 	const ctx = useContext(CommandContext);
 	if (!ctx) {
 		throw new Error("useCommands must be used within a CommandProvider");
 	}
 	return ctx;
+}
+
+/**
+ * Returns a ref callback for a page's search input (D-20). Without a
+ * provider (signed out) it's a no-op, so pages can call it unconditionally.
+ */
+export function useRegisterSearch(): (el: HTMLInputElement | null) => void {
+	const ctx = useContext(CommandContext);
+	if (!ctx) {
+		return () => {};
+	}
+	return ctx.registerSearch;
 }
 
 /** Builds the `ShortcutContext` every registry action runs against. */

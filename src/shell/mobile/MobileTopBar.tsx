@@ -1,21 +1,24 @@
 import { useMatches } from "@tanstack/react-router";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { initials } from "~/lib/initials";
+import { useCommands } from "~/shell/command/CommandProvider";
 import { useCurrentUser } from "~/shell/hooks/useCurrentUser";
 import { AccountSheet } from "~/shell/mobile/AccountSheet";
 import { SCREEN_TITLES } from "~/shell/nav";
 
 /**
  * Slim mobile top bar (D-17, E5): the avatar opens the account sheet, the
- * screen title is centred and truncates between the two 44px columns. The
- * right-hand 44px slot keeps the title centred; plan 01-09 fills it with the
- * command palette's search button.
+ * screen title is centred and truncates between the two 44px columns, and
+ * the right-hand 44px search button opens the command palette full-screen —
+ * mobile's route to the shortcut (D-17).
  */
 export function MobileTopBar() {
 	const { user, isLoading } = useCurrentUser();
 	const matches = useMatches();
 	const [accountOpen, setAccountOpen] = useState(false);
+	const { togglePalette } = useCommands();
 
 	const routeId = matches.at(-1)?.routeId;
 	const title = (routeId ? SCREEN_TITLES[routeId] : undefined) ?? "Engin";
@@ -44,7 +47,14 @@ export function MobileTopBar() {
 				<h1 className="min-w-0 flex-1 truncate text-center text-xl font-semibold">
 					{title}
 				</h1>
-				<div className="size-11 shrink-0" />
+				<button
+					type="button"
+					aria-label="Search"
+					onClick={togglePalette}
+					className="flex size-11 shrink-0 items-center justify-center"
+				>
+					<Search className="size-5 text-muted-foreground" />
+				</button>
 			</header>
 			<AccountSheet open={accountOpen} onOpenChange={setAccountOpen} />
 		</>

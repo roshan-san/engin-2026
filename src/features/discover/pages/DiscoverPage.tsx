@@ -7,6 +7,7 @@ import { Input } from "~/components/ui/input";
 import { useContributors } from "~/features/discover/hooks/useContributors";
 import { useDiscoverStartups } from "~/features/discover/hooks/useDiscoverStartups";
 import { cn } from "~/lib/utils";
+import { useRegisterSearch } from "~/shell/command/CommandProvider";
 
 const TABS = [
 	{ value: "startups", label: "Startups" },
@@ -17,6 +18,7 @@ export function DiscoverPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]["value"]>("startups");
 	const { term, setTerm, results } = useDiscoverStartups();
 	const contributors = useContributors();
+	const registerSearch = useRegisterSearch();
 
 	return (
 		<div className="mx-auto w-full max-w-6xl space-y-8 py-8">
@@ -52,6 +54,7 @@ export function DiscoverPage() {
 					<div className="relative max-w-xl">
 						<Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
+							ref={registerSearch}
 							value={term}
 							onChange={(event) => setTerm(event.target.value)}
 							placeholder="Search startups"
@@ -100,6 +103,7 @@ export function DiscoverPage() {
 				<div className="space-y-8">
 					<div className="flex flex-col gap-3 sm:flex-row">
 						<Input
+							ref={registerSearch}
 							value={contributors.skill}
 							onChange={(event) => contributors.setSkill(event.target.value)}
 							placeholder="Filter by skill"

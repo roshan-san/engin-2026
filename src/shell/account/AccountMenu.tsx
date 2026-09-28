@@ -7,17 +7,21 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
+	DropdownMenuShortcut,
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Skeleton } from "~/components/ui/skeleton";
 import { initials } from "~/lib/initials";
 import { ScoreChip } from "~/shell/account/ScoreChip";
+import { useCommands } from "~/shell/command/CommandProvider";
 import { useCurrentUser } from "~/shell/hooks/useCurrentUser";
+import { ShortcutHint } from "~/shell/shortcuts/ShortcutHint";
 
 /** Sidebar-footer account menu: avatar/name trigger, Score chip, profile links, sign out. */
 export function AccountMenu() {
 	const { user, isLoading } = useCurrentUser();
 	const { signOut } = useAuthActions();
+	const { openShortcutSheet } = useCommands();
 
 	if (isLoading || !user) {
 		return <Skeleton className="h-8 w-full rounded-md" />;
@@ -66,6 +70,15 @@ export function AccountMenu() {
 				) : null}
 				<DropdownMenuItem asChild>
 					<Link to="/profile">Edit profile</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					className="cursor-pointer"
+					onClick={openShortcutSheet}
+				>
+					Keyboard shortcuts
+					<DropdownMenuShortcut>
+						<ShortcutHint id="shortcuts.open" />
+					</DropdownMenuShortcut>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
