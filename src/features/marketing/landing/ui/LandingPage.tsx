@@ -11,7 +11,7 @@ export function LandingPage() {
 	}
 
 	if (isAuthenticated) {
-		return <Navigate to="/app" />;
+		return <Navigate to="/my-pulses" />;
 	}
 
 	return (
@@ -21,10 +21,10 @@ export function LandingPage() {
 					Engin
 				</Link>
 				<Link
-					to="/explore"
+					to="/discover"
 					className="text-sm text-muted-foreground hover:text-foreground"
 				>
-					Explore
+					Discover
 				</Link>
 			</header>
 

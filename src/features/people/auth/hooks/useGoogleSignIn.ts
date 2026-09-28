@@ -10,7 +10,7 @@ export function useGoogleSignIn() {
 		setIsPending(true);
 		try {
 			await signIn("google", {
-				redirectTo: `${window.location.origin}/app`,
+				redirectTo: `${window.location.origin}/my-pulses`,
 			});
 		} catch (error) {
 			toast.error(

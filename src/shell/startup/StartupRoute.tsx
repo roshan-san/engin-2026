@@ -1,4 +1,4 @@
-import { api } from "@convex/_generated/api";
+import type { api } from "@convex/_generated/api";
 import { Outlet } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { createContext, useContext, useMemo } from "react";
@@ -18,7 +18,9 @@ type StartupRouteContextValue = {
 	readonly member: MemberView | null;
 };
 
-const StartupRouteContext = createContext<StartupRouteContextValue | null>(null);
+const StartupRouteContext = createContext<StartupRouteContextValue | null>(
+	null,
+);
 
 /**
  * Resolves and provides the /s/$slug Startup to every descendant route. The

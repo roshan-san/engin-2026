@@ -7,7 +7,11 @@ type StubScreenProps = {
 };
 
 /** Bare empty-state stub used by every screen a later phase rebuilds (D-10). */
-export function StubScreen({ title, emptyTitle, emptyDescription }: StubScreenProps) {
+export function StubScreen({
+	title,
+	emptyTitle,
+	emptyDescription,
+}: StubScreenProps) {
 	return (
 		<div className="mx-auto w-full max-w-3xl space-y-6">
 			<h1 className="text-xl font-semibold">{title}</h1>
