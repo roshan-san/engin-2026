@@ -1,11 +1,23 @@
-import { expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { api } from "../_generated/api";
 import {
+	advancePast,
 	createTest,
+	createTrial,
+	DAY,
+	HOUR,
 	joinAsMember,
 	setUpStartup,
 	signUp,
 } from "../test.helpers";
+
+beforeEach(() => {
+	vi.useFakeTimers();
+});
+
+afterEach(() => {
+	vi.useRealTimers();
+});
 
 test("only Users with a username and evidence appear as contributors", async () => {
 	const t = createTest();
@@ -90,4 +102,32 @@ test("contributors are sorted by Score, highest first", async () => {
 		.filter((c) => c.username === "alice" || c.username === "bob")
 		.map((c) => c.username);
 	expect(ranked).toEqual(["alice", "bob"]);
+});
+
+test("finishing a Board Pulse is not evidence: only a Verdict or membership is", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	await setup.founder.as.mutation(api.hiring.challenges.add, {
+		trialCycleId: await createTrial(setup, { startsInMs: DAY }),
+		title: "Build the API",
+	});
+	const [trial] = await setup.founder.as.query(api.hiring.trialCycles.list, {
+		startupId: setup.startupId,
+	});
+	const alice = await signUp(t, "Alice");
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		trialCycleId: trial._id,
+	});
+	await advancePast(t, DAY + HOUR);
+
+	const [pulse] = await alice.as.query(api.work.pulses.listBoard, {
+		trialCycleId: trial._id,
+	});
+	await alice.as.mutation(api.work.pulses.setStatus, {
+		pulseId: pulse._id,
+		status: "done",
+	});
+
+	const contributors = await t.query(api.teams.explore.contributors, {});
+	expect(contributors.map((c) => c.username)).not.toContain("alice");
 });

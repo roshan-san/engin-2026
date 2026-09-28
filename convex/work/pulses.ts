@@ -2,14 +2,19 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
-import { isTrialLive, requireTrialAccess } from "../lib/hiring/trialCycles";
-import { MAX_PROOF_LINKS } from "../lib/limits";
+import { MAX_BOARD_PULSES, MAX_PROOF_LINKS } from "../lib/limits";
 import { notifyFounders } from "../lib/notify";
 import { requireMembership } from "../lib/teams/membership";
-import { assertUrl, requireText } from "../lib/text";
+import { assertUrl, optionalText, requireText } from "../lib/text";
+import {
+	createBoardPulse,
+	requireBoardAccess,
+	requireBoardOwner,
+} from "../lib/work/boards";
 import { requireCycleAccess } from "../lib/work/cycles";
 import {
 	currentStatus,
+	loadPulseContext,
 	proofLinksOf,
 	pulseHref,
 	requirePulse,
@@ -62,23 +67,32 @@ export const listMine = query({
 	},
 });
 
-export const listForTrial = query({
-	args: { trialCycleId: v.id("trialCycles") },
+export const listBoard = query({
+	args: {
+		trialCycleId: v.id("trialCycles"),
+		participantUserId: v.optional(v.id("users")),
+	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const trial = await ctx.db.get(args.trialCycleId);
 		if (!trial) {
 			throw new Error("Trial Cycle not found");
 		}
-		await requireTrialAccess(ctx, trial, userId);
+		const ownerId = await requireBoardAccess(
+			ctx,
+			trial,
+			userId,
+			args.participantUserId,
+		);
 
 		const pulses = await ctx.db
 			.query("pulses")
-			.withIndex("by_trial", (q) => q.eq("trialCycleId", args.trialCycleId))
-			.order("desc")
-			.take(PULSE_PAGE_SIZE);
+			.withIndex("by_trial_and_participant", (q) =>
+				q.eq("trialCycleId", trial._id).eq("participantUserId", ownerId),
+			)
+			.take(MAX_BOARD_PULSES);
 
-		return await withAssignees(ctx, pulses);
+		return pulses.map(toPulse);
 	},
 });
 
@@ -91,34 +105,51 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireMembership(ctx, args.startupId, userId);
 		const title = requireText(args.title, "Pulse title");
 
 		if (args.trialCycleId) {
-			const trial = await ctx.db.get(args.trialCycleId);
-			if (!trial || trial.startupId !== args.startupId) {
-				throw new Error("Trial Cycle not found");
-			}
-			if (!isTrialLive(trial)) {
-				throw new Error("This Trial Cycle has ended");
-			}
-		} else {
-			if (!args.cycleId) {
-				throw new Error("A Pulse must belong to a Cycle");
-			}
-			const { cycle } = await requireCycleAccess(ctx, args.cycleId, userId);
-			if (cycle.startupId !== args.startupId) {
-				throw new Error("Cycle not found");
-			}
+			return await createBoardPulse(ctx, {
+				trialCycleId: args.trialCycleId,
+				startupId: args.startupId,
+				userId,
+				title,
+			});
+		}
+
+		await requireMembership(ctx, args.startupId, userId);
+		if (!args.cycleId) {
+			throw new Error("A Pulse must belong to a Cycle");
+		}
+		const { cycle } = await requireCycleAccess(ctx, args.cycleId, userId);
+		if (cycle.startupId !== args.startupId) {
+			throw new Error("Cycle not found");
 		}
 
 		return await ctx.db.insert("pulses", {
 			startupId: args.startupId,
 			cycleId: args.cycleId,
-			trialCycleId: args.trialCycleId,
 			title,
 			status: "todo",
 			createdByUserId: userId,
+		});
+	},
+});
+
+export const update = mutation({
+	args: {
+		pulseId: v.id("pulses"),
+		title: v.optional(v.string()),
+		description: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const { pulse } = await requireWorkablePulse(ctx, args.pulseId);
+		await ctx.db.patch(pulse._id, {
+			...(args.title !== undefined && {
+				title: requireText(args.title, "Pulse title"),
+			}),
+			...(args.description !== undefined && {
+				description: optionalText(args.description),
+			}),
 		});
 	},
 });
@@ -133,11 +164,9 @@ export const setStatus = mutation({
 
 		if (context.kind === "trial") {
 			if (args.status === "review") {
-				throw new Error("Mark the Pulse done to submit it for review");
+				throw new Error("Pulses on a Board have no review step");
 			}
-			await ctx.db.patch(pulse._id, {
-				status: args.status === "done" ? "review" : args.status,
-			});
+			await ctx.db.patch(pulse._id, { status: args.status });
 			return;
 		}
 
@@ -236,6 +265,13 @@ export const remove = mutation({
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const pulse = await requirePulse(ctx, args.pulseId);
+
+		const context = await loadPulseContext(ctx, pulse);
+		if (context.kind === "trial") {
+			await requireBoardOwner(ctx, context.trial, pulse, userId);
+			await ctx.db.delete(pulse._id);
+			return;
+		}
 
 		const membership = await requireMembership(ctx, pulse.startupId, userId);
 		if (membership.role !== "founder" && pulse.createdByUserId !== userId) {

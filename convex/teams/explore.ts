@@ -59,7 +59,13 @@ async function hasEvidence(
 	const verifiedPulse = await ctx.db
 		.query("pulses")
 		.withIndex("by_assignee", (q) => q.eq("assigneeUserId", userId))
-		.filter((q) => q.eq(q.field("status"), "done"))
+		.filter((q) =>
+			q.and(
+				q.eq(q.field("status"), "done"),
+				// Board Pulses are self-moved to done, so they prove nothing.
+				q.eq(q.field("trialCycleId"), undefined),
+			),
+		)
 		.first();
 	if (verifiedPulse) {
 		return true;

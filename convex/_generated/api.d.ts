@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as dodo from "../dodo.js";
 import type * as hiring_applications from "../hiring/applications.js";
+import type * as hiring_challenges from "../hiring/challenges.js";
 import type * as hiring_offers from "../hiring/offers.js";
 import type * as hiring_opportunities from "../hiring/opportunities.js";
 import type * as hiring_roles from "../hiring/roles.js";
@@ -19,6 +20,7 @@ import type * as hiring_trialMessages from "../hiring/trialMessages.js";
 import type * as http from "../http.js";
 import type * as lib_activity from "../lib/activity.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_hiring_challenges from "../lib/hiring/challenges.js";
 import type * as lib_hiring_entries from "../lib/hiring/entries.js";
 import type * as lib_hiring_offers from "../lib/hiring/offers.js";
 import type * as lib_hiring_trialCycles from "../lib/hiring/trialCycles.js";
@@ -36,6 +38,7 @@ import type * as lib_teams_invites from "../lib/teams/invites.js";
 import type * as lib_teams_membership from "../lib/teams/membership.js";
 import type * as lib_teams_startupWrite from "../lib/teams/startupWrite.js";
 import type * as lib_text from "../lib/text.js";
+import type * as lib_work_boards from "../lib/work/boards.js";
 import type * as lib_work_cycles from "../lib/work/cycles.js";
 import type * as lib_work_pulses from "../lib/work/pulses.js";
 import type * as migrations from "../migrations.js";
@@ -61,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   dodo: typeof dodo;
   "hiring/applications": typeof hiring_applications;
+  "hiring/challenges": typeof hiring_challenges;
   "hiring/offers": typeof hiring_offers;
   "hiring/opportunities": typeof hiring_opportunities;
   "hiring/roles": typeof hiring_roles;
@@ -69,6 +73,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/activity": typeof lib_activity;
   "lib/auth": typeof lib_auth;
+  "lib/hiring/challenges": typeof lib_hiring_challenges;
   "lib/hiring/entries": typeof lib_hiring_entries;
   "lib/hiring/offers": typeof lib_hiring_offers;
   "lib/hiring/trialCycles": typeof lib_hiring_trialCycles;
@@ -86,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   "lib/teams/membership": typeof lib_teams_membership;
   "lib/teams/startupWrite": typeof lib_teams_startupWrite;
   "lib/text": typeof lib_text;
+  "lib/work/boards": typeof lib_work_boards;
   "lib/work/cycles": typeof lib_work_cycles;
   "lib/work/pulses": typeof lib_work_pulses;
   migrations: typeof migrations;

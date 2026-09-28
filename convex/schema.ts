@@ -314,6 +314,15 @@ export default defineSchema({
 			filterFields: ["status"],
 		}),
 
+	/** Template Pulses a Founder defines; copied onto each Participant's Board. */
+	challenges: defineTable({
+		trialCycleId: v.id("trialCycles"),
+		startupId: v.id("startups"),
+		title: v.string(),
+		description: v.optional(v.string()),
+		createdByUserId: v.id("users"),
+	}).index("by_trial", ["trialCycleId"]),
+
 	applications: defineTable({
 		userId: v.id("users"),
 		startupId: v.id("startups"),

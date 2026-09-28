@@ -4,6 +4,7 @@ import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import type { trialVerdict } from "../../schema";
 import { MAX_TRIAL_APPLICATIONS } from "../limits";
 import { notify, notifyFounders } from "../notify";
+import { seedBoards } from "./challenges";
 import { getMembership } from "../teams/membership";
 
 type TrialCtx = QueryCtx | MutationCtx;
@@ -106,15 +107,21 @@ export async function startTrial(
 	}
 
 	await ctx.db.patch(trial._id, { status: "active" });
-	for (const application of applications) {
-		if (application.status === "joined") {
-			await notify(ctx, {
-				userId: application.userId,
-				kind: "trial_cycle",
-				title: `${trial.title} has started`,
-				href,
-			});
-		}
+	const participants = applications.filter(
+		(application) => application.status === "joined",
+	);
+	await seedBoards(
+		ctx,
+		trial._id,
+		participants.map((application) => application.userId),
+	);
+	for (const application of participants) {
+		await notify(ctx, {
+			userId: application.userId,
+			kind: "trial_cycle",
+			title: `${trial.title} has started`,
+			href,
+		});
 	}
 }
 

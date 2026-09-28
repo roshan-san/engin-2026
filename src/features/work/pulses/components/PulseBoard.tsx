@@ -7,7 +7,6 @@ import { EmptyState } from "~/components/shared/EmptyState";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { PulseProofLinks } from "~/features/work/pulses/components/PulseProofLinks";
-import { PulseReviewControls } from "~/features/work/pulses/components/PulseReviewControls";
 import {
 	type PulseStatus,
 	WORKABLE_PULSE_STATUSES,
@@ -17,33 +16,23 @@ import { toErrorMessage } from "~/lib/validation";
 type PulseBoardProps = {
 	readonly startupId: Id<"startups">;
 	readonly trialCycleId: Id<"trialCycles">;
-	readonly canCreate: boolean;
+	/** A Board can only be changed while its Trial Cycle is active. */
+	readonly isEditable: boolean;
 };
 
+/** A Participant's own Board: they add, edit, move and delete its Pulses. */
 export function PulseBoard({
 	startupId,
 	trialCycleId,
-	canCreate,
+	isEditable,
 }: PulseBoardProps) {
-	const pulses = useQuery(api.work.pulses.listForTrial, { trialCycleId });
+	const pulses = useQuery(api.work.pulses.listBoard, { trialCycleId });
 	const createPulse = useMutation(api.work.pulses.create);
+	const updatePulse = useMutation(api.work.pulses.update);
 	const setStatus = useMutation(api.work.pulses.setStatus);
-	const assignToMe = useMutation(api.work.pulses.assignToMe);
 	const removePulse = useMutation(api.work.pulses.remove);
 	const [title, setTitle] = useState("");
 	const [pendingId, setPendingId] = useState<string | null>(null);
-
-	async function create() {
-		if (!title.trim()) {
-			return;
-		}
-		try {
-			await createPulse({ startupId, title: title.trim(), trialCycleId });
-			setTitle("");
-		} catch (error) {
-			toast.error(toErrorMessage(error, "Could not create Pulse"));
-		}
-	}
 
 	async function run(id: string, action: () => Promise<unknown>) {
 		setPendingId(id);
@@ -56,10 +45,20 @@ export function PulseBoard({
 		}
 	}
 
+	async function create() {
+		if (!title.trim()) {
+			return;
+		}
+		await run("new", async () => {
+			await createPulse({ startupId, title: title.trim(), trialCycleId });
+			setTitle("");
+		});
+	}
+
 	return (
 		<section className="space-y-4">
-			<h2 className="text-lg font-semibold">Pulses</h2>
-			{canCreate ? (
+			<h2 className="text-lg font-semibold">Your Board</h2>
+			{isEditable ? (
 				<form
 					className="flex flex-col gap-2 sm:flex-row"
 					onSubmit={(event) => {
@@ -70,7 +69,7 @@ export function PulseBoard({
 					<Input
 						value={title}
 						onChange={(event) => setTitle(event.target.value)}
-						placeholder="What needs to get done?"
+						placeholder="Break the work down: add a Pulse"
 						className="h-11 flex-1"
 					/>
 					<Button type="submit" disabled={!title.trim()} className="h-11">
@@ -82,8 +81,8 @@ export function PulseBoard({
 				<p className="text-sm text-muted-foreground">Loading…</p>
 			) : pulses.length === 0 ? (
 				<EmptyState
-					title="No Pulses yet"
-					description="Create a Pulse with just a title. Everything else is optional."
+					title="Nothing on your Board yet"
+					description="The Challenges from the Founders appear here when the Trial Cycle starts. Split them into Pulses as you go."
 				/>
 			) : (
 				<ul className="space-y-2">
@@ -94,14 +93,9 @@ export function PulseBoard({
 						>
 							<div className="min-w-0 flex-1">
 								<p className="font-medium">{pulse.title}</p>
-								<p className="text-sm text-muted-foreground">
-									{pulse.assignee?.name ??
-										pulse.assignee?.username ??
-										"Unassigned"}
-								</p>
-								{pulse.reviewNote && pulse.status === "in_progress" ? (
-									<p className="mt-1 text-sm text-destructive">
-										Sent back: {pulse.reviewNote}
+								{pulse.description ? (
+									<p className="text-sm text-muted-foreground">
+										{pulse.description}
 									</p>
 								) : null}
 							</div>
@@ -109,65 +103,61 @@ export function PulseBoard({
 								<PulseProofLinks
 									pulseId={pulse._id}
 									proofLinks={pulse.proofLinks}
-									canEdit={pulse.status !== "review" && pulse.status !== "done"}
+									canEdit={isEditable}
 									isPending={pendingId === pulse._id}
 									run={(action) => void run(pulse._id, action)}
 								/>
-								{pulse.status === "review" ? (
-									<PulseReviewControls
-										pulseId={pulse._id}
-										canReview={canCreate}
-										isPending={pendingId === pulse._id}
-										run={(action) => void run(pulse._id, action)}
-									/>
-								) : (
-									<select
-										value={pulse.status}
-										disabled={pendingId === pulse._id}
-										onChange={(event) =>
-											void run(pulse._id, () =>
-												setStatus({
-													pulseId: pulse._id,
-													status: event.target.value as PulseStatus,
-												}),
-											)
-										}
-										className="border-input h-8 rounded-md border bg-transparent px-2 text-sm"
-									>
-										{WORKABLE_PULSE_STATUSES.map((status) => (
-											<option key={status.value} value={status.value}>
-												{status.label}
-											</option>
-										))}
-									</select>
-								)}
-								<Button
-									type="button"
-									size="sm"
-									variant="outline"
-									disabled={pendingId === pulse._id}
-									onClick={() =>
+								<select
+									value={pulse.status}
+									disabled={!isEditable || pendingId === pulse._id}
+									onChange={(event) =>
 										void run(pulse._id, () =>
-											assignToMe({ pulseId: pulse._id }),
+											setStatus({
+												pulseId: pulse._id,
+												status: event.target.value as PulseStatus,
+											}),
 										)
 									}
+									className="border-input h-8 rounded-md border bg-transparent px-2 text-sm"
 								>
-									Assign me
-								</Button>
-								{canCreate ? (
-									<Button
-										type="button"
-										size="sm"
-										variant="ghost"
-										disabled={pendingId === pulse._id}
-										onClick={() =>
-											void run(pulse._id, () =>
-												removePulse({ pulseId: pulse._id }),
-											)
-										}
-									>
-										Delete
-									</Button>
+									{WORKABLE_PULSE_STATUSES.map((status) => (
+										<option key={status.value} value={status.value}>
+											{status.label}
+										</option>
+									))}
+								</select>
+								{isEditable ? (
+									<>
+										<Button
+											type="button"
+											size="sm"
+											variant="outline"
+											disabled={pendingId === pulse._id}
+											onClick={() => {
+												const next = window.prompt("Rename Pulse", pulse.title);
+												if (next?.trim()) {
+													void run(pulse._id, () =>
+														updatePulse({ pulseId: pulse._id, title: next }),
+													);
+												}
+											}}
+										>
+											Rename
+										</Button>
+										<Button
+											type="button"
+											size="sm"
+											variant="ghost"
+											disabled={pendingId === pulse._id}
+											onClick={() =>
+												void run(pulse._id, () =>
+													removePulse({ pulseId: pulse._id }),
+												)
+											}
+										>
+											Delete
+										</Button>
+									</>
 								) : null}
 							</div>
 						</li>

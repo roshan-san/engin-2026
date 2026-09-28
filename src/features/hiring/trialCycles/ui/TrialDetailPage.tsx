@@ -11,6 +11,7 @@ import { CloseTrialForm } from "~/features/hiring/trialCycles/components/CloseTr
 import { MyVerdict } from "~/features/hiring/trialCycles/components/MyVerdict";
 import { ParticipantTrialActions } from "~/features/hiring/trialCycles/components/ParticipantTrialActions";
 import { TrialApplicants } from "~/features/hiring/trialCycles/components/TrialApplicants";
+import { TrialChallenges } from "~/features/hiring/trialCycles/components/TrialChallenges";
 import { TrialChat } from "~/features/hiring/trialCycles/components/TrialChat";
 import { PulseBoard } from "~/features/work/pulses/components/PulseBoard";
 import { formatDate } from "~/lib/dates";
@@ -151,11 +152,15 @@ export function TrialDetailPage({ trialCycleId }: TrialDetailPageProps) {
 					run={(action, fallback) => void run(action, fallback)}
 				/>
 			) : null}
-			{hasAccess ? (
+			{trial.isFounder && trial.status === "open" ? (
+				<TrialChallenges trialCycleId={id} />
+			) : null}
+			{trial.isParticipant &&
+			(trial.status === "active" || trial.status === "closed") ? (
 				<PulseBoard
 					startupId={trial.startupId}
 					trialCycleId={id}
-					canCreate={trial.isMember}
+					isEditable={trial.status === "active"}
 				/>
 			) : null}
 			{trial.isMember ? (

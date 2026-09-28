@@ -3,10 +3,10 @@ import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import type { proofLink, pulseStatus } from "../../schema";
 import { requireUserId } from "../auth";
-import { requireTrialAccess } from "../hiring/trialCycles";
 import { notify } from "../notify";
 import { loadPublicUser } from "../people/users";
 import { requireFounderMembership } from "../teams/membership";
+import { requireBoardOwner } from "./boards";
 import { requireCycleAccess } from "./cycles";
 
 type PulseCtx = QueryCtx | MutationCtx;
@@ -81,18 +81,6 @@ export async function loadPulseContext(
 	throw new Error("Pulse has no Cycle or Trial Cycle");
 }
 
-async function requirePulseAccess(
-	ctx: PulseCtx,
-	pulseContext: PulseContext,
-	userId: Id<"users">,
-): Promise<void> {
-	if (pulseContext.kind === "trial") {
-		await requireTrialAccess(ctx, pulseContext.trial, userId);
-		return;
-	}
-	await requireCycleAccess(ctx, pulseContext.cycleId, userId);
-}
-
 export async function requirePulse(
 	ctx: PulseCtx,
 	pulseId: Id<"pulses">,
@@ -104,16 +92,10 @@ export async function requirePulse(
 	return pulse;
 }
 
-/** Trial Pulses can only be worked on while their Trial Cycle is active. */
-function requireActiveTrial(pulseContext: PulseContext): void {
-	if (pulseContext.kind === "trial" && pulseContext.trial.status !== "active") {
-		throw new Error("This Trial Cycle is not active");
-	}
-}
-
 /**
  * Loads a Pulse the current user may work on, plus which kanban it lives on.
- * Submitted and Verified Pulses are locked: only a Founder's review moves them.
+ * A Board Pulse is worked freely by its owner; on a Cycle, Submitted and
+ * Verified Pulses are locked: only a Founder's review moves them.
  */
 export async function requireWorkablePulse(
 	ctx: MutationCtx,
@@ -122,9 +104,13 @@ export async function requireWorkablePulse(
 	const userId = await requireUserId(ctx);
 	const pulse = await requirePulse(ctx, pulseId);
 	const context = await loadPulseContext(ctx, pulse);
-	await requirePulseAccess(ctx, context, userId);
-	requireActiveTrial(context);
 
+	if (context.kind === "trial") {
+		await requireBoardOwner(ctx, context.trial, pulse, userId);
+		return { pulse, context };
+	}
+
+	await requireCycleAccess(ctx, context.cycleId, userId);
 	if (pulse.status === "review") {
 		throw new Error("This Pulse is awaiting review");
 	}
@@ -142,7 +128,9 @@ export async function requireSubmittedPulse(
 	const userId = await requireUserId(ctx);
 	const pulse = await requirePulse(ctx, pulseId);
 	await requireFounderMembership(ctx, pulse.startupId, userId);
-	requireActiveTrial(await loadPulseContext(ctx, pulse));
+	if (pulse.trialCycleId) {
+		throw new Error("Pulses on a Board are not reviewed");
+	}
 	if (pulse.status !== "review") {
 		throw new Error("This Pulse is not awaiting review");
 	}

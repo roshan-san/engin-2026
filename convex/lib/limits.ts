@@ -1,7 +1,9 @@
 export const MAX_TRIAL_PARTICIPANTS = 10;
 export const MAX_LISTED_TRIALS = 40;
 export const MAX_TRIAL_APPLICATIONS = 50;
-export const MAX_TRIAL_PULSES = 200;
+export const MAX_TRIAL_CHALLENGES = 20;
+/** Pulses on one Participant's Board, seeded Challenges included. */
+export const MAX_BOARD_PULSES = 100;
 export const MAX_USER_APPLICATIONS = 80;
 export const MAX_USER_OFFERS = 50;
 export const MAX_ROLE_OFFERS = 100;
