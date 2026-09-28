@@ -2,32 +2,27 @@ import { Link } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { PageLoading } from "~/components/globals/PageLoading";
-import { PublicHeader } from "~/components/shared/PublicHeader";
 import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
-import { useContributors } from "~/features/marketing/explore/hooks/useContributors";
-import { useExplore } from "~/features/marketing/explore/hooks/useExplore";
+import { useContributors } from "~/features/discover/hooks/useContributors";
+import { useDiscoverStartups } from "~/features/discover/hooks/useDiscoverStartups";
 import { cn } from "~/lib/utils";
-
-type ExplorePageProps = {
-	readonly inApp?: boolean;
-};
 
 const TABS = [
 	{ value: "startups", label: "Startups" },
 	{ value: "contributors", label: "Contributors" },
 ] as const;
 
-export function ExplorePage({ inApp = false }: ExplorePageProps) {
+export function DiscoverPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]["value"]>("startups");
-	const { term, setTerm, results } = useExplore();
+	const { term, setTerm, results } = useDiscoverStartups();
 	const contributors = useContributors();
 
-	const content = (
+	return (
 		<div className="mx-auto w-full max-w-6xl space-y-8 py-8">
 			<div className="space-y-3">
 				<h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-					Explore
+					Discover
 				</h1>
 				<p className="max-w-xl text-muted-foreground">
 					Startups and proven contributors on Engin.
@@ -164,17 +159,6 @@ export function ExplorePage({ inApp = false }: ExplorePageProps) {
 					)}
 				</div>
 			)}
-		</div>
-	);
-
-	if (inApp) {
-		return content;
-	}
-
-	return (
-		<div className="min-h-dvh bg-background">
-			<PublicHeader />
-			<div className="px-4 sm:px-6 lg:px-8">{content}</div>
 		</div>
 	);
 }
