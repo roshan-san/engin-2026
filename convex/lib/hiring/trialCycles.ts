@@ -2,6 +2,7 @@ import type { Infer } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import type { trialVerdict } from "../../schema";
+import { trialCycleHref } from "../links";
 import { MAX_TRIAL_APPLICATIONS } from "../limits";
 import { notify, notifyFounders } from "../notify";
 import { seedBoards } from "./challenges";
@@ -58,6 +59,7 @@ export async function cancelTrial(
 ): Promise<void> {
 	await ctx.db.patch(trial._id, { status: "cancelled" });
 
+	const href = await trialCycleHref(ctx, trial);
 	for (const application of await listTrialApplications(ctx, trial._id)) {
 		if (application.status !== "joined" && application.status !== "applied") {
 			continue;
@@ -67,7 +69,7 @@ export async function cancelTrial(
 			kind: "trial_cycle",
 			title: `${trial.title} was cancelled`,
 			body: reason,
-			href: `/app/trials/${trial._id}`,
+			href,
 		});
 	}
 }
@@ -81,7 +83,7 @@ export async function startTrial(
 	trial: Doc<"trialCycles">,
 ): Promise<void> {
 	const applications = await listTrialApplications(ctx, trial._id);
-	const href = `/app/trials/${trial._id}`;
+	const href = await trialCycleHref(ctx, trial);
 
 	for (const application of applications) {
 		if (application.status !== "applied") {

@@ -2,6 +2,7 @@ import type { Infer } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx } from "../../_generated/server";
 import type { trialVerdict } from "../../schema";
+import { trialCycleHref } from "../links";
 import { notify } from "../notify";
 import { refreshUserScore } from "../reputation/score";
 import { optionalText } from "../text";
@@ -55,6 +56,7 @@ export async function closeWithVerdicts(
 
 	await ctx.db.patch(trial._id, { status: "closed" });
 
+	const href = await trialCycleHref(ctx, trial);
 	for (const participant of participants) {
 		const entry = verdictsByApplication.get(participant._id);
 		if (!entry) {
@@ -80,7 +82,7 @@ export async function closeWithVerdicts(
 			userId: participant.userId,
 			kind: "trial_cycle",
 			title: `Your Verdict for ${trial.title} is in`,
-			href: `/app/trials/${trial._id}`,
+			href,
 		});
 	}
 }

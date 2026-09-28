@@ -82,10 +82,6 @@ export async function requireTrial(
 	return trial;
 }
 
-export function threadHref(trial: Doc<"trialCycles">): string {
-	return `/app/trials/${trial._id}`;
-}
-
 /** Newest first; an undefined `participantUserId` selects the Announcements. */
 export async function latestMessages(
 	ctx: ThreadCtx,

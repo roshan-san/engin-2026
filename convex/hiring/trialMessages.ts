@@ -8,9 +8,9 @@ import {
 	requireThreadOpen,
 	requireTrial,
 	requireTrialFounder,
-	threadHref,
 } from "../lib/hiring/threads";
 import { isTrialLive, listTrialApplications } from "../lib/hiring/trialCycles";
+import { trialCycleHref } from "../lib/links";
 import { MAX_THREAD_MESSAGES } from "../lib/limits";
 import { notify, notifyFounders } from "../lib/notify";
 import { loadPublicUser } from "../lib/people/users";
@@ -130,7 +130,7 @@ export const send = mutation({
 		});
 
 		const sender = await loadPublicUser(ctx, userId);
-		const href = threadHref(trial);
+		const href = await trialCycleHref(ctx, trial);
 		if (access.side === "participant") {
 			await notifyFounders(ctx, trial.startupId, {
 				kind: "message",
@@ -168,6 +168,7 @@ export const announce = mutation({
 			body,
 		});
 
+		const href = await trialCycleHref(ctx, trial);
 		for (const application of await listTrialApplications(ctx, trial._id)) {
 			if (application.status !== "joined") {
 				continue;
@@ -177,7 +178,7 @@ export const announce = mutation({
 				kind: "message",
 				title: `New announcement in ${trial.title}`,
 				body,
-				href: threadHref(trial),
+				href,
 			});
 		}
 	},
