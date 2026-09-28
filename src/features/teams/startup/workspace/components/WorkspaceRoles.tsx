@@ -1,6 +1,5 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/shared/EmptyState";
@@ -11,9 +10,14 @@ import { toErrorMessage } from "~/lib/validation";
 type WorkspaceRolesProps = {
 	readonly startupId: Id<"startups">;
 	readonly isFounder: boolean;
+	readonly action?: React.ReactNode;
 };
 
-export function WorkspaceRoles({ startupId, isFounder }: WorkspaceRolesProps) {
+export function WorkspaceRoles({
+	startupId,
+	isFounder,
+	action,
+}: WorkspaceRolesProps) {
 	const roles = useQuery(api.hiring.roles.list, { startupId });
 	const closeRoleMutation = useMutation(api.hiring.roles.close);
 
@@ -29,11 +33,7 @@ export function WorkspaceRoles({ startupId, isFounder }: WorkspaceRolesProps) {
 		<section className="space-y-4">
 			<div className="flex items-center justify-between gap-3">
 				<h2 className="text-lg font-semibold">Roles</h2>
-				{isFounder ? (
-					<Button asChild size="sm">
-						<Link to="/app/startup/roles/new">Post Role</Link>
-					</Button>
-				) : null}
+				{isFounder ? action : null}
 			</div>
 			{roles === undefined ? (
 				<p className="text-sm text-muted-foreground">Loading…</p>

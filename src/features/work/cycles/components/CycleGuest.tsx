@@ -41,8 +41,8 @@ export function CycleGuest() {
 							return (
 								<li key={item._id}>
 									<Link
-										to="/app/trials/$trialCycleId"
-										params={{ trialCycleId }}
+										to="/s/$slug/trials/$trialCycleId"
+										params={{ slug: item.startupSlug, trialCycleId }}
 										className="block rounded-xl border border-border p-4 hover:bg-muted/30"
 									>
 										<p className="font-medium">{item.trialTitle}</p>
@@ -80,13 +80,10 @@ export function CycleGuest() {
 
 			<div className="flex flex-col gap-2 sm:flex-row">
 				<Button asChild className="h-11">
-					<Link to="/app/opportunities">Find Opportunities</Link>
-				</Button>
-				<Button asChild variant="outline" className="h-11">
-					<Link to="/app/explore">Explore startups</Link>
+					<Link to="/discover">Find a Trial Cycle</Link>
 				</Button>
 				<Button asChild variant="ghost" className="h-11">
-					<Link to="/app/startups/new">Create a startup</Link>
+					<Link to="/startups/new">Create a Startup</Link>
 				</Button>
 			</div>
 		</div>

@@ -4,17 +4,20 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { formatDate } from "~/lib/dates";
 
 type WorkspaceTrialsProps = {
 	readonly startupId: Id<"startups">;
 	readonly isFounder: boolean;
+	readonly slug: string;
+	readonly action?: React.ReactNode;
 };
 
 export function WorkspaceTrials({
 	startupId,
 	isFounder,
+	slug,
+	action,
 }: WorkspaceTrialsProps) {
 	const trials = useQuery(api.hiring.trialCycles.list, { startupId });
 
@@ -22,11 +25,7 @@ export function WorkspaceTrials({
 		<section className="space-y-4">
 			<div className="flex items-center justify-between gap-3">
 				<h2 className="text-lg font-semibold">Trial Cycles</h2>
-				{isFounder ? (
-					<Button asChild size="sm">
-						<Link to="/app/startup/trials/new">Launch Trial Cycle</Link>
-					</Button>
-				) : null}
+				{isFounder ? action : null}
 			</div>
 			{trials === undefined ? (
 				<p className="text-sm text-muted-foreground">Loading…</p>
@@ -40,8 +39,8 @@ export function WorkspaceTrials({
 					{trials.map((trial) => (
 						<li key={trial._id}>
 							<Link
-								to="/app/trials/$trialCycleId"
-								params={{ trialCycleId: trial._id }}
+								to="/s/$slug/trials/$trialCycleId"
+								params={{ slug, trialCycleId: trial._id }}
 								className="flex flex-col gap-2 rounded-xl border border-border p-4 hover:bg-muted/20 sm:flex-row sm:items-center"
 							>
 								<div className="min-w-0 flex-1">

@@ -9,7 +9,6 @@ export function GoogleButton({ label = "Join Engin" }: { label?: string }) {
 		<Button
 			type="button"
 			variant="outline"
-			className="rounded-2xl"
 			disabled={isPending}
 			onClick={signInWithGoogle}
 		>

@@ -26,7 +26,11 @@ function TrialsView() {
 				Post a Role, run a Trial Cycle, judge people on real Pulses, then invite
 				them onto the team.
 			</p>
-			<WorkspaceTrials startupId={active.startup._id} isFounder={isFounder} />
+			<WorkspaceTrials
+				startupId={active.startup._id}
+				isFounder={isFounder}
+				slug={active.startup.slug}
+			/>
 			<WorkspaceRoles startupId={active.startup._id} isFounder={isFounder} />
 			{isFounder ? (
 				<WorkspaceApplicants startupId={active.startup._id} />
