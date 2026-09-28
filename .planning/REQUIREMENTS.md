@@ -15,7 +15,7 @@ Plans). Each maps to exactly one roadmap phase.
 
 ### Navigation & Shell (SHELL)
 
-- [ ] **SHELL-01**: Signed-in User sees a sidebar with Inbox/My Pulses/Threads (spanning every Startup they're in), a Startup switcher, and a Focused-Startup section (Cycles, Hiring, Team, Pitch, Activity); on mobile, a bottom tab bar (Inbox · My Pulses · Startup · Discover). *(src: #19)*
+- [x] **SHELL-01**: Signed-in User sees a sidebar with Inbox/My Pulses/Threads (spanning every Startup they're in), a Startup switcher, and a Focused-Startup section (Cycles, Hiring, Team, Pitch, Activity); on mobile, a bottom tab bar (Inbox · My Pulses · Startup · Discover). *(src: #19)*
 - [x] **SHELL-02**: Every Startup-scoped screen's URL carries the Startup's slug (`/s/$slug/...`), with no `/app` prefix; the app reopens on the User's last Focused Startup; a User with no Startup sees "Create a Startup" in the switcher. *(src: #19)*
 - [x] **SHELL-03**: Signed-in Users browse public pages (a Pitch, a profile, Discover) inside the app shell; signed-out visitors see the same pages under a simple public header with a sign-in button; a page requiring sign-in redirects there instead of breaking. *(src: #19)*
 - [x] **SHELL-04**: The interface renders dark-only with one semantic-token accent colour and typeface, replacing the current stock dark theme. *(src: #19)*
@@ -111,7 +111,7 @@ them gets a quick "already decided" answer.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SHELL-01 | Phase 1 | Pending |
+| SHELL-01 | Phase 1 | Complete |
 | SHELL-02 | Phase 1 | Complete |
 | SHELL-03 | Phase 1 | Complete |
 | SHELL-04 | Phase 1 | Complete |
