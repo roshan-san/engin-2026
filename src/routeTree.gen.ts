@@ -30,8 +30,11 @@ import { Route as AppTrialsTrialCycleIdRouteImport } from './routes/app/trials/$
 import { Route as AppUpgradeIndexRouteImport } from './routes/app/upgrade/index'
 import { Route as AppWorkIndexRouteImport } from './routes/app/work/index'
 import { Route as ShellAuthedMyPulsesIndexRouteImport } from './routes/_shell/_authed/my-pulses/index'
+import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_authed/s/$slug/route'
 import { Route as AppStartupRolesNewRouteImport } from './routes/app/startup/roles/new'
 import { Route as AppStartupTrialsNewRouteImport } from './routes/app/startup/trials/new'
+import { Route as ShellAuthedSSlugMemberRouteRouteImport } from './routes/_shell/_authed/s/$slug/_member/route'
+import { Route as ShellAuthedSSlugTrialsTrialCycleIdRouteImport } from './routes/_shell/_authed/s/$slug/trials/$trialCycleId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -137,6 +140,11 @@ const ShellAuthedMyPulsesIndexRoute =
     path: '/my-pulses/',
     getParentRoute: () => ShellAuthedRouteRoute,
   } as any)
+const ShellAuthedSSlugRouteRoute = ShellAuthedSSlugRouteRouteImport.update({
+  id: '/s/$slug',
+  path: '/s/$slug',
+  getParentRoute: () => ShellAuthedRouteRoute,
+} as any)
 const AppStartupRolesNewRoute = AppStartupRolesNewRouteImport.update({
   id: '/startup/roles/new',
   path: '/startup/roles/new',
@@ -147,6 +155,17 @@ const AppStartupTrialsNewRoute = AppStartupTrialsNewRouteImport.update({
   path: '/startup/trials/new',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const ShellAuthedSSlugMemberRouteRoute =
+  ShellAuthedSSlugMemberRouteRouteImport.update({
+    id: '/_member',
+    getParentRoute: () => ShellAuthedSSlugRouteRoute,
+  } as any)
+const ShellAuthedSSlugTrialsTrialCycleIdRoute =
+  ShellAuthedSSlugTrialsTrialCycleIdRouteImport.update({
+    id: '/trials/$trialCycleId',
+    path: '/trials/$trialCycleId',
+    getParentRoute: () => ShellAuthedSSlugRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -167,9 +186,11 @@ export interface FileRoutesByFullPath {
   '/app/trials/': typeof AppTrialsIndexRoute
   '/app/upgrade/': typeof AppUpgradeIndexRoute
   '/app/work/': typeof AppWorkIndexRoute
+  '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/app/startup/roles/new': typeof AppStartupRolesNewRoute
   '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
   '/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
+  '/s/$slug/trials/$trialCycleId': typeof ShellAuthedSSlugTrialsTrialCycleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -189,9 +210,11 @@ export interface FileRoutesByTo {
   '/app/trials': typeof AppTrialsIndexRoute
   '/app/upgrade': typeof AppUpgradeIndexRoute
   '/app/work': typeof AppWorkIndexRoute
+  '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/app/startup/roles/new': typeof AppStartupRolesNewRoute
   '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
   '/my-pulses': typeof ShellAuthedMyPulsesIndexRoute
+  '/s/$slug/trials/$trialCycleId': typeof ShellAuthedSSlugTrialsTrialCycleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -215,9 +238,12 @@ export interface FileRoutesById {
   '/app/trials/': typeof AppTrialsIndexRoute
   '/app/upgrade/': typeof AppUpgradeIndexRoute
   '/app/work/': typeof AppWorkIndexRoute
+  '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/app/startup/roles/new': typeof AppStartupRolesNewRoute
   '/app/startup/trials/new': typeof AppStartupTrialsNewRoute
   '/_shell/_authed/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
+  '/_shell/_authed/s/$slug/_member': typeof ShellAuthedSSlugMemberRouteRoute
+  '/_shell/_authed/s/$slug/trials/$trialCycleId': typeof ShellAuthedSSlugTrialsTrialCycleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -240,9 +266,11 @@ export interface FileRouteTypes {
     | '/app/trials/'
     | '/app/upgrade/'
     | '/app/work/'
+    | '/s/$slug'
     | '/app/startup/roles/new'
     | '/app/startup/trials/new'
     | '/my-pulses/'
+    | '/s/$slug/trials/$trialCycleId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -262,9 +290,11 @@ export interface FileRouteTypes {
     | '/app/trials'
     | '/app/upgrade'
     | '/app/work'
+    | '/s/$slug'
     | '/app/startup/roles/new'
     | '/app/startup/trials/new'
     | '/my-pulses'
+    | '/s/$slug/trials/$trialCycleId'
   id:
     | '__root__'
     | '/'
@@ -287,9 +317,12 @@ export interface FileRouteTypes {
     | '/app/trials/'
     | '/app/upgrade/'
     | '/app/work/'
+    | '/_shell/_authed/s/$slug'
     | '/app/startup/roles/new'
     | '/app/startup/trials/new'
     | '/_shell/_authed/my-pulses/'
+    | '/_shell/_authed/s/$slug/_member'
+    | '/_shell/_authed/s/$slug/trials/$trialCycleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -451,6 +484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedMyPulsesIndexRouteImport
       parentRoute: typeof ShellAuthedRouteRoute
     }
+    '/_shell/_authed/s/$slug': {
+      id: '/_shell/_authed/s/$slug'
+      path: '/s/$slug'
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof ShellAuthedSSlugRouteRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
+    }
     '/app/startup/roles/new': {
       id: '/app/startup/roles/new'
       path: '/startup/roles/new'
@@ -465,14 +505,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStartupTrialsNewRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_shell/_authed/s/$slug/_member': {
+      id: '/_shell/_authed/s/$slug/_member'
+      path: ''
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof ShellAuthedSSlugMemberRouteRouteImport
+      parentRoute: typeof ShellAuthedSSlugRouteRoute
+    }
+    '/_shell/_authed/s/$slug/trials/$trialCycleId': {
+      id: '/_shell/_authed/s/$slug/trials/$trialCycleId'
+      path: '/trials/$trialCycleId'
+      fullPath: '/s/$slug/trials/$trialCycleId'
+      preLoaderRoute: typeof ShellAuthedSSlugTrialsTrialCycleIdRouteImport
+      parentRoute: typeof ShellAuthedSSlugRouteRoute
+    }
   }
 }
 
+interface ShellAuthedSSlugRouteRouteChildren {
+  ShellAuthedSSlugMemberRouteRoute: typeof ShellAuthedSSlugMemberRouteRoute
+  ShellAuthedSSlugTrialsTrialCycleIdRoute: typeof ShellAuthedSSlugTrialsTrialCycleIdRoute
+}
+
+const ShellAuthedSSlugRouteRouteChildren: ShellAuthedSSlugRouteRouteChildren = {
+  ShellAuthedSSlugMemberRouteRoute: ShellAuthedSSlugMemberRouteRoute,
+  ShellAuthedSSlugTrialsTrialCycleIdRoute:
+    ShellAuthedSSlugTrialsTrialCycleIdRoute,
+}
+
+const ShellAuthedSSlugRouteRouteWithChildren =
+  ShellAuthedSSlugRouteRoute._addFileChildren(
+    ShellAuthedSSlugRouteRouteChildren,
+  )
+
 interface ShellAuthedRouteRouteChildren {
+  ShellAuthedSSlugRouteRoute: typeof ShellAuthedSSlugRouteRouteWithChildren
   ShellAuthedMyPulsesIndexRoute: typeof ShellAuthedMyPulsesIndexRoute
 }
 
 const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
+  ShellAuthedSSlugRouteRoute: ShellAuthedSSlugRouteRouteWithChildren,
   ShellAuthedMyPulsesIndexRoute: ShellAuthedMyPulsesIndexRoute,
 }
 
