@@ -23,6 +23,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_hiring_challenges from "../lib/hiring/challenges.js";
 import type * as lib_hiring_entries from "../lib/hiring/entries.js";
 import type * as lib_hiring_offers from "../lib/hiring/offers.js";
+import type * as lib_hiring_threads from "../lib/hiring/threads.js";
 import type * as lib_hiring_trialCycles from "../lib/hiring/trialCycles.js";
 import type * as lib_hiring_verdicts from "../lib/hiring/verdicts.js";
 import type * as lib_limits from "../lib/limits.js";
@@ -76,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   "lib/hiring/challenges": typeof lib_hiring_challenges;
   "lib/hiring/entries": typeof lib_hiring_entries;
   "lib/hiring/offers": typeof lib_hiring_offers;
+  "lib/hiring/threads": typeof lib_hiring_threads;
   "lib/hiring/trialCycles": typeof lib_hiring_trialCycles;
   "lib/hiring/verdicts": typeof lib_hiring_verdicts;
   "lib/limits": typeof lib_limits;

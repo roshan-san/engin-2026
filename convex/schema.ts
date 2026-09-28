@@ -355,9 +355,15 @@ export default defineSchema({
 		.index("by_user_and_status", ["userId", "status"])
 		.index("by_startup", ["startupId"]),
 
+	/**
+	 * A message in one Participant's Thread with the Founders, or, without
+	 * `participantUserId`, an Announcement to every Participant (ADR 0003).
+	 */
 	trialMessages: defineTable({
 		trialCycleId: v.id("trialCycles"),
+		/** The author: the Participant, or the Founder replying or announcing. */
 		userId: v.id("users"),
+		participantUserId: v.optional(v.id("users")),
 		body: v.string(),
-	}).index("by_trial", ["trialCycleId"]),
+	}).index("by_trial_and_participant", ["trialCycleId", "participantUserId"]),
 });

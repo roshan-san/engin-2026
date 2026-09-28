@@ -43,7 +43,9 @@ export function TrialDetailPage({ trialCycleId }: TrialDetailPageProps) {
 		);
 	}
 
-	const hasAccess = trial.isMember || trial.isParticipant;
+	// Participants keep read access to their Thread once the Trial Cycle closes.
+	const hasThread =
+		trial.isFounder || trial.isParticipant || trial.myStatus === "completed";
 
 	async function run(action: () => Promise<unknown>, fallback: string) {
 		setIsPending(true);
@@ -166,7 +168,13 @@ export function TrialDetailPage({ trialCycleId }: TrialDetailPageProps) {
 			{trial.isMember ? (
 				<TrialApplicants applicants={trial.applicants} />
 			) : null}
-			{hasAccess ? <TrialChat trialCycleId={id} /> : null}
+			{hasThread ? (
+				<TrialChat
+					trialCycleId={id}
+					isFounder={trial.isFounder}
+					canPost={trial.status === "open" || trial.status === "active"}
+				/>
+			) : null}
 		</div>
 	);
 }

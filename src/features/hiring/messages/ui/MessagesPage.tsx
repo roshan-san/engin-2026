@@ -12,14 +12,14 @@ export function MessagesPage() {
 			<div>
 				<h1 className="text-2xl font-bold">Messages</h1>
 				<p className="mt-1 text-muted-foreground">
-					Trial Cycle rooms you can talk in.
+					Trial Cycles where you can message the Founders or Participants.
 				</p>
 			</div>
 			{rooms === undefined ? (
 				<PageLoading />
 			) : rooms.length === 0 ? (
 				<EmptyState
-					title="No rooms yet"
+					title="No Trial Cycles yet"
 					description="Join a Trial Cycle or open one from your startup to start a conversation."
 				/>
 			) : (

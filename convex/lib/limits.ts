@@ -4,6 +4,8 @@ export const MAX_TRIAL_APPLICATIONS = 50;
 export const MAX_TRIAL_CHALLENGES = 20;
 /** Pulses on one Participant's Board, seeded Challenges included. */
 export const MAX_BOARD_PULSES = 100;
+/** Most recent messages read from a Thread, and again from the Announcements. */
+export const MAX_THREAD_MESSAGES = 200;
 export const MAX_USER_APPLICATIONS = 80;
 export const MAX_USER_OFFERS = 50;
 export const MAX_ROLE_OFFERS = 100;

@@ -33,3 +33,17 @@ export const recomputeScores = internalMutation({
 		}
 	},
 });
+
+/**
+ * One-off: drops the old group chat (ADR 0003). Messages without a
+ * `participantUserId` now mean Announcements, so run it once, before any
+ * Announcement is posted. Dev data only.
+ */
+export const dropGroupMessages = internalMutation({
+	args: {},
+	handler: async (ctx) => {
+		for await (const message of ctx.db.query("trialMessages")) {
+			await ctx.db.delete(message._id);
+		}
+	},
+});
