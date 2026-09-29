@@ -1,106 +1,182 @@
 ---
-last_mapped_commit: 63da4c34dd0df46fd780733eaefce3afb95f98e3
-last_mapped_at: 2026-09-28
+last_mapped_commit: f0a648da4386d24b5ee96348a96bf0cf757ba15f
+last_mapped_at: 2026-09-29
 ---
+<!-- refreshed: 2026-09-29 -->
+
 # Codebase Concerns
 
-**Analysis Date:** 2026-09-28
-
-Convex mutations are serializable transactions: every read and write in one mutation commits atomically, and conflicting concurrent mutations are retried (OCC). Read-check-write inside a single mutation is safe, and a mutation that throws rolls back all of its writes. Keep this in mind before flagging "race conditions" or "partial failure" in `convex/`. See "Verified non-issues" at the end.
-
-## Known Bugs
-
-### Cycle `start` has no status guard
-
-**Issue:** `start` in `convex/work/cycles.ts` (lines 170-199) never checks `cycle.status`. `autoStart` (line 92) does, returning early unless the Cycle is `planned`.
-**Impact:** A Founder calling the mutation directly can re-open a `closed` Cycle, or "start" an already `active` one (it closes itself, reactivates, and logs a duplicate `cycle_started` activity). The UI only shows Start for `planned` Cycles (`src/features/work/cycles/ui/CyclePage.tsx` line 86), so this is reachable only outside the UI.
-**Fix approach:** Throw unless `cycle.status === "planned"`, matching `autoStart`. Add a test in `convex/work/cycles.test.ts`.
-
-### Starting a Cycle closes the active one without a close record
-
-**Issue:** Both `autoStart` (lines 96-104) and `start` (lines 181-190) patch every `active` Cycle of the Startup to `closed` directly, bypassing `close` (lines 202-237).
-**Impact:** The implicitly closed Cycle gets no `cycle_closed` activity entry, its unfinished Pulses get no carry-over choice, and Cycle Members are not notified. Whether one active Cycle per Startup is the intended rule is not recorded in `CONTEXT.md` or `docs/adr/`.
-**Fix approach:** Confirm the rule. If it's intended, route through shared close logic so activity is logged, and either block the start or ask where unfinished Pulses go.
+**Analysis Date:** 2026-09-29
 
 ## Tech Debt
 
-### Score evidence reads are capped
+**Plan Limit Enforcement Missing:**
+- Issue: ADR 0005 states "the pricing page lists only limits the backend actually enforces", but the backend does not enforce plan limits when creating Roles or Trial Cycles
+- Files: `convex/hiring/roles.ts` (line 43, `create` mutation), `convex/hiring/trialCycles.ts` (line 101, `create` mutation)
+- Impact: Free accounts can create unlimited Roles and Trial Cycles despite plan limits defined in `convex/lib/limits.ts` (1 open Role, 1 live Trial Cycle for free tier). This violates billing model enforcement and allows free users to access pro-only features
+- Fix approach: Add plan limit checks in both create mutations before inserting. Use `loadStartupPlan` from `convex/lib/teams/plan.ts` to get current usage and verify against `limits` before proceeding. Write tests for limit enforcement in both `convex/hiring/roles.test.ts` and `convex/hiring/trialCycles.test.ts`
 
-**Issue:** `loadScoreEvidence` in `convex/lib/reputation/score.ts` (lines 27-55) reads at most `MAX_USER_APPLICATIONS` (80) applications, `MAX_USER_OFFERS` (50) accepted Offers and 50 memberships per user (`convex/lib/limits.ts`). `convex/lib/reputation/trialHistory.ts` uses the same cap.
-**Impact:** Once a user passes those counts, Score and trial history silently undercount. The caps are unreachable for V1 usage, so this matters only at scale.
-**Fix approach:** When it matters, keep running counters on `users` (updated where application or Offer status changes) instead of rescanning.
+**Large Monolithic Backend Files:**
+- Issue: Several backend files exceed the ~250 line convention (CLAUDE.md)
+- Files: 
+  - `convex/teams/startups.ts` (399 lines)
+  - `convex/schema.ts` (371 lines)
+  - `convex/work/pulses.ts` (283 lines)
+  - `convex/work/cycles.ts` (271 lines)
+  - `convex/people/users.ts` (267 lines)
+  - `convex/hiring/applications.ts` (255 lines)
+- Impact: Harder to understand, maintain, and test individual responsibilities. Violates stated convention of keeping files under ~250 lines with one responsibility each
+- Fix approach: Split large files into focused modules. For example, `convex/teams/startups.ts` could separate query, mutation, and helper logic into distinct files. Use helper modules in `convex/lib/teams/` for shared logic
 
-### Contributors Explore query scans and filters in memory
+**Large Frontend Components:**
+- Issue: Several UI components exceed ~250 line convention
+- Files:
+  - `src/components/ui/sidebar.tsx` (701 lines) - Note: shadcn/ui generated component, may be acceptable
+  - `src/components/ui/dropdown-menu.tsx` (255 lines)
+  - `src/features/work/pulses/components/PulseBoard.tsx` (169 lines)
+  - `src/features/teams/startup/public/pages/PublicStartupPage.tsx` (175 lines)
+  - `src/features/discover/pages/DiscoverPage.tsx` (168 lines)
+  - `src/features/people/profile/pages/PublicProfilePage.tsx` (166 lines)
+- Impact: Harder to reason about, difficult to test, prone to introducing bugs
+- Fix approach: Extract custom components into smaller, focused pieces. The sidebar may be acceptable as generated code, but feature pages should extract logic into hooks and reusable components
 
-**Issue:** The `contributors` query in `convex/teams/explore.ts` (lines 82-128) takes 200 users, filters skills/location in memory, and runs `hasEvidence` (lines 47-80) per candidate with up to 3 indexed lookups each.
-**Impact:** Up to ~600 index reads per page load, and users beyond the first 200 scanned are never shown.
-**Fix approach:** Acceptable for V1. At scale, keep an `exploreEligible` flag or a denormalized contributors table maintained on the events that create evidence.
+**MAX_PLAN_USAGE_SCAN Undercounting Risk:**
+- Issue: `loadStartupPlan` uses `.take(MAX_PLAN_USAGE_SCAN)` (200) when counting resources across members, roles, invites, and offers
+- Files: `convex/lib/teams/plan.ts` (lines 58, 66, 72, 83, 91, 102)
+- Impact: If a pro startup exceeds 200 open roles, pending invites, pending offers, or members, the usage count will be incorrect. Plan enforcement would silently fail to block additional resources beyond actual limits. For example, if a startup has 205 members, the system might report 200 and allow creating more when at limit
+- Fix approach: Use indexed range queries with `order()` to ensure all resources are counted, or implement pagination to scan beyond the 200 limit. Alternatively, enforce a hard limit of 200 per resource type, or add a warning system if counts approach MAX_PLAN_USAGE_SCAN
 
-### Activity visibility check per row
+## Known Bugs
 
-**Issue:** For Members, `convex/teams/activity.ts` (lines 56-67) calls `getCycleMember` for every scanned activity row that has a `cycleId`.
-**Impact:** Up to one extra index read per row (≤100 rows) per dashboard load.
-**Fix approach:** Load the Member's Cycle memberships once and filter against a `Set` of cycle ids.
+None explicitly documented in the codebase.
 
 ## Security Considerations
 
-### Dodo webhook: email fallback and no audit trail
+**Missing Payment API Key Validation:**
+- Risk: `DODO_PAYMENTS_API_KEY` defaults to empty string instead of failing early
+- Files: `convex/dodo.ts` (line 11)
+- Current mitigation: None - the SDK may fail silently or raise cryptic errors at runtime
+- Recommendations: Throw an error during initialization if `DODO_PAYMENTS_API_KEY` is missing. Replace `?? ""` with explicit validation that throws immediately on startup
 
-**Current protection:** `createDodoWebhookHandler` (`@dodopayments/convex`) verifies the Standard Webhooks signature with `DODO_PAYMENTS_WEBHOOK_SECRET` and returns 400 on failure. Checkout in `convex/people/billing.ts` (lines 55-67) puts `userId` in the subscription metadata, and `convex/http.ts` (line 24) prefers it.
-**Residual risk:** When metadata has no `userId` (a subscription created outside the in-app checkout), `convex/http.ts` (lines 26-31) falls back to matching `customer.email`, which may map to a different account or to none (then the event is silently dropped). Plan changes are not logged anywhere.
-**Recommendations:** Log the webhook event id and resolved user on every `setPlanTier`. Decide whether the email fallback should stay.
+**Webhook Error Handling Silent Failure:**
+- Risk: The Dodo webhook handler silently skips plan tier updates if user lookup fails
+- Files: `convex/http.ts` (lines 26-31)
+- Current mitigation: The check `if (!userId) { return; }` prevents crashes but doesn't log or alert
+- Recommendations: Log webhook events that fail to find a user or update plan tier. Consider a metrics/monitoring table to track failed webhooks. Return an appropriate HTTP status code to indicate partial success/failure
 
-### Board access is coupled to application status
-
-**Files:** `convex/lib/work/boards.ts` (lines 11-29)
-**Note:** The check is correct today. `isTrialParticipant` reads `applications.status`, so any new application state (soft delete, removal) must update this boundary too.
+**Payment Webhook Without Signature Validation:**
+- Risk: The webhook handler (`createDodoWebhookHandler`) may not verify webhook source/signature
+- Files: `convex/http.ts` (line 46)
+- Current mitigation: Dodo SDK handles this, but not verified in this codebase
+- Recommendations: Verify that `createDodoWebhookHandler` validates webhook signatures. Document the assumption. If not, add HMAC-SHA256 signature verification
 
 ## Performance Bottlenecks
 
-See "Contributors Explore query" and "Activity visibility check per row" under Tech Debt. Neither matters at V1 scale.
+**Sequential Database Queries in Plan Calculation:**
+- Problem: `loadStartupPlan` makes 5+ sequential database queries to calculate plan usage (count roles, trials (open), trials (active), members, invites, offers)
+- Files: `convex/lib/teams/plan.ts` (lines 52-103)
+- Cause: Multiple independent `.query().withIndex().take()` calls without parallelization
+- Improvement path: Parallelize using `Promise.all()` since queries don't depend on each other. Consider caching plan usage on the Startup document if it's accessed frequently during a session
+
+**N+1 Query in Offers List:**
+- Problem: `listForStartup` queries each offer's role in a loop
+- Files: `convex/hiring/offers.ts` (lines 96-103)
+- Cause: `for (const offer of offers) { ... await ctx.db.get(offer.roleId) }`
+- Improvement path: Batch-load role data before the loop, or load roles once via index. Use `Promise.all()` to parallelize all role fetches
 
 ## Fragile Areas
 
-### Cycle transitions
+**Trial Cycle State Machine:**
+- Files: `convex/hiring/trialCycles.ts`, `convex/lib/hiring/trialCycles.ts`
+- Why fragile: Complex status transitions (open → active → closed) driven by time-based scheduler (`ctx.scheduler`). Race conditions possible if trial is modified during transition. If `start` or `end` mutations race with manual cancel, state could be inconsistent
+- Safe modification: Always check current status before state transitions. Write comprehensive tests for concurrent transitions. Review scheduler-driven code for race conditions
+- Test coverage: `convex/hiring/trialCycles.test.ts` exists but needs tests for concurrent state transitions and scheduler edge cases
 
-**Files:** `convex/work/cycles.ts` (`create` schedules `autoStart`, then `start`, `close`, `moveUnfinishedPulses`)
-**Why fragile:** There are two activation paths with duplicated "close all active" code, and they apply different guards (see Known Bugs).
-**Test coverage:** `convex/work/cycles.test.ts` covers auto-start at the start date, closing with and without carry-over, and Member removal. It has no test for `start` on a non-planned Cycle or for the implicit close of the previously active Cycle.
+**Verdicts and Offers:**
+- Files: `convex/lib/hiring/verdicts.ts`, `convex/lib/hiring/offers.ts`
+- Why fragile: `closeWithVerdicts` creates offers without checking plan limits. If role is filled during verdict submission, the check at line 53 (`role?.status !== "open"`) rejects the entire verdict batch. All-or-nothing semantics means one bad verdict blocks all verdicts
+- Safe modification: Add plan limit pre-checks before allowing verdict submission. Consider partial success semantics or clear error messaging to distinguish plan limit vs. role status issues
+- Test coverage: `convex/hiring/verdicts.test.ts` (153 lines) exists but doesn't test plan limit scenarios
 
-### Offers filling a Role
-
-**Files:** `convex/lib/hiring/verdicts.ts`, `convex/lib/hiring/offers.ts`, `convex/hiring/offers.ts`
-**Note:** `fillRoleIfFull` has one caller, `convex/hiring/offers.ts` line 146, which is the only Offer-acceptance path. Any new acceptance path (for example an admin or auto-accept) must call it, or the Role stays open past headcount.
+**Score Recalculation:**
+- Files: `convex/lib/reputation/score.ts` (referenced but not fully reviewed)
+- Why fragile: Score is recalculated on Offer acceptance and verdict completion. If recalculation logic changes, historical scores are not updated, creating inconsistency. No migration to re-derive old scores
+- Safe modification: Document score calculation contract. Add comprehensive tests for score edge cases. Consider versioning score formula if it changes
+- Test coverage: No explicit score recalculation tests observed
 
 ## Scaling Limits
 
-| Resource | Cap | Where |
-|---|---|---|
-| Applications read per user | 80 (`MAX_USER_APPLICATIONS`) | `convex/lib/limits.ts` |
-| Accepted Offers read per user | 50 (`MAX_USER_OFFERS`) | `convex/lib/limits.ts` |
-| Participants per Trial Cycle | 10 (`Math.min(10, maxContributors)`) | `convex/hiring/trialCycles.ts` line 133 |
-| Explore contributors scan | 200 users | `convex/teams/explore.ts` |
+**Member/Role/Invite Count Capping:**
+- Current capacity: 200 resources scanned per query via `MAX_PLAN_USAGE_SCAN`
+- Limit: Pro tier allows up to 50 members (line 48, `convex/lib/limits.ts`); if you try to create the 51st, the 50-member limit is enforced. But if you have exactly 50 and make 200 concurrent add requests, race conditions could allow more than 50
+- Scaling path: Implement atomic counters or distributed locks before incrementing resource counts. Use Convex transactions to ensure atomicity of limit + insert operations
+
+**Trial Cycle Participant Slots:**
+- Current capacity: `participantCount` incremented one at a time in `takeParticipantSpot`
+- Limit: `MAX_TRIAL_PARTICIPANTS = 10` (line 1, `convex/lib/limits.ts`)
+- Scaling path: If trial participation needs to scale beyond 10, participant slots would require async queue/waitlist logic
 
 ## Dependencies at Risk
 
-- `@dodopayments/convex` is pinned at `0.2.15` and `@convex-dev/auth` at `0.0.95` in `package.json`. Both are pre-1.0, so expect breaking changes on upgrade and read their changelogs.
+**Dodo Payments Integration:**
+- Risk: Payment processing relies entirely on `@dodopayments/convex` 0.2.15 (line 20, `package.json`). No fallback or backup. Webhook-driven plan tier updates mean billing is asynchronous and can lag
+- Impact: If Dodo service is down, new subscriptions won't activate. If webhooks fail, plan tier updates won't apply. Users may see "free" even if they've paid
+- Migration plan: Add retry logic and dead-letter queue for failed webhooks. Implement polling fallback if webhooks don't arrive within SLA. Consider Stripe or similar with better uptime track record
+
+**Convex Framework Tight Coupling:**
+- Risk: Schema, queries, mutations, and internal functions are tightly coupled to Convex. Migration to another backend would require rewriting all database logic
+- Impact: Framework version upgrades require careful testing. Schema migrations require Convex-specific syntax
+- Migration plan: This is acceptable for a startup; Convex is a good choice for V1
+
+## Missing Critical Features
+
+**No Email Notifications:**
+- Problem: The system records notifications in the database, but does not send emails. Users must log in to see notifications
+- Blocks: Onboarding flow, engagement, verdict announcements
+- Planned in: Likely phase 2+; for now, in-app notifications are sufficient for MVP
+
+**No User-Facing Plan Limit Enforcement Errors:**
+- Problem: Create mutations lack plan limit checks. If/when enforcement is added, UI doesn't guide users to upgrade
+- Blocks: Effective trial-to-pro conversion flow. Users hit errors without context
+- Planned in: Phase with "upgrade prompt" UI components
+
+**No Billing History or Invoice Download:**
+- Problem: No way for users to view past subscriptions or download invoices from within the app
+- Blocks: Compliance, expense tracking for customers
+- Planned in: Phase 2+; Dodo may provide this natively
 
 ## Test Coverage Gaps
 
-- **UI:** `src/` has no tests (by choice, per `CLAUDE.md`). The flows that matter most are manual-only: joining a Trial Cycle, submitting a Pulse, accepting an Offer.
-- **Cycles:** `start` status guard and the implicit close on start (see above).
-- **Billing webhook:** there is no test for `convex/http.ts` plan-tier mapping, including the email fallback.
+**No Frontend Tests:**
+- What's not tested: All React components, hooks, and page logic in `src/`
+- Files: Entire `src/` directory (0 test files)
+- Risk: Bugs in UI state, form validation, error boundaries, navigation go unnoticed. Refactoring is high-risk
+- Priority: **High** — Frontend is the user-facing surface. E2E tests or snapshot tests should be added for critical flows (auth, offer response, pulse submission)
 
-## Verified non-issues
+**Plan Limit Enforcement Not Tested:**
+- What's not tested: Creating Roles and Trial Cycles when free account already has max resources
+- Files: `convex/hiring/roles.test.ts`, `convex/hiring/trialCycles.test.ts`
+- Risk: Plan enforcement will not work correctly when implemented. Free users may accidentally (or intentionally) create unlimited resources until limits are enforced
+- Priority: **High** — Must be tested before go-live
 
-These were raised during mapping and don't hold. Don't re-flag them.
+**Webhook Failure Scenarios Not Tested:**
+- What's not tested: Dodo webhook arriving with missing `userId` or email. Multiple webhooks for same user. Out-of-order webhooks (e.g., cancellation before activation)
+- Files: `convex/http.ts` (webhook handler, no corresponding test file)
+- Risk: Billing state becomes inconsistent. Users lose or gain access unexpectedly
+- Priority: **Medium** — Should be covered before scaling to production payments
 
-- **Participant spot oversubscription:** `takeParticipantSpot` in `convex/lib/hiring/entries.ts` (lines 55-66) reads and patches the Trial Cycle inside the caller's mutation. Concurrent joins conflict and retry, so capacity can't be exceeded.
-- **Counter drift on partial failure:** if a mutation throws after `takeParticipantSpot`, the counter increment rolls back with it.
-- **Late scheduler run:** Trial Cycle `start` and Cycle `autoStart` return early unless the record is still in the expected status, and a cancelled Trial Cycle staying cancelled is covered by `convex/hiring/trialCycles.test.ts`.
-- **Carry-over target deleted mid-close:** validation and the Pulse moves in `close` run in one transaction.
-- **Unsigned Dodo webhooks:** signatures are verified by the library (see Security).
+**Concurrent Offer/Verdict Creation Not Tested:**
+- What's not tested: Two founders creating verdicts simultaneously, or two users accepting offers for the same role
+- Files: `convex/lib/hiring/verdicts.ts`, `convex/hiring/offers.ts`
+- Risk: Role could accept more participants than headcount. Score and offer state could be inconsistent
+- Priority: **Medium** — Race conditions are rare but can cause revenue loss or data corruption
+
+**Scheduler-Driven State Transitions Not Tested:**
+- What's not tested: Trial start/end/cancellation triggered by scheduler while manual mutations race
+- Files: `convex/hiring/trialCycles.ts` (internal mutations at lines 168, 183)
+- Risk: Trials could get stuck in inconsistent states. Participants might be stranded
+- Priority: **Medium** — Use `advancePast` in tests (already available in `test.helpers.ts`) to simulate time passage and scheduler execution
 
 ---
 
-*Concerns audit: 2026-09-28*
+*Concerns audit: 2026-09-29*

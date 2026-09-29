@@ -1,131 +1,128 @@
 ---
-last_mapped_commit: 63da4c34dd0df46fd780733eaefce3afb95f98e3
-last_mapped_at: 2026-09-28
+last_mapped_commit: f0a648da4386d24b5ee96348a96bf0cf757ba15f
+last_mapped_at: 2026-09-29
 ---
+<!-- refreshed: 2026-09-29 -->
+
 # External Integrations
 
-**Analysis Date:** 2026-09-28
+**Analysis Date:** 2026-09-29
 
 ## APIs & External Services
 
 **Authentication:**
-- Google Sign-In
-  - SDK: @auth/core with Google provider
-  - Env vars: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
-  - Entry point: `convex/auth.ts`
-  - Frontend flow: `src/features/people/auth/hooks/useGoogleSignIn.ts`
-  - UI: `src/features/people/auth/ui/GoogleButton.tsx`
+- **Google OAuth** - User sign-in via Google
+  - SDK/Client: `@auth/core` 0.41.3
+  - Implementation: `convex/auth.ts`, `convex/auth.config.ts`
+  - Auth env vars: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `CONVEX_SITE_URL`
+  - Routes added via `auth.addHttpRoutes(http)` in `convex/http.ts`
+
+**Payment & Billing:**
+- **Dodo Payments** - Subscription management (monthly/yearly plans)
+  - SDK/Client: `@dodopayments/convex` 0.2.15
+  - Implementation: `convex/dodo.ts`
+  - Config: `convex/convex.config.ts` (Dodo component registered)
+  - API Key: `DODO_PAYMENTS_API_KEY`
+  - Environment: `DODO_PAYMENTS_ENVIRONMENT` (test_mode or live_mode)
+  - Product IDs: `DODO_MONTHLY_PLAN_ID`, `DODO_YEARLY_PLAN_ID`
+  - Billing state stored in `users.planTier` (free | pro)
+  - Checkout flow: `convex/dodo.ts` exports `checkout` API
 
 ## Data Storage
 
 **Databases:**
-- Convex (primary)
-  - Connection: HTTP via `convex` client from `convex/` SDK
-  - Type-safe access: `ctx.db` in backend, `useQuery`/`useMutation` in frontend
-  - Schema: `convex/schema.ts`
-  - Client: `src/lib/convex.ts` (ConvexReactClient instantiated with `VITE_CONVEX_URL`)
-  - Tables: users, startups, memberships, follows, invites, notifications, pulses, cycles, cycleMembers, roles, trialCycles, challenges, applications, offers, trialMessages, activity
-  - Indexes: Defined in `convex/schema.ts` via `withIndex()` pattern
+- **Convex** (managed backend database)
+  - Type: Real-time synced NoSQL document database
+  - Client: Convex SDK (`convex` 1.46.0)
+  - Schema: `convex/schema.ts` - Defines all tables and validators
+  - Connection: Via `VITE_CONVEX_URL` (frontend) and Convex deployment (backend)
+  - ORM/Client: Convex query/mutation functions called via `api.*` object from `convex/_generated/api`
+  - Tables include: users, startups, memberships, cycles, pulses, trials, roles, offers, notifications, invites, activity
+  - Indexes: All queries use `withIndex` pattern defined in `convex/schema.ts`
+  - Plan gating via `users.planTier` checked with `isProUser` helper
 
 **File Storage:**
-- Not detected (no cloud storage SDK; attachments not in feature scope)
+- Local filesystem only - No cloud storage integration detected
 
 **Caching:**
-- Not detected (Convex client handles real-time sync internally)
+- None - Convex provides real-time syncing; no explicit cache layer
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- Convex Auth (@convex-dev/auth)
-  - Implementation: OAuth flow with Google as sole provider
-  - Configuration: `convex/auth.config.ts` (domain-based), `convex/auth.ts` (Google provider setup)
-  - Session management: Convex stores auth tables via `@convex-dev/auth/server` (see `authTables` in `convex/schema.ts`)
-  - User identity read: `getAuthUserId(ctx)` in actions, `requireUserId(ctx)` in mutations
-  - Protected routes: `useConvexAuth()` hook in frontend (checked in `src/features/app/layout/AppLayout`)
+- Convex Auth with Google OAuth
+  - Framework: `@convex-dev/auth` 0.0.95
+  - Provider: Google (`@auth/core/providers/google`)
+  - Implementation: `convex/auth.ts` exports `auth`, `signIn`, `signOut`, `store`, `isAuthenticated`
+  - Session management: OAuth tokens stored in Convex auth tables
+  - Site URL for OAuth callback: `CONVEX_SITE_URL` env var
+  - Frontend integration: `ConvexAuthProvider` in `src/features/people/auth/providers/AppProviders.tsx`
+  - Multi-user workspace: `users.activeStartupId` tracks current Startup context per user
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- Not detected (no Sentry, Rollbar, or similar service)
+- None detected
 
 **Logs:**
-- Console logs only (browser console for frontend, server logs for Convex)
-- No external logging service detected
+- console-based (in functions and frontend)
+- Activity logging via `logActivity()` helper in `convex/lib/activity.ts` - events appended to startup activity feed
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- Convex (backend) - serverless Node.js runtime for `convex/` functions
-  - Deployments via Convex CLI (`convex deploy`)
-  - Dev environment: `convex dev` (local sync)
-- Static hosting for frontend (deployment not configured in codebase; assumed external)
+- **Convex** - Backend deployment (functions, database, auth)
+- **Vite SPA** - Frontend deployed as static build output (portable to any CDN/static host)
 
 **CI Pipeline:**
-- Not detected in codebase (no GitHub Actions, Vercel config, or similar)
-- `pnpm check` is the local quality gate (lint + format + typecheck)
+- None detected in codebase
 
 ## Environment Configuration
 
 **Required env vars:**
 
-**Client-side (frontend):**
-- `VITE_CONVEX_URL` - Convex deployment URL (validated in `src/env/client.ts`)
+*Client-side (frontend, in `src/env/client.ts`):**
+- `VITE_CONVEX_URL` - Convex deployment URL (string, must be valid URL)
 
-**Server-side (backend via Convex deployment):**
-- `DODO_PAYMENTS_API_KEY` - Dodo Payments API authentication
-- `DODO_PAYMENTS_ENVIRONMENT` - `test_mode` or `live_mode` for payment processing
-- `DODO_MONTHLY_PLAN_ID` - Product/plan ID for monthly billing cycle
-- `DODO_YEARLY_PLAN_ID` - Product/plan ID for yearly billing cycle
-- `AUTH_GOOGLE_ID` - Google OAuth application ID
-- `AUTH_GOOGLE_SECRET` - Google OAuth application secret
-- `CONVEX_SITE_URL` - Base URL for auth configuration (domain for OAuth callbacks)
+*Server-side (backend, in Convex deployment env):**
+- `AUTH_GOOGLE_ID` - Google OAuth app client ID
+- `AUTH_GOOGLE_SECRET` - Google OAuth app client secret
+- `CONVEX_SITE_URL` - Site domain for OAuth redirect URI
+- `DODO_PAYMENTS_API_KEY` - Dodo Payments API authentication key
+- `DODO_PAYMENTS_ENVIRONMENT` - Either "test_mode" or "live_mode"
+- `DODO_MONTHLY_PLAN_ID` - Product ID for monthly subscription plan
+- `DODO_YEARLY_PLAN_ID` - Product ID for yearly subscription plan
 
 **Secrets location:**
-- Client: `.env` (VITE_* prefix) and `.env.local` (locally for development)
-- Server: Convex deployment environment (set via Convex dashboard or CLI)
+- Environment-specific: Stored in Convex deployment environment (not in `.env` files)
+- Set via Convex dashboard or CLI for each deployment (dev, staging, production)
 
 ## Webhooks & Callbacks
 
-**Incoming:**
-- `/dodopayments-webhook` (POST)
-  - Handler: `convex/http.ts` via `createDodoWebhookHandler`
+**Incoming Webhooks:**
+- **Dodo Payments** - `POST /dodopayments-webhook` (in `convex/http.ts`)
+  - Handler: `createDodoWebhookHandler` from `@dodopayments/convex`
   - Events handled:
-    - `onSubscriptionActive` - Sets user `planTier` to `pro`
-    - `onSubscriptionRenewed` - Sets user `planTier` to `pro`
-    - `onSubscriptionOnHold` - Sets user `planTier` to `free`
-    - `onSubscriptionCancelled` - Sets user `planTier` to `free`
-    - `onSubscriptionFailed` - Sets user `planTier` to `free`
-    - `onSubscriptionExpired` - Sets user `planTier` to `free`
-  - User lookup: Via email from webhook payload, or via `userId` in metadata
-  - Internal function: `internal.people.billing.setPlanTier` called to update user tier
+    - `onSubscriptionActive` - Sets user `planTier` to "pro"
+    - `onSubscriptionRenewed` - Sets user `planTier` to "pro"
+    - `onSubscriptionOnHold` - Sets user `planTier` to "free"
+    - `onSubscriptionCancelled` - Sets user `planTier` to "free"
+    - `onSubscriptionFailed` - Sets user `planTier` to "free"
+    - `onSubscriptionExpired` - Sets user `planTier` to "free"
+  - Payload parsing: Customer email, metadata (includes `userId` if present)
+  - Fallback: Lookup user by email if `userId` not in metadata
+  - Action: Mutation call to `internal.people.billing.setPlanTier`
 
-**Outgoing:**
-- None detected (no webhooks sent to external services)
-- Notifications are stored internally in `notifications` table
+**Outgoing Webhooks:**
+- None detected
 
-## Real-Time Features
+## OAuth Redirect Flow
 
-**Convex-native:**
-- Live queries via `useQuery` hook
-- Subscription updates pushed by Convex client
-- Optimistic updates via `useMutation`
-
-## Payment Processing
-
-**Dodo Payments:**
-- Library: @dodopayments/convex 0.2.15
-- Integration: Component loaded in `convex/convex.config.ts`
-- Checkout flow:
-  - Frontend calls `api.people.billing.createCheckoutLink` action
-  - Convex action (`convex/people/billing.ts`) creates a checkout session via `checkout()` from `convex/dodo.ts`
-  - Returns `checkoutUrl` for redirect to payment gateway
-  - Session metadata includes `userId` and billing `interval` (monthly/yearly)
-- Billing models: Monthly and yearly subscriptions
-  - Product IDs from `DODO_MONTHLY_PLAN_ID` and `DODO_YEARLY_PLAN_ID` env vars
-  - Plan tier stored in `users.planTier` (free | pro)
-- Access control: `isProUser(ctx, userId)` checks `planTier === "pro"` in `convex/lib/auth.ts`
-- Webhook handling: Updates plan tier on subscription state changes
+**Google OAuth Callback:**
+- Configured via `CONVEX_SITE_URL` env var
+- Handled by `auth.addHttpRoutes(http)` in `convex/http.ts`
+- Routes: `/auth/signin/google`, `/auth/callback/google` (standard Convex Auth routes)
 
 ---
 
-*Integration audit: 2026-09-28*
+*Integration audit: 2026-09-29*

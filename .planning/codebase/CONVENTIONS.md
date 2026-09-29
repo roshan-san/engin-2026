@@ -1,174 +1,302 @@
 ---
-last_mapped_commit: 63da4c34dd0df46fd780733eaefce3afb95f98e3
-last_mapped_at: 2026-09-28
+last_mapped_commit: f0a648da4386d24b5ee96348a96bf0cf757ba15f
+last_mapped_at: 2026-09-29
 ---
 # Coding Conventions
 
-**Analysis Date:** 2026-09-28
+**Analysis Date:** 2026-09-29
 
 ## Naming Patterns
 
 **Files:**
-- React components: PascalCase (e.g., `CyclePage.tsx`, `ActivityDashboard.tsx`)
-- Hooks: camelCase prefixed with `use` (e.g., `useWorkspace.ts`, `useActiveCycle.ts`)
-- Backend queries/mutations: camelCase in `convex/**/*.ts` (e.g., `offers.ts`, `trialCycles.ts`)
-- Utilities and helpers: camelCase (e.g., `auth.ts`, `activity.ts`, `notify.ts`)
-- Test files: same name as tested file with `.test.ts` suffix (co-located), e.g., `offers.test.ts`
+- Components: PascalCase (e.g., `PendingOffers.tsx`)
+- Utilities/hooks: camelCase (e.g., `useContributors.ts`, `cn.ts`)
+- Feature organization: lowercase with hyphens (e.g., `src/features/hiring/trialCycles/`)
+- Constants files: `constants.ts` at feature level
+- Hooks: `use` prefix (e.g., `useTrialCycle.ts`, `useUpgrade.ts`)
+- Test files: `*.test.ts` co-located next to code
 
 **Functions:**
-- All functions: camelCase (e.g., `requireUserId`, `notifyFounders`, `fillRoleIfFull`)
-- Helper functions often prefixed with verbs: `require*`, `get*`, `load*`, `fetch*`, `set*`
-- Example patterns: `requirePendingOffer`, `loadPublicUser`, `getMembership`, `addCycleMember`
+- camelCase for all functions (backends and frontend)
+- Async handler functions use `async` keyword explicitly
+- Private helpers preceded with `_` if needed (rarely used)
+- Query/mutation handlers: semantic names matching domain (e.g., `listMine`, `accept`, `decline`)
 
 **Variables:**
-- Local variables and parameters: camelCase (e.g., `userId`, `startupId`, `membership`)
-- Booleans often prefixed: `is*`, `has*`, `can*` (e.g., `isParticipant`, `hasStartups`, `isFounder`)
-- Destructured from API responses use the field name as-is
+- camelCase for all variables and parameters
+- Constants: UPPER_SNAKE_CASE (e.g., `MAX_TRIAL_PARTICIPANTS`, `INVITE_TTL_MS`)
+- Boolean variables use `is` or `has` prefix (e.g., `isParticipant`, `hasFailed`)
+- Type variables use `T`, `U` for generics in constraints
 
 **Types:**
-- PascalCase for all types and interfaces (e.g., `Id<"users">`, `Doc<"offers">`, `MutationCtx`, `QueryCtx`)
-- Discriminated union types use `kind` field with literal strings (e.g., `kind: "passed_with_offer" | "passed" | "not_passed"`)
-
-**Constants:**
-- UPPER_SNAKE_CASE in `lib/limits.ts` (backend) and `constants.ts` (frontend)
-- Time constants: `HOUR`, `DAY` defined as `60 * 60 * 1000` and `24 * HOUR`
-- Example: `MAX_USER_OFFERS`, `MAX_LISTED_TRIALS`, `FREE_ACTIVE_TRIAL_APPLICATIONS`
-- Domain term constants in feature `constants.ts` files
+- PascalCase for all type names (interfaces, types, classes)
+- Union types describe intent (e.g., `"passed_with_offer" | "passed" | "not_passed"`)
+- Type imports: `import type { SomeType }` (explicit type syntax)
+- Inferred types: `type X = Infer<typeof someValidator>`
 
 ## Code Style
 
 **Formatting:**
-- Tool: Biome v2.5.14
+- Biome v2.5.14 is the formatter (`pnpm format`)
 - Indentation: tabs (configured in `biome.json`)
-- Quotes: double quotes (JavaScript formatter setting)
-- Line organization: biome organizes imports via `assist.actions.source.organizeImports`
+- Quote style: double quotes (enforced by Biome)
+- Line breaks: no hard limit enforced, but keep components under ~250 lines
 
 **Linting:**
-- Biome recommended rules enabled
-- Exceptions: shadcn/ui components (`src/components/ui/`) have disabled a11y rules (`useSemanticElements`, `useKeyWithClickEvents`) and `suspicious.noArrayIndexKey`
-- Both frontend and backend included in biome scope (except generated files)
+- Biome v2.5.14 for linting (`pnpm lint`)
+- Recommended rules enabled in `biome.json`
+- Shadcn UI primitives in `src/components/ui/` have overrides: a11y and noArrayIndexKey disabled
+- Run `pnpm check` before committing (combines lint + format + TypeScript check)
 
 **TypeScript:**
-- Strict mode enabled in both `tsconfig.json` (src) and `convex/tsconfig.json`
-- No `any` types; proper context types: `QueryCtx`, `MutationCtx`, `ActionCtx` for Convex functions
-- Path aliases in use: `~/*` → `src/*`, `@convex/*` → `convex/*`
-- Type inference preferred where clear; explicit types on IDs and document types
+- Strict mode enabled (`strict: true`)
+- No unused locals or parameters: `noUnusedLocals` and `noUnusedParameters`
+- ES2022 target
+- Module resolution: bundler
+- Path aliases configured: `~/*` → `src/*`, `@convex/*` → `convex/*`
 
 ## Import Organization
 
 **Order:**
-1. Convex framework imports (`convex/values`, `convex/server`, `./_generated/server`, `./_generated/api`)
-2. Type imports from Convex (`type { Id }`, `type { Doc }`, `type { MutationCtx }`)
-3. Internal library imports (from `../lib/*`, `../schema`)
-4. React and external packages
-5. Local feature imports (same feature path)
+1. External libraries (React, Convex, UI libs)
+2. Type imports from external: `import type { SomeType }`
+3. Convex API and types: `import { api } from "@convex/_generated/api"`
+4. Path aliases (`~/`, `@convex/`)
+5. Relative imports (rare, use path aliases instead)
 
 **Path Aliases:**
-- Backend: `@convex/*` maps to `convex/` (e.g., `@convex/_generated/api`)
-- Frontend: `~/*` maps to `src/` (e.g., `~/features/app/hooks/useWorkspace`)
-- Relative imports used sparingly; prefer path aliases for clarity
+- Frontend: `~/` maps to `src/`, so `import { Button } from "~/components/ui/button"`
+- Backend: `@convex/` maps to `convex/`, so `import { api } from "@convex/_generated/api"`
+- Use aliases instead of relative imports (improves refactoring)
 
-**Auto-organization:**
-- Biome's `organizeImports` is enabled; imports are auto-sorted on format
-- Never manually organize; run `pnpm check` to apply formatter
+**Auto-organize:** Biome's `organizeImports` runs on save (configured in `biome.json`)
 
 ## Error Handling
 
 **Patterns:**
-- Every Convex function starts with authorization check: `requireUserId(ctx)`, then more specific checks like `requireMembership` or `requireFounderMembership`
-- Errors are thrown as `Error()` with clear, actionable messages (e.g., "Offer not found", "This Role is closed", "Not authenticated")
-- Function results with predicates: helpers like `requirePendingOffer` throw if condition fails; getters like `getMembership` return null if not found
-- No silent failures; all error paths explicit
+- Simple string error messages: `throw new Error("Offer not found")`
+- Validate before use: Helper functions like `requireUserId(ctx)`, `requirePendingOffer(ctx, id)` throw on invalid state
+- Convex server errors are parsed: `error.message.replace(/^\[.*?]\s*/, "")` removes framework prefix
+- Frontend catches with try/catch: `catch (error) { toast.error(toErrorMessage(error, fallback)) }`
+- No thrown objects or complex error classes — keep it simple
+- Error messages are user-facing; avoid leaking implementation details
 
-**Validation:**
-- Convex function `args` always validated via `v.object({ ... })` in `args` parameter
-- Text inputs validated with `requireText(input, fieldName)` helper which trims and checks non-empty
-- Numbers constrained: `Math.min`, `Math.max`, `Math.floor` applied as needed before insert
-- Dates checked: end times validated to be after start times
+**Example:**
 
-**Authorization checks (in order):**
-1. `requireUserId(ctx)` - get authenticated user ID
-2. `requireMembership(ctx, startupId, userId)` - check team access
-3. `requireFounderMembership` - check founder-specific access
-4. `requireCycleAccess` / `requireTrialAccess` - check operation-specific access
-5. Custom predicates: e.g., `if (offer.status !== "pending") throw new Error(...)`
+```typescript
+// Backend (convex/hiring/offers.ts)
+async function requirePendingOffer(
+	ctx: MutationCtx,
+	offerId: Id<"offers">,
+): Promise<Doc<"offers">> {
+	const offer = await ctx.db.get(offerId);
+	if (!offer) {
+		throw new Error("Offer not found");
+	}
+	if (offer.status !== "pending") {
+		throw new Error("This Offer is no longer pending");
+	}
+	return offer;
+}
+
+// Frontend (PendingOffers.tsx)
+async function respond(offerId: Id<"offers">, isAccepting: boolean) {
+	setPendingId(offerId);
+	try {
+		await (isAccepting ? accept({ offerId }) : decline({ offerId }));
+		toast.success(isAccepting ? "Welcome to the team" : "Offer declined");
+	} catch (error) {
+		toast.error(toErrorMessage(error, "Could not respond to the Offer"));
+	} finally {
+		setPendingId(null);
+	}
+}
+```
 
 ## Logging
 
-**Framework:** `console` (Convex runtime compatible)
+**Approach:**
+- Activity logging via `logActivity(ctx, args)` for domain events (`convex/lib/activity.ts`)
+- Notifications via `notify(ctx, notification)` and `notifyFounders(ctx, startupId, notification)` for user-facing messages
+- No console logging in production code (use notifications and activity instead)
+- Activity records are append-only: `activity.ts` schema, logged at mutation call sites
 
-**Patterns:**
-- Minimal logging in production code
-- Activity logging via `logActivity()` helper (`lib/activity.ts`) for audit trail
-- Notifications via `notify()` and `notifyFounders()` for user-facing events
-- No debug logs in main flow; use test assertions instead
+**When to Log:**
+- Member joins: `logActivity` with `kind: "member_joined"`
+- Offer accepted/declined: `logActivity` with `kind: "offer_accepted"` or similar
+- Notifications: same handler that calls `logActivity`, typically with `notifyFounders`
+
+**Example:**
+
+```typescript
+// convex/hiring/offers.ts
+await logActivity(ctx, {
+	startupId: offer.startupId,
+	kind: "member_joined",
+	actorUserId: offer.userId,
+	summary: `${person?.name ?? "Someone"} joined the team`,
+});
+
+await notifyFounders(ctx, offer.startupId, {
+	kind: "offer",
+	title: `${person?.name ?? "Someone"} accepted your Offer`,
+	href: await startupHref(ctx, offer.startupId, "team"),
+});
+```
 
 ## Comments
 
 **When to Comment:**
-- Explain *why* a decision was made, not *what* the code does
-- ADR (Architecture Decision Record) references: "ADR 000N" cites `docs/adr/` decisions
-- Non-obvious domain logic: e.g., comments on why a field is stored or calculated a certain way
-- Avoid stating obvious code: don't comment `// increment counter`
+- Explain *why*, not *what*: the code shows what it does
+- Complex algorithm: link to design doc or ADR (e.g., "ADR 0001: ...")
+- Non-obvious business logic: "Backfills defaults for accounts created before field existed"
+- Edge cases: "Co-founders have equal powers, so Founder-facing news goes to all of them"
+- Temporary workarounds: mark with `// TODO: ...` or `// FIXME: ...`
 
 **JSDoc/TSDoc:**
-- Used on helper functions with non-obvious signatures
-- Example from code: `/** Append-only Activity record, alongside notify() at the same call sites. */`
-- Single-line JSDoc for simple helpers; multi-line for complex behaviors
-- Frontend: minimal JSDoc; focus on hooks returning clear return objects
+- Function exports: brief one-liner explaining purpose
+- No need to document parameters/return types in TypeScript (types are self-documenting)
+- Example:
+
+```typescript
+/** Every Startup the caller belongs to, for the switcher and palette (SHELL-07). */
+export const listMemberships = query({
+	args: {},
+	handler: async (ctx) => {
+		// ...
+	},
+});
+```
 
 ## Function Design
 
-**Size:** Target ~50 lines per function; ~250 lines per file maximum
+**Size:** Keep functions under ~50 lines; break complex logic into helpers
 
 **Parameters:**
-- Use typed objects for multiple params, not positional arguments
-- Example: `handler: async (ctx, args)` where `args` is `{ userId: Id<"users">, offerId: Id<"offers"> }`
-- Optional params grouped in a single `options` object (e.g., `options: { except?: Id<"users"> }`)
+- Destructured objects preferred over positional args (easier to add fields later)
+- Backend: context (`ctx`) always first, then `args`
+- Frontend: hooks return objects with getters/setters, not tuples
 
 **Return Values:**
-- Queries return unambiguous data structures: arrays, objects, or null
-- Mutations return single IDs or void; side effects via `notify()` and `logActivity()`
-- Helpers return typed values; throw on validation failure rather than returning null for errors
+- Single value or simple object (avoid tuples for frontend hooks)
+- Promise<void> for side-effect functions (notifications, activity)
+- Promise<Result | null> for data queries
 
-**Async/await:**
-- All database operations are `await`ed
-- Promises collected with `await Promise.all()` for parallel work
-- Example: building enriched results by mapping and awaiting lookups
+**Example:**
+
+```typescript
+// Frontend hook (src/features/discover/hooks/useContributors.ts)
+export function useContributors() {
+	const [skill, setSkill] = useState("");
+	const [location, setLocation] = useState("");
+	const contributors = useQuery(api.teams.explore.contributors, {
+		skill: skill || undefined,
+		location: location || undefined,
+	});
+
+	return {
+		skill,
+		setSkill,
+		location,
+		setLocation,
+		contributors,
+	};
+}
+
+// Backend query (convex/teams/startups.ts)
+export const listMemberships = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await requireUserId(ctx);
+		// ...
+		return memberships.map((entry) => ({
+			startup: {
+				_id: entry.startup._id,
+				name: entry.startup.name,
+				slug: entry.startup.slug,
+			},
+		}));
+	},
+});
+```
 
 ## Module Design
 
 **Exports:**
-- One exported function per file preferred; exports named and explicit
-- Example: `export const listMine = query({ ... })`
-- Helper functions in `lib/` prefixed with domain: `lib/hiring/offers.ts`, `lib/work/cycles.ts`
+- Named exports for functions (`export const myFunction = ...`)
+- Default exports not used (for clarity and easier refactoring)
+- Type exports: `export type MyType = ...`
 
 **Barrel Files:**
-- None used; imports are direct to specific files
-- Path aliases make this clean: `api.teams.startups.getWorkspace` vs manual barrel re-exports
+- Not used; import directly from module files
+- Use path aliases to keep imports clean despite depth
 
-**Backend Structure:**
-- Public API: `convex/{people,teams,hiring,work}/*.ts` (exported as `api.*`)
-- Internal helpers: `convex/lib/{domain}/*.ts` (imported locally, not exposed)
-- Cross-cutting: `convex/lib/{auth,notify,activity,limits,text}.ts`
-- Schema and infra: `convex/schema.ts`, `convex/auth.ts`, `convex/http.ts`
+**Constants:**
+- Place magic numbers in `constants.ts` or `lib/limits.ts`
+- Database limits: `convex/lib/limits.ts` (PLAN_LIMITS, MAX_TRIAL_PARTICIPANTS, etc.)
+- Feature constants: `src/features/<domain>/<feature>/constants.ts` (e.g., `ROLE_TYPES`)
 
-**Frontend Structure:**
-- Features: `src/features/{domain}/{feature}/` containing `ui/`, `components/`, `hooks/`, `schemas/`, `constants.ts`
-- Shared: `src/components/ui/` (shadcn primitives), `src/components/shared/` (cross-feature), `src/components/globals/` (router-level)
-- Utilities: `src/lib/` for pure helpers, date formatting, validation, username, initials
+**Example:**
 
-## Tailwind & CSS
+```typescript
+// src/features/hiring/roles/constants.ts
+export const ROLE_TYPES = [
+	{ value: "engineering", label: "Engineering" },
+	{ value: "design", label: "Design" },
+	// ...
+] as const;
 
-**Color tokens:**
-- Semantic colors only: `bg-background`, `text-muted-foreground`, `border-input`
-- No arbitrary values (no `bg-[#fff]` or `text-[14px]`)
-- Tailwind v4 with custom semantic tokens for dark mode support
+// convex/lib/limits.ts
+export const MAX_TRIAL_PARTICIPANTS = 10;
+export const PLAN_LIMITS: { free: PlanLimits; pro: PlanLimits } = {
+	free: {
+		capacity: 5,
+		openRoles: 1,
+		// ...
+	},
+	// ...
+};
+```
 
-**Responsive design:**
+## Component Patterns
+
+**Functional Components:**
+- React 19 functional components with hooks only
+- No class components
+- Component size: keep under ~250 lines (break into smaller components or extract hooks)
+
+**Styling:**
+- Tailwind v4 classes only
+- Semantic color tokens: `bg-background`, `text-muted-foreground`, `border-border`
+- No arbitrary values (e.g., no `w-[123px]`; use semantic sizes from theme)
 - Mobile-first: `flex-col md:flex-row`, `grid-cols-1 md:grid-cols-2`
-- Build at mobile then add breakpoints, never desktop-first
+
+**Form Validation:**
+- Zod validators in `features/<domain>/<feature>/schemas/`
+- Use `validate(schema, input)` to check form data before submit
+- Returns `{ ok: true; data: T }` or `{ ok: false; message: string }`
+
+**Example:**
+
+```typescript
+// src/lib/validation.ts
+export function validate<Schema extends z.ZodType>(
+	schema: Schema,
+	input: unknown,
+): ValidationResult<z.infer<Schema>> {
+	const result = schema.safeParse(input);
+
+	if (result.success) {
+		return { ok: true, data: result.data };
+	}
+
+	return {
+		ok: false,
+		message: result.error.issues[0]?.message ?? "Please check your input",
+	};
+}
+```
 
 ---
 
-*Convention analysis: 2026-09-28*
+*Convention analysis: 2026-09-29*

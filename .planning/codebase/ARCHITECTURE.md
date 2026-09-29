@@ -1,320 +1,300 @@
 ---
-last_mapped_commit: 63da4c34dd0df46fd780733eaefce3afb95f98e3
-last_mapped_at: 2026-09-28
+last_mapped_commit: f0a648da4386d24b5ee96348a96bf0cf757ba15f
+last_mapped_at: 2026-09-29
 ---
-<!-- refreshed: 2026-09-28 -->
+<!-- refreshed: 2026-09-29 -->
 
 # Architecture
 
-**Analysis Date:** 2026-09-28
+**Analysis Date:** 2026-09-29
 
 ## System Overview
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         Frontend Shell Layer                                 │
-│  `src/features/app/layout/AppShell` - Sidebar, header, startup switcher,    │
-│  navigation bar, notification bell, command palette (TanStack Router)       │
-├────────────────────┬────────────────────┬────────────────────────────────────┤
-│   People Domain    │   Teams Domain     │   Hiring Domain                    │
-│ `src/features/     │ `src/features/     │ `src/features/hiring/`             │
-│  people/`          │  teams/`           │ - roles, trialCycles,              │
-│ - auth, profile    │ - startup          │   opportunities, offers, messages  │
-│                    │   (public/ws)      │                                    │
-│                    │ - team mgmt        │                                    │
-└────────────────────┴────────────────────┴────────────────────────────────────┘
-         │                    │                         │
-         │                    │                         │
-         ▼                    ▼                         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│              Work Domain                                                     │
-│         `src/features/work/`                                                │
-│      - cycles (Cycle kanban)                                                │
-│      - pulses (Pulse kanban)                                                │
-│      - My Pulses (aggregate across Startups/Trials)                         │
-└─────────────────────────────────────────────────────────────────────────────┘
-         │
-         │ useQuery(api.<domain>.<file>.<fn>, args)
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         Convex Backend Layer                                 │
-│                      (Database, Auth, RPC)                                  │
-├───────────────────┬──────────────────┬──────────────────┬───────────────────┤
-│  convex/people/   │ convex/teams/    │ convex/hiring/   │ convex/work/      │
-│ - users.ts        │ - startups.ts    │ - trialCycles.ts │ - cycles.ts       │
-│ - billing.ts      │ - team.ts        │ - roles.ts       │ - pulses.ts       │
-│                   │ - invites (lib/)  │ - offers.ts      │ - boards.ts (lib/)│
-│                   │                  │ - verdicts.ts    │                   │
-│                   │                  │ - applications.ts│                   │
-│                   │                  │ - challenges.ts  │                   │
-│                   │                  │ - messages.ts    │                   │
-└───────────────────┴──────────────────┴──────────────────┴───────────────────┘
-         │
-         ├─→ convex/lib/auth.ts (requireUserId, requireMembership, etc.)
-         ├─→ convex/lib/teams/membership.ts (role checks)
-         ├─→ convex/lib/hiring/trialCycles.ts (trial access + transitions)
-         ├─→ convex/lib/work/cycles.ts (cycle access)
-         ├─→ convex/lib/work/pulses.ts (pulse authorization)
-         ├─→ convex/lib/notify.ts (notifications)
-         ├─→ convex/lib/activity.ts (append-only events)
-         └─→ convex/lib/reputation/score.ts (reputation calculation)
+┌─────────────────────────────────────────────────────────────────┐
+│                    Browser / SPA (React 19)                      │
+│            Routes + Features (TanStack Router)                   │
+│  `src/routes/`, `src/features/<domain>/<feature>/`              │
+├──────────────────┬──────────────────┬──────────────────┬────────┤
+│  Teams Domain    │  Hiring Domain   │  Work Domain     │ People │
+│  `src/features/` │  `src/features/` │  `src/features/` │ Domain │
+└────────┬─────────┴────────┬─────────┴────────┬────────┴────────┘
+         │                  │                   │
+         ▼                  ▼                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│        Convex Backend API Layer                                  │
+│        `convex/{people,teams,hiring,work}/*.ts`                 │
+│  - Query/Mutation functions with authorization                  │
+│  - Time-based scheduling (ctx.scheduler)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  Shared Server Logic (`convex/lib/`)                            │
+│  - Auth (lib/auth.ts)                                           │
+│  - Membership (lib/teams/membership.ts)                         │
+│  - Cycle Access (lib/work/cycles.ts)                            │
+│  - Pulse Operations (lib/work/pulses.ts)                        │
+│  - Trial Cycles (lib/hiring/trialCycles.ts)                     │
+│  - Notifications (lib/notify.ts)                                │
+│  - Activity Logging (lib/activity.ts)                           │
+│  - Score Calculation (lib/reputation/score.ts)                  │
+├─────────────────────────────────────────────────────────────────┤
+│  Framework / Infrastructure                                      │
+│  - `convex/schema.ts` - Datamodel & validators                  │
+│  - `convex/http.ts` - HTTP routes, webhooks                     │
+│  - `convex/auth.ts` - Convex Auth setup                         │
+│  - `convex/dodo.ts` - Billing provider config                   │
+│  - `convex/notifications.ts` - Notification API                 │
+└─────────────────────────────────────────────────────────────────┘
          │
          ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            Database Layer                                    │
-│              convex/schema.ts (Table definitions)                            │
-│  - users, startups, memberships, invites (teams)                            │
-│  - roles, trialCycles, applications, entries, verdicts, offers (hiring)     │
-│  - challenges, threads, submissions, announcements (trial work)             │
-│  - cycles, cycleMembers, pulses, boards (internal work)                     │
-│  - notifications, activity (cross-cutting)                                  │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│              Convex Database                                     │
+│  Tables: users, startups, memberships, pulses, cycles,          │
+│          trialCycles, roles, offers, applications, ...          │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Responsibilities
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| AppShell | Header, sidebar nav, startup switcher, user menu, notifications, score display | `src/features/app/layout/AppShell.tsx` |
-| AppNav | Navigation between domains and personal areas (Inbox, My Pulses, Threads) | `src/features/app/layout/AppNav.tsx` |
-| Auth Provider | Convex auth wrapper with Google sign-in, session management | `src/features/people/auth/providers/AppProviders.tsx` |
-| Profile Pages | Public profile, editable profile, proof of work, reputation display | `src/features/people/profile/` |
-| Startup Pages | Public Pitch, workspace dashboard (Roles, Trials, Activity) | `src/features/teams/startup/{public,workspace}/` |
-| Trial Cycle UI | Trial setup, Participant Boards (kanban), Challenges, Threads, Verdicts | `src/features/hiring/trialCycles/` |
-| Cycle UI | Cycle kanban, Pulse management, review workflow | `src/features/work/cycles/` |
-| Pulse Board | My Pulses aggregate view, kanban for Cycle/Trial Pulses | `src/features/work/pulses/` |
-| Discover | Public browse of open Trials, Startups, Contributors | `src/features/marketing/explore/` |
-| Auth API | User creation, OAuth tokens, session refresh | `convex/people/users.ts` |
-| Startup API | CRUD, publishing Pitch, workspace load | `convex/teams/startups.ts` |
-| Trial Cycle API | Create, start (scheduler), close with Verdicts, list, access control | `convex/hiring/trialCycles.ts` |
-| Pulse API | CRUD, status transitions, assignment, verification | `convex/work/pulses.ts` |
-| Cycle API | CRUD, member management, auto-start (scheduler) | `convex/work/cycles.ts` |
-| Membership Logic | Role checks, Founder/Member access, Invite acceptance | `convex/lib/teams/membership.ts` |
-| Notification Logic | Create notifications (kind: invite, pulse, offer, etc.), mark read | `convex/lib/notify.ts`, `convex/notifications.ts` |
-| Score Calculation | Trial Cycle outcomes → Score recompute, weights and history | `convex/lib/reputation/score.ts` |
-| Activity Log | Append-only Startup events (member_joined, cycle_started, pulse_verified, etc.) | `convex/lib/activity.ts` |
+| **Routes** | URL → component mapping, params extraction | `src/routes/**/*.tsx` |
+| **Pages** | Page-level UI layout and composition | `src/features/<domain>/<feature>/ui/` |
+| **Components** | Reusable UI primitives and domain widgets | `src/components/`, `src/features/<domain>/<feature>/components/` |
+| **Hooks** | Data fetching, mutations, business logic | `src/features/<domain>/<feature>/hooks/` |
+| **Shell** | Top-level layout, sidebar, account menu | `src/shell/` |
+| **Public Functions** | Query/Mutation endpoints exposed to frontend | `convex/{people,teams,hiring,work}/*.ts` |
+| **Lib (Backend)** | Shared authorization, data access, side effects | `convex/lib/` |
+| **Schema** | Database tables, types, validators | `convex/schema.ts` |
 
 ## Pattern Overview
 
-**Overall:** Domain-Grouped Mirrored Architecture
+**Overall:** Domain-Driven Design with layered backend and feature-scoped frontend.
 
 **Key Characteristics:**
-- Frontend domains (`src/features/`) mirror backend domains (`convex/`)
-- Thin routes delegate to feature pages; pages are composed of hooks + components
-- Every backend function starts with auth (`requireUserId`), then context-specific authorization
-- URL carries the Startup context (`/app/startup/$slug/...`); personal areas (Inbox, My Pulses) span all Startups
-- Kanban-driven UI for both internal work (Cycles) and trial work (Participant Boards)
-- Append-only Activity log for audit trail and Public Stats
-- Time-based transitions (Trial Cycle start/end, Cycle auto-start) scheduled via `ctx.scheduler`
-- All data queries use indexed `withIndex()` calls, no unindexed filters
+- **Multi-domain organization**: People (auth, profiles, reputation), Teams (startups, invites, members), Hiring (roles, trials, applications, offers), Work (cycles, pulses, boards)
+- **Authorization at every layer**: Every query/mutation validates user, then checks context-specific access (membership, cycle access, pulse ownership)
+- **Thin routes, thick hooks**: Route files delegate to feature components; hooks encapsulate query/mutation logic
+- **Convex as complete backend**: Database, auth, functions, scheduling, and webhooks all through Convex
+- **Multi-startup workspace**: Users switch between startups via `users.activeStartupId`
 
 ## Layers
 
-**Presentation (Frontend - React):**
-- Purpose: UI rendering, user interaction, form handling, state management via hooks
-- Location: `src/`
-- Contains: Page components (`ui/`), reusable components, hooks, validation schemas
-- Depends on: Convex API (`@convex/_generated/api`), shadcn/ui primitives, TanStack Router
-- Used by: Browser (Vite SPA)
+**Frontend Routes (`src/routes/`):**
+- Purpose: Map URLs to page components, extract and validate URL parameters
+- Location: `src/routes/` (file-based routing via TanStack Router plugin)
+- Contains: Route definitions that `createFileRoute` and render feature pages
+- Depends on: `src/features/` for page components
+- Used by: Browser navigation
 
-**API Gateway (Convex Functions):**
-- Purpose: Authentication, authorization, business logic, database transactions
-- Location: `convex/<domain>/` (public) and `convex/lib/` (internal)
-- Contains: Query/Mutation handlers, validation, error handling
-- Depends on: Convex database, scheduler, auth system, notification/activity systems
-- Used by: Frontend via RPC calls to `api.<domain>.<file>.<fn>`
+**Frontend Features (`src/features/`):**
+- Purpose: Domain-specific UI, logic, and data fetching
+- Location: `src/features/<domain>/<feature>/` (mirrors backend domain structure)
+- Contains: `ui/` (pages), `components/`, `hooks/` (thin wrappers over `useQuery`/`useMutation`), `schemas/` (zod), `constants.ts`
+- Depends on: `convex/_generated/api` for backend functions, `lib/` for helpers
+- Used by: Routes
 
-**Authorization Layer:**
-- Purpose: Context-specific access control (membership, roles, trial participation, cycle membership)
-- Location: `convex/lib/teams/membership.ts`, `convex/lib/hiring/trialCycles.ts`, `convex/lib/work/cycles.ts`, `convex/lib/work/pulses.ts`
-- Contains: Helper functions that check user role/membership before allowing operations
-- Pattern: Thrown errors block execution; successful return signals authorization
+**Frontend Shell (`src/shell/`):**
+- Purpose: App-wide UI chrome, navigation, and user context
+- Location: `src/shell/`
+- Contains: `layout/` (AppShell, AuthLayouts), `sidebar/`, `account/`, `command/` (command palette), `startup/` (workspace switching)
+- Depends on: Hooks to read current user, focused startup, notifications
+- Used by: Root route and authenticated layout
 
-**Side Effects (Cross-Domain):**
-- Purpose: Notifications, event logging, reputation updates
-- Location: `convex/lib/notify.ts`, `convex/lib/activity.ts`, `convex/lib/reputation/`
-- Contains: Helper functions called by domain functions
-- Dependencies: Every domain may call `notify()` or `logActivity()`
+**Frontend Lib (`src/lib/`):**
+- Purpose: Cross-domain utilities (dates, validation, initials, username formatting, Convex client setup)
+- Location: `src/lib/`
+- Depends on: Nothing in src/
+- Used by: All features and components
 
-**Database Layer:**
-- Purpose: Schema definition, indexes, persistence
-- Location: `convex/schema.ts`
-- Contains: Table definitions for users, startups, memberships, pulses, cycles, trials, notifications, activity
-- Accessed via: `ctx.db.query()`, `ctx.db.get()`, `ctx.db.insert()`, `ctx.db.patch()`, `ctx.db.delete()`
+**Frontend Components (`src/components/`):**
+- Purpose: Shared UI primitives
+- Location: `src/components/ui/` (shadcn), `src/components/shared/` (domain components), `src/components/globals/` (router-level screens)
+- Depends on: Tailwind, Radix UI
+- Used by: Features and pages
+
+**Backend Queries & Mutations (`convex/{people,teams,hiring,work}/`):**
+- Purpose: Public API surface for frontend
+- Location: `convex/<domain>/<file>.ts` (e.g., `convex/teams/startups.ts`, `convex/work/pulses.ts`)
+- Contains: Named exports for `query()` and `mutation()` handlers
+- Depends on: `convex/lib/` for authorization and logic
+- Called by: Frontend hooks via `useQuery()` and `useMutation()`
+
+**Backend Lib (`convex/lib/`):**
+- Purpose: Shared authorization, data access patterns, side effects
+- Location: `convex/lib/`
+- Contains: Domain-specific (`lib/teams/`, `lib/hiring/`, `lib/work/`, `lib/people/`, `lib/reputation/`) and cross-cutting (`auth.ts`, `notify.ts`, `activity.ts`, `limits.ts`, `text.ts`)
+- Key files:
+  - `lib/auth.ts`: `requireUserId()`, `isProUser()`, profile initialization
+  - `lib/teams/membership.ts`: `requireMembership()`, `requireFounderMembership()`, `getMembership()`
+  - `lib/work/cycles.ts`: `requireCycleAccess()`, cycle loading
+  - `lib/work/pulses.ts`: `requirePulse()`, `requireSubmittedPulse()`, `requireWorkablePulse()`, pulse transformation
+  - `lib/hiring/trialCycles.ts`: `requireTrialAccess()`, trial loading and transitions
+  - `lib/notify.ts`: `notify()`, `notifyFounders()` (side effect)
+  - `lib/activity.ts`: `logActivity()` (side effect)
+  - `lib/reputation/score.ts`: `refreshUserScore()` (recomputes reputation)
+- Depends on: `convex/schema.ts`, Convex runtime
+- Used by: Public function handlers
+
+**Backend Schema & Config (`convex/`):**
+- Purpose: Database schema, types, validators, HTTP routes, auth config
+- Location: `convex/schema.ts`, `convex/http.ts`, `convex/auth.ts`, `convex/auth.config.ts`, `convex/convex.config.ts`, `convex/dodo.ts`, `convex/migrations.ts`, `convex/notifications.ts`
+- Key exports:
+  - `schema.ts`: `defineTable()` for all tables, validators for enums (planTier, memberRole, notificationKind, pulseStatus, etc.)
+  - `http.ts`: HTTP routes for auth (via Convex Auth) and Dodo Payments webhook handler
+  - `dodo.ts`: Billing component configuration for Convex integration
+  - `notifications.ts`: Public query `listNotifications`, `markAsRead`, etc.
 
 ## Data Flow
 
-### Primary Request Path: Work a Cycle's Pulses
+### Primary Request Path (Startup Workspace)
 
-1. `/app` (`src/routes/app/index.tsx`) renders `CyclePage` (`src/features/work/cycles/ui/CyclePage.tsx`) for the active Startup. `/app/work` just redirects to `/app`.
-2. `useCyclePulses` (`src/features/work/cycles/hooks/useCyclePulses.ts`) calls `useQuery(api.work.pulses.listForCycle, { cycleId })`.
-3. `listForCycle` (`convex/work/pulses.ts`) calls `requireUserId`, then `requireCycleAccess` (`convex/lib/work/cycles.ts`, Founder or Cycle Member). It reads `pulses` via the `by_cycle` index and attaches assignees.
-4. Moving a card calls `api.work.pulses.setStatus`:
-   - It authorizes through `requireWorkablePulse` (`convex/lib/work/pulses.ts`), the shared seam for Cycle and Board Pulses.
-   - A Cycle Pulse can't be set to `done` (only a Founder's `verify` can do that). Moving it to `review` calls `notifyFounders()`.
-5. The Founder's `api.work.pulses.verify` / `reject` go through `requireSubmittedPulse`. `verify` logs `pulse_verified` via `logActivity()`.
-6. Convex's reactive queries push the new state to every subscribed client. The client has no manual refetch or store.
+1. User navigates to `/s/$slug` (authenticated route) → `src/routes/_shell/_authed/s/$slug/route.tsx`
+2. Route calls `useWorkspace(slug)` hook
+3. Hook calls `api.teams.startups.getWorkspace({ slug })` (query) → `convex/teams/startups.ts`
+4. Backend:
+   - `getWorkspace()` calls `requireUserId(ctx)` → checks `users` table via auth token
+   - Calls `getMembership()` → looks up `memberships` table with `withIndex("by_startup_and_user")`
+   - Loads startup from `startups` table, sets `users.activeStartupId` if first access
+   - Returns startup + membership + plan info
+5. Frontend receives workspace data, renders `AppShell` with startup context
+6. Child routes render feature pages (cycles, pulses, hiring, etc.)
 
-### Secondary: Trial Cycle Starts (Time-Based)
+### Pulse Creation (Work Domain)
 
-1. `api.hiring.trialCycles.create` (`convex/hiring/trialCycles.ts`) inserts the Trial Cycle with `status: "open"` and schedules `internal.hiring.trialCycles.start` with `ctx.scheduler.runAt(args.startsAt, …)`.
-2. `start` (internal mutation) returns early unless the status is still `open`, which makes it safe after a cancel. It then calls `startTrial` (`convex/lib/hiring/trialCycles.ts`), which:
-   - rejects still-pending (`applied`) applications and notifies those applicants
-   - cancels the Trial Cycle and notifies Founders if `participantCount === 0`
-   - otherwise sets `active`, seeds each Participant's Board from the Challenges (`seedBoards` in `convex/lib/hiring/challenges.ts`) and notifies Participants
-3. `start` logs `trial_cycle_started`.
-4. Participants open `/app/trials/$trialCycleId` (`TrialDetailPage`). `PulseBoard` (`src/features/work/pulses/components/PulseBoard.tsx`) reads `api.work.pulses.listBoard`, which uses `requireBoardAccess` and the `by_trial_and_participant` index. Board Pulses skip the `review` step.
+1. User fills form on Cycle page → `src/features/work/cycles/pages/CyclePage.tsx`
+2. Page calls `useMutatePulse()` hook with pulse data and cycleId
+3. Hook calls `api.work.pulses.create(pulseData)` (mutation) → `convex/work/pulses.ts`
+4. Backend:
+   - `create()` calls `requireUserId(ctx)` → gets current user
+   - Calls `requireCycleAccess(ctx, cycleId, userId)` → checks membership + cycle membership
+   - Validates pulse fields (title, assignee, etc.)
+   - Inserts into `pulses` table with `cycleId`, `createdByUserId`, status `todo`
+   - Calls `logActivity()` to append event to `activity` table
+   - Returns created pulse
+5. Frontend receives pulse, updates local cache, renders on board
 
-### Tertiary: Verdicts and Score
+### Trial Cycle Verdict & Offer (Hiring Domain)
 
-1. A Founder closes an active Trial Cycle with a Verdict per Participant (`passed_with_offer` | `passed` | `not_passed`): `api.hiring.trialCycles.close` → `closeWithVerdicts` (`convex/lib/hiring/verdicts.ts`).
-2. In one transaction `closeWithVerdicts`:
-   - sets the Trial Cycle to `closed`
-   - marks each Participant's application `completed` with its Verdict
-   - inserts a `pending` Offer for `passed_with_offer`, which requires the Role to still be open
-   - calls `refreshUserScore` and notifies the Participant
-3. `refreshUserScore` (`convex/lib/reputation/score.ts`) loads evidence: memberships (Startups), passed Trial Cycles, left Trial Cycles and accepted Offers, each read with a capped `.take()`. It applies the weights in `convex/lib/reputation/scoreWeights.ts` and patches `users.score`.
-4. The UI shows the new score through `api.people.users.getMe` in `ScoreChip` (`src/features/app/ui/ScoreChip.tsx`).
+1. Founder navigates to trial → `src/routes/.../trials/$trialCycleId.tsx`
+2. Component renders trial participants + their work
+3. Founder submits verdict for participant → calls `api.hiring.verdicts.submit()`
+4. Backend:
+   - `submit()` validates access via `requireTrialAccess()` (founder check)
+   - Creates entry in `applications` table with verdict (passed/not_passed/passed_with_offer)
+   - If `passed_with_offer`, creates entry in `offers` table
+   - Calls `notifyFounders()` to notify team of verdict
+   - Calls `refreshUserScore()` to update participant's reputation if passed
+   - Runs time-based scheduler to close trial at `endsAt` time
+5. Frontend receives notification, updates offers list
 
-**State Management:**
-- Frontend: `useQuery` for reads (cached in Convex client), `useMutation` for writes
-- Backend: All mutations are transactional within a single `ctx` (Convex guarantees ACID)
-- No client-side Redux/Zustand; all truth in database, frontend reads via queries
+### State Management
+
+- **Current user**: Via `useCurrentUser()` hook → `api.people.users.getCurrent()` (caches auth state)
+- **Current workspace**: Via `useWorkspace()` hook → stored in URL `$slug` + `users.activeStartupId`, loaded via `api.teams.startups.getWorkspace()`
+- **Notifications**: Via `useNotifications()` hook → `api.notifications.list()`, marks read via `api.notifications.markAsRead()`
+- **Plans & limits**: Via `isProUser()` check + constants in `lib/limits.ts`
+- **Active cycle**: Via `useActiveCycle()` hook → queries `cycles` table filtered by status `active`
 
 ## Key Abstractions
 
-**Membership:**
-- Purpose: Represents a User's relationship to a Startup (Founder or Member)
-- Examples: `convex/lib/teams/membership.ts`, `requireFounderMembership`, `requireMembership`
-- Pattern: Authorization gates query/mutation with membership check; throws if unauthorized
-
 **Pulse (Work Unit):**
-- Purpose: Single unit of work on a Cycle's kanban or Participant's Board
-- Examples: Internal Pulses (status: todo→in_progress→review→done), Board Pulses (Participant copies)
-- Pattern: Every Pulse belongs to either a Cycle or a Trial Cycle's Board; cannot be orphaned
+- Purpose: Represents a unit of work on a kanban board (Cycle Pulse) or trial challenge board (Trial Board Pulse)
+- Examples: `convex/lib/work/pulses.ts`, `src/features/work/pulses/`
+- Pattern: Single table `pulses` with foreign keys to either `cycleId` or `trialCycleId`, plus participant ownership for trial pulses. Validators constrain status transitions and visibility rules. `requirePulse()` / `requireSubmittedPulse()` / `requireWorkablePulse()` gates access
 
-**Trial Cycle Lifecycle:**
-- Purpose: Time-boxed hiring process with Participants, Challenges, Submissions, Verdicts, Offers
-- Examples: `convex/hiring/trialCycles.ts`, `convex/lib/hiring/trialCycles.ts`
-- Pattern: Auto-transitions via scheduler (open → active → closed); Founder-driven Verdicts close it
+**Membership (Access Control):**
+- Purpose: Ties a user to a startup with a role (founder or member)
+- Examples: `convex/lib/teams/membership.ts`, `convex/schema.ts` (memberships table)
+- Pattern: Denormalized in `memberships` table with index on (startupId, userId) for quick lookups. Every scope check starts with membership validation. Founders implicitly belong to all cycles and trials in their startup
 
-**Cycle Lifecycle:**
-- Purpose: Internal work period with Members and Pulses
-- Examples: `convex/work/cycles.ts`, `convex/lib/work/cycles.ts`
-- Pattern: Auto-starts at start date; Founder manually closes with carry-over of unfinished Pulses
+**Trial Cycle (Hiring Flow):**
+- Purpose: Time-bounded evaluation of participants for a role, producing verdicts and offers
+- Examples: `convex/hiring/trialCycles.ts`, `convex/lib/hiring/trialCycles.ts`, `src/features/hiring/trialCycles/`
+- Pattern: `trialCycles` table with foreign key to `roles`. Time transitions (open → active → closed → cancelled) use `ctx.scheduler`. `applications` table links users to trials. `offers` table linked to successful applications. Messages in `trialMessages` table, optionally participant-scoped. Challenges (trial pulse templates) in `challenges` table, copied to participant boards on entry
 
-**Board (Participant's Workspace):**
-- Purpose: Private kanban for one Participant in one Trial Cycle
-- Examples: Pulses created from Challenges, Participant-editable, Submission linked
-- Pattern: Seeded on Trial start; Participant owns kanban state; Founders see read-only view
-
-**Notification:**
-- Purpose: Alert a User to an event requiring action or awareness
-- Examples: Offer received, Pulse comment, Verdict given, Cycle Member added
-- Pattern: `notify(ctx, { userId, kind, title, href })` called by domain functions; read via `api.notifications.get()`
-
-**Score:**
-- Purpose: Public reputation derived from Trial Cycle outcomes
-- Examples: +1 for passed Verdict, +1 for accepted Offer, -1 for Leaving, weighted by recency
-- Pattern: Recomputed on Verdict/Offer/Leave; stored in `users.score`; never computed from internal work
+**Score (Reputation):**
+- Purpose: Denormalized user reputation derived from trial cycle verdicts
+- Examples: `convex/lib/reputation/score.ts`, `convex/lib/reputation/scoreWeights.ts`
+- Pattern: Stored as `users.score`, recomputed on trial verdict via `refreshUserScore()`. Weights defined in scoreWeights.ts
 
 ## Entry Points
 
 **Frontend:**
-- Location: `src/routes/__root.tsx`
-- Triggers: App load in browser
-- Responsibilities: Mounts AppProviders (Convex auth, router), renders Outlet to matched route
-
-**Public Unauthenticated Routes:**
-- `/` → `LandingPage` (`src/features/marketing/landing/`)
-- `/explore` → `DiscoverPage` (`src/features/marketing/explore/`)
-- `/startup/$slug` → `PublicStartupPage` (`src/features/teams/startup/public/`)
-- `/u/$username` → `PublicProfilePage` (`src/features/people/profile/`)
-- `/invite/$token` → Invite acceptance flow
-
-**Authenticated Routes:**
-- `/app` → `AppLayout` + `AppShell` (guards with `useConvexAuth()`)
-- `/app/startup/$slug/*` → Workspace pages (Roles, Trials, Team, Activity Dashboard)
-- `/app/team` → Manage Startup members, invites
-- `/app/work/cycles` → Cycle list
-- `/app/work/cycles/$cycleId` → Cycle kanban
-- `/app/pulses` → My Pulses (all Startups + Trials)
-- `/app/messages` → Threads (Trial Cycle conversations)
-- `/app/profile` → Edit user profile
-- `/app/opportunities` → Applications and offers
+- `src/routes/__root.tsx`: Root layout wrapping all routes with `AppProviders` (Convex, auth, toaster)
+- `src/routes/index.tsx`: Public landing page (`/`)
+- `src/routes/_shell/_authed/route.tsx`: Authenticated shell (gates on `useConvexAuth()`)
+- `src/routes/_shell/_authed/s/$slug/route.tsx`: Startup workspace entry (loads via `useWorkspace(slug)`)
+- `src/routes/_shell/startup/$slug.tsx`: Public startup profile
 
 **Backend:**
-- Entry point: Convex deployment (HTTP + WebSocket from `convex/http.ts`)
-- Triggers: Frontend RPC call to `api.<domain>.<file>.<fn>(...args)`
-- Handler: Function in `convex/<domain>/<file>.ts` or internal mutation/query in `convex/lib/`
+- `convex/auth.ts` + `convex/auth.config.ts`: Convex Auth setup, Google sign-in provider
+- `convex/http.ts`: Registers HTTP routes (auth routes from Convex Auth, `/dodopayments-webhook` for billing)
+- `convex/schema.ts`: Defines all tables and validators
+- `convex/<domain>/*.ts` (e.g., `convex/teams/startups.ts`): Public query/mutation exports
+- Time-based entry: `ctx.scheduler.runAfter()` in `convex/hiring/trialCycles.ts` and `convex/work/cycles.ts` schedule transitions
 
 ## Architectural Constraints
 
-- **Unauthenticated Functions:** Only public functions (e.g., `teams.startups.getPublic`, `hiring.opportunities.list`) omit auth checks; most data requires `requireUserId`
-- **Founder Exclusivity:** Only Founders can create Cycles, Roles, Trial Cycles, give Verdicts, withdraw Offers, manage Invites; Members cannot
-- **Single Focused Startup:** User has one active Startup at a time; switch via `api.teams.startups.setActive`. Inbox/My Pulses/Threads span all Startups
-- **No Direct Applications:** Users cannot apply to Roles; they join through Trial Cycles (open admission) or Invites (direct Founder invitation)
-- **Score Isolation:** Score counts only Trial outcomes, never internal work (Cycles/Pulses); this prevents Founder manipulation
-- **Immutable Board:** Once a Trial Cycle starts, Challenge templates cannot change retroactively; existing Board Pulses are not affected
-- **Verdict Locks Submission:** Once a Verdict is given or Trial end date passes, the Participant's Board and Submission are read-only
-- **Indexes Required:** Every `ctx.db.query()` must use `.withIndex()` with an index defined in `schema.ts`; no unindexed full table scans
-- **No Circular Imports:** Frontend path alias `~/*` (src/) does not leak into `convex/`; Convex uses `@convex/*` alias
-- **Notifications Uni-Directional:** Notifications flow from backend to frontend; frontend cannot create notifications directly
+- **Threading:** Single-threaded event-driven model (React + Convex)
+- **Global state:** Users table has `activeStartupId` field for workspace switching (queried on every workspace load, not globally cached)
+- **Circular imports:** None observed; lib modules depend downward toward schema, features depend on api client and lib utilities
+- **Auth model:** Every function validates `requireUserId(ctx)` at entry. Authorization then branches on context (membership, cycle access, trial access, pulse ownership)
+- **Index discipline:** All queries use `withIndex()` with indexes defined in `schema.ts`. No `.filter()` without backing index
+- **Scheduling:** Trial and Cycle state transitions via `ctx.scheduler.runAfter()` registered in their public functions
+- **Billing:** Dodo Payments webhook handler in `http.ts` updates `users.planTier` via internal function
 
 ## Anti-Patterns
 
-### Unindexed Queries
+### Unvalidated Direct Table Access
 
-**What happens:** A query like `ctx.db.query("pulses").filter(q => q.eq("cycleId", id))` runs without `.withIndex("by_cycle")`
-**Why it's wrong:** Convex scans the entire `pulses` table, O(N), causing performance degradation as data grows
-**Do this instead:** Define index in `convex/schema.ts`: `.index("by_cycle", ["cycleId"])`, then call `.withIndex("by_cycle", q => q.eq("cycleId", id))`
+**What happens:** A function queries `memberships` or `cycles` directly without using the helper functions (`requireMembership()`, `requireCycleAccess()`)
 
-### Skipping Auth Checks
+**Why it's wrong:** Bypasses authorization checks. A member could query cycles they shouldn't access or modify another user's work.
 
-**What happens:** A mutation like `updatePulse` calls `ctx.db.get(pulseId)` and `ctx.db.patch()` without `requireUserId` or `requireCycleAccess`
-**Why it's wrong:** Any authenticated user could mutate any Pulse, including ones in other Startups or Cycles they don't belong to
-**Do this instead:** Every mutation starts with `const userId = await requireUserId(ctx)`, then `const { cycle } = await requireCycleAccess(ctx, pulseId.cycleId, userId)` (or equivalent for trial/membership)
+**Do this instead:** Always call `requireMembership()`, `requireCycleAccess()`, `requireTrialAccess()`, or `requirePulse()` first, depending on context. These are the seam for all access control.
 
-### Denormalized Data Out of Sync
+### Missing `.withIndex()` on Queries
 
-**What happens:** Caching a count like `role.filledHeadcount` in the Role document without updating it when an Offer is accepted
-**Why it's wrong:** Over time, the stale count diverges from reality (Offers accepted but count not bumped), leading to bugs in "Role is full" checks
-**Do this instead:** Compute counts on read via aggregation queries: `ctx.db.query("offers").withIndex("by_role_and_status", q => q.eq("roleId", roleId).eq("status", "accepted")).count()`
+**What happens:** Code calls `.query("table").filter()` instead of `.query("table").withIndex("index_name", (q) => q.eq(...)).take(n)`
 
-### Calling notify() Outside Transactions
+**Why it's wrong:** Inefficient table scans; scales poorly as data grows. Convex discourages this pattern.
 
-**What happens:** `notify()` is called after `ctx.db.patch()` but in a try-catch that swallows errors
-**Why it's wrong:** If `notify()` fails (unlikely but possible), the main operation succeeded, leaving Notification records orphaned and the user never alerted
-**Do this instead:** Call `notify()` inside the mutation before returning; Convex rolls back both together if anything fails
+**Do this instead:** Define an index in `schema.ts` for the query pattern, then use `withIndex()` and `take()` to bound results.
 
-### Frontend Performing Authorization
+### Handling Side Effects in Query Handlers
 
-**What happens:** Checking `if (user.role === "founder")` on the frontend before showing a "Create Cycle" button
-**Why it's wrong:** The button hides but the mutation is still callable from DevTools; anyone can send `api.work.cycles.create(...)`
-**Do this instead:** Let the frontend check roles for UX (hide buttons), but the backend mutation must re-check: `await requireFounderMembership(ctx, startupId, userId)` throws if not a Founder
+**What happens:** A query handler calls `notify()` or modifies the database inside a query
+
+**Why it's wrong:** Queries should be side-effect-free. Convex queries can run multiple times; notifications should fire once per user action.
+
+**Do this instead:** Put side effects in mutation handlers. Use `notifyFounders()` and `logActivity()` only in mutations.
+
+### Storing Secrets or API Keys in Frontend Code
+
+**What happens:** `src/env/client.ts` or component code references an API key directly
+
+**Why it's wrong:** Frontend is public; secrets leak to users
+
+**Do this instead:** Secrets live in Convex deployment env vars (DODO_PAYMENTS_*, auth keys, etc.) and are accessed via `process.env` in `convex/` functions only.
 
 ## Error Handling
 
-**Strategy:** Synchronous exceptions propagate to frontend as Convex error objects
+**Strategy:** Errors thrown in Convex functions are caught and passed to frontend via the client, displayed via toast or error boundary
 
 **Patterns:**
-- Auth/authz failures throw with `throw new Error("Not authenticated")`, `throw new Error("You are not on this team")`, etc. — frontend receives these as `error.data.message` in `useQuery`/`useMutation`
-- Validation errors throw with context-specific messages: `throw new Error("Cycle name must be 1-100 characters")`
-- Not-found errors return null from queries, allowing frontend to render fallback UI (e.g., "Startup not found")
-- Database errors (rare) naturally throw and are logged by Convex; frontend shows generic "Something went wrong"
-- Time-based transitions (scheduler) catch errors and re-throw so Convex can retry; failed transitions are visible in Convex logs
+- Authorization errors throw `new Error("Not authenticated")` or context-specific messages
+- Validation errors throw `new Error("Field must be under N characters")`
+- Not-found errors throw `new Error("X not found")`
+- Frontend `useQuery()` and `useMutation()` hooks handle errors via Convex client; UI displays in toast or error page
 
 ## Cross-Cutting Concerns
 
-**Logging:** No explicit logger; Convex logs `throw new Error()` calls and scheduler execution. Backend uses `console.log()` for debugging; logs appear in Convex console
-**Validation:** Zod schemas in `src/features/<domain>/<feature>/schemas/` validate form inputs before mutation; backend re-validates using Convex `v.object()` validators
-**Authentication:** `@convex-dev/auth` with Google sign-in; user created on first sign-in; `requireUserId` gate ensures only authenticated users access protected functions
-**Authorization:** `requireMembership`, `requireFounderMembership` (teams), `requireTrialAccess` (hiring), `requireCycleAccess`, `requirePulse` variants (work) provide context-specific access checks
-**Notifications:** `notify()` creates inbox entries; kinds = invite, pulse, cycle, trial_cycle, application, message, billing, offer; marked read via `api.notifications.markRead()`
-**Rate Limiting:** `isProUser` checks `users.planTier`; numeric limits in `convex/lib/limits.ts` (e.g., `MAX_TRIAL_PARTICIPANTS`, `FREE_ACTIVE_TRIAL_APPLICATIONS`) enforced in mutations
-**Audit Trail:** `logActivity()` appends immutable records; kinds = member_joined, cycle_started, pulse_verified, etc.; visible to Founders in Activity Dashboard (`src/features/teams/startup/workspace/components/ActivityDashboard.tsx`)
+**Logging:** No explicit logging layer. Use Convex dashboard logs for debugging.
+
+**Validation:** Zod schemas in `src/features/<domain>/<feature>/schemas/` for frontend forms. Convex validators (`v.string()`, `v.id()`, etc.) in `schema.ts` for backend.
+
+**Authentication:** Convex Auth with Google sign-in via `@convex-dev/auth`. Frontend wraps app in `ConvexAuthProvider`. Every backend function validates `requireUserId()`.
 
 ---
 
-*Architecture analysis: 2026-09-28*
+*Architecture analysis: 2026-09-29*
