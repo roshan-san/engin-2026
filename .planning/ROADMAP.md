@@ -72,7 +72,37 @@ Plans:
   3. Opening a Pulse shows a URL-addressable peek panel where Proof Links live and a Founder can verify or return a Submitted Pulse with a note.
   4. A Founder creates, starts and closes Cycles — including carrying unfinished Pulses forward — and manages Cycle Members from the new screens.
 
-**Plans**: TBD
+**Plans**: 12 plans
+
+Plans:
+**Wave 1**
+- [ ] 02-01-PLAN.md — Shared move rules, Proof Link gate on review, closed-Cycle guard, retire the orphaned old Cycle UI
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 02-02-PLAN.md — Shared rank + move mutation, rank-ordered lists, updatedAt on every edit, Board moves, ADR 0007
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 02-03-PLAN.md — Order-preserving carry-over, ranked Board/Challenge inserts, backfillPulseRanks
+- [ ] 02-04-PLAN.md — pulses.get with access flags, extended create/update, My Pulses read model (listMine)
+- [ ] 02-05-PLAN.md — cycles.get, list summary, start/close guards, atomic close-with-new, Founder dedupe, picker listMine
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 02-06-PLAN.md — Cycle Board on dnd-kit: ranked columns, drag with optimistic move, Linear-compact card
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 02-07-PLAN.md — Pre-empted refusals, Founder verify/return drops, mobile snap columns, keyboard + announcements
+- [ ] 02-08-PLAN.md — Cycles list (Active/Planned/Closed) and Create Cycle dialog
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 02-09-PLAN.md — URL-addressable Pulse peek panel: inline edit, pickers, Proof Links, Founder review, locks
+- [ ] 02-10-PLAN.md — Start now / Close Cycle with carry-over, row menu, Cycle Members popover
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 02-11-PLAN.md — My Pulses home and the Cycle List view
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 02-12-PLAN.md — C quick-create dialog, Create Pulse/Create Cycle registry entries, New Pulse buttons
+
 **UI hint**: yes
 
 ### Phase 3: Team Workspace
@@ -140,7 +170,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Shell & Navigation Foundation | 9/9 | Complete    | 2026-09-29 |
-| 2. My Pulses & Cycle Boards | 0/TBD | Not started | - |
+| 2. My Pulses & Cycle Boards | 0/12 | Planned | - |
 | 3. Team Workspace | 0/TBD | Not started | - |
 | 4. Complete Trial Cycles | 0/TBD | Not started | - |
 | 5. Discover | 0/TBD | Not started | - |
