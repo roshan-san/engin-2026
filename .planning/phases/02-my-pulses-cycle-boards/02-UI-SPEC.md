@@ -1,7 +1,8 @@
 ---
 phase: "2"
 slug: "my-pulses-cycle-boards"
-status: draft
+status: approved
+reviewed_at: "2026-09-29"
 shadcn_initialized: true
 preset: "new-york / zinc base / lucide icons (components.json, unchanged from Phase 1; no --preset code on record)"
 created: "2026-09-29"
@@ -279,7 +280,8 @@ Sensors (Claude's discretion, recommended defaults): `PointerSensor` with `activ
 | Return dialog | Title "Return Pulse"; label "Note for the assignee"; placeholder "What needs to change?"; validation "Add a note so they know what to change."; submit "Return Pulse" |
 | Verify | Button "Verify Pulse"; success toast "Pulse verified" |
 | Locked notes | Locked while in review; Verified Pulses are final; This Cycle is closed; This Board is locked |
-| Create Pulse validation | Add a title |
+| Create Pulse validation | Add a title; Pick a Cycle (My Pulses, no Cycle chosen) |
+| Close Cycle pending | Closing... |
 | Create Cycle validation | Add a title; End date must be after the start date |
 | Start now, another Cycle active | Title "Start {Cycle}?", body "{Active Cycle} is active and will close when this Cycle starts. Its unfinished Pulses stay in it.", confirm "Start Cycle", cancel "Cancel" |
 | Close Cycle dialog | Title "Close {Cycle}"; body "{N} unfinished Pulse(s)" (singular "1 unfinished Pulse"); field "Move unfinished Pulses to"; options "+ New Cycle", "Leave in this Cycle"; zero unfinished: "All Pulses are finished."; confirm "Close Cycle" |
@@ -296,7 +298,7 @@ used verbatim; "task", "sprint", "ticket" and "issue" do not appear anywhere in 
 
 ## UI Considerations
 
-Applicable state considerations resolved: 39 covered, 4 backstop, 0 unresolved.
+Applicable state considerations resolved: 66 covered, 4 backstop, 3 dismissed, 0 unresolved.
 
 Surfaces: S1 My Pulses list · S2 Pulse card/row · S3 Cycle Board · S4 Cycle List · S5 Peek panel ·
 S6 Quick-create dialog · S7 Cycles list · S8 Cycle header + Members popover · S9 Close Cycle dialog ·
@@ -344,6 +346,36 @@ not repeated.
 | empty | S9 | ✅ covered | With zero unfinished Pulses the target select and count are replaced by "All Pulses are finished." |
 | partial | S9 | ✅ covered | With no other planned or active Cycle, the select offers only "+ New Cycle" and "Leave in this Cycle" |
 | error | S9, S10 | ✅ covered | A failed Close or Create keeps the dialog open with its values and shows a toast; Create validates dates inline ("End date must be after the start date") |
+| partial | S1 | ✅ covered | Rows missing optional fields follow the S2 partial rules; a Board Pulse row's context label reads `Startup · Trial Cycle` |
+| populated | S2 | ✅ covered | Card and row render per the shared row/card data table (D-08) |
+| zero-one-many | S2 | ✅ covered | The Proof Link icon and count are hidden at 0 and show the number from 1 up |
+| empty | S2 | ➖ dismissed | Presentational component: the parent surface (S1, S3, S4) owns the empty state |
+| loading | S2 | ➖ dismissed | Presentational component: the parent surface renders skeleton cards/rows |
+| error | S2 | ➖ dismissed | Presentational component: the parent surface owns errors |
+| partial | S3, S4 | ✅ covered | On a Closed Cycle, Board and List render read-only: no drag, no "New Pulse", peek fields read-only |
+| error | S4 | ✅ covered | A backend-rejected move rolls back with the backend's message in a toast, as on the Board; load failures use the route error boundary |
+| overflow | S4 | ✅ covered | The page scrolls; groups do not scroll internally; row content truncates per S2 |
+| zero-one-many | S4 | ✅ covered | Group headers show the count; zero, one and many use the same row component |
+| populated | S5 | ✅ covered | All properties, description and Proof Links render; the Founder review footer shows only on a Pulse in Review |
+| partial | S6 | ✅ covered | On My Pulses, when the Focused Startup has no active Cycle, the Cycle Select starts empty and submit shows "Pick a Cycle" beneath it |
+| overflow | S6 | ✅ covered | The Cycle Select list scrolls after its max height |
+| long-text | S6 | ✅ covered | The title Input scrolls horizontally; "Adding to {Cycle title}" truncates |
+| populated | S7 | ✅ covered | Rows render per the Cycles list layout, in Active, Planned, Closed sections |
+| partial | S7 | ✅ covered | A Cycle with no Pulses shows `0/0`; a Cycle with no added Cycle Members omits the avatar stack |
+| overflow | S7 | ✅ covered | The page scrolls; sections do not scroll internally |
+| empty | S8 | ✅ covered | With no added Cycle Members the popover lists only the implicit Founders; the Add member combobox with no match shows "No matching Members" |
+| loading | S8 | ✅ covered | The popover list shows skeleton rows until Cycle Members load |
+| error | S8 | ✅ covered | A failed add or remove shows `toast.error` with the message and leaves the list unchanged |
+| populated | S8 | ✅ covered | Founders (Founder Badge) first, then Cycle Members with remove controls |
+| partial | S8 | ✅ covered | Members (non-Founders) see the list read-only, without Add or Remove |
+| long-text | S8 | ✅ covered | Member names truncate in the popover rows |
+| loading | S9 | ✅ covered | Submit shows the pending state (disabled, spinner, "Closing...") until the mutation resolves |
+| long-text | S9 | ✅ covered | A long Cycle title in the dialog title wraps; Cycle titles in the Select truncate |
+| empty | S10 | ✅ covered | An empty title on submit shows "Add a title" beneath the field and does not submit |
+| loading | S10 | ✅ covered | Submit shows the pending state (disabled, spinner, "Creating...") until the mutation resolves |
+| partial | S10 | ✅ covered | Members is optional; creating with none is valid because Founders are implicit |
+| overflow | S10 | ✅ covered | Chosen Member chips wrap onto new lines |
+| long-text | S10 | ✅ covered | The title Input scrolls horizontally; chip names truncate |
 | interaction | S3, S4 | 🧪 backstop | On a real touch device the long-press drag activates without hijacking vertical scroll or the horizontal snap scroll |
 | interaction | S3, S4 | 🧪 backstop | A refused drop shows the dimmed target, the reason line and the return animation, legibly, on desktop and mobile |
 | overflow | S5 | 🧪 backstop | At 360px width, with the on-screen keyboard open, the focused peek field and the sticky review footer stay visible |
@@ -364,12 +396,12 @@ declared by CONTEXT.md and PROJECT.md, not registry blocks; the vetting gate doe
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-09-29 (Copywriting and Visuals carry non-blocking FLAGs: "Cancel"/"Add"/"Close" labels, load-error retry, per-screen focal point)
