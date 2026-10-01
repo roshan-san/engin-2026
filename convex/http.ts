@@ -1,67 +1,68 @@
 import { createDodoWebhookHandler } from "@dodopayments/convex";
 import type { GenericActionCtx, GenericDataModel } from "convex/server";
 import { httpRouter } from "convex/server";
+import type { Infer } from "convex/values";
 import { internal } from "./_generated/api";
-import type { Id } from "./_generated/dataModel";
 import { auth } from "./auth";
+import type { subscriptionEvent } from "./billing/webhooks";
 
 const http = httpRouter();
 
 auth.addHttpRoutes(http);
 
 type WebhookCtx = GenericActionCtx<GenericDataModel>;
+type Metadata = Record<string, unknown> | undefined;
+type SubscriptionPayload = {
+	data: {
+		subscription_id: string;
+		customer?: { email?: string };
+		metadata?: Record<string, unknown>;
+		next_billing_date?: Date | string;
+	};
+};
 
-async function setPlanFromWebhook(
-	ctx: WebhookCtx,
-	payload: {
-		data: {
-			customer: { email: string };
-			metadata?: Record<string, string>;
-		};
-	},
-	planTier: "free" | "pro",
-) {
-	let userId = payload.data.metadata?.userId as Id<"users"> | undefined;
+function metadataString(metadata: Metadata, key: string): string | undefined {
+	const value = metadata?.[key];
+	return typeof value === "string" ? value : undefined;
+}
 
-	if (!userId && payload.data.customer?.email) {
-		const user = await ctx.runQuery(internal.people.users.getByEmail, {
-			email: payload.data.customer.email,
+/** Dodo parses dates into `Date`s; accept an ISO string as well. */
+function toMillis(value: Date | string | undefined): number | undefined {
+	return value === undefined ? undefined : new Date(value).getTime();
+}
+
+function onSubscription(event: Infer<typeof subscriptionEvent>) {
+	return async (ctx: WebhookCtx, payload: SubscriptionPayload) => {
+		await ctx.runMutation(internal.billing.webhooks.applySubscriptionEvent, {
+			event,
+			subscriptionId: payload.data.subscription_id,
+			metadataUserId: metadataString(payload.data.metadata, "userId"),
+			email: payload.data.customer?.email,
+			nextBillingAt: toMillis(payload.data.next_billing_date),
 		});
-		userId = user?._id;
-	}
-
-	if (!userId) {
-		return;
-	}
-
-	await ctx.runMutation(internal.people.billing.setPlanTier, {
-		userId,
-		planTier,
-	});
+	};
 }
 
 http.route({
 	path: "/dodopayments-webhook",
 	method: "POST",
 	handler: createDodoWebhookHandler({
-		onSubscriptionActive: async (ctx, payload) => {
-			await setPlanFromWebhook(ctx, payload, "pro");
+		onPaymentSucceeded: async (ctx, payload) => {
+			const metadata: Metadata = payload.data.metadata;
+			await ctx.runMutation(internal.billing.webhooks.applyPaymentSucceeded, {
+				paymentId: payload.data.payment_id,
+				kind: metadataString(metadata, "kind"),
+				trialCycleId: metadataString(metadata, "trialCycleId"),
+				metadataUserId: metadataString(metadata, "userId"),
+				email: payload.data.customer?.email,
+			});
 		},
-		onSubscriptionRenewed: async (ctx, payload) => {
-			await setPlanFromWebhook(ctx, payload, "pro");
-		},
-		onSubscriptionOnHold: async (ctx, payload) => {
-			await setPlanFromWebhook(ctx, payload, "free");
-		},
-		onSubscriptionCancelled: async (ctx, payload) => {
-			await setPlanFromWebhook(ctx, payload, "free");
-		},
-		onSubscriptionFailed: async (ctx, payload) => {
-			await setPlanFromWebhook(ctx, payload, "free");
-		},
-		onSubscriptionExpired: async (ctx, payload) => {
-			await setPlanFromWebhook(ctx, payload, "free");
-		},
+		onSubscriptionActive: onSubscription("active"),
+		onSubscriptionRenewed: onSubscription("renewed"),
+		onSubscriptionOnHold: onSubscription("on_hold"),
+		onSubscriptionCancelled: onSubscription("cancelled"),
+		onSubscriptionFailed: onSubscription("failed"),
+		onSubscriptionExpired: onSubscription("expired"),
 	}),
 });
 

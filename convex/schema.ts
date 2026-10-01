@@ -143,7 +143,8 @@ export default defineSchema({
 		hideFromExplore: v.optional(v.boolean()),
 	})
 		.index("email", ["email"])
-		.index("by_username", ["username"]),
+		.index("by_username", ["username"])
+		.index("by_plan_tier", ["planTier"]),
 
 	startups: defineTable({
 		founderUserId: v.id("users"),

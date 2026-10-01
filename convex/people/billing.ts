@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
-import { action, internalMutation, query } from "../_generated/server";
+import { action, query } from "../_generated/server";
 import {
 	type BillingInterval,
 	checkout,
@@ -19,16 +19,6 @@ export const getPlan = query({
 			isPro: pro,
 			planTier: pro ? ("pro" as const) : ("free" as const),
 		};
-	},
-});
-
-export const setPlanTier = internalMutation({
-	args: {
-		userId: v.id("users"),
-		planTier: v.union(v.literal("free"), v.literal("pro")),
-	},
-	handler: async (ctx, args) => {
-		await ctx.db.patch(args.userId, { planTier: args.planTier });
 	},
 });
 
@@ -59,7 +49,7 @@ export const createCheckoutLink = action({
 					name: user.name ?? user.email,
 				},
 				return_url: args.returnUrl,
-				billing_currency: "USD",
+				billing_currency: "INR",
 				metadata: {
 					userId,
 					interval,

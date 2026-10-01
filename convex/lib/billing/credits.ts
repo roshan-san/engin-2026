@@ -2,7 +2,7 @@ import type { Infer } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import type { creditSource } from "../../schema";
-import { MAX_USER_CREDITS } from "../limits";
+import { MAX_BANKED_PRO_CREDITS, MAX_USER_CREDITS } from "../limits";
 
 type CreditCtx = QueryCtx | MutationCtx;
 
@@ -121,4 +121,51 @@ export async function grantCredit(
 		return null;
 	}
 	return await ctx.db.insert("hackathonCredits", grant);
+}
+
+/** Marks a one-time Dodo payment as a hackathon purchase (checkout metadata `kind`). */
+export const HACKATHON_PAYMENT_KIND = "hackathon";
+
+/** UTC calendar month, e.g. "2026-10". */
+export function monthKey(now: number): string {
+	return new Date(now).toISOString().slice(0, 7);
+}
+
+/**
+ * This month's Pro credit, once per user per month, while fewer than 3 are
+ * banked. Keyed by user and month so yearly plans get monthly credits too.
+ */
+export async function grantMonthlyProCredit(
+	ctx: MutationCtx,
+	userId: Id<"users">,
+	now: number,
+): Promise<boolean> {
+	const banked = (await listSpendableCredits(ctx, userId, now)).filter(
+		(credit) => credit.source === "pro_monthly",
+	);
+	if (banked.length >= MAX_BANKED_PRO_CREDITS) {
+		return false;
+	}
+	const creditId = await grantCredit(ctx, {
+		ownerUserId: userId,
+		source: "pro_monthly",
+		grantKey: `pro_monthly:${userId}:${monthKey(now)}`,
+	});
+	return creditId !== null;
+}
+
+/** Banked Pro credits stay usable until `at`, then lapse (eng review C5). */
+export async function expireProCredits(
+	ctx: MutationCtx,
+	userId: Id<"users">,
+	at: number,
+): Promise<void> {
+	for (const credit of await listSpendableCredits(ctx, userId, Date.now())) {
+		if (
+			credit.source === "pro_monthly" &&
+			(credit.expiresAt === undefined || credit.expiresAt > at)
+		) {
+			await ctx.db.patch(credit._id, { expiresAt: at });
+		}
+	}
 }

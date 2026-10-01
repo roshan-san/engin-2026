@@ -4,12 +4,14 @@ import { requireUserId } from "../lib/auth";
 import {
 	generateCode,
 	grantCredit,
+	grantMonthlyProCredit,
 	listSpendableCredits,
 	normalizeCode,
 } from "../lib/billing/credits";
 import {
 	LAUNCH_CODE_WINDOW_MS,
 	MAX_LAUNCH_CODES,
+	MAX_PRO_USERS_SCAN,
 	RERUN_CREDIT_TTL_MS,
 	RERUN_MIN_APPLICATIONS,
 } from "../lib/limits";
@@ -133,5 +135,25 @@ export const grantRerunCredit = internalMutation({
 			throw new Error("This hackathon already got a re-run credit");
 		}
 		return creditId;
+	},
+});
+
+/** Daily (convex/crons.ts): every Pro user gets this month's credit, once. */
+export const grantMonthlyProCredits = internalMutation({
+	args: {},
+	handler: async (ctx) => {
+		const now = Date.now();
+		const proUsers = await ctx.db
+			.query("users")
+			.withIndex("by_plan_tier", (q) => q.eq("planTier", "pro"))
+			.take(MAX_PRO_USERS_SCAN);
+
+		let granted = 0;
+		for (const user of proUsers) {
+			if (await grantMonthlyProCredit(ctx, user._id, now)) {
+				granted += 1;
+			}
+		}
+		return granted;
 	},
 });

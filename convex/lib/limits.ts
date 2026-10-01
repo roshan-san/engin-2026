@@ -59,3 +59,8 @@ export const MAX_PLAN_USAGE_SCAN = 200;
 /** A hackathon with fewer applications than this by its cutoff can earn a re-run. */
 export const RERUN_MIN_APPLICATIONS = 3;
 export const RERUN_CREDIT_TTL_MS = 60 * 24 * 60 * 60 * 1000;
+
+/** Pro includes one hackathon credit a month; unused ones bank up to this. */
+export const MAX_BANKED_PRO_CREDITS = 3;
+/** Bound on the Pro users the daily credit job reads. */
+export const MAX_PRO_USERS_SCAN = 500;

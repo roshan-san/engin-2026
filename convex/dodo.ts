@@ -32,3 +32,21 @@ export function getProductIdForInterval(interval: BillingInterval): string {
 
 	return productId;
 }
+
+/** ₹2,999 on Free, ₹1,499 on Pro (design: Pricing). */
+export function getHackathonProductId(planTier: "free" | "pro"): string {
+	const productId =
+		planTier === "pro"
+			? process.env.DODO_HACKATHON_PRO_PRODUCT_ID
+			: process.env.DODO_HACKATHON_PRODUCT_ID;
+
+	if (!productId) {
+		throw new Error(
+			planTier === "pro"
+				? "DODO_HACKATHON_PRO_PRODUCT_ID is not configured"
+				: "DODO_HACKATHON_PRODUCT_ID is not configured",
+		);
+	}
+
+	return productId;
+}

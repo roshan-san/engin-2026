@@ -9,7 +9,10 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as billing_checkout from "../billing/checkout.js";
 import type * as billing_credits from "../billing/credits.js";
+import type * as billing_webhooks from "../billing/webhooks.js";
+import type * as crons from "../crons.js";
 import type * as dodo from "../dodo.js";
 import type * as hiring_applications from "../hiring/applications.js";
 import type * as hiring_challenges from "../hiring/challenges.js";
@@ -69,7 +72,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "billing/checkout": typeof billing_checkout;
   "billing/credits": typeof billing_credits;
+  "billing/webhooks": typeof billing_webhooks;
+  crons: typeof crons;
   dodo: typeof dodo;
   "hiring/applications": typeof hiring_applications;
   "hiring/challenges": typeof hiring_challenges;
