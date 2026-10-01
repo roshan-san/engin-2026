@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as billing_credits from "../billing/credits.js";
 import type * as dodo from "../dodo.js";
 import type * as hiring_applications from "../hiring/applications.js";
 import type * as hiring_challenges from "../hiring/challenges.js";
@@ -20,6 +21,7 @@ import type * as hiring_trialMessages from "../hiring/trialMessages.js";
 import type * as http from "../http.js";
 import type * as lib_activity from "../lib/activity.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_billing_credits from "../lib/billing/credits.js";
 import type * as lib_hiring_challenges from "../lib/hiring/challenges.js";
 import type * as lib_hiring_entries from "../lib/hiring/entries.js";
 import type * as lib_hiring_offers from "../lib/hiring/offers.js";
@@ -65,6 +67,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "billing/credits": typeof billing_credits;
   dodo: typeof dodo;
   "hiring/applications": typeof hiring_applications;
   "hiring/challenges": typeof hiring_challenges;
@@ -76,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/activity": typeof lib_activity;
   "lib/auth": typeof lib_auth;
+  "lib/billing/credits": typeof lib_billing_credits;
   "lib/hiring/challenges": typeof lib_hiring_challenges;
   "lib/hiring/entries": typeof lib_hiring_entries;
   "lib/hiring/offers": typeof lib_hiring_offers;

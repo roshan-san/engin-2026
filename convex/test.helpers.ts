@@ -90,6 +90,11 @@ export async function notificationTitles(
 	return notifications.map((notification) => notification.title);
 }
 
+/** How many hackathon credits the signed-in person can spend right now. */
+export async function balanceOf(as: ReturnType<TestConvex["withIdentity"]>) {
+	return (await as.query(api.billing.credits.balance, {})).available;
+}
+
 export async function advancePast(t: TestConvex, ms: number) {
 	vi.advanceTimersByTime(ms);
 	await t.finishInProgressScheduledFunctions();

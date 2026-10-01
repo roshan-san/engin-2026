@@ -22,6 +22,11 @@ export const INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 export const MAX_INVITES_PER_EMAIL = 20;
 /** A Cycle shows "ending soon" within this window of its end date. */
 export const CYCLE_ENDING_SOON_MS = 2 * 24 * 60 * 60 * 1000;
+/** Bound on one person's unspent hackathon credits read at once. */
+export const MAX_USER_CREDITS = 50;
+/** Free launch codes Engin may create per window (design: Free allowance). */
+export const MAX_LAUNCH_CODES = 10;
+export const LAUNCH_CODE_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 
 /** A Plan's limits (issue #19). `null` means unlimited — Convex values cannot
  * encode `Infinity` (edge SHELL-07/encoding). */
