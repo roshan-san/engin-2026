@@ -4,7 +4,10 @@ import { useMutation } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
-import { askForMessage } from "~/features/hiring/trialCycles/constants";
+import {
+	askForMessage,
+	confirmIpTerms,
+} from "~/features/hiring/trialCycles/constants";
 import { toErrorMessage } from "~/lib/validation";
 
 type ApplyButtonsProps = {
@@ -35,9 +38,15 @@ export function ApplyButtons({ trialCycleId, admission }: ApplyButtonsProps) {
 				type="button"
 				size="sm"
 				disabled={isPending}
-				onClick={() =>
-					void run(() => joinTrial({ trialCycleId }), "Joined Trial Cycle")
-				}
+				onClick={() => {
+					if (!confirmIpTerms()) {
+						return;
+					}
+					void run(
+						() => joinTrial({ trialCycleId, acceptTerms: true }),
+						"Joined Trial Cycle",
+					);
+				}}
 			>
 				Join
 			</Button>
@@ -49,12 +58,20 @@ export function ApplyButtons({ trialCycleId, admission }: ApplyButtonsProps) {
 			type="button"
 			size="sm"
 			disabled={isPending}
-			onClick={() =>
+			onClick={() => {
+				if (!confirmIpTerms()) {
+					return;
+				}
 				void run(
-					() => applyToTrial({ trialCycleId, message: askForMessage() }),
+					() =>
+						applyToTrial({
+							trialCycleId,
+							message: askForMessage(),
+							acceptTerms: true,
+						}),
 					"Applied to Trial Cycle",
-				)
-			}
+				);
+			}}
 		>
 			Apply
 		</Button>

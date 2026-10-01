@@ -113,6 +113,7 @@ async function applyWith(
 	for (const name of names) {
 		const person = await signUp(t, name);
 		await person.as.mutation(api.hiring.applications.applyToTrial, {
+			acceptTerms: true,
 			trialCycleId,
 		});
 	}

@@ -47,7 +47,10 @@ test("a Participant joining an open Trial Cycle notifies the Founder with a slug
 	const alice = await signUp(t, "Alice");
 	const slug = await slugOf(t, setup.startupId);
 
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 
 	const notifications = await notificationsFor(setup.founder.as);
 	expect(hrefOf(notifications, "Someone joined Build a feature")).toBe(
@@ -63,6 +66,7 @@ test("applying to an application-admission Trial Cycle notifies the Founder with
 	const slug = await slugOf(t, setup.startupId);
 
 	await alice.as.mutation(api.hiring.applications.applyToTrial, {
+		acceptTerms: true,
 		trialCycleId,
 	});
 
@@ -79,6 +83,7 @@ test("rejecting an application notifies the Applicant with a slug-carrying link"
 	const bob = await signUp(t, "Bob");
 	const slug = await slugOf(t, setup.startupId);
 	await bob.as.mutation(api.hiring.applications.applyToTrial, {
+		acceptTerms: true,
 		trialCycleId,
 	});
 	const applicationId = await applicationIdOf(t, trialCycleId, bob.userId);

@@ -18,3 +18,11 @@ export const LEAVING_SCORE_PENALTY = -SCORE_WEIGHTS.leaving;
 export function askForMessage(): string | undefined {
 	return window.prompt("Add a message for the Founder (optional)") ?? undefined;
 }
+
+/** What a contributor agrees to on entry (design: IP of submissions). */
+export const CONTRIBUTOR_IP_TERMS =
+	"You keep ownership of what you submit. The startup may use your work only if you accept their Offer, or if they pay you for it separately.";
+
+export function confirmIpTerms(): boolean {
+	return window.confirm(CONTRIBUTOR_IP_TERMS);
+}

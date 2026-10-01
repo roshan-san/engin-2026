@@ -5,6 +5,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
 	askForMessage,
+	confirmIpTerms,
 	LEAVING_SCORE_PENALTY,
 } from "~/features/hiring/trialCycles/constants";
 
@@ -38,15 +39,22 @@ export function ParticipantTrialActions({
 			<Button
 				type="button"
 				disabled={isPending}
-				onClick={() =>
+				onClick={() => {
+					if (!confirmIpTerms()) {
+						return;
+					}
 					run(
 						() =>
 							isOpenAdmission
-								? joinTrial({ trialCycleId })
-								: applyToTrial({ trialCycleId, message: askForMessage() }),
+								? joinTrial({ trialCycleId, acceptTerms: true })
+								: applyToTrial({
+										trialCycleId,
+										message: askForMessage(),
+										acceptTerms: true,
+									}),
 						isOpenAdmission ? "Could not join" : "Could not apply",
-					)
-				}
+					);
+				}}
 			>
 				{isOpenAdmission ? "Join Trial Cycle" : "Apply"}
 			</Button>

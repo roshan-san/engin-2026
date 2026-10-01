@@ -34,6 +34,7 @@ async function setUpBoards() {
 	const bob = await signUp(t, "Bob");
 	for (const participant of [alice, bob]) {
 		await participant.as.mutation(api.hiring.applications.joinTrial, {
+			acceptTerms: true,
 			trialCycleId,
 		});
 	}
@@ -197,7 +198,10 @@ test("a Board cannot be edited before the Trial Cycle starts", async () => {
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 
 	await expect(
 		alice.as.mutation(api.work.pulses.create, {

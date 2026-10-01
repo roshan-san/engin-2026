@@ -358,6 +358,8 @@ export default defineSchema({
 		evaluation: v.optional(v.string()),
 		/** The Participant chose to show the Evaluation on their profile. */
 		evaluationPublic: v.optional(v.boolean()),
+		/** When the entrant acknowledged the hackathon IP terms. */
+		ipAcknowledgedAt: v.optional(v.number()),
 	})
 		.index("by_user", ["userId"])
 		.index("by_startup", ["startupId"])

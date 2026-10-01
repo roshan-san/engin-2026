@@ -116,6 +116,7 @@ test("finishing a Board Pulse is not evidence: only a Verdict or membership is",
 	});
 	const alice = await signUp(t, "Alice");
 	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
 		trialCycleId: trial._id,
 	});
 	await advancePast(t, DAY + HOUR);

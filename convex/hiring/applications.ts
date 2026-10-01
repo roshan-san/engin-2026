@@ -11,6 +11,7 @@ import {
 	isTrialLive,
 	requireAcceptingEntries,
 } from "../lib/hiring/trialCycles";
+import { requireIpTerms } from "../lib/hiring/ipTerms";
 import { trialCycleHref } from "../lib/links";
 import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
 import { notify, notifyFounders } from "../lib/notify";
@@ -88,6 +89,7 @@ export const applyToTrial = mutation({
 	args: {
 		trialCycleId: v.id("trialCycles"),
 		message: v.optional(v.string()),
+		acceptTerms: v.boolean(),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -99,6 +101,7 @@ export const applyToTrial = mutation({
 		if (trial.admission !== "application") {
 			throw new Error("This Trial Cycle is open to join directly");
 		}
+		requireIpTerms(args.acceptTerms);
 		await requireCanEnter(ctx, trial, userId);
 
 		const applicationId = await ctx.db.insert("applications", {
@@ -108,6 +111,7 @@ export const applyToTrial = mutation({
 			trialCycleId: trial._id,
 			status: "applied",
 			message: optionalText(args.message),
+			ipAcknowledgedAt: Date.now(),
 		});
 
 		await notifyFounders(ctx, trial.startupId, {
@@ -121,7 +125,7 @@ export const applyToTrial = mutation({
 });
 
 export const joinTrial = mutation({
-	args: { trialCycleId: v.id("trialCycles") },
+	args: { trialCycleId: v.id("trialCycles"), acceptTerms: v.boolean() },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const trial = await ctx.db.get(args.trialCycleId);
@@ -132,6 +136,7 @@ export const joinTrial = mutation({
 		if (trial.admission !== "open") {
 			throw new Error("You need to apply to this Trial Cycle");
 		}
+		requireIpTerms(args.acceptTerms);
 		await requireCanEnter(ctx, trial, userId);
 		await takeParticipantSpot(ctx, trial);
 
@@ -141,6 +146,7 @@ export const joinTrial = mutation({
 			roleId: trial.roleId,
 			trialCycleId: trial._id,
 			status: "joined",
+			ipAcknowledgedAt: Date.now(),
 		});
 
 		await notifyFounders(ctx, trial.startupId, {

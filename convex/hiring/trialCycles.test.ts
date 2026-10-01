@@ -38,7 +38,10 @@ test("a person can join an open-admission Trial Cycle", async () => {
 	const trialCycleId = await createTrial(setup);
 	const alice = await signUp(t, "Alice");
 
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 
 	const trial = await alice.as.query(api.hiring.trialCycles.get, {
 		trialCycleId,
@@ -51,7 +54,10 @@ test("a Trial Cycle with Participants becomes active at its start time", async (
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 
 	await advancePast(t, DAY + HOUR);
 
@@ -82,7 +88,10 @@ test("Participants are told when a Trial Cycle starts", async () => {
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 
 	await advancePast(t, DAY + HOUR);
 
@@ -96,7 +105,10 @@ test("a Founder can cancel an active Trial Cycle and Participants are told", asy
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 	await advancePast(t, DAY + HOUR);
 
 	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
@@ -117,7 +129,10 @@ test("a cancelled Trial Cycle stays cancelled when its start time passes", async
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
 		trialCycleId,
 	});
@@ -148,11 +163,13 @@ test("nobody can apply to or join a Trial Cycle after its application deadline",
 
 	await expect(
 		alice.as.mutation(api.hiring.applications.joinTrial, {
+			acceptTerms: true,
 			trialCycleId: openTrial,
 		}),
 	).rejects.toThrow("no longer accepting");
 	await expect(
 		alice.as.mutation(api.hiring.applications.applyToTrial, {
+			acceptTerms: true,
 			trialCycleId: applicationTrial,
 		}),
 	).rejects.toThrow("no longer accepting");
@@ -190,9 +207,13 @@ test("pending applications are rejected when a Trial Cycle starts", async () => 
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
 	await alice.as.mutation(api.hiring.applications.applyToTrial, {
+		acceptTerms: true,
 		trialCycleId,
 	});
-	await bob.as.mutation(api.hiring.applications.applyToTrial, { trialCycleId });
+	await bob.as.mutation(api.hiring.applications.applyToTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 	const aliceApplication = await applicationIdOf(t, trialCycleId, alice.userId);
 	await setup.founder.as.mutation(api.hiring.applications.decide, {
 		applicationId: aliceApplication,
@@ -236,7 +257,10 @@ test("a new Trial Cycle is a hidden draft: not listed, not joinable, not schedul
 		}),
 	).toHaveLength(0);
 	await expect(
-		alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId }),
+		alice.as.mutation(api.hiring.applications.joinTrial, {
+			acceptTerms: true,
+			trialCycleId,
+		}),
 	).rejects.toThrow("isn't published yet");
 
 	await advancePast(t, 2 * DAY);
@@ -268,7 +292,10 @@ test("publishing spends one credit, opens the hackathon and schedules its start"
 	expect(trials.map((card) => card.prize)).toEqual(["₹5,000 to the winner"]);
 
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 	await advancePast(t, DAY + HOUR);
 	expect(
 		(await alice.as.query(api.hiring.trialCycles.get, { trialCycleId }))

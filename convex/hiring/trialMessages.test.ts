@@ -219,6 +219,7 @@ test("an Applicant has no Thread and cannot post", async () => {
 	const trialCycleId = await createTrial(setup, { admission: "application" });
 	const applicant = await signUp(t, "Amy");
 	await applicant.as.mutation(api.hiring.applications.applyToTrial, {
+		acceptTerms: true,
 		trialCycleId,
 	});
 
@@ -245,7 +246,10 @@ test("a Thread opens at admission, before the Trial Cycle starts", async () => {
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup);
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 
 	await alice.as.mutation(api.hiring.trialMessages.send, {
 		trialCycleId,

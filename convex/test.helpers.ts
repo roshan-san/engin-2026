@@ -150,6 +150,7 @@ export async function startedTrialWith(
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	for (const participant of participants) {
 		await participant.as.mutation(api.hiring.applications.joinTrial, {
+			acceptTerms: true,
 			trialCycleId,
 		});
 	}

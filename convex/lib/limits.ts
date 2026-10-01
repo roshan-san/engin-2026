@@ -10,9 +10,10 @@ export const MAX_USER_APPLICATIONS = 80;
 export const MAX_USER_OFFERS = 50;
 export const MAX_ROLE_OFFERS = 100;
 export const MAX_ROLE_TRIALS = 100;
-export const FREE_ACTIVE_TRIAL_APPLICATIONS = 3;
+/** Live entries one person can hold across hackathons; Pro doesn't raise it. */
+export const MAX_LIVE_ENTRIES = 5;
 
-/** Applications that hold one of a free account's entry slots. */
+/** Applications that hold one of a person's live-entry slots. */
 export const LIVE_ENTRY_STATUSES = ["applied", "joined"] as const;
 export const MAX_PROOF_LINKS = 10;
 export const MAX_USER_PULSES = 200;

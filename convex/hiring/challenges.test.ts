@@ -44,8 +44,14 @@ test("starting a Trial Cycle copies every Challenge onto each Participant's Boar
 	const { t, setup, trialCycleId, alice, bob } = await setUpOpenTrial();
 	await addChallenge(setup, trialCycleId, "Build the API");
 	await addChallenge(setup, trialCycleId, "Write the docs");
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
-	await bob.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
+	await bob.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 
 	await advancePast(t, DAY + HOUR);
 
@@ -99,7 +105,10 @@ test("only Founders of the Startup can add, list or remove Challenges", async ()
 
 test("Challenges cannot be added once the Trial Cycle has started", async () => {
 	const { t, setup, trialCycleId, alice } = await setUpOpenTrial();
-	await alice.as.mutation(api.hiring.applications.joinTrial, { trialCycleId });
+	await alice.as.mutation(api.hiring.applications.joinTrial, {
+		acceptTerms: true,
+		trialCycleId,
+	});
 	await advancePast(t, DAY + HOUR);
 
 	await expect(addChallenge(setup, trialCycleId, "Too late")).rejects.toThrow(
