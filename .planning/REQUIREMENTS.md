@@ -103,12 +103,53 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| HIRE-01 | Phase 1 | Pending |
+| HIRE-02 | Phase 1 | Pending |
+| HIRE-03 | Phase 1 | Pending |
+| HIRE-04 | Phase 1 | Pending |
+| HIRE-05 | Phase 1 | Pending |
+| HIRE-06 | Phase 1 | Pending |
+| HIRE-07 | Phase 1 | Pending |
+| HIRE-08 | Phase 1 | Pending |
+| HIRE-09 | Phase 1 | Pending |
+| HIRE-10 | Phase 1 | Pending |
+| OPS-01 | Phase 1 | Pending |
+| PUBL-01 | Phase 2 | Pending |
+| PUBL-02 | Phase 2 | Pending |
+| PUBL-03 | Phase 2 | Pending |
+| PUBL-04 | Phase 2 | Pending |
+| PUBL-05 | Phase 2 | Pending |
+| PUBL-06 | Phase 2 | Pending |
+| PUBL-07 | Phase 2 | Pending |
+| RUN-01 | Phase 3 | Pending |
+| RUN-02 | Phase 3 | Pending |
+| RUN-03 | Phase 3 | Pending |
+| RUN-04 | Phase 3 | Pending |
+| RUN-05 | Phase 3 | Pending |
+| RUN-06 | Phase 3 | Pending |
+| RUN-07 | Phase 3 | Pending |
+| PROF-01 | Phase 4 | Pending |
+| PROF-02 | Phase 4 | Pending |
+| PROF-03 | Phase 4 | Pending |
+| OPS-02 | Phase 4 | Pending |
+| WORK-01 | Phase 5 | Pending |
+| WORK-02 | Phase 5 | Pending |
+| WORK-03 | Phase 5 | Pending |
+| WORK-04 | Phase 5 | Pending |
+| WORK-05 | Phase 5 | Pending |
+| WORK-06 | Phase 5 | Pending |
+| TEAM-01 | Phase 6 | Pending |
+| TEAM-02 | Phase 6 | Pending |
+| TEAM-03 | Phase 6 | Pending |
+| TEAM-04 | Phase 6 | Pending |
+| TEAM-05 | Phase 7 | Pending |
+| TEAM-06 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 41 total
-- Mapped to phases: 0
-- Unmapped: 41 ⚠️
+- Mapped to phases: 41
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-10-01*
-*Last updated: 2026-10-01 after initial definition*
+*Last updated: 2026-10-01 after roadmap creation*
