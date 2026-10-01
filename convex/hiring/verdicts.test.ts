@@ -2,12 +2,14 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { api } from "../_generated/api";
 import {
 	applicationIdOf,
+	closeWithVerdict,
 	createTest,
 	notificationTitles,
 	scoreOf,
 	setUpStartup,
 	signUp,
 	startedTrialWith,
+	type TestConvex,
 } from "../test.helpers";
 
 beforeEach(() => {
@@ -150,4 +152,99 @@ test("an Evaluation is private until the Participant shows it", async () => {
 	expect(after?.evaluations.map((item) => item.evaluation)).toEqual([
 		"Sharp work",
 	]);
+});
+
+async function joinTeamMidTrial(
+	t: TestConvex,
+	setup: Awaited<ReturnType<typeof setUpStartup>>,
+	userId: Awaited<ReturnType<typeof signUp>>["userId"],
+) {
+	await t.run(async (ctx) => {
+		await ctx.db.insert("memberships", {
+			startupId: setup.startupId,
+			userId,
+			role: "member",
+		});
+	});
+}
+
+test("someone who joins the team mid-trial gets their Verdict but no Score", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await signUp(t, "Alice");
+	const trialCycleId = await startedTrialWith(t, setup, [alice]);
+	await joinTeamMidTrial(t, setup, alice.userId);
+
+	await closeWithVerdict(t, setup, trialCycleId, alice, "passed");
+
+	const trial = await alice.as.query(api.hiring.trialCycles.get, {
+		trialCycleId,
+	});
+	expect(trial?.myVerdict).toBe("passed");
+	expect(await scoreOf(t, alice.userId)).toBe(0);
+});
+
+test("an Offer accepted by someone already on the team earns no Score", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await signUp(t, "Alice");
+	const trialCycleId = await startedTrialWith(t, setup, [alice]);
+	await joinTeamMidTrial(t, setup, alice.userId);
+	await closeWithVerdict(t, setup, trialCycleId, alice, "passed_with_offer");
+
+	const [offer] = await alice.as.query(api.hiring.offers.listMine, {});
+	await alice.as.mutation(api.hiring.offers.accept, {
+		offerId: offer?._id as NonNullable<typeof offer>["_id"],
+	});
+
+	expect(await scoreOf(t, alice.userId)).toBe(0);
+});
+
+test("a passed Verdict shows on the profile with the startup that issued it", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await signUp(t, "Alice");
+	const trialCycleId = await startedTrialWith(t, setup, [alice]);
+
+	await closeWithVerdict(t, setup, trialCycleId, alice, "passed");
+
+	const profile = await t.query(api.people.users.getByUsername, {
+		username: "alice",
+	});
+	expect(
+		profile?.verdicts.map(({ startupName, verdict }) => ({
+			startupName,
+			verdict,
+		})),
+	).toEqual([{ startupName: "Acme", verdict: "passed" }]);
+});
+
+test("Verdicts that earn no Score aren't listed on the profile", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await signUp(t, "Alice");
+	const bob = await signUp(t, "Bob");
+	const trialCycleId = await startedTrialWith(t, setup, [alice, bob]);
+	await joinTeamMidTrial(t, setup, bob.userId);
+
+	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
+		trialCycleId,
+		verdicts: [
+			{
+				applicationId: await applicationIdOf(t, trialCycleId, alice.userId),
+				verdict: "not_passed",
+			},
+			{
+				applicationId: await applicationIdOf(t, trialCycleId, bob.userId),
+				verdict: "passed",
+			},
+		],
+	});
+
+	for (const username of ["alice", "bob"]) {
+		const profile = await t.query(api.people.users.getByUsername, {
+			username,
+		});
+		expect(profile?.verdicts).toEqual([]);
+	}
 });

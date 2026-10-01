@@ -5,6 +5,7 @@ import type { trialVerdict } from "../../schema";
 import { trialCycleHref } from "../links";
 import { notify } from "../notify";
 import { refreshUserScore } from "../reputation/score";
+import { getMembership } from "../teams/membership";
 import { optionalText } from "../text";
 import { listTrialApplications } from "./trialCycles";
 
@@ -62,10 +63,15 @@ export async function closeWithVerdicts(
 		if (!entry) {
 			continue;
 		}
+		// Score integrity: someone who joined the team mid-trial keeps the
+		// Verdict but earns no Score from it (eng review R3).
+		const isOnTeam =
+			(await getMembership(ctx, trial.startupId, participant.userId)) !== null;
 		await ctx.db.patch(participant._id, {
 			status: "completed",
 			verdict: entry.verdict,
 			evaluation: optionalText(entry.evaluation),
+			...(isOnTeam ? { scoreExcluded: true } : {}),
 		});
 		if (entry.verdict === "passed_with_offer") {
 			await ctx.db.insert("offers", {

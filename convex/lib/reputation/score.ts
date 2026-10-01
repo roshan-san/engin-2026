@@ -44,7 +44,9 @@ export async function loadScoreEvidence(
 
 	const trialCyclesPassed = applications.filter(
 		(application) =>
-			application.status === "completed" && isPassed(application.verdict),
+			application.status === "completed" &&
+			isPassed(application.verdict) &&
+			!application.scoreExcluded,
 	).length;
 
 	const acceptedOffers = await ctx.db
@@ -53,11 +55,18 @@ export async function loadScoreEvidence(
 			q.eq("userId", userId).eq("status", "accepted"),
 		)
 		.take(MAX_USER_OFFERS);
+	let teamConversions = 0;
+	for (const offer of acceptedOffers) {
+		const application = await ctx.db.get(offer.applicationId);
+		if (!application?.scoreExcluded) {
+			teamConversions += 1;
+		}
+	}
 
 	const signals = {
 		trialCyclesPassed,
 		startups: memberships.length,
-		teamConversions: acceptedOffers.length,
+		teamConversions,
 		trialCyclesLeft,
 	};
 

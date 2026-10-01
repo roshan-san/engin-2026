@@ -360,6 +360,8 @@ export default defineSchema({
 		evaluationPublic: v.optional(v.boolean()),
 		/** When the entrant acknowledged the hackathon IP terms. */
 		ipAcknowledgedAt: v.optional(v.number()),
+		/** A Verdict that earns no Score: the person was on the Startup's team at close (eng review R3). */
+		scoreExcluded: v.optional(v.boolean()),
 	})
 		.index("by_user", ["userId"])
 		.index("by_startup", ["startupId"])

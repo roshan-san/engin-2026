@@ -132,13 +132,14 @@ export const getByUsername = query({
 			}
 		}
 
-		const { evaluations, trialCyclesLeft } = await loadTrialHistory(
+		const { verdicts, evaluations, trialCyclesLeft } = await loadTrialHistory(
 			ctx,
 			user._id,
 		);
 
 		return {
 			...toPublicUser(user),
+			verdicts,
 			evaluations,
 			trialCyclesLeft,
 			bio: user.bio ?? null,
