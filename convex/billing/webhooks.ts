@@ -6,6 +6,7 @@ import {
 	grantCredit,
 	grantMonthlyProCredit,
 	HACKATHON_PAYMENT_KIND,
+	keepProCredits,
 } from "../lib/billing/credits";
 import { IP_TERMS_MESSAGE } from "../lib/hiring/ipTerms";
 import { publishDraft, publishProblem } from "../lib/hiring/publish";
@@ -78,6 +79,7 @@ export const applySubscriptionEvent = internalMutation({
 		const now = Date.now();
 		if (args.event === "active" || args.event === "renewed") {
 			await ctx.db.patch(userId, { planTier: "pro" });
+			await keepProCredits(ctx, userId, now);
 			await grantMonthlyProCredit(ctx, userId, now);
 			return;
 		}

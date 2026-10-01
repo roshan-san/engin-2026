@@ -3,6 +3,7 @@ import { api } from "../_generated/api";
 import { MAX_TRIAL_CHALLENGES } from "../lib/limits";
 import {
 	advancePast,
+	createDraftTrial,
 	createTest,
 	createTrial,
 	DAY,
@@ -125,4 +126,19 @@ test("a Trial Cycle has a bounded number of Challenges", async () => {
 	await expect(
 		addChallenge(setup, trialCycleId, "One too many"),
 	).rejects.toThrow("at most");
+});
+
+test("Founders can seed Challenges on a draft before paying to publish it", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const trialCycleId = await createDraftTrial(setup);
+
+	await addChallenge(setup, trialCycleId, "Build the API");
+
+	const challenges = await setup.founder.as.query(api.hiring.challenges.list, {
+		trialCycleId,
+	});
+	expect(challenges.map((challenge) => challenge.title)).toEqual([
+		"Build the API",
+	]);
 });

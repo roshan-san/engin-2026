@@ -169,3 +169,16 @@ export async function expireProCredits(
 		}
 	}
 }
+
+/** A resubscribe undoes `expireProCredits`: banked Pro credits no longer lapse. */
+export async function keepProCredits(
+	ctx: MutationCtx,
+	userId: Id<"users">,
+	now: number,
+): Promise<void> {
+	for (const credit of await listSpendableCredits(ctx, userId, now)) {
+		if (credit.source === "pro_monthly" && credit.expiresAt !== undefined) {
+			await ctx.db.patch(credit._id, { expiresAt: undefined });
+		}
+	}
+}

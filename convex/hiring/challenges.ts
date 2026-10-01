@@ -25,9 +25,12 @@ async function requireTrialAsFounder(
 	return { trial, userId };
 }
 
-/** Copies are made at the start, so later changes belong to mid-trial Challenges. */
+/**
+ * Copies are made at the start, so later changes belong to mid-trial
+ * Challenges. Drafts count as not started, so Founders seed before paying.
+ */
 function requireNotStarted(status: string) {
-	if (status !== "open") {
+	if (status !== "draft" && status !== "open") {
 		throw new Error("Challenges can only change before the Trial Cycle starts");
 	}
 }

@@ -272,3 +272,17 @@ test("preparing a checkout runs the publish checks and records the IP acknowledg
 		}),
 	).rejects.toThrow("Turn off stealth mode");
 });
+
+test("resubscribing after a cancel keeps the banked credits past the old period end", async () => {
+	const t = createTest();
+	const founder = await signUp(t, "Founder");
+	await subscription(t, "active", founder.userId);
+	await subscription(t, "cancelled", founder.userId, {
+		nextBillingAt: Date.now() + 10 * DAY,
+	});
+
+	await subscription(t, "active", founder.userId);
+
+	vi.advanceTimersByTime(11 * DAY);
+	expect(await balanceOf(founder.as)).toBe(1);
+});
