@@ -28,12 +28,12 @@ export const MAX_USER_CREDITS = 50;
 export const MAX_LAUNCH_CODES = 10;
 export const LAUNCH_CODE_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 
-/** A Plan's limits (issue #19). `null` means unlimited — Convex values cannot
- * encode `Infinity` (edge SHELL-07/encoding). */
+/** A Plan's limits (issue #19). Publishing hackathons is gated by credits, not
+ * by the Plan (design: Founder Pro subscription). `null` means unlimited —
+ * Convex values cannot encode `Infinity`. */
 export type PlanLimits = {
 	capacity: number;
 	openRoles: number | null;
-	liveTrialCycles: number | null;
 	members: number;
 	stealth: boolean;
 };
@@ -42,14 +42,12 @@ export const PLAN_LIMITS: { free: PlanLimits; pro: PlanLimits } = {
 	free: {
 		capacity: 5,
 		openRoles: 1,
-		liveTrialCycles: 1,
 		members: 5,
 		stealth: false,
 	},
 	pro: {
 		capacity: 20,
 		openRoles: null,
-		liveTrialCycles: null,
 		members: 50,
 		stealth: true,
 	},

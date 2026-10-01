@@ -289,13 +289,11 @@ test("getBySlug's Plan block reports Free limits and correct usage", async () =>
 		limits: {
 			capacity: 5,
 			openRoles: 1,
-			liveTrialCycles: 1,
 			members: 5,
 			stealth: false,
 		},
 		usage: {
 			openRoles: 1,
-			liveTrialCycles: 1,
 			members: 2,
 			stealth: false,
 		},
@@ -349,7 +347,6 @@ test("a Pro Founder's Startup reports Pro limits", async () => {
 	expect(result?.plan?.limits).toEqual({
 		capacity: 20,
 		openRoles: null,
-		liveTrialCycles: null,
 		members: 50,
 		stealth: true,
 	});
@@ -384,7 +381,6 @@ test("a fresh Startup with nothing else reports zero Plan usage", async () => {
 	});
 	expect(result?.plan?.usage).toEqual({
 		openRoles: 0,
-		liveTrialCycles: 0,
 		members: 0,
 		stealth: false,
 	});

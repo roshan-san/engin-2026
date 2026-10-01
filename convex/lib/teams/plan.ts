@@ -16,17 +16,15 @@ export type StartupPlan = {
 	limits: PlanLimits;
 	usage: {
 		openRoles: number;
-		liveTrialCycles: number;
 		members: number;
 		stealth: boolean;
 	};
 };
 
 /**
- * Interim Plan derivation (A1): until the Plan moves onto the Startup
- * (Phase 6), a Startup is Pro when any Founder's `planTier` is Pro (ADR 0005;
- * CONTEXT.md Claude's-discretion recommendation). Phase 6 swaps the source,
- * not this shape.
+ * Display-only Plan for a Startup. Paid rights (the Pro tier and hackathon
+ * credits) belong to the user, not the Startup (eng review R2): a Startup
+ * shows as Pro when any Founder is Pro. Don't move credits onto Startups.
  */
 export async function loadStartupPlan(
 	ctx: PlanCtx,
@@ -57,20 +55,6 @@ export async function loadStartupPlan(
 			)
 			.take(MAX_PLAN_USAGE_SCAN)
 	).length;
-
-	const openTrials = await ctx.db
-		.query("trialCycles")
-		.withIndex("by_startup_and_status", (q) =>
-			q.eq("startupId", startup._id).eq("status", "open"),
-		)
-		.take(MAX_PLAN_USAGE_SCAN);
-	const activeTrials = await ctx.db
-		.query("trialCycles")
-		.withIndex("by_startup_and_status", (q) =>
-			q.eq("startupId", startup._id).eq("status", "active"),
-		)
-		.take(MAX_PLAN_USAGE_SCAN);
-	const liveTrialCycles = openTrials.length + activeTrials.length;
 
 	// Members (non-Founders), plus pending Invites to become a Member, plus
 	// pending Offers (#19).
@@ -109,7 +93,6 @@ export async function loadStartupPlan(
 		limits,
 		usage: {
 			openRoles,
-			liveTrialCycles,
 			members,
 			stealth: !startup.isPublic,
 		},
