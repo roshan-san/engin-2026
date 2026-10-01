@@ -1,6 +1,16 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { api, internal } from "../_generated/api";
-import { balanceOf, createTest, DAY, signUp } from "../test.helpers";
+import {
+	balanceOf,
+	createDraftTrial,
+	createTest,
+	createTrial,
+	DAY,
+	giveCredit,
+	HOUR,
+	setUpStartup,
+	signUp,
+} from "../test.helpers";
 
 beforeEach(() => {
 	vi.useFakeTimers();
@@ -93,4 +103,107 @@ test("Engin can create 10 launch codes per 90 days, and UPI codes don't count", 
 		source: "launch",
 		issuedTo: "Next quarter",
 	});
+});
+
+async function applyWith(
+	t: Parameters<typeof signUp>[0],
+	trialCycleId: Awaited<ReturnType<typeof createTrial>>,
+	names: string[],
+) {
+	for (const name of names) {
+		const person = await signUp(t, name);
+		await person.as.mutation(api.hiring.applications.applyToTrial, {
+			trialCycleId,
+		});
+	}
+}
+
+test("a hackathon with fewer than 3 applications earns its founder a re-run credit for 60 days", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const trialCycleId = await createTrial(setup, {
+		admission: "application",
+		startsInMs: DAY,
+	});
+	await applyWith(t, trialCycleId, ["Alice", "Bob"]);
+	vi.advanceTimersByTime(DAY + HOUR);
+
+	await t.mutation(internal.billing.credits.grantRerunCredit, {
+		trialCycleId,
+	});
+
+	const { credits } = await setup.founder.as.query(
+		api.billing.credits.balance,
+		{},
+	);
+	expect(credits.map((credit) => credit.source)).toEqual(["rerun"]);
+	vi.advanceTimersByTime(61 * DAY);
+	expect(await balanceOf(setup.founder.as)).toBe(0);
+});
+
+test("a re-run credit waits until entry closes", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+
+	await expect(
+		t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+	).rejects.toThrow("Entry is still open");
+});
+
+test("3 applications earn no re-run credit", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const trialCycleId = await createTrial(setup, {
+		admission: "application",
+		startsInMs: DAY,
+	});
+	await applyWith(t, trialCycleId, ["Alice", "Bob", "Cara"]);
+	vi.advanceTimersByTime(DAY + HOUR);
+
+	await expect(
+		t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+	).rejects.toThrow("3 or more applications");
+});
+
+test("a hackathon earns at most one re-run credit", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+	vi.advanceTimersByTime(DAY + HOUR);
+	await t.mutation(internal.billing.credits.grantRerunCredit, {
+		trialCycleId,
+	});
+
+	await expect(
+		t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+	).rejects.toThrow("already got a re-run credit");
+	expect(await balanceOf(setup.founder.as)).toBe(1);
+});
+
+test("a re-run can't earn another re-run credit", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
+	await giveCredit(t, setup.founder.userId, { source: "rerun" });
+	await setup.founder.as.mutation(api.hiring.trialCycles.publish, {
+		trialCycleId,
+		acceptTerms: true,
+	});
+	vi.advanceTimersByTime(DAY + HOUR);
+
+	await expect(
+		t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+	).rejects.toThrow("can't earn another");
+});
+
+test("a draft or an ungated hackathon earns no re-run credit", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
+	vi.advanceTimersByTime(DAY + HOUR);
+
+	await expect(
+		t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+	).rejects.toThrow("published through the paid gate");
 });

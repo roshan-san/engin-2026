@@ -97,3 +97,28 @@ export async function spendCredit(
 	});
 	return credit;
 }
+
+type CreditGrant = {
+	ownerUserId: Id<"users">;
+	source: CreditSource;
+	grantKey: string;
+	expiresAt?: number;
+};
+
+/**
+ * Inserts the credit unless its grant key was used before, because webhooks
+ * repeat (eng review R1, R4). Returns null for a repeat.
+ */
+export async function grantCredit(
+	ctx: MutationCtx,
+	grant: CreditGrant,
+): Promise<Id<"hackathonCredits"> | null> {
+	const existing = await ctx.db
+		.query("hackathonCredits")
+		.withIndex("by_grant_key", (q) => q.eq("grantKey", grant.grantKey))
+		.first();
+	if (existing) {
+		return null;
+	}
+	return await ctx.db.insert("hackathonCredits", grant);
+}

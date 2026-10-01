@@ -3,10 +3,16 @@ import { internalMutation, mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import {
 	generateCode,
+	grantCredit,
 	listSpendableCredits,
 	normalizeCode,
 } from "../lib/billing/credits";
-import { LAUNCH_CODE_WINDOW_MS, MAX_LAUNCH_CODES } from "../lib/limits";
+import {
+	LAUNCH_CODE_WINDOW_MS,
+	MAX_LAUNCH_CODES,
+	RERUN_CREDIT_TTL_MS,
+	RERUN_MIN_APPLICATIONS,
+} from "../lib/limits";
 import { requireText } from "../lib/text";
 
 export const balance = query({
@@ -83,5 +89,49 @@ export const createLaunchCode = internalMutation({
 			issuedTo,
 		});
 		return code.toUpperCase();
+	},
+});
+
+/**
+ * Engin grants this by hand, on request, when a published hackathon drew too
+ * few applications (design: Refunds). Applications count, not joins, so
+ * rejecting applicants can't produce one.
+ */
+export const grantRerunCredit = internalMutation({
+	args: { trialCycleId: v.id("trialCycles") },
+	handler: async (ctx, args) => {
+		const trial = await ctx.db.get(args.trialCycleId);
+		if (!trial?.publishedByUserId) {
+			throw new Error(
+				"Only a hackathon published through the paid gate can earn a re-run credit",
+			);
+		}
+		if (trial.creditSource === "rerun") {
+			throw new Error("A re-run can't earn another re-run credit");
+		}
+		const now = Date.now();
+		if (now <= (trial.applicationDeadline ?? trial.startsAt)) {
+			throw new Error("Entry is still open for this hackathon");
+		}
+		const applications = await ctx.db
+			.query("applications")
+			.withIndex("by_trial", (q) => q.eq("trialCycleId", trial._id))
+			.take(RERUN_MIN_APPLICATIONS);
+		if (applications.length >= RERUN_MIN_APPLICATIONS) {
+			throw new Error(
+				`This hackathon got ${RERUN_MIN_APPLICATIONS} or more applications`,
+			);
+		}
+
+		const creditId = await grantCredit(ctx, {
+			ownerUserId: trial.publishedByUserId,
+			source: "rerun",
+			grantKey: `rerun:${trial._id}`,
+			expiresAt: now + RERUN_CREDIT_TTL_MS,
+		});
+		if (!creditId) {
+			throw new Error("This hackathon already got a re-run credit");
+		}
+		return creditId;
 	},
 });

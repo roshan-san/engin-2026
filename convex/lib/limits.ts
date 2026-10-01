@@ -55,3 +55,7 @@ export const PLAN_LIMITS: { free: PlanLimits; pro: PlanLimits } = {
 
 /** The bound on every Plan usage read (roles, Trial Cycles, Members, Invites, Offers). */
 export const MAX_PLAN_USAGE_SCAN = 200;
+
+/** A hackathon with fewer applications than this by its cutoff can earn a re-run. */
+export const RERUN_MIN_APPLICATIONS = 3;
+export const RERUN_CREDIT_TTL_MS = 60 * 24 * 60 * 60 * 1000;
