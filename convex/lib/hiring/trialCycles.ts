@@ -45,6 +45,9 @@ export function isTrialLive(trial: Doc<"trialCycles">): boolean {
 
 /** Entry closes at the application deadline, or at the start when none is set. */
 export function requireAcceptingEntries(trial: Doc<"trialCycles">) {
+	if (trial.status === "draft") {
+		throw new Error("This hackathon isn't published yet");
+	}
 	const entryClosesAt = trial.applicationDeadline ?? trial.startsAt;
 	if (trial.status !== "open" || Date.now() > entryClosesAt) {
 		throw new Error("This Trial Cycle is no longer accepting people");

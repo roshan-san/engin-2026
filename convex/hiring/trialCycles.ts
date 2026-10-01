@@ -1,14 +1,16 @@
 import { v } from "convex/values";
-import { internal } from "../_generated/api";
 import { internalMutation, mutation, query } from "../_generated/server";
 import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
 import {
 	cancelTrial,
 	getTrialApplication,
+	isTrialLive,
 	listTrialApplications,
 	startTrial,
 } from "../lib/hiring/trialCycles";
+import { requireIpTerms } from "../lib/hiring/ipTerms";
+import { publishDraft, requirePublishable } from "../lib/hiring/publish";
 import { closeWithVerdicts } from "../lib/hiring/verdicts";
 import { MAX_LISTED_TRIALS, MAX_TRIAL_PARTICIPANTS } from "../lib/limits";
 import { loadPublicUser } from "../lib/people/users";
@@ -63,8 +65,11 @@ export const get = query({
 		}
 
 		const membership = await getMembership(ctx, trial.startupId, userId);
-		const application = await getTrialApplication(ctx, trial._id, userId);
 		const isMember = membership !== null;
+		if (trial.status === "draft" && !isMember) {
+			return null;
+		}
+		const application = await getTrialApplication(ctx, trial._id, userId);
 		const isParticipant = application?.status === "joined";
 		const role = await ctx.db.get(trial.roleId);
 		const startup = await ctx.db.get(trial.startupId);
@@ -98,6 +103,7 @@ export const get = query({
 	},
 });
 
+/** Creates a draft. Nothing is public or scheduled until `publish`. */
 export const create = mutation({
 	args: {
 		startupId: v.id("startups"),
@@ -112,6 +118,7 @@ export const create = mutation({
 		expectedOutcome: v.optional(v.string()),
 		evaluationCriteria: v.optional(v.string()),
 		compensation: v.optional(v.string()),
+		prize: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -148,20 +155,65 @@ export const create = mutation({
 			expectedOutcome: optionalText(args.expectedOutcome),
 			evaluationCriteria: optionalText(args.evaluationCriteria),
 			compensation: optionalText(args.compensation),
-			status: "open",
+			prize: optionalText(args.prize),
+			status: "draft",
 			participantCount: 0,
 			searchText: buildSearchText(title, description, role.title),
 		});
 
-		await ctx.scheduler.runAt(
-			args.startsAt,
-			internal.hiring.trialCycles.start,
-			{
-				trialCycleId,
-			},
-		);
-
 		return trialCycleId;
+	},
+});
+
+/**
+ * The charge point (design: Pricing rules). One mutation, so a double click
+ * or a second tab can't spend twice (eng review C4).
+ */
+export const publish = mutation({
+	args: { trialCycleId: v.id("trialCycles"), acceptTerms: v.boolean() },
+	handler: async (ctx, args): Promise<void> => {
+		const userId = await requireUserId(ctx);
+		const trial = await ctx.db.get(args.trialCycleId);
+		if (!trial) {
+			throw new Error("Trial Cycle not found");
+		}
+
+		const now = Date.now();
+		await requirePublishable(ctx, trial, userId, now);
+		requireIpTerms(args.acceptTerms);
+		await ctx.db.patch(trial._id, { ipAcknowledgedAt: now });
+		await publishDraft(ctx, trial, userId, now);
+	},
+});
+
+/** "Pick new dates": only a draft moves, because a published one has its start scheduled. */
+export const reschedule = mutation({
+	args: {
+		trialCycleId: v.id("trialCycles"),
+		startsAt: v.number(),
+		endsAt: v.number(),
+		applicationDeadline: v.optional(v.number()),
+	},
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const trial = await ctx.db.get(args.trialCycleId);
+		if (!trial) {
+			throw new Error("Trial Cycle not found");
+		}
+
+		await requireFounderMembership(ctx, trial.startupId, userId);
+		if (trial.status !== "draft") {
+			throw new Error("Only a draft's dates can change");
+		}
+		if (args.endsAt <= args.startsAt) {
+			throw new Error("Trial Cycle end must be after start");
+		}
+
+		await ctx.db.patch(trial._id, {
+			startsAt: args.startsAt,
+			endsAt: args.endsAt,
+			applicationDeadline: args.applicationDeadline,
+		});
 	},
 });
 
@@ -193,8 +245,10 @@ export const cancel = mutation({
 		}
 
 		await requireFounderMembership(ctx, trial.startupId, userId);
-		if (trial.status !== "open" && trial.status !== "active") {
-			throw new Error("Only open or active Trial Cycles can be cancelled");
+		if (trial.status !== "draft" && !isTrialLive(trial)) {
+			throw new Error(
+				"Only a draft, open or active Trial Cycle can be cancelled",
+			);
 		}
 
 		await cancelTrial(ctx, trial);

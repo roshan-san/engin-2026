@@ -60,7 +60,7 @@ export async function fillRoleIfFull(
 		.withIndex("by_role", (q) => q.eq("roleId", roleId))
 		.take(MAX_ROLE_TRIALS);
 	for (const trial of trials) {
-		if (trial.status === "open") {
+		if (trial.status === "open" || trial.status === "draft") {
 			await cancelTrial(ctx, trial, `${role.title} has been filled`);
 		}
 	}

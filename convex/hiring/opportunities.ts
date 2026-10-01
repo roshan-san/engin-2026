@@ -79,6 +79,7 @@ export const search = query({
 				maxContributors: trial.maxContributors,
 				startsAt: trial.startsAt,
 				endsAt: trial.endsAt,
+				prize: trial.prize ?? null,
 				startupName: startup.name,
 				startupSlug: startup.slug,
 			});

@@ -49,3 +49,51 @@ export async function listSpendableCredits(
 		.take(MAX_USER_CREDITS);
 	return unspent.filter((credit) => isSpendable(credit, now));
 }
+
+/** A publish spends the first of these it finds (eng review, spend order). */
+export const CREDIT_SPEND_ORDER: readonly CreditSource[] = [
+	"launch",
+	"rerun",
+	"pro_monthly",
+	"upi",
+	"purchase",
+];
+
+export const NO_CREDIT_MESSAGE =
+	"You have no hackathon credits. Pay for this hackathon to publish it.";
+
+/** Spend order first, then the soonest expiry, then the oldest. */
+function compareForSpending(
+	a: Doc<"hackathonCredits">,
+	b: Doc<"hackathonCredits">,
+): number {
+	const bySource =
+		CREDIT_SPEND_ORDER.indexOf(a.source) - CREDIT_SPEND_ORDER.indexOf(b.source);
+	if (bySource !== 0) {
+		return bySource;
+	}
+	const aExpiry = a.expiresAt ?? Number.MAX_SAFE_INTEGER;
+	const bExpiry = b.expiresAt ?? Number.MAX_SAFE_INTEGER;
+	if (aExpiry !== bExpiry) {
+		return aExpiry - bExpiry;
+	}
+	return a._creationTime - b._creationTime;
+}
+
+export async function spendCredit(
+	ctx: MutationCtx,
+	ownerUserId: Id<"users">,
+	trialCycleId: Id<"trialCycles">,
+	now: number,
+): Promise<Doc<"hackathonCredits">> {
+	const credits = await listSpendableCredits(ctx, ownerUserId, now);
+	const credit = credits.sort(compareForSpending)[0];
+	if (!credit) {
+		throw new Error(NO_CREDIT_MESSAGE);
+	}
+	await ctx.db.patch(credit._id, {
+		spentAt: now,
+		spentOnTrialCycleId: trialCycleId,
+	});
+	return credit;
+}

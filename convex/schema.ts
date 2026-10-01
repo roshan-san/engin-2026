@@ -83,6 +83,8 @@ export const creditSource = v.union(
 );
 
 export const trialStatus = v.union(
+	/** Created but not paid for: hidden, not joinable, no start scheduled. */
+	v.literal("draft"),
 	v.literal("open"),
 	v.literal("active"),
 	v.literal("closed"),
@@ -311,6 +313,15 @@ export default defineSchema({
 		expectedOutcome: v.optional(v.string()),
 		evaluationCriteria: v.optional(v.string()),
 		compensation: v.optional(v.string()),
+		/** Optional prize text, paid off-platform, e.g. "₹5,000 to the winner". */
+		prize: v.optional(v.string()),
+		/** Set at the charge point, when a Founder publishes the draft. */
+		publishedAt: v.optional(v.number()),
+		publishedByUserId: v.optional(v.id("users")),
+		/** The credit that paid for publishing; a "rerun" can't earn another re-run credit. */
+		creditSource: v.optional(creditSource),
+		/** When the publishing Founder acknowledged that contributors keep their IP. */
+		ipAcknowledgedAt: v.optional(v.number()),
 		status: trialStatus,
 		participantCount: v.number(),
 		searchText: v.string(),

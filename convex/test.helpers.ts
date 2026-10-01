@@ -1,7 +1,7 @@
 import { convexTest } from "convex-test";
 import { vi } from "vitest";
 import { api } from "./_generated/api";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import schema from "./schema";
 import { modules } from "./test.setup";
 
@@ -45,17 +45,21 @@ export async function setUpStartup(t: TestConvex, headcount = 1) {
 		description: "Build things",
 		headcount,
 	});
-	return { founder, startupId, roleId };
+	return { t, founder, startupId, roleId };
 }
 
-export async function createTrial(
+type TrialOverrides = {
+	admission?: "open" | "application";
+	maxContributors?: number;
+	startsInMs?: number;
+	applicationDeadlineInMs?: number;
+	prize?: string;
+};
+
+/** A draft Trial Cycle: created, not paid for, not public. */
+export async function createDraftTrial(
 	setup: Awaited<ReturnType<typeof setUpStartup>>,
-	overrides: {
-		admission?: "open" | "application";
-		maxContributors?: number;
-		startsInMs?: number;
-		applicationDeadlineInMs?: number;
-	} = {},
+	overrides: TrialOverrides = {},
 ) {
 	const now = Date.now();
 	const startsAt = now + (overrides.startsInMs ?? DAY);
@@ -72,7 +76,44 @@ export async function createTrial(
 			overrides.applicationDeadlineInMs === undefined
 				? undefined
 				: now + overrides.applicationDeadlineInMs,
+		prize: overrides.prize,
 	});
+}
+
+/** Gives someone one unspent hackathon credit, as if they had paid. */
+export async function giveCredit(
+	t: TestConvex,
+	userId: Id<"users">,
+	credit: {
+		source?: Doc<"hackathonCredits">["source"];
+		expiresAt?: number;
+	} = {},
+) {
+	return await t.run(
+		async (ctx) =>
+			await ctx.db.insert("hackathonCredits", {
+				ownerUserId: userId,
+				source: credit.source ?? "purchase",
+				expiresAt: credit.expiresAt,
+			}),
+	);
+}
+
+/**
+ * A published Trial Cycle (eng review R7): the Founder pays with a credit,
+ * so every lifecycle test runs unchanged.
+ */
+export async function createTrial(
+	setup: Awaited<ReturnType<typeof setUpStartup>>,
+	overrides: TrialOverrides = {},
+) {
+	const trialCycleId = await createDraftTrial(setup, overrides);
+	await giveCredit(setup.t, setup.founder.userId);
+	await setup.founder.as.mutation(api.hiring.trialCycles.publish, {
+		trialCycleId,
+		acceptTerms: true,
+	});
+	return trialCycleId;
 }
 
 export async function scoreOf(t: TestConvex, userId: Id<"users">) {
