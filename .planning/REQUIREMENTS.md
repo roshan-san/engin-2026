@@ -10,8 +10,8 @@
 - [ ] **HIRE-01**: Founder sees the Startup's Roles and Trial Cycles (draft, open, running, closed, cancelled) on the Hiring screen
 - [ ] **HIRE-02**: Founder can create and close a Role
 - [ ] **HIRE-03**: Founder can create a draft Trial Cycle for a Role with dates, admission mode, optional application deadline, optional prize and seeded challenges
-- [ ] **HIRE-04**: Founder sees their hackathon credit balance (by source and expiry) on the Hiring screen
-- [ ] **HIRE-05**: Founder can claim a launch/UPI code (any case, spaces or dashes) and the balance goes up by 1; reusing a code shows an error
+- [ ] **HIRE-04**: Founder sees their hackathon credit count on the Hiring screen
+- [ ] **HIRE-05**: Every new account starts with 1 free hackathon credit (no expiry); no codes in the app. Pro grants 2 credits/month, rolling over up to 4
 - [ ] **HIRE-06**: Founder can publish a draft by ticking the IP acknowledgment; publish spends exactly one credit (double-click or two tabs never spend two) and the hackathon appears on Discover
 - [ ] **HIRE-07**: When publish is blocked, the founder sees the backend's reason with the fix: no credit → pay; stealth on → asked to go public first; dates passed → a "pick new dates" prompt
 - [ ] **HIRE-08**: Founder with no credit goes to Dodo checkout in INR (₹2,999 on Free, ₹1,499 on Pro); after paying, the webhook auto-publishes the draft. Returning from checkout shows the live state from the backend, not the redirect (works even if the tab was closed)

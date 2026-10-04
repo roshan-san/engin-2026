@@ -30,7 +30,7 @@ Product rules (pricing, publish gate, credits, entry) live in `PROJECT.md` → C
 **Success Criteria** (what must be TRUE):
   1. A founder creates a Role and a draft Trial Cycle (dates, admission, deadline, prize, challenges), and it shows as a draft on the Hiring screen and nowhere public.
   2. A founder with a credit ticks the IP acknowledgment, publishes, and the hackathon goes open with the balance down by exactly one, even on a double-click.
-  3. Claiming a launch code raises the balance by 1, and reusing it shows an error.
+  3. A new founder account starts with 1 free credit and can publish its first hackathon without paying; cancelling before start returns the credit.
   4. A founder with no credit pays ₹2,999 (Free) or ₹1,499 (Pro) through Dodo test-mode checkout, and the draft auto-publishes via the webhook. If the dates already passed, the credit stays in the balance and a "pick new dates" prompt appears.
   5. A stealth startup's publish asks the founder to go public first; reschedule and cancel work from the same screen.
 **Plans:** TBD
