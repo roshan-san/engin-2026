@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-10-04T11:59:50.271Z",
+  "phase": "1",
+  "phase_name": "Hiring Screen & Drafts",
+  "phase_dir": ".planning/phases/01-hiring-screen-drafts",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "Phase research (01-RESEARCH.md)", "status": "done", "commit": "6662d0b"},
+    {"id": 2, "name": "Validation strategy (01-VALIDATION.md)", "status": "done", "commit": "240dd9c"},
+    {"id": 3, "name": "Pattern map (01-PATTERNS.md)", "status": "done", "commit": "committed with this handoff"}
+  ],
+  "remaining_tasks": [
+    {"id": 4, "name": "Planner: write Phase 1 PLAN.md files", "status": "not_started"},
+    {"id": 5, "name": "Plan checker + revision loop (max 3)", "status": "not_started"},
+    {"id": 6, "name": "Coverage gates, STATE/ROADMAP update, commit plans", "status": "not_started"}
+  ],
+  "blockers": [],
+  "async_jobs": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "Plan Phase 1 without a UI-SPEC (--skip-ui semantics)", "rationale": "User: don't use agents/skills that aren't enabled in this install; gsd-ui-phase is not surfaced", "phase": "1"},
+    {"decision": "WALKING_SKELETON=false", "rationale": "Zero-summaries heuristic fired, but the app is brownfield (scaffold, routing, DB, auth, deploy exist)", "phase": "1"},
+    {"decision": "Research was run without asking", "rationale": "User's standing preference: take the recommended option in planning workflows", "phase": "1"},
+    {"decision": "Planner follows RESEARCH.md open-question defaults", "rationale": "No Free-plan open-Role limit enforcement in Phase 1; closed Roles shown muted below open ones; new-form default dates tomorrow 10:00 local for 7 days", "phase": "1"}
+  ],
+  "uncommitted_files": ["?? .planning/phases/01-hiring-screen-drafts/01-PATTERNS.md (committed with this handoff)"],
+  "next_action": "Run /gsd-plan-phase 1 — it reuses RESEARCH/PATTERNS/VALIDATION; pass --skip-ui; the user stopped the previous planner run, so ask what to change first if they gave a reason",
+  "context_notes": "01-CONTEXT.md is shared by Phases 1-3; Phase 1 = HIRE-01/02/03/09 only. The user stopped the planner mid-run without saying why."
+}
