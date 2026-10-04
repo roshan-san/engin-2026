@@ -15,7 +15,7 @@ A founder can create, pay for, publish and run a hiring hackathon end to end in 
 - **Customer**: founders of pre-seed Indian startups hiring 1 builder. Contributors are always free; incubators and E-cells are a marketing channel, not users.
 - **Revenue model**: ₹2,999 per hackathon on Free; Pro ₹999/mo or ₹9,999/yr includes 1 hackathon credit a month (max 3 banked) and ₹1,499 extra hackathons. Launch codes for free runs (≤10 per 90 days).
 - **Success metric**: within 90 days, 10 hackathons by 10 founders, ≥3 accepted offers, ≥3 paying founders, ≥5 participants per hackathon on average; Engin hires its own next builder through one.
-- **Strategy notes**: `docs/designs/engin-hiring-hackathon.md` (approved), `engin-hiring-hackathon-eng-review.md`, `engin-hiring-hackathon-test-plan.md`.
+- **Strategy notes**: `.planning/docs/designs/engin-hiring-hackathon.md` (approved), `engin-hiring-hackathon-eng-review.md`, `engin-hiring-hackathon-test-plan.md`.
 
 ## Requirements
 

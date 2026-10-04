@@ -4,7 +4,7 @@
 
 This milestone replaces every stub screen left by the shell redesign with working screens on the existing Convex backend, money path first. Phases 1–4 take a founder from a draft hackathon through payment, public entry, the trial run and verdicts on public profiles. They end with Engin running its own hiring hackathon (the design's "Assignment" step 1). Phases 5–7 rebuild the rest of the signed-in app: Cycles and My Pulses, team workspace screens, and the Inbox and Threads. Each phase ships whole screens end to end.
 
-Source docs: `docs/designs/engin-hiring-hackathon.md`, `engin-hiring-hackathon-eng-review.md`, `engin-hiring-hackathon-test-plan.md`.
+Source docs: `.planning/docs/designs/engin-hiring-hackathon.md`, `engin-hiring-hackathon-eng-review.md`, `engin-hiring-hackathon-test-plan.md`.
 
 ## Phases
 
