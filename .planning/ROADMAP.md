@@ -2,7 +2,9 @@
 
 ## Overview
 
-This milestone replaces every stub screen left by the shell redesign with working screens on the existing Convex backend, money path first. Phases 1–4 take a founder from a draft hackathon through payment, public entry, the trial run and verdicts on public profiles. They end with Engin running its own hiring hackathon (the design's "Assignment" step 1). Phases 5–7 rebuild the rest of the signed-in app: Cycles and My Pulses, team workspace screens, and the Inbox and Threads. Each phase ships whole screens end to end.
+This milestone replaces every stub screen left by the shell redesign with working screens on the existing Convex backend, money path first. Phases 1–10 take a founder from a draft hackathon through payment, public entry, the trial run and verdicts on public profiles. They end with Engin running its own hiring hackathon (the design's "Assignment" step 1). Phases 11–14 rebuild the rest of the signed-in app: Cycles and My Pulses, team workspace screens, and the Inbox and Threads. Each phase ships whole screens end to end.
+
+Phases are deliberately small (2–4 requirements each) to keep each plan/execute run's context and token usage low.
 
 Product rules (pricing, publish gate, credits, entry) live in `PROJECT.md` → Context.
 
@@ -12,61 +14,138 @@ Product rules (pricing, publish gate, credits, entry) live in `PROJECT.md` → C
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Founder Hiring & Publish** - Hiring screen with Roles, drafts, credit balance, code claim, publish gate and Dodo checkout
-- [ ] **Phase 2: Public Hackathon, Entry & Pricing** - Public hackathon page, Discover listing, apply/join with IP tick, my entries, pricing and landing rewrite
-- [ ] **Phase 3: Trial Run & Offers** - TrialCyclePage: applicants, challenges, participant boards, threads, announcements, verdicts and offers
-- [ ] **Phase 4: Profiles & Engin's Own Hackathon** - Own and public profile with Score and issuing-startup verdicts; full critical path verified live
-- [ ] **Phase 5: Cycles & My Pulses** - Cycles list, drag-and-drop Cycle board, Pulse editing and review, My Pulses home
-- [ ] **Phase 6: Team Workspace** - Team, invites, settings with stealth, Pitch editor, Activity
-- [ ] **Phase 7: Inbox & Threads** - Inbox of notifications/invites/offers and the Threads list
+- [ ] **Phase 1: Hiring Screen & Drafts** - Hiring screen with Roles and Trial Cycles; create/close Role; create, edit, reschedule and cancel drafts
+- [ ] **Phase 2: Credits & Publish** - Credit balance, signup credit, Pro as workspace plan, publish gate with IP tick and blocked-state messages
+- [ ] **Phase 3: Dodo Checkout** - Dodo INR products, checkout, webhook auto-publish, return-from-checkout and dates-passed handling
+- [ ] **Phase 4: Public Hackathon Page & Discover** - Public hackathon page and published-only listings on Discover and `/startup/$slug`
+- [ ] **Phase 5: Entry & My Entries** - Apply/join with IP tick, exact rejection messages, my entries with withdraw
+- [ ] **Phase 6: Pricing & Landing** - `/pricing` Free vs Pro INR table with Dodo upgrade; landing page rewrite
+- [ ] **Phase 7: Admission & Challenges** - TrialCyclePage applicants accept/reject; add/remove challenges mid-trial
+- [ ] **Phase 8: Trial Boards & Announcements** - Private participant Trial Boards with proof links, announcements, leaving a trial
+- [ ] **Phase 9: Verdicts & Offers** - Verdicts with evaluations, close creates offers and updates Score, offer accept/decline/withdraw
+- [ ] **Phase 10: Profiles & Engin's Own Hackathon** - Own and public profile with Score and issuing-startup verdicts; full critical path verified live
+- [ ] **Phase 11: Cycles & Board** - Cycles list, create/start/close with carry-over, Cycle Members, drag-and-drop board
+- [ ] **Phase 12: Pulses & My Pulses** - Pulse create/edit/delete, proof links, verify/return, My Pulses home
+- [ ] **Phase 13: Team Workspace** - Team, invites, settings with stealth, Pitch editor, Activity
+- [ ] **Phase 14: Inbox & Threads** - Inbox of notifications/invites/offers and the Threads list
 
 ## Phase Details
 
-### Phase 1: Founder Hiring & Publish
-**Goal:** A founder creates a Role and a draft Trial Cycle, then publishes it with a credit, a claimed code or a Dodo payment, from `/s/$slug/hiring`.
+### Phase 1: Hiring Screen & Drafts
+**Goal:** A founder sees Roles and Trial Cycles on `/s/$slug/hiring`, creates and closes Roles, and creates, edits, reschedules and cancels draft hackathons.
 **Mode:** mvp
 **Depends on:** Nothing (first phase)
-**Requirements:** HIRE-01, HIRE-02, HIRE-03, HIRE-04, HIRE-05, HIRE-06, HIRE-07, HIRE-08, HIRE-09, HIRE-10, OPS-01
+**Requirements:** HIRE-01, HIRE-02, HIRE-03, HIRE-09
+**Context:** `phases/01-hiring-screen-drafts/01-CONTEXT.md` (covers Phases 1–3)
 **Success Criteria** (what must be TRUE):
-  1. A founder creates a Role and a draft Trial Cycle (dates, admission, deadline, prize, challenges), and it shows as a draft on the Hiring screen and nowhere public.
-  2. A founder with a credit ticks the IP acknowledgment, publishes, and the hackathon goes open with the balance down by exactly one, even on a double-click.
-  3. A new founder account starts with 1 free credit and can publish its first hackathon without paying; cancelling before start returns the credit.
-  4. A founder with no credit pays ₹2,999 (Free) or ₹1,499 (Pro) through Dodo test-mode checkout, and the draft auto-publishes via the webhook. If the dates already passed, the credit stays in the balance and a "pick new dates" prompt appears.
-  5. A stealth startup's publish asks the founder to go public first; reschedule and cancel work from the same screen.
+  1. A founder sees the Startup's Roles and Trial Cycles grouped by status (draft, open, running, closed, cancelled).
+  2. A founder creates a Role and closes it; closing is blocked while the Role has hackathons.
+  3. A founder creates a draft Trial Cycle (dates, application admission, deadline, prize, challenges) and edits it; it shows as a draft and nowhere public.
+  4. A founder reschedules a draft's dates and cancels a draft or published Trial Cycle.
 **Plans:** TBD
 **UI hint:** yes
 
-### Phase 2: Public Hackathon, Entry & Pricing
-**Goal:** Contributors find a published hackathon, read its public page and enter it, and founders see honest INR pricing.
+### Phase 2: Credits & Publish
+**Goal:** A founder with a credit publishes a draft safely, and every blocked publish explains its fix.
 **Mode:** mvp
 **Depends on:** Phase 1
-**Requirements:** PUBL-01, PUBL-02, PUBL-03, PUBL-04, PUBL-05, PUBL-06, PUBL-07
+**Requirements:** HIRE-04, HIRE-05, HIRE-06, HIRE-07
+**Context:** `phases/01-hiring-screen-drafts/01-CONTEXT.md`
 **Success Criteria** (what must be TRUE):
-  1. A signed-out visitor opens a hackathon page showing startup, role, deadline, dates, challenges, participant count, prize and IP notice, and is asked to sign in only on Apply/Join.
-  2. Discover and `/startup/$slug` list only published hackathons; drafts and stealth startups never appear.
-  3. A contributor ticks the IP acknowledgment and applies or joins. A founder/member of that startup, or someone on their 6th live entry, sees the backend's exact message.
-  4. A contributor sees their entries with status and can withdraw.
-  5. `/pricing` shows the Free vs Pro INR table from the design and upgrades a founder through Dodo; the landing page pitches the hiring hackathon with no "Linear alternative" or "pre-vetted" claims.
+  1. A founder sees their credit balance on the Hiring screen; a new account starts with 1 free credit and no codes exist in the app.
+  2. A founder ticks the IP acknowledgment and publishes; the hackathon goes open with the balance down by exactly one, even on a double-click or two tabs.
+  3. Cancelling a published hackathon before it starts returns the credit.
+  4. A blocked publish shows the backend's reason with its fix: no credit → pay, stealth → go public first, dates passed → pick new dates.
 **Plans:** TBD
 **UI hint:** yes
 
-### Phase 3: Trial Run & Offers
-**Goal:** A published hackathon runs end to end on `/s/$slug/trials/$trialCycleId`: admission, challenges, private boards, threads, verdicts and offers.
+### Phase 3: Dodo Checkout
+**Goal:** A founder with no credit pays through Dodo in INR and the draft publishes itself.
 **Mode:** mvp
 **Depends on:** Phase 2
-**Requirements:** RUN-01, RUN-02, RUN-03, RUN-04, RUN-05, RUN-06, RUN-07
+**Requirements:** HIRE-08, HIRE-10, OPS-01
+**Context:** `phases/01-hiring-screen-drafts/01-CONTEXT.md`
 **Success Criteria** (what must be TRUE):
-  1. A founder accepts or rejects applicants, and adds a challenge mid-trial that reaches every current participant's board.
-  2. A participant works their private Trial Board with proof links and messages the founders in their own thread; an announcement reaches every participant.
-  3. A founder gives each participant a verdict with an optional evaluation; closing creates offers where earned and updates Score.
-  4. A participant can leave mid-trial and sees their verdict after close; a contributor accepts or declines an offer, and a founder can withdraw one.
+  1. Dodo test-mode INR products exist and their IDs are set as Convex env vars.
+  2. A founder with no credit pays ₹2,999 (Free) or ₹1,499 (Pro) through test-mode checkout, and the webhook auto-publishes the draft.
+  3. Returning from checkout shows the live backend state, and it works even if the tab was closed.
+  4. If the dates already passed when payment lands, the credit stays in the balance and the draft shows the "pick new dates" prompt.
 **Plans:** TBD
 **UI hint:** yes
 
-### Phase 4: Profiles & Engin's Own Hackathon
+### Phase 4: Public Hackathon Page & Discover
+**Goal:** Anyone can find a published hackathon and read its public page.
+**Mode:** mvp
+**Depends on:** Phase 2
+**Requirements:** PUBL-01, PUBL-02
+**Success Criteria** (what must be TRUE):
+  1. A signed-out visitor opens a hackathon page showing startup, role, deadline, dates, challenges, participant count, prize and IP notice.
+  2. Discover and `/startup/$slug` list only published hackathons; drafts and stealth startups never appear.
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 5: Entry & My Entries
+**Goal:** Contributors enter a hackathon, get honest rejections, and manage their entries.
+**Mode:** mvp
+**Depends on:** Phase 4
+**Requirements:** PUBL-03, PUBL-04, PUBL-05
+**Success Criteria** (what must be TRUE):
+  1. A signed-out visitor is asked to sign in only on Apply/Join; a signed-in contributor ticks the IP acknowledgment and applies or joins.
+  2. A founder/member of that startup, or someone on their 6th live entry, or a full/closed hackathon sees the backend's exact message.
+  3. A contributor sees their entries with status and can withdraw.
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 6: Pricing & Landing
+**Goal:** Founders see honest INR pricing and can upgrade; the landing page pitches the hiring hackathon.
+**Mode:** mvp
+**Depends on:** Phase 3 (Dodo products)
+**Requirements:** PUBL-06, PUBL-07
+**Success Criteria** (what must be TRUE):
+  1. `/pricing` shows the Free vs Pro INR table from the design and upgrades a founder to Pro through Dodo.
+  2. The landing page pitches the online hiring hackathon (contributors free, verdicts name the issuing startup) with no "Linear alternative" or "pre-vetted" claims.
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 7: Admission & Challenges
+**Goal:** On `/s/$slug/trials/$trialCycleId`, a founder admits applicants and shapes the challenges.
+**Mode:** mvp
+**Depends on:** Phase 5
+**Requirements:** RUN-01, RUN-02
+**Success Criteria** (what must be TRUE):
+  1. A founder sees applicants and accepts or rejects each one.
+  2. A founder adds or removes challenges, including mid-trial, and an added challenge reaches every current participant's board.
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 8: Trial Boards & Announcements
+**Goal:** Participants work their private boards and hear from founders; they can leave.
+**Mode:** mvp
+**Depends on:** Phase 7
+**Requirements:** RUN-03, RUN-04, RUN-06
+**Success Criteria** (what must be TRUE):
+  1. A participant works their private Trial Board (pulses seeded from challenges) with proof links.
+  2. A founder's announcement reaches every participant; there are no private founder↔participant DMs.
+  3. A participant can leave a running Trial Cycle.
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 9: Verdicts & Offers
+**Goal:** A founder closes the trial with verdicts, and offers flow to contributors.
+**Mode:** mvp
+**Depends on:** Phase 8
+**Requirements:** RUN-05, RUN-07
+**Success Criteria** (what must be TRUE):
+  1. A founder gives each participant a verdict with an optional evaluation; closing creates offers where earned and updates Score.
+  2. A participant sees their verdict after close.
+  3. A contributor accepts or declines an offer, and a founder can withdraw one.
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 10: Profiles & Engin's Own Hackathon
 **Goal:** Users manage their profile and show verdicts publicly, and the full founder critical path is proven live by Engin hiring through it.
 **Mode:** mvp
-**Depends on:** Phase 3
+**Depends on:** Phase 9
 **Requirements:** PROF-01, PROF-02, PROF-03, OPS-02
 **Success Criteria** (what must be TRUE):
   1. A signed-in user edits name, username, bio, skills, location and links from `/profile`.
@@ -76,24 +155,34 @@ Product rules (pricing, publish gate, credits, entry) live in `PROJECT.md` → C
 **Plans:** TBD
 **UI hint:** yes
 
-### Phase 5: Cycles & My Pulses
-**Goal:** Members run internal work in Cycles of Pulses on a drag-and-drop board and land on My Pulses after sign-in.
+### Phase 11: Cycles & Board
+**Goal:** Members see and run Cycles on a drag-and-drop board; founders manage the Cycle lifecycle.
 **Mode:** mvp
-**Depends on:** Nothing (independent of Phases 1–4; scheduled after them by priority)
-**Requirements:** WORK-01, WORK-02, WORK-03, WORK-04, WORK-05, WORK-06
+**Depends on:** Nothing (independent of Phases 1–10; scheduled after them by priority)
+**Requirements:** WORK-01, WORK-02, WORK-05
 **Success Criteria** (what must be TRUE):
   1. A member sees Active, Planned and Closed Cycles; a founder creates one.
   2. A member drags Pulses across todo, in progress, review and done on desktop and mobile, and a disallowed move is visibly refused.
-  3. A member creates, edits and deletes Pulses, assigns themselves and adds proof links; a founder verifies or returns a Pulse in review.
-  4. A founder starts and closes a Cycle with carry-over and manages Cycle Members.
-  5. Signing in lands on My Pulses, showing the user's Cycle Pulses and Trial Board Pulses across all Startups.
+  3. A founder starts and closes a Cycle with carry-over and manages Cycle Members.
 **Plans:** TBD
 **UI hint:** yes
 
-### Phase 6: Team Workspace
+### Phase 12: Pulses & My Pulses
+**Goal:** Members manage Pulses with proof, founders review them, and sign-in lands on My Pulses.
+**Mode:** mvp
+**Depends on:** Phase 11
+**Requirements:** WORK-03, WORK-04, WORK-06
+**Success Criteria** (what must be TRUE):
+  1. A member creates, edits and deletes Pulses, assigns themselves and adds proof links.
+  2. A founder verifies or returns a Pulse in review.
+  3. Signing in lands on My Pulses, showing the user's Cycle Pulses and Trial Board Pulses across all Startups.
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 13: Team Workspace
 **Goal:** Founders run their team, settings and Pitch, and members follow the Startup's activity, from the Focused Startup area.
 **Mode:** mvp
-**Depends on:** Nothing (independent; Phase 1's stealth prompt links here once it ships)
+**Depends on:** Nothing (independent; Phase 2's stealth prompt links here once it ships)
 **Requirements:** TEAM-01, TEAM-02, TEAM-03, TEAM-04
 **Success Criteria** (what must be TRUE):
   1. A member sees the team; a founder removes a member.
@@ -103,29 +192,36 @@ Product rules (pricing, publish gate, credits, entry) live in `PROJECT.md` → C
 **Plans:** TBD
 **UI hint:** yes
 
-### Phase 7: Inbox & Threads
-**Goal:** Users handle everything addressed to them from the Inbox and reach every Trial Cycle thread from one Threads screen.
+### Phase 14: Inbox & Threads
+**Goal:** Users handle everything addressed to them from the Inbox and reach every Trial Cycle's announcements from one Threads screen.
 **Mode:** mvp
-**Depends on:** Phase 3 (threads), Phase 6 (invites)
+**Depends on:** Phase 8 (announcements), Phase 13 (invites)
 **Requirements:** TEAM-05, TEAM-06
 **Success Criteria** (what must be TRUE):
   1. The Inbox lists notifications, invites and offers newest first with an unread count, marks them read, and lets the user accept/decline in place.
   2. Each Inbox item links to the exact screen it's about.
-  3. Threads lists every Trial Cycle thread the user is in and opens each one.
+  3. Threads lists the announcements of every Trial Cycle the user is in and opens each one.
 **Plans:** TBD
 **UI hint:** yes
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 → 2 → … → 14
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Founder Hiring & Publish | 0/TBD | Not started | - |
-| 2. Public Hackathon, Entry & Pricing | 0/TBD | Not started | - |
-| 3. Trial Run & Offers | 0/TBD | Not started | - |
-| 4. Profiles & Engin's Own Hackathon | 0/TBD | Not started | - |
-| 5. Cycles & My Pulses | 0/TBD | Not started | - |
-| 6. Team Workspace | 0/TBD | Not started | - |
-| 7. Inbox & Threads | 0/TBD | Not started | - |
+| 1. Hiring Screen & Drafts | 0/TBD | Not started | - |
+| 2. Credits & Publish | 0/TBD | Not started | - |
+| 3. Dodo Checkout | 0/TBD | Not started | - |
+| 4. Public Hackathon Page & Discover | 0/TBD | Not started | - |
+| 5. Entry & My Entries | 0/TBD | Not started | - |
+| 6. Pricing & Landing | 0/TBD | Not started | - |
+| 7. Admission & Challenges | 0/TBD | Not started | - |
+| 8. Trial Boards & Announcements | 0/TBD | Not started | - |
+| 9. Verdicts & Offers | 0/TBD | Not started | - |
+| 10. Profiles & Engin's Own Hackathon | 0/TBD | Not started | - |
+| 11. Cycles & Board | 0/TBD | Not started | - |
+| 12. Pulses & My Pulses | 0/TBD | Not started | - |
+| 13. Team Workspace | 0/TBD | Not started | - |
+| 14. Inbox & Threads | 0/TBD | Not started | - |

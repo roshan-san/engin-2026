@@ -1,7 +1,13 @@
-# Phase 1: Founder Hiring & Publish - Context
+# Phases 1–3: Hiring Screen & Drafts / Credits & Publish / Dodo Checkout - Context
 
 **Gathered:** 2026-10-01 (revised 2026-10-04)
 **Status:** Ready for planning
+
+> **Split 2026-10-04:** the old Phase 1 became Phases 1–3. This file is the shared context for all three.
+> Phase 1 = HIRE-01, 02, 03, 09 (screen, Roles, drafts, reschedule/cancel).
+> Phase 2 = HIRE-04, 05, 06, 07 (credits, signup credit, Pro as workspace plan, publish gate, cancel refund).
+> Phase 3 = HIRE-08, 10, OPS-01 (Dodo checkout, webhook auto-publish, return-from-checkout, dates passed).
+> Plan only the decisions that belong to the phase being planned.
 
 <domain>
 ## Phase Boundary

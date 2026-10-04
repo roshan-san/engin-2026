@@ -33,7 +33,7 @@
 - [ ] **RUN-01**: Founder sees applicants and accepts or rejects each one (application admission)
 - [ ] **RUN-02**: Founder can add or remove challenges, including mid-trial
 - [ ] **RUN-03**: Participant works their private Trial Board (pulses seeded from challenges) with proof links
-- [ ] **RUN-04**: Founders post announcements to every participant. No private founder↔participant DMs (decided 2026-10-04; details in Phase 3 discuss)
+- [ ] **RUN-04**: Founders post announcements to every participant. No private founder↔participant DMs (decided 2026-10-04; details in Phase 8 discuss)
 - [ ] **RUN-05**: Founder gives each participant a verdict with an optional evaluation, and closing creates offers where earned and updates Score
 - [ ] **RUN-06**: Participant can leave a running Trial Cycle and sees their verdict when it closes
 - [ ] **RUN-07**: Contributor can accept or decline an offer; founder can withdraw one
@@ -65,7 +65,7 @@
 - [ ] **TEAM-03**: Founder edits the Startup's settings (name, details, stealth toggle) and the Pitch sections
 - [ ] **TEAM-04**: Member sees the Startup's activity feed
 - [ ] **TEAM-05**: User sees an Inbox of notifications, invites and offers, newest first with unread count, and can mark read and act in place
-- [ ] **TEAM-06**: User sees announcements across all Trial Cycles they're in (no DMs since 2026-10-04; scope to confirm in Phase 7 discuss)
+- [ ] **TEAM-06**: User sees announcements across all Trial Cycles they're in (no DMs since 2026-10-04; scope to confirm in Phase 14 discuss)
 
 ## v2 Requirements
 
@@ -106,44 +106,44 @@
 | HIRE-01 | Phase 1 | Pending |
 | HIRE-02 | Phase 1 | Pending |
 | HIRE-03 | Phase 1 | Pending |
-| HIRE-04 | Phase 1 | Pending |
-| HIRE-05 | Phase 1 | Pending |
-| HIRE-06 | Phase 1 | Pending |
-| HIRE-07 | Phase 1 | Pending |
-| HIRE-08 | Phase 1 | Pending |
+| HIRE-04 | Phase 2 | Pending |
+| HIRE-05 | Phase 2 | Pending |
+| HIRE-06 | Phase 2 | Pending |
+| HIRE-07 | Phase 2 | Pending |
+| HIRE-08 | Phase 3 | Pending |
 | HIRE-09 | Phase 1 | Pending |
-| HIRE-10 | Phase 1 | Pending |
-| OPS-01 | Phase 1 | Pending |
-| PUBL-01 | Phase 2 | Pending |
-| PUBL-02 | Phase 2 | Pending |
-| PUBL-03 | Phase 2 | Pending |
-| PUBL-04 | Phase 2 | Pending |
-| PUBL-05 | Phase 2 | Pending |
-| PUBL-06 | Phase 2 | Pending |
-| PUBL-07 | Phase 2 | Pending |
-| RUN-01 | Phase 3 | Pending |
-| RUN-02 | Phase 3 | Pending |
-| RUN-03 | Phase 3 | Pending |
-| RUN-04 | Phase 3 | Pending |
-| RUN-05 | Phase 3 | Pending |
-| RUN-06 | Phase 3 | Pending |
-| RUN-07 | Phase 3 | Pending |
-| PROF-01 | Phase 4 | Pending |
-| PROF-02 | Phase 4 | Pending |
-| PROF-03 | Phase 4 | Pending |
-| OPS-02 | Phase 4 | Pending |
-| WORK-01 | Phase 5 | Pending |
-| WORK-02 | Phase 5 | Pending |
-| WORK-03 | Phase 5 | Pending |
-| WORK-04 | Phase 5 | Pending |
-| WORK-05 | Phase 5 | Pending |
-| WORK-06 | Phase 5 | Pending |
-| TEAM-01 | Phase 6 | Pending |
-| TEAM-02 | Phase 6 | Pending |
-| TEAM-03 | Phase 6 | Pending |
-| TEAM-04 | Phase 6 | Pending |
-| TEAM-05 | Phase 7 | Pending |
-| TEAM-06 | Phase 7 | Pending |
+| HIRE-10 | Phase 3 | Pending |
+| OPS-01 | Phase 3 | Pending |
+| PUBL-01 | Phase 4 | Pending |
+| PUBL-02 | Phase 4 | Pending |
+| PUBL-03 | Phase 5 | Pending |
+| PUBL-04 | Phase 5 | Pending |
+| PUBL-05 | Phase 5 | Pending |
+| PUBL-06 | Phase 6 | Pending |
+| PUBL-07 | Phase 6 | Pending |
+| RUN-01 | Phase 7 | Pending |
+| RUN-02 | Phase 7 | Pending |
+| RUN-03 | Phase 8 | Pending |
+| RUN-04 | Phase 8 | Pending |
+| RUN-05 | Phase 9 | Pending |
+| RUN-06 | Phase 8 | Pending |
+| RUN-07 | Phase 9 | Pending |
+| PROF-01 | Phase 10 | Pending |
+| PROF-02 | Phase 10 | Pending |
+| PROF-03 | Phase 10 | Pending |
+| OPS-02 | Phase 10 | Pending |
+| WORK-01 | Phase 11 | Pending |
+| WORK-02 | Phase 11 | Pending |
+| WORK-03 | Phase 12 | Pending |
+| WORK-04 | Phase 12 | Pending |
+| WORK-05 | Phase 11 | Pending |
+| WORK-06 | Phase 12 | Pending |
+| TEAM-01 | Phase 13 | Pending |
+| TEAM-02 | Phase 13 | Pending |
+| TEAM-03 | Phase 13 | Pending |
+| TEAM-04 | Phase 13 | Pending |
+| TEAM-05 | Phase 14 | Pending |
+| TEAM-06 | Phase 14 | Pending |
 
 **Coverage:**
 - v1 requirements: 41 total
@@ -152,4 +152,4 @@
 
 ---
 *Requirements defined: 2026-10-01*
-*Last updated: 2026-10-04 after planning restructure*
+*Last updated: 2026-10-04 after split into 14 phases*
