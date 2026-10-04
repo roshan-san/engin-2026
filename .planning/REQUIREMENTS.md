@@ -11,7 +11,7 @@
 - [ ] **HIRE-02**: Founder can create and close a Role
 - [ ] **HIRE-03**: Founder can create a draft Trial Cycle for a Role with dates, admission mode, optional application deadline, optional prize and seeded challenges
 - [ ] **HIRE-04**: Founder sees their hackathon credit count on the Hiring screen
-- [ ] **HIRE-05**: Every new account starts with 1 free hackathon credit (no expiry); no codes in the app. Pro grants 2 credits/month, rolling over up to 4
+- [ ] **HIRE-05**: Every new account starts with 1 free hackathon credit (no expiry); no codes in the app. Pro includes no credits: it is the workspace plan, and hackathons cost ₹1,499 on Pro
 - [ ] **HIRE-06**: Founder can publish a draft by ticking the IP acknowledgment; publish spends exactly one credit (double-click or two tabs never spend two) and the hackathon appears on Discover
 - [ ] **HIRE-07**: When publish is blocked, the founder sees the backend's reason with the fix: no credit → pay; stealth on → asked to go public first; dates passed → a "pick new dates" prompt
 - [ ] **HIRE-08**: Founder with no credit goes to Dodo checkout in INR (₹2,999 on Free, ₹1,499 on Pro); after paying, the webhook auto-publishes the draft. Returning from checkout shows the live state from the backend, not the redirect (works even if the tab was closed)
@@ -25,7 +25,7 @@
 - [ ] **PUBL-03**: Signed-in contributor can apply or join from the hackathon page after ticking the IP acknowledgment; signed-out visitors are asked to sign in first
 - [ ] **PUBL-04**: Contributor sees the backend's exact rejection message when blocked: own startup's founder/member, full, closed, or the 6th live entry ("You're in 5 hackathons already. Finish or withdraw from one to join another.")
 - [ ] **PUBL-05**: Contributor sees their own entries and their status, and can withdraw
-- [ ] **PUBL-06**: Pricing page shows the Free vs Pro table from the design (members 5/50, stealth, ₹2,999 per hackathon on Free; Pro ₹999/mo or ₹9,999/yr with 1 credit a month, max 3 banked, ₹1,499 extras; contributors always free) and upgrades founders through Dodo in INR. No contributor Pro
+- [ ] **PUBL-06**: Pricing page shows the Free vs Pro table from the design (members 5/50, stealth, ₹2,999 per hackathon on Free; Pro ₹999/mo or ₹9,999/yr with hackathons at ₹1,499 and no included credits; first hackathon free for every new account; contributors always free) and upgrades founders through Dodo in INR. No contributor Pro
 - [ ] **PUBL-07**: Landing page positions Engin as the online hiring hackathon for early-stage startups (contributors free, verdicts name the issuing startup), with no "Linear alternative" or "pre-vetted" claims
 
 ### Trial run
@@ -33,7 +33,7 @@
 - [ ] **RUN-01**: Founder sees applicants and accepts or rejects each one (application admission)
 - [ ] **RUN-02**: Founder can add or remove challenges, including mid-trial
 - [ ] **RUN-03**: Participant works their private Trial Board (pulses seeded from challenges) with proof links
-- [ ] **RUN-04**: Participant and founders message in a private per-participant thread; founder posts announcements to every participant
+- [ ] **RUN-04**: Founders post announcements to every participant. No private founder↔participant DMs (decided 2026-10-04; details in Phase 3 discuss)
 - [ ] **RUN-05**: Founder gives each participant a verdict with an optional evaluation, and closing creates offers where earned and updates Score
 - [ ] **RUN-06**: Participant can leave a running Trial Cycle and sees their verdict when it closes
 - [ ] **RUN-07**: Contributor can accept or decline an offer; founder can withdraw one
@@ -65,7 +65,7 @@
 - [ ] **TEAM-03**: Founder edits the Startup's settings (name, details, stealth toggle) and the Pitch sections
 - [ ] **TEAM-04**: Member sees the Startup's activity feed
 - [ ] **TEAM-05**: User sees an Inbox of notifications, invites and offers, newest first with unread count, and can mark read and act in place
-- [ ] **TEAM-06**: User sees their Threads across all Trial Cycles they're in and opens each one
+- [ ] **TEAM-06**: User sees announcements across all Trial Cycles they're in (no DMs since 2026-10-04; scope to confirm in Phase 7 discuss)
 
 ## v2 Requirements
 

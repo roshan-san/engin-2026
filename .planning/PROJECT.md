@@ -13,7 +13,7 @@ A founder can create, pay for, publish and run a hiring hackathon in the app, an
 ## Business Context
 
 - **Customer**: founders of pre-seed Indian startups hiring one builder, often for equity. Contributors are always free. Incubators and E-cells are a marketing channel, not users.
-- **Revenue model**: ₹2,999 per hackathon on Free. Pro is ₹999/mo or ₹9,999/yr, includes 1 hackathon credit a month (at most 3 banked), and extra hackathons cost ₹1,499. Free runs come only from launch codes (at most 10 in 90 days, at most 2 per E-cell session).
+- **Revenue model**: Every new account gets its first hackathon free (a signup credit). After that ₹2,999 per hackathon on Free, ₹1,499 on Pro. Pro is ₹999/mo or ₹9,999/yr and is a workspace plan (bigger limits, stealth) with no included hackathon credits. Discount codes live in Dodo, not the app.
 - **Success metric (90 days)**: Engin hires its own next builder through a hackathon; 10 hackathons by 10 other founders; ≥3 accepted offers; ≥3 paying founders; ≥5 participants per hackathon on average.
 - **Edge**: competitive and many-to-one, graded on real Pulses, feeding a public Score that names the issuer. Closest competitor is Joinstartup (paid trials from ₹10k).
 
@@ -57,7 +57,7 @@ A founder can create, pay for, publish and run a hiring hackathon in the app, an
 ### Product rules (built into the backend; the UI must surface them, not re-implement them)
 
 - **Charge point is publish.** `trialCycles.create` inserts a `draft`. Drafts are hidden from Discover, opportunities and entry, and nothing is scheduled for them. `publish` is one mutation that runs these checks in order: founder, status is draft, startup not in stealth, Role open, `applicationDeadline ?? startsAt` still in the future, IP tick. It then spends exactly one credit, opens the Trial Cycle and schedules its start. Mutations are serializable, so a double click can't spend twice.
-- **Credits** are owned by the founder who paid or claimed them and can be spent on any startup they found. Sources are `launch`, `upi`, `rerun`, `pro_monthly` and `purchase`; spending skips expired credits. Pro monthly grants are keyed per user per month and capped at 3 banked. If Pro is cancelled, banked credits expire at period end.
+- **Credits** are owned by the founder who paid or got them and can be spent on any startup they found. Sources are `signup` (1 per new account, no expiry), `purchase` and `rerun`; spending skips expired credits. There are no launch/UPI codes and no monthly Pro credits. Cancelling an open hackathon before it starts returns its credit.
 - **One-time payment**: the Dodo `payment.succeeded` webhook grants a `purchase` credit keyed by payment id, then auto-publishes the draft if its dates are still valid. Otherwise the credit stays in the balance and the draft needs new dates (`NEW_DATES_MESSAGE`). A payment with no matching user is logged with `console.error` and fixed by hand.
 - **Re-runs**: if a hackathon gets fewer than 3 applications by its entry cutoff, Engin grants one re-run credit by hand (`grantRerunCredit`). It expires after 60 days and a re-run can't earn another one.
 - **Stealth**: a stealth startup can't publish, so every hackathon and verdict names the real startup.

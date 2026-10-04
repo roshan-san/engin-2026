@@ -58,3 +58,10 @@
 ## Deferred Ideas
 
 - Inline stealth toggle (Phase 6), soft-timeout banners, return-URL status, pricing page explanation (Phase 2), Dodo discount codes (go-to-market plan), ₹1,499 top-up pricing review.
+
+## Follow-up (same day)
+
+- Messaging: "i dont want the founder to message the participant directly" → **No direct DMs at all**, announcements only. Recorded against RUN-04 (Phase 3) and TEAM-06 (Phase 7).
+- Business model review: Claude flagged that included Pro credits let a founder pay ₹999 for one month, run hackathons and cancel, so the ₹2,999 single is never bought. The user asked what happens when a Pro user cancels; Claude compared the two models.
+  - Options: Pro = workspace with no credits (Rec.) ✓ / keep 2/month roll-over / Pro 1/month.
+- Admin `grantCredit` command for UPI/incubator packs: **No**.
