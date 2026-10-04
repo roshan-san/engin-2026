@@ -15,8 +15,8 @@
 - [ ] **HIRE-06**: Founder can publish a draft by ticking the IP acknowledgment; publish spends exactly one credit (double-click or two tabs never spend two) and the hackathon appears on Discover
 - [ ] **HIRE-07**: When publish is blocked, the founder sees the backend's reason with the fix: no credit → pay; stealth on → asked to go public first; dates passed → a "pick new dates" prompt
 - [ ] **HIRE-08**: Founder with no credit goes to Dodo checkout in INR (₹2,999 on Free, ₹1,499 on Pro); after paying, the webhook auto-publishes the draft. Returning from checkout shows the live state from the backend, not the redirect (works even if the tab was closed)
-- [ ] **HIRE-10**: If payment lands after the draft's dates passed, the credit shows in the balance and the draft stays a draft with the "pick new dates" prompt
 - [ ] **HIRE-09**: Founder can reschedule a draft's dates and cancel a draft or published Trial Cycle
+- [ ] **HIRE-10**: If payment lands after the draft's dates passed, the credit shows in the balance and the draft stays a draft with the "pick new dates" prompt
 
 ### Public hackathon & entry
 
@@ -152,4 +152,4 @@
 
 ---
 *Requirements defined: 2026-10-01*
-*Last updated: 2026-10-01 after roadmap creation*
+*Last updated: 2026-10-04 after planning restructure*

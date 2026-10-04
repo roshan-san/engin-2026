@@ -49,7 +49,7 @@ Not in this phase:
 - **D-09:** "Edit dates" on a draft reuses one shared date-fields component (start/end/deadline) that calls `trialCycles.reschedule`. The publish dialog uses the same component (D-13).
 
 ### Publish & blocked states
-- **D-10:** Blockers show before the founder clicks. Add a small founder-guarded query that returns `publishProblem(trial, now)` from `convex/lib/hiring/publish.ts` for a draft, or null. The publish dialog shows the reason and its fix up front. The `publish` mutation still re-checks on click, and its thrown message is shown as-is if it differs. Messages are the backend's exact strings, for example `NEW_DATES_MESSAGE`.
+- **D-10:** Blockers show before the founder clicks. Add a small founder-guarded query that returns `publishProblem(trial, now)` from `convex/hiring/publish.rules.ts` for a draft, or null. The publish dialog shows the reason and its fix up front. The `publish` mutation still re-checks on click, and its thrown message is shown as-is if it differs. Messages are the backend's exact strings, for example `NEW_DATES_MESSAGE`.
 - **D-11:** One publish dialog adapts to the founder's balance:
   - The required IP acknowledgment tick (founder side of the design's IP terms) is at the top.
   - With a credit, the button reads "Publish (uses 1 credit, N left)" and calls `trialCycles.publish({ acceptTerms: true })`. Double-submit is guarded in the UI too, though the backend is already one-mutation idempotent.
@@ -80,13 +80,11 @@ Not in this phase:
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Product & pricing rules
-- `docs/designs/engin-hiring-hackathon.md`: approved design. See Pricing rules (charge point, credit order, refunds, stealth, IP of submissions) and the pricing table.
-- `docs/designs/engin-hiring-hackathon-eng-review.md`: publish gate ordering (C4), the double-spend guarantee, and grandfathering.
-- `docs/designs/engin-hiring-hackathon-test-plan.md`: test cases for publish, credits, codes and webhook.
-- `docs/plans/2026-09-30-hiring-hackathon-backend.md`: how the backend was built (credits ledger, publish gate, checkout, webhooks).
+- `.planning/PROJECT.md` → Context → Product rules: charge point, publish check order, credit ownership and sources, webhook fulfilment, stealth, IP.
+- `convex/hiring/publish.rules.ts`, `convex/billing/credits.rules.ts`, `convex/billing/webhooks.ts` and their tests are the source of truth for behaviour.
 
 ### Project
-- `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md` (HIRE-01..10, OPS-01), `.planning/ROADMAP.md` Phase 1 success criteria.
+- `.planning/REQUIREMENTS.md` (HIRE-01..10, OPS-01), `.planning/ROADMAP.md` Phase 1 success criteria.
 - `CLAUDE.md`, the repo architecture: guard pattern, bounded reads, route/feature layout, hooks own `useQuery`/`useMutation`.
 - `convex/_generated/ai/guidelines.md`: Convex API conventions for any new query.
 
@@ -101,10 +99,10 @@ Not in this phase:
 - `convex/hiring/challenges.ts`: `list`, `add`, `remove` (allowed while draft/open).
 - `convex/billing/credits.ts`: `balance` (`{ available, credits[{source, expiresAt}] }`), `claimLaunchCode({ code })`.
 - `convex/billing/checkout.ts`: `createHackathonCheckout({ trialCycleId, returnUrl, acceptTerms })` returns `{ checkoutUrl }`. It runs `requirePublishable` and stamps `ipAcknowledgedAt` first.
-- `convex/lib/hiring/publish.ts`: `publishProblem`, `NEW_DATES_MESSAGE`. The new pre-check query (D-10) reuses `publishProblem`.
+- `convex/hiring/publish.rules.ts`: `publishProblem`, `NEW_DATES_MESSAGE`. The new pre-check query (D-10) reuses `publishProblem`.
 - `convex/billing/webhooks.ts`: grants a `purchase` credit, then auto-publishes if `publishProblem` is null.
 - `convex/teams/startups.ts` `update` accepts `isPublic` (D-12).
-- `src/features/marketing/pricing/hooks/useUpgrade.ts`: pattern for an action → `window.location.href = checkoutUrl`, plus `api.people.billing.getPlan` for the plan tier (₹2,999 vs ₹1,499 label).
+- `src/features/marketing/pricing/hooks/useUpgrade.ts`: pattern for an action → `window.location.href = checkoutUrl`, plus `api.billing.plan.getPlan` for the plan tier (₹2,999 vs ₹1,499 label).
 - `src/features/hiring/roles/constants.ts` (`ROLE_TYPES`), `src/features/hiring/trialCycles/constants.ts` (`CONTRIBUTOR_IP_TERMS`).
 - `src/shell/hooks/useStartupBySlug.ts`, `useFocusedStartup`, `useCurrentUser` for the startup id and founder role.
 - `src/components/ui/*` shadcn components; `sonner` toasts.

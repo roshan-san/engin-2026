@@ -5,8 +5,8 @@ current_phase_name: Founder Hiring & Publish
 status: planning
 stopped_at: Phase 1 context gathered
 last_updated: "2026-10-01T07:46:27.703Z"
-last_activity: 2026-10-01
-last_activity_desc: Project initialized (PROJECT, REQUIREMENTS, ROADMAP)
+last_activity: 2026-10-04
+last_activity_desc: Planning folder restructured; old design docs folded into PROJECT.md
 state_head: 3d386fcde1477e12976bbacfe26c7eebd9edea20
 progress:
   total_phases: 7
@@ -20,7 +20,7 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-01)
+See: .planning/PROJECT.md (updated 2026-10-04)
 
 **Core value:** A founder can create, pay for, publish and run a hiring hackathon end to end in the app, and a contributor can find it, enter, ship and get a verdict that shows on their Score.
 **Current focus:** Phase 1 — Founder Hiring & Publish
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-01)
 Phase: 1 of 7 (Founder Hiring & Publish)
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-10-01 — Project initialized (PROJECT, REQUIREMENTS, ROADMAP)
+Last activity: 2026-10-04 — Planning folder restructured; old design docs folded into PROJECT.md
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -55,7 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
-- [Init]: Money path first; hackathon design beats old ADR-0005 (Pro and credits per founder user)
+- [Init]: Money path first; Pro and credits belong to the founder user
 - [Init]: Functional first — keep drag-and-drop; no J/K review, chords or Playwright
 
 ### Pending Todos
@@ -64,7 +64,6 @@ None yet.
 
 ### Blockers/Concerns
 
-- GSD subagents (planner, researcher, verifier) are not installed in `.claude/agents`; run `npx @opengsd/gsd-core@latest --claude --local` (or `--global`) before `/gsd-plan-phase` if spawns fail.
 - OPS-01 needs manual Dodo dashboard work (test-mode INR products + Convex env vars) before checkout can be verified.
 
 ## Deferred Items
