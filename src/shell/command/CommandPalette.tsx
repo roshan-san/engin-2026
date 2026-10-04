@@ -13,9 +13,9 @@ import {
 	useShortcutContext,
 } from "~/shell/command/CommandProvider";
 import { usePaletteData } from "~/shell/command/usePaletteData";
-import { StartupAvatar } from "~/shell/sidebar/StartupAvatar";
 import { SHORTCUTS } from "~/shell/shortcuts/registry";
 import { ShortcutHint } from "~/shell/shortcuts/ShortcutHint";
+import { StartupAvatar } from "~/shell/sidebar/StartupAvatar";
 
 /**
  * The mod+K palette (D-18–D-20, UI E7). Fixed group order: Screens,

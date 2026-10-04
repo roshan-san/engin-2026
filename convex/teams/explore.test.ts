@@ -1,28 +1,14 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import {
-	advancePast,
-	createTest,
-	createTrial,
-	DAY,
-	HOUR,
-	joinAsMember,
-	setUpStartup,
-	signUp,
-} from "../test.helpers";
-
-beforeEach(() => {
-	vi.useFakeTimers();
-});
-
-afterEach(() => {
-	vi.useRealTimers();
-});
+import { createTrial } from "../hiring/trialCycles.helpers";
+import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
+import { signUp } from "../people/users.helpers";
+import { joinAsMember, setUpStartup } from "./startups.helpers";
 
 test("only Users with a username and evidence appear as contributors", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await joinAsMember(t, setup, "Alice");
+	await joinAsMember(setup, "Alice");
 
 	// A signed-up user with no membership, Verdict, or Verified Pulse: no evidence.
 	await signUp(t, "NoEvidence");
@@ -38,7 +24,7 @@ test("only Users with a username and evidence appear as contributors", async () 
 test("hiding from Explore removes a contributor from the list", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const alice = await joinAsMember(t, setup, "Alice");
+	const alice = await joinAsMember(setup, "Alice");
 
 	await alice.as.mutation(api.people.users.updateProfile, {
 		hideFromExplore: true,
@@ -51,8 +37,8 @@ test("hiding from Explore removes a contributor from the list", async () => {
 test("skill and location filters narrow the contributor list", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const alice = await joinAsMember(t, setup, "Alice");
-	const bob = await joinAsMember(t, setup, "Bob");
+	const alice = await joinAsMember(setup, "Alice");
+	const bob = await joinAsMember(setup, "Bob");
 
 	await alice.as.mutation(api.people.users.updateProfile, {
 		skills: ["rust"],
@@ -77,8 +63,8 @@ test("skill and location filters narrow the contributor list", async () => {
 test("contributors are sorted by Score, highest first", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await joinAsMember(t, setup, "Alice");
-	await joinAsMember(t, setup, "Bob");
+	await joinAsMember(setup, "Alice");
+	await joinAsMember(setup, "Bob");
 
 	await t.run(async (ctx) => {
 		const alice = await ctx.db

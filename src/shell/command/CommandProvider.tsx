@@ -1,11 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import {
 	createContext,
+	type ReactNode,
 	useCallback,
 	useContext,
 	useRef,
 	useState,
-	type ReactNode,
 } from "react";
 import { useFocusedStartup } from "~/shell/hooks/useFocusedStartup";
 import type { ShortcutContext } from "~/shell/shortcuts/registry";

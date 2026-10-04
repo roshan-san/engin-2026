@@ -1,7 +1,9 @@
 import { expect, test } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { createTest, DAY, setUpStartup, signUp } from "../test.helpers";
+import { createTest, DAY } from "../lib/testing.helpers";
+import { setUpStartup } from "../teams/startups.helpers";
+import { signUp } from "./users.helpers";
 
 /** A closed Cycle with one Verified Pulse per given title, all by `userId`. */
 async function shipInClosedCycle(

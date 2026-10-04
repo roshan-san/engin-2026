@@ -2,18 +2,18 @@ import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
-import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
-import { fillRoleIfFull, withdrawOffer } from "../lib/hiring/offers";
-import { startupHref } from "../lib/links";
 import { MAX_USER_OFFERS } from "../lib/limits";
-import { notifyFounders } from "../lib/notify";
-import { loadPublicUser } from "../lib/people/users";
-import { refreshUserScore } from "../lib/reputation/score";
+import { startupHref } from "../lib/links";
+import { notifyFounders } from "../people/notifications.rules";
+import { refreshUserScore } from "../people/score.rules";
+import { loadPublicUser } from "../people/users.rules";
+import { logActivity } from "../teams/activity.rules";
 import {
 	requireFounderMembership,
 	requireMembership,
-} from "../lib/teams/membership";
+} from "../teams/membership.rules";
+import { fillRoleIfFull, withdrawOffer } from "./offers.rules";
 
 async function requirePendingOffer(
 	ctx: MutationCtx,
@@ -128,7 +128,6 @@ export const accept = mutation({
 			await logActivity(ctx, {
 				startupId: offer.startupId,
 				kind: "member_joined",
-				actorUserId: offer.userId,
 				summary: `${person?.name ?? "Someone"} joined the team`,
 			});
 		}
@@ -137,7 +136,6 @@ export const accept = mutation({
 		await logActivity(ctx, {
 			startupId: offer.startupId,
 			kind: "offer_accepted",
-			actorUserId: offer.userId,
 			roleId: offer.roleId,
 			summary: `${acceptedBy?.name ?? "Someone"} accepted their Offer`,
 		});

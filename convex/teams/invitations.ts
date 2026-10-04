@@ -3,19 +3,16 @@ import type { MutationCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { MAX_INVITES_PER_EMAIL } from "../lib/limits";
-import { notify } from "../lib/notify";
+import { notify } from "../people/notifications.rules";
+import { memberRole } from "../schema";
 import {
 	generateToken,
 	inviteExpiry,
 	isInviteLive,
 	redeemInvite,
 	resolveInvitee,
-} from "../lib/teams/invites";
-import {
-	getMembership,
-	requireFounderMembership,
-} from "../lib/teams/membership";
-import { memberRole } from "../schema";
+} from "./invitations.rules";
+import { getMembership, requireFounderMembership } from "./membership.rules";
 
 export const listInvites = query({
 	args: { startupId: v.id("startups") },

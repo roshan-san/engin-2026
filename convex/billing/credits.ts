@@ -2,13 +2,6 @@ import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import {
-	generateCode,
-	grantCredit,
-	grantMonthlyProCredit,
-	listSpendableCredits,
-	normalizeCode,
-} from "../lib/billing/credits";
-import {
 	LAUNCH_CODE_WINDOW_MS,
 	MAX_LAUNCH_CODES,
 	MAX_PRO_USERS_SCAN,
@@ -16,6 +9,13 @@ import {
 	RERUN_MIN_APPLICATIONS,
 } from "../lib/limits";
 import { requireText } from "../lib/text";
+import {
+	generateCode,
+	grantCredit,
+	grantMonthlyProCredit,
+	listSpendableCredits,
+	normalizeCode,
+} from "./credits.rules";
 
 export const balance = query({
 	args: {},
@@ -53,7 +53,6 @@ export const claimLaunchCode = mutation({
 
 		await ctx.db.patch(credit._id, {
 			ownerUserId: userId,
-			claimedAt: Date.now(),
 		});
 	},
 });

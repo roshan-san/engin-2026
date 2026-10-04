@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { requireMembership } from "../lib/teams/membership";
-import { getCycleMember } from "../lib/work/cycles";
+import { getCycleMember } from "../work/cycles.rules";
+import { requireMembership } from "./membership.rules";
 
 const FEED_SIZE = 20;
 const FEED_SCAN_LIMIT = 100;

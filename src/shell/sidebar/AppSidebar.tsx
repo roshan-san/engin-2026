@@ -21,8 +21,8 @@ import { useCommands } from "~/shell/command/CommandProvider";
 import { useFocusedStartup } from "~/shell/hooks/useFocusedStartup";
 import { useNotifications } from "~/shell/hooks/useNotifications";
 import { DISCOVER_NAV, PERSONAL_NAV, STARTUP_NAV } from "~/shell/nav";
-import { StartupSwitcher } from "~/shell/sidebar/StartupSwitcher";
 import { ShortcutHint } from "~/shell/shortcuts/ShortcutHint";
+import { StartupSwitcher } from "~/shell/sidebar/StartupSwitcher";
 
 /**
  * Desktop sidebar (D-07, UI E2): personal items, the Startup switcher plus

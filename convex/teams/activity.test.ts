@@ -1,12 +1,9 @@
 import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import {
-	createTest,
-	cyclePulseFor,
-	joinAsMember,
-	setUpStartup,
-	signUp,
-} from "../test.helpers";
+import { createTest } from "../lib/testing.helpers";
+import { signUp } from "../people/users.helpers";
+import { cyclePulseFor } from "../work/cycles.helpers";
+import { joinAsMember, setUpStartup } from "./startups.helpers";
 
 test("posting a Role, an accepted Invite, and a verified Pulse each write one Activity row", async () => {
 	const t = createTest();
@@ -31,7 +28,7 @@ test("posting a Role, an accepted Invite, and a verified Pulse each write one Ac
 		expect.arrayContaining(["role_posted", "member_joined"]),
 	);
 
-	const { pulseId } = await cyclePulseFor(t, setup, bob);
+	const { pulseId } = await cyclePulseFor(setup, bob);
 	await bob.as.mutation(api.work.pulses.setStatus, {
 		pulseId,
 		status: "review",
@@ -52,10 +49,10 @@ test("posting a Role, an accepted Invite, and a verified Pulse each write one Ac
 test("a Member does not see Pulse events from Cycles they are not in", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const inCycle = await joinAsMember(t, setup, "Alice");
-	const outsider = await joinAsMember(t, setup, "Bob");
+	const inCycle = await joinAsMember(setup, "Alice");
+	const outsider = await joinAsMember(setup, "Bob");
 
-	const { pulseId } = await cyclePulseFor(t, setup, inCycle);
+	const { pulseId } = await cyclePulseFor(setup, inCycle);
 	await inCycle.as.mutation(api.work.pulses.setStatus, {
 		pulseId,
 		status: "review",
@@ -81,7 +78,7 @@ test("a Member does not see Pulse events from Cycles they are not in", async () 
 test("the dashboard reports team size and open counts", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await joinAsMember(t, setup, "Alice");
+	await joinAsMember(setup, "Alice");
 
 	const dashboard = await setup.founder.as.query(api.teams.activity.dashboard, {
 		startupId: setup.startupId,

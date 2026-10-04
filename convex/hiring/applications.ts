@@ -1,26 +1,26 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
+import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
+import { trialCycleHref } from "../lib/links";
+import { optionalText } from "../lib/text";
+import { notify, notifyFounders } from "../people/notifications.rules";
+import { refreshUserScore } from "../people/score.rules";
+import {
+	requireFounderMembership,
+	requireMembership,
+} from "../teams/membership.rules";
 import {
 	releaseParticipantSpot,
 	requireCanEnter,
 	takeParticipantSpot,
-} from "../lib/hiring/entries";
+} from "./applications.rules";
+import { requireIpTerms } from "./ipTerms.rules";
 import {
 	getTrialApplication,
 	isTrialLive,
 	requireAcceptingEntries,
-} from "../lib/hiring/trialCycles";
-import { requireIpTerms } from "../lib/hiring/ipTerms";
-import { trialCycleHref } from "../lib/links";
-import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
-import { notify, notifyFounders } from "../lib/notify";
-import { refreshUserScore } from "../lib/reputation/score";
-import {
-	requireFounderMembership,
-	requireMembership,
-} from "../lib/teams/membership";
-import { optionalText } from "../lib/text";
+} from "./trialCycles.rules";
 
 export const listMine = query({
 	args: {},
@@ -225,9 +225,7 @@ export const leaveTrial = mutation({
 		const isLeaving = wasParticipant && trial.status === "active";
 		await ctx.db.patch(
 			application._id,
-			isLeaving
-				? { status: "left", leftAt: Date.now() }
-				: { status: "withdrawn" },
+			isLeaving ? { status: "left" } : { status: "withdrawn" },
 		);
 
 		if (wasParticipant) {

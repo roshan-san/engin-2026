@@ -10,9 +10,9 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Skeleton } from "~/components/ui/skeleton";
+import { cn } from "~/lib/utils";
 import { useFocusedStartup } from "~/shell/hooks/useFocusedStartup";
 import { StartupAvatar } from "~/shell/sidebar/StartupAvatar";
-import { cn } from "~/lib/utils";
 
 /**
  * The Startup switcher (UI E1): loading skeleton, "Create Startup" when the

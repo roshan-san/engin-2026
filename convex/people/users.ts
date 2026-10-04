@@ -3,18 +3,13 @@ import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { internalQuery, mutation, query } from "../_generated/server";
 import { initUserProfile, requireUserId } from "../lib/auth";
-import { requireUsername } from "../lib/people/username";
-import { toPublicUser } from "../lib/people/users";
-import { loadProofOfWork } from "../lib/reputation/proofOfWork";
-import { loadScoreEvidence } from "../lib/reputation/score";
-import { loadTrialHistory } from "../lib/reputation/trialHistory";
-import { assertUrl, optionalText } from "../lib/text";
-
-const MAX_BIO = 280;
-const MAX_HEADLINE = 80;
-const MAX_LOCATION = 80;
-const MAX_SKILLS = 10;
-const MAX_SKILL_LENGTH = 32;
+import { MAX_BIO, MAX_LOCATION, SKILL_LIMITS } from "../lib/limits";
+import { assertUrl, limitText, normalizeTags, optionalText } from "../lib/text";
+import { loadProofOfWork } from "./proofOfWork.rules";
+import { loadScoreEvidence } from "./score.rules";
+import { loadTrialHistory } from "./trialHistory.rules";
+import { requireUsername } from "./username.rules";
+import { toPublicUser } from "./users.rules";
 
 type ProfilePatch = Partial<
 	Pick<
@@ -23,7 +18,6 @@ type ProfilePatch = Partial<
 		| "username"
 		| "bio"
 		| "skills"
-		| "headline"
 		| "location"
 		| "githubUrl"
 		| "linkedinUrl"
@@ -31,36 +25,6 @@ type ProfilePatch = Partial<
 		| "hideFromExplore"
 	>
 >;
-
-function normalizeSkills(skills: string[] | undefined): string[] | undefined {
-	if (!skills) {
-		return undefined;
-	}
-
-	const unique = [
-		...new Set(
-			skills
-				.map((skill) => skill.trim())
-				.filter(
-					(skill) => skill.length > 0 && skill.length <= MAX_SKILL_LENGTH,
-				),
-		),
-	].slice(0, MAX_SKILLS);
-
-	return unique.length > 0 ? unique : undefined;
-}
-
-function limitText(
-	value: string | undefined,
-	field: string,
-	max: number,
-): string | undefined {
-	const text = optionalText(value);
-	if (text && text.length > max) {
-		throw new Error(`${field} must be under ${max} characters`);
-	}
-	return text;
-}
 
 export const getMe = query({
 	args: {},
@@ -86,7 +50,6 @@ export const getMe = query({
 			username: user.username ?? null,
 			bio: user.bio ?? null,
 			skills: user.skills ?? [],
-			headline: user.headline ?? null,
 			location: user.location ?? null,
 			githubUrl: user.githubUrl ?? null,
 			linkedinUrl: user.linkedinUrl ?? null,
@@ -175,22 +138,12 @@ export const usernameAvailable = query({
 	},
 });
 
-export const ensureProfile = mutation({
-	args: {},
-	handler: async (ctx) => {
-		const userId = await requireUserId(ctx);
-		await initUserProfile(ctx, userId);
-		return userId;
-	},
-});
-
 export const updateProfile = mutation({
 	args: {
 		name: v.optional(v.string()),
 		username: v.optional(v.string()),
 		bio: v.optional(v.string()),
 		skills: v.optional(v.array(v.string())),
-		headline: v.optional(v.string()),
 		location: v.optional(v.string()),
 		githubUrl: v.optional(v.string()),
 		linkedinUrl: v.optional(v.string()),
@@ -227,10 +180,7 @@ export const updateProfile = mutation({
 			patch.bio = limitText(args.bio, "Bio", MAX_BIO);
 		}
 		if (args.skills !== undefined) {
-			patch.skills = normalizeSkills(args.skills);
-		}
-		if (args.headline !== undefined) {
-			patch.headline = limitText(args.headline, "Headline", MAX_HEADLINE);
+			patch.skills = normalizeTags(args.skills, SKILL_LIMITS);
 		}
 		if (args.location !== undefined) {
 			patch.location = limitText(args.location, "Location", MAX_LOCATION);
@@ -256,13 +206,4 @@ export const updateProfile = mutation({
 export const getById = internalQuery({
 	args: { userId: v.id("users") },
 	handler: async (ctx, args) => await ctx.db.get(args.userId),
-});
-
-export const getByEmail = internalQuery({
-	args: { email: v.string() },
-	handler: async (ctx, args) =>
-		await ctx.db
-			.query("users")
-			.withIndex("email", (q) => q.eq("email", args.email))
-			.unique(),
 });

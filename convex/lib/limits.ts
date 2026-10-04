@@ -18,7 +18,6 @@ export const LIVE_ENTRY_STATUSES = ["applied", "joined"] as const;
 export const MAX_PROOF_LINKS = 10;
 export const MAX_USER_PULSES = 200;
 export const MAX_STARTUP_FOUNDERS = 10;
-export const MAX_CYCLE_MEMBERS = 50;
 export const INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 export const MAX_INVITES_PER_EMAIL = 20;
 /** A Cycle shows "ending soon" within this window of its end date. */
@@ -65,3 +64,13 @@ export const RERUN_CREDIT_TTL_MS = 60 * 24 * 60 * 60 * 1000;
 export const MAX_BANKED_PRO_CREDITS = 3;
 /** Bound on the Pro users the daily credit job reads. */
 export const MAX_PRO_USERS_SCAN = 500;
+
+/** Lengths of free-text profile and Pitch fields. */
+export const MAX_BIO = 280;
+export const MAX_LOCATION = 80;
+export const MAX_PITCH_SECTION = 2000;
+export const MAX_TEAM_BLURB = 500;
+export const SKILL_LIMITS = { maxItems: 10, maxLength: 32 };
+export const TECH_STACK_LIMITS = { maxItems: 12, maxLength: 24 };
+/** Startups read for one person's switcher. */
+export const MAX_USER_MEMBERSHIPS = 50;

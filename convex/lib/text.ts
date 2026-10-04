@@ -46,3 +46,39 @@ export function assertUrl(
 	}
 	return trimmed;
 }
+
+/** An optional form field, trimmed, that must stay under `max` characters. */
+export function limitText(
+	value: string | undefined,
+	field: string,
+	max: number,
+): string | undefined {
+	const text = optionalText(value);
+	if (text && text.length > max) {
+		throw new Error(`${field} must be under ${max} characters`);
+	}
+	return text;
+}
+
+/**
+ * A tag list (skills, tech stack): trimmed, deduplicated, too-long tags dropped
+ * and capped at `maxItems`. An empty list becomes `undefined`.
+ */
+export function normalizeTags(
+	tags: string[] | undefined,
+	limits: { maxItems: number; maxLength: number },
+): string[] | undefined {
+	if (!tags) {
+		return undefined;
+	}
+
+	const unique = [
+		...new Set(
+			tags
+				.map((tag) => tag.trim())
+				.filter((tag) => tag.length > 0 && tag.length <= limits.maxLength),
+		),
+	].slice(0, limits.maxItems);
+
+	return unique.length > 0 ? unique : undefined;
+}

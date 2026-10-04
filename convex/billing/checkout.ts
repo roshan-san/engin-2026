@@ -2,10 +2,10 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action, internalMutation } from "../_generated/server";
-import { checkout, getHackathonProductId } from "../dodo";
-import { HACKATHON_PAYMENT_KIND } from "../lib/billing/credits";
-import { requireIpTerms } from "../lib/hiring/ipTerms";
-import { requirePublishable } from "../lib/hiring/publish";
+import { requireIpTerms } from "../hiring/ipTerms.rules";
+import { requirePublishable } from "../hiring/publish.rules";
+import { HACKATHON_PAYMENT_KIND } from "./credits.rules";
+import { checkout, getHackathonProductId } from "./dodo.client";
 
 /**
  * Runs the publish checks before taking money, and records the Founder's IP

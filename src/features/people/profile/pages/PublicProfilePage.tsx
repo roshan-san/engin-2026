@@ -19,7 +19,6 @@ type PublicProfile = {
 	name: string | null;
 	username: string | null;
 	image: string | null;
-	headline: string | null;
 	bio: string | null;
 	skills: string[];
 	location: string | null;
@@ -92,7 +91,6 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 					{profile.username ? (
 						<p className="text-muted-foreground">@{profile.username}</p>
 					) : null}
-					{profile.headline ? <p>{profile.headline}</p> : null}
 					{profile.location ? (
 						<p className="text-sm text-muted-foreground">{profile.location}</p>
 					) : null}

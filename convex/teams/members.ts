@@ -1,12 +1,8 @@
 import { v } from "convex/values";
-import { mutation, query } from "../_generated/server";
+import { query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { toMemberUser } from "../lib/people/users";
-import {
-	requireFounderMembership,
-	requireMembership,
-} from "../lib/teams/membership";
-import { unassignPulsesInStartup } from "../lib/work/pulses";
+import { toMemberUser } from "../people/users.rules";
+import { requireMembership } from "./membership.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -32,32 +28,5 @@ export const list = query({
 		}
 
 		return members;
-	},
-});
-
-export const remove = mutation({
-	args: { membershipId: v.id("memberships") },
-	handler: async (ctx, args) => {
-		const userId = await requireUserId(ctx);
-		const membership = await ctx.db.get(args.membershipId);
-		if (!membership) {
-			throw new Error("Member not found");
-		}
-
-		await requireFounderMembership(ctx, membership.startupId, userId);
-
-		if (membership.role === "founder") {
-			throw new Error("Founders cannot be removed from their own startup");
-		}
-
-		await ctx.db.delete(args.membershipId);
-		await unassignPulsesInStartup(ctx, membership.startupId, membership.userId);
-
-		// The Focused Startup must be one the User still belongs to (#19:
-		// "cleared when they stop belonging to it").
-		const removedUser = await ctx.db.get(membership.userId);
-		if (removedUser?.focusedStartupId === membership.startupId) {
-			await ctx.db.patch(membership.userId, { focusedStartupId: undefined });
-		}
 	},
 });

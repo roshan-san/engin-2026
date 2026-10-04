@@ -29,12 +29,6 @@ export const profileSchema = z.object({
 		})
 		.transform((value) => value || undefined)
 		.optional(),
-	headline: z
-		.string()
-		.trim()
-		.max(80, "Headline must be under 80 characters")
-		.transform((value) => value || undefined)
-		.optional(),
 	bio: z
 		.string()
 		.trim()

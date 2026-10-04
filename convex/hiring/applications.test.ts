@@ -1,24 +1,15 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { api } from "../_generated/api";
 import {
 	advancePast,
 	createTest,
-	createTrial,
 	DAY,
 	HOUR,
-	joinAsMember,
-	setUpStartup,
-	signUp,
 	type TestConvex,
-} from "../test.helpers";
-
-beforeEach(() => {
-	vi.useFakeTimers();
-});
-
-afterEach(() => {
-	vi.useRealTimers();
-});
+} from "../lib/testing.helpers";
+import { signUp } from "../people/users.helpers";
+import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
+import { createTrial } from "./trialCycles.helpers";
 
 async function evidenceOf(t: TestConvex, username: string) {
 	const profile = await t.query(api.people.users.getByUsername, { username });
@@ -161,7 +152,7 @@ test("a startup's own Founders and Members can't enter its hackathon", async () 
 	const applicationTrial = await createTrial(setup, {
 		admission: "application",
 	});
-	const member = await joinAsMember(t, setup, "Mia");
+	const member = await joinAsMember(setup, "Mia");
 
 	await expect(
 		setup.founder.as.mutation(api.hiring.applications.joinTrial, {

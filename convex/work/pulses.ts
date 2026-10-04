@@ -1,20 +1,20 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
-import { pulseHref } from "../lib/links";
 import { MAX_BOARD_PULSES, MAX_PROOF_LINKS } from "../lib/limits";
-import { notifyFounders } from "../lib/notify";
-import { requireMembership } from "../lib/teams/membership";
+import { pulseHref } from "../lib/links";
 import { assertUrl, optionalText, requireText } from "../lib/text";
+import { notifyFounders } from "../people/notifications.rules";
+import { proofLinkKind, pulseStatus } from "../schema";
+import { logActivity } from "../teams/activity.rules";
+import { requireMembership } from "../teams/membership.rules";
 import {
 	createBoardPulse,
 	requireBoardAccess,
 	requireBoardOwner,
-} from "../lib/work/boards";
-import { requireCycleAccess } from "../lib/work/cycles";
+} from "./boards.rules";
+import { requireCycleAccess } from "./cycles.rules";
 import {
-	currentStatus,
 	loadPulseContext,
 	proofLinksOf,
 	requirePulse,
@@ -23,8 +23,7 @@ import {
 	resolveReview,
 	toPulse,
 	withAssignees,
-} from "../lib/work/pulses";
-import { proofLinkKind, pulseStatus } from "../schema";
+} from "./pulses.rules";
 
 const PULSE_PAGE_SIZE = 80;
 const MY_PULSES_PAGE_SIZE = 50;
@@ -195,7 +194,6 @@ export const verify = mutation({
 		await logActivity(ctx, {
 			startupId: pulse.startupId,
 			kind: "pulse_verified",
-			actorUserId: await requireUserId(ctx),
 			cycleId: pulse.cycleId,
 			pulseId: pulse._id,
 			summary: `Pulse "${pulse.title}" verified`,
@@ -221,8 +219,7 @@ export const assignToMe = mutation({
 		const { pulse } = await requireWorkablePulse(ctx, args.pulseId);
 		await ctx.db.patch(pulse._id, {
 			assigneeUserId: userId,
-			status:
-				currentStatus(pulse) === "todo" ? "in_progress" : currentStatus(pulse),
+			status: pulse.status === "todo" ? "in_progress" : pulse.status,
 		});
 	},
 });
@@ -244,7 +241,6 @@ export const addProofLink = mutation({
 		}
 		await ctx.db.patch(pulse._id, {
 			proofLinks: [...links, { kind: args.kind, url }],
-			evidenceUrl: undefined,
 		});
 	},
 });
@@ -255,7 +251,6 @@ export const removeProofLink = mutation({
 		const { pulse } = await requireWorkablePulse(ctx, args.pulseId);
 		await ctx.db.patch(pulse._id, {
 			proofLinks: proofLinksOf(pulse).filter((link) => link.url !== args.url),
-			evidenceUrl: undefined,
 		});
 	},
 });

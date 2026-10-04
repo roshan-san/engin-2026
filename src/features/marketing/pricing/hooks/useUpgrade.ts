@@ -9,10 +9,10 @@ export type BillingInterval = "monthly" | "yearly";
 export function useUpgrade() {
 	const { isAuthenticated } = useConvexAuth();
 	const plan = useQuery(
-		api.people.billing.getPlan,
+		api.billing.plan.getPlan,
 		isAuthenticated ? {} : "skip",
 	);
-	const createCheckout = useAction(api.people.billing.createCheckoutLink);
+	const createCheckout = useAction(api.billing.plan.createCheckoutLink);
 	const [isLoading, setIsLoading] = useState(false);
 
 	async function upgrade(interval: BillingInterval = "yearly") {

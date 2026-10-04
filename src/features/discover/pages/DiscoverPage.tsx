@@ -90,9 +90,7 @@ export function DiscoverPage() {
 										<span className="mt-2 flex-1" />
 									)}
 									<p className="mt-6 text-sm text-muted-foreground">
-										{startup.followerCount === 0
-											? "New on Engin"
-											: `${startup.followerCount} followers`}
+										New on Engin
 									</p>
 								</Link>
 							))}
@@ -138,11 +136,6 @@ export function DiscoverPage() {
 										</h2>
 										<Badge variant="secondary">{contributor.score}</Badge>
 									</div>
-									{contributor.headline ? (
-										<p className="text-sm text-muted-foreground">
-											{contributor.headline}
-										</p>
-									) : null}
 									{contributor.location ? (
 										<p className="text-xs text-muted-foreground">
 											{contributor.location}

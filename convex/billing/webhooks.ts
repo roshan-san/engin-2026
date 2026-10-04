@@ -1,18 +1,18 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../_generated/server";
+import { IP_TERMS_MESSAGE } from "../hiring/ipTerms.rules";
+import { publishDraft, publishProblem } from "../hiring/publish.rules";
+import { trialCycleHref } from "../lib/links";
+import { notify } from "../people/notifications.rules";
+import { getMembership } from "../teams/membership.rules";
 import {
 	expireProCredits,
 	grantCredit,
 	grantMonthlyProCredit,
 	HACKATHON_PAYMENT_KIND,
 	keepProCredits,
-} from "../lib/billing/credits";
-import { IP_TERMS_MESSAGE } from "../lib/hiring/ipTerms";
-import { publishDraft, publishProblem } from "../lib/hiring/publish";
-import { trialCycleHref } from "../lib/links";
-import { notify } from "../lib/notify";
-import { getMembership } from "../lib/teams/membership";
+} from "./credits.rules";
 
 export const subscriptionEvent = v.union(
 	v.literal("active"),

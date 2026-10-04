@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
+import { buildSearchText, optionalText, requireText } from "../lib/text";
+import { logActivity } from "../teams/activity.rules";
 import {
 	requireFounderMembership,
 	requireMembership,
-} from "../lib/teams/membership";
-import { buildSearchText, optionalText, requireText } from "../lib/text";
+} from "../teams/membership.rules";
 
 function parseSkills(skills: string[]): string[] {
 	return [
@@ -47,11 +47,8 @@ export const create = mutation({
 		type: v.string(),
 		skills: v.array(v.string()),
 		description: v.string(),
-		compensation: v.optional(v.string()),
-		equity: v.optional(v.string()),
 		location: v.optional(v.string()),
 		remote: v.optional(v.boolean()),
-		commitment: v.optional(v.string()),
 		headcount: v.number(),
 	},
 	handler: async (ctx, args) => {
@@ -73,11 +70,8 @@ export const create = mutation({
 			type,
 			skills,
 			description,
-			compensation: optionalText(args.compensation),
-			equity: optionalText(args.equity),
 			location: optionalText(args.location),
 			remote: args.remote,
-			commitment: optionalText(args.commitment),
 			headcount: args.headcount,
 			status: "open",
 			searchText: buildSearchText(title, type, description, ...skills),
@@ -86,7 +80,6 @@ export const create = mutation({
 		await logActivity(ctx, {
 			startupId: args.startupId,
 			kind: "role_posted",
-			actorUserId: userId,
 			roleId,
 			summary: `Role "${title}" posted`,
 		});

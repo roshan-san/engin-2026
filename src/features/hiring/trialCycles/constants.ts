@@ -1,4 +1,4 @@
-import { SCORE_WEIGHTS } from "@convex/lib/reputation/scoreWeights";
+import { SCORE_WEIGHTS } from "@convex/people/scoreWeights.rules";
 
 export const VERDICTS = [
 	{ value: "passed_with_offer", label: "Passed with Offer" },

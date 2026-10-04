@@ -6,7 +6,6 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
 import { PublicOpenings } from "~/features/teams/startup/public/components/PublicOpenings";
-import { useFollowStartup } from "~/features/teams/startup/public/hooks/useFollowStartup";
 
 type PublicStartupPageProps = {
 	readonly slug: string;
@@ -14,7 +13,6 @@ type PublicStartupPageProps = {
 
 export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 	const startup = useQuery(api.teams.startups.getPublic, { slug });
-	const { toggle, isPending } = useFollowStartup(startup?._id);
 
 	if (startup === undefined) {
 		return <PageLoading />;
@@ -55,24 +53,6 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 				{startup.tagline ? (
 					<p className="text-lg text-muted-foreground">{startup.tagline}</p>
 				) : null}
-				<div className="flex flex-wrap items-center gap-2">
-					{startup.isAuthenticated ? (
-						<Button
-							onClick={() => void toggle()}
-							disabled={isPending}
-							variant={startup.isFollowing ? "outline" : "default"}
-						>
-							{startup.isFollowing ? "Following" : "Follow"}
-						</Button>
-					) : (
-						<Button asChild>
-							<Link to="/">Sign in to follow</Link>
-						</Button>
-					)}
-					<p className="text-sm text-muted-foreground">
-						{startup.followerCount} followers
-					</p>
-				</div>
 				{links.length > 0 ? (
 					<div className="flex flex-wrap gap-2">
 						{links.map((link) => (

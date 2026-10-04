@@ -5,8 +5,8 @@ import {
 	SheetTitle,
 } from "~/components/ui/sheet";
 import { useCommands } from "~/shell/command/CommandProvider";
-import { SHORTCUTS } from "~/shell/shortcuts/registry";
 import type { ShortcutScope } from "~/shell/shortcuts/registry";
+import { SHORTCUTS } from "~/shell/shortcuts/registry";
 import { ShortcutHint } from "~/shell/shortcuts/ShortcutHint";
 
 const SCOPE_LABELS: Record<ShortcutScope, string> = {

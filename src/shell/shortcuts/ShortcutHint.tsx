@@ -1,6 +1,6 @@
+import { cn } from "~/lib/utils";
 import { formatShortcut } from "~/shell/shortcuts/platform";
 import { findShortcut } from "~/shell/shortcuts/registry";
-import { cn } from "~/lib/utils";
 
 /**
  * The only component that prints a shortcut label (SHELL-05). Renders

@@ -58,7 +58,6 @@ export const search = query({
 				description: role.description,
 				location: role.location ?? null,
 				remote: role.remote ?? null,
-				compensation: role.compensation ?? null,
 				startupName: startup.name,
 				startupSlug: startup.slug,
 			});

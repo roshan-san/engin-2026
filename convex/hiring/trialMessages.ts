@@ -1,20 +1,19 @@
 import { v } from "convex/values";
-import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
+import { MAX_THREAD_MESSAGES } from "../lib/limits";
+import { trialCycleHref } from "../lib/links";
+import { requireText } from "../lib/text";
+import { notify, notifyFounders } from "../people/notifications.rules";
+import { loadPublicUser } from "../people/users.rules";
+import { listTrialApplications } from "./trialCycles.rules";
 import {
 	latestMessages,
 	requireThreadAccess,
 	requireThreadOpen,
 	requireTrial,
 	requireTrialFounder,
-} from "../lib/hiring/threads";
-import { isTrialLive, listTrialApplications } from "../lib/hiring/trialCycles";
-import { trialCycleHref } from "../lib/links";
-import { MAX_THREAD_MESSAGES } from "../lib/limits";
-import { notify, notifyFounders } from "../lib/notify";
-import { loadPublicUser } from "../lib/people/users";
-import { requireText } from "../lib/text";
+} from "./trialMessages.rules";
 
 function displayName(user: { name: string | null; username: string | null }) {
 	return user.name ?? user.username ?? "Someone";
@@ -181,53 +180,5 @@ export const announce = mutation({
 				href,
 			});
 		}
-	},
-});
-
-/** Trial Cycles whose Threads the caller can open: as a Participant or Founder. */
-export const listRooms = query({
-	args: {},
-	handler: async (ctx) => {
-		const userId = await requireUserId(ctx);
-		const rooms: { trialCycleId: Id<"trialCycles">; title: string }[] = [];
-		const add = (trial: Doc<"trialCycles">) => {
-			if (
-				isTrialLive(trial) &&
-				!rooms.some((r) => r.trialCycleId === trial._id)
-			) {
-				rooms.push({ trialCycleId: trial._id, title: trial.title });
-			}
-		};
-
-		const applications = await ctx.db
-			.query("applications")
-			.withIndex("by_user", (q) => q.eq("userId", userId))
-			.take(50);
-		for (const application of applications) {
-			if (application.status !== "joined" || !application.trialCycleId) {
-				continue;
-			}
-			const trial = await ctx.db.get(application.trialCycleId);
-			if (trial) {
-				add(trial);
-			}
-		}
-
-		const memberships = await ctx.db
-			.query("memberships")
-			.withIndex("by_user", (q) => q.eq("userId", userId))
-			.take(20);
-		for (const membership of memberships) {
-			if (membership.role !== "founder") {
-				continue;
-			}
-			const trials = await ctx.db
-				.query("trialCycles")
-				.withIndex("by_startup", (q) => q.eq("startupId", membership.startupId))
-				.take(20);
-			trials.forEach(add);
-		}
-
-		return rooms;
 	},
 });

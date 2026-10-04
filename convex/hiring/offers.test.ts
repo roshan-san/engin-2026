@@ -1,37 +1,25 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { api } from "../_generated/api";
 import {
-	closeWithVerdict,
+	type Client,
 	createTest,
-	notificationTitles,
-	scoreOf,
-	setUpStartup,
-	signUp,
-	startedTrialWith,
 	type TestConvex,
-} from "../test.helpers";
-
-beforeEach(() => {
-	vi.useFakeTimers();
-});
-
-afterEach(() => {
-	vi.useRealTimers();
-});
+} from "../lib/testing.helpers";
+import { notificationTitles } from "../people/notifications.helpers";
+import { scoreOf, signUp } from "../people/users.helpers";
+import { setUpStartup } from "../teams/startups.helpers";
+import { closeWithVerdict, startedTrialWith } from "./trialCycles.helpers";
 
 async function setUpOffer(t: TestConvex) {
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
-	const trialCycleId = await startedTrialWith(t, setup, [alice]);
-	await closeWithVerdict(t, setup, trialCycleId, alice, "passed_with_offer");
+	const trialCycleId = await startedTrialWith(setup, [alice]);
+	await closeWithVerdict(setup, trialCycleId, alice, "passed_with_offer");
 	const [offer] = await alice.as.query(api.hiring.offers.listMine, {});
 	return { setup, alice, offer };
 }
 
-async function isMemberOf(
-	as: Awaited<ReturnType<typeof signUp>>["as"],
-	startupName: string,
-) {
+async function isMemberOf(as: Client, startupName: string) {
 	const memberships = await as.query(api.teams.startups.listMemberships, {});
 	return memberships.some((entry) => entry.startup.name === startupName);
 }

@@ -1,23 +1,14 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { api } from "../_generated/api";
+import { createTest, DAY } from "../lib/testing.helpers";
+import { notificationTitles } from "../people/notifications.helpers";
+import { signUp } from "../people/users.helpers";
+import { setUpStartup } from "../teams/startups.helpers";
 import {
 	applicationIdOf,
-	createTest,
 	createTrial,
-	DAY,
-	notificationTitles,
-	setUpStartup,
-	signUp,
 	startedTrialWith,
-} from "../test.helpers";
-
-beforeEach(() => {
-	vi.useFakeTimers();
-});
-
-afterEach(() => {
-	vi.useRealTimers();
-});
+} from "./trialCycles.helpers";
 
 test("reaching the Headcount fills the Role and tidies up what depended on it", async () => {
 	const t = createTest();
@@ -25,8 +16,8 @@ test("reaching the Headcount fills the Role and tidies up what depended on it", 
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
 	const carol = await signUp(t, "Carol");
-	const finishedTrial = await startedTrialWith(t, setup, [alice, bob]);
-	const runningTrial = await startedTrialWith(t, setup, [carol]);
+	const finishedTrial = await startedTrialWith(setup, [alice, bob]);
+	const runningTrial = await startedTrialWith(setup, [carol]);
 	const unstartedTrial = await createTrial(setup, { startsInMs: 5 * DAY });
 	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId: finishedTrial,
@@ -84,7 +75,7 @@ test("a Role with Headcount 2 stays open after one accepted Offer", async () => 
 	const t = createTest();
 	const setup = await setUpStartup(t, 2);
 	const alice = await signUp(t, "Alice");
-	const trialCycleId = await startedTrialWith(t, setup, [alice]);
+	const trialCycleId = await startedTrialWith(setup, [alice]);
 	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
 		trialCycleId,
 		verdicts: [

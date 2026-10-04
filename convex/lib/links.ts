@@ -7,9 +7,9 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
  */
 
 export const INBOX_HREF = "/inbox";
-export const MY_PULSES_HREF = "/my-pulses";
+const MY_PULSES_HREF = "/my-pulses";
 
-export type StartupSection =
+type StartupSection =
 	| "cycles"
 	| "hiring"
 	| "team"

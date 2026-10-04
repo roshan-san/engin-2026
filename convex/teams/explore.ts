@@ -115,7 +115,6 @@ export const contributors = query({
 				_id: user._id,
 				name: user.name ?? null,
 				username: user.username,
-				headline: user.headline ?? null,
 				location: user.location ?? null,
 				skills: user.skills ?? [],
 				score: user.score ?? 0,
@@ -146,7 +145,6 @@ export const search = query({
 				description: startup.description ?? null,
 				category: startup.category ?? null,
 				stage: startup.stage ?? null,
-				followerCount: startup.followerCount,
 			})),
 		};
 	},

@@ -1,24 +1,11 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { api } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
 import { MAX_TRIAL_CHALLENGES } from "../lib/limits";
-import {
-	advancePast,
-	createDraftTrial,
-	createTest,
-	createTrial,
-	DAY,
-	HOUR,
-	setUpStartup,
-	signUp,
-} from "../test.helpers";
-
-beforeEach(() => {
-	vi.useFakeTimers();
-});
-
-afterEach(() => {
-	vi.useRealTimers();
-});
+import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
+import { signUp } from "../people/users.helpers";
+import { type Setup, setUpStartup } from "../teams/startups.helpers";
+import { createDraftTrial, createTrial } from "./trialCycles.helpers";
 
 async function setUpOpenTrial() {
 	const t = createTest();
@@ -30,8 +17,8 @@ async function setUpOpenTrial() {
 }
 
 async function addChallenge(
-	setup: Awaited<ReturnType<typeof setUpStartup>>,
-	trialCycleId: Awaited<ReturnType<typeof createTrial>>,
+	setup: Setup,
+	trialCycleId: Id<"trialCycles">,
 	title: string,
 ) {
 	return await setup.founder.as.mutation(api.hiring.challenges.add, {

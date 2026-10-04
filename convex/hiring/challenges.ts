@@ -1,16 +1,16 @@
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import {
-	mutation,
 	type MutationCtx,
-	query,
+	mutation,
 	type QueryCtx,
+	query,
 } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { listChallenges } from "../lib/hiring/challenges";
 import { MAX_TRIAL_CHALLENGES } from "../lib/limits";
-import { requireFounderMembership } from "../lib/teams/membership";
 import { optionalText, requireText } from "../lib/text";
+import { requireFounderMembership } from "../teams/membership.rules";
+import { listChallenges } from "./challenges.rules";
 
 async function requireTrialAsFounder(
 	ctx: QueryCtx | MutationCtx,

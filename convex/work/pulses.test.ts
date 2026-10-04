@@ -1,14 +1,7 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import { createTest, DAY, setUpStartup } from "../test.helpers";
-
-beforeEach(() => {
-	vi.useFakeTimers();
-});
-
-afterEach(() => {
-	vi.useRealTimers();
-});
+import { createTest, DAY } from "../lib/testing.helpers";
+import { setUpStartup } from "../teams/startups.helpers";
 
 async function setUpCycle() {
 	const t = createTest();

@@ -1,29 +1,16 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import {
-	advancePast,
-	createTest,
-	cyclePulseFor,
-	DAY,
-	joinAsMember,
-	notificationTitles,
-	setUpStartup,
-	signUp,
-} from "../test.helpers";
+import { advancePast, createTest, DAY } from "../lib/testing.helpers";
+import { notificationTitles } from "../people/notifications.helpers";
+import { type Person, signUp } from "../people/users.helpers";
+import { cyclePulseFor } from "../work/cycles.helpers";
+import { joinAsMember, setUpStartup } from "./startups.helpers";
 
-beforeEach(() => {
-	vi.useFakeTimers();
-});
-
-afterEach(() => {
-	vi.useRealTimers();
-});
-
-async function myInvites(person: Awaited<ReturnType<typeof signUp>>) {
+async function myInvites(person: Person) {
 	return await person.as.query(api.teams.invitations.listMine, {});
 }
 
-async function startupNames(person: Awaited<ReturnType<typeof signUp>>) {
+async function startupNames(person: Person) {
 	const memberships = await person.as.query(
 		api.teams.startups.listMemberships,
 		{},
@@ -92,7 +79,7 @@ test("inviting an unknown username is refused", async () => {
 test("inviting someone already on the team is refused", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await joinAsMember(t, setup, "Bob");
+	await joinAsMember(setup, "Bob");
 
 	await expect(
 		setup.founder.as.mutation(api.teams.invitations.create, {
@@ -188,8 +175,8 @@ test("someone invited as a Founder has full Founder powers", async () => {
 	);
 	await cofounder.as.mutation(api.teams.invitations.acceptById, { inviteId });
 
-	const bob = await joinAsMember(t, setup, "Bob");
-	const { pulseId } = await cyclePulseFor(t, setup, bob);
+	const bob = await joinAsMember(setup, "Bob");
+	const { pulseId } = await cyclePulseFor(setup, bob);
 	await bob.as.mutation(api.work.pulses.setStatus, {
 		pulseId,
 		status: "review",

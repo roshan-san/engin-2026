@@ -7,10 +7,10 @@ import { toErrorMessage } from "~/lib/validation";
 
 export function useNotifications() {
 	const invites = useQuery(api.teams.invitations.listMine);
-	const feed = useQuery(api.notifications.list);
+	const feed = useQuery(api.people.notifications.list);
 	const acceptInvite = useMutation(api.teams.invitations.acceptById);
 	const declineInvite = useMutation(api.teams.invitations.decline);
-	const markRead = useMutation(api.notifications.markRead);
+	const markRead = useMutation(api.people.notifications.markRead);
 	const [acceptingId, setAcceptingId] = useState<Id<"invites"> | null>(null);
 
 	const count = (invites?.length ?? 0) + (feed?.unreadCount ?? 0);

@@ -1,26 +1,26 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
-import { logActivity } from "../lib/activity";
 import { requireUserId } from "../lib/auth";
+import { MAX_LISTED_TRIALS, MAX_TRIAL_PARTICIPANTS } from "../lib/limits";
+import { buildSearchText, optionalText, requireText } from "../lib/text";
+import { loadPublicUser } from "../people/users.rules";
+import { trialAdmission, trialVerdict } from "../schema";
+import { logActivity } from "../teams/activity.rules";
+import {
+	getMembership,
+	requireFounderMembership,
+	requireMembership,
+} from "../teams/membership.rules";
+import { requireIpTerms } from "./ipTerms.rules";
+import { publishDraft, requirePublishable } from "./publish.rules";
 import {
 	cancelTrial,
 	getTrialApplication,
 	isTrialLive,
 	listTrialApplications,
 	startTrial,
-} from "../lib/hiring/trialCycles";
-import { requireIpTerms } from "../lib/hiring/ipTerms";
-import { publishDraft, requirePublishable } from "../lib/hiring/publish";
-import { closeWithVerdicts } from "../lib/hiring/verdicts";
-import { MAX_LISTED_TRIALS, MAX_TRIAL_PARTICIPANTS } from "../lib/limits";
-import { loadPublicUser } from "../lib/people/users";
-import {
-	getMembership,
-	requireFounderMembership,
-	requireMembership,
-} from "../lib/teams/membership";
-import { buildSearchText, optionalText, requireText } from "../lib/text";
-import { trialAdmission, trialVerdict } from "../schema";
+} from "./trialCycles.rules";
+import { closeWithVerdicts } from "./verdicts.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -115,9 +115,6 @@ export const create = mutation({
 		startsAt: v.number(),
 		endsAt: v.number(),
 		applicationDeadline: v.optional(v.number()),
-		expectedOutcome: v.optional(v.string()),
-		evaluationCriteria: v.optional(v.string()),
-		compensation: v.optional(v.string()),
 		prize: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
@@ -152,9 +149,6 @@ export const create = mutation({
 			applicationDeadline: args.applicationDeadline,
 			startsAt: args.startsAt,
 			endsAt: args.endsAt,
-			expectedOutcome: optionalText(args.expectedOutcome),
-			evaluationCriteria: optionalText(args.evaluationCriteria),
-			compensation: optionalText(args.compensation),
 			prize: optionalText(args.prize),
 			status: "draft",
 			participantCount: 0,
@@ -278,7 +272,6 @@ export const close = mutation({
 		await logActivity(ctx, {
 			startupId: trial.startupId,
 			kind: "trial_cycle_closed",
-			actorUserId: userId,
 			trialCycleId: trial._id,
 			summary: `Trial Cycle "${trial.title}" closed`,
 		});

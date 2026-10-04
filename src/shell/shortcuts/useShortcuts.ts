@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { findShortcut, SHORTCUTS } from "~/shell/shortcuts/registry";
 import type { ShortcutContext } from "~/shell/shortcuts/registry";
+import { findShortcut, SHORTCUTS } from "~/shell/shortcuts/registry";
 
 const EDITABLE_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
 

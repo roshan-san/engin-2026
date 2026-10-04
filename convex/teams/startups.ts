@@ -1,88 +1,32 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
+import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { toPublicUser } from "../lib/people/users";
-import { parseCategory, startupStage } from "../lib/teams/catalog";
+import {
+	MAX_LOCATION,
+	MAX_PITCH_SECTION,
+	MAX_TEAM_BLURB,
+	TECH_STACK_LIMITS,
+} from "../lib/limits";
+import {
+	assertUrl,
+	limitText,
+	normalizeTags,
+	optionalText,
+	requireText,
+} from "../lib/text";
+import { toPublicUser } from "../people/users.rules";
+import { startupStage } from "../schema";
+import { parseCategory } from "./catalog.rules";
 import {
 	getMembership,
+	loadMembershipsOf,
 	requireFounderMembership,
 	requireMembership,
-} from "../lib/teams/membership";
-import { loadStartupPlan } from "../lib/teams/plan";
-import { toSearchText, uniqueSlug } from "../lib/teams/startupWrite";
-import { assertUrl, optionalText, requireText } from "../lib/text";
-
-const MAX_PITCH_SECTION = 2000;
-const MAX_TEAM_BLURB = 500;
-const MAX_LOCATION = 80;
-const MAX_TECH_STACK_ITEMS = 12;
-const MAX_TECH_ITEM_LENGTH = 24;
-
-function normalizeTechStack(
-	techStack: string[] | undefined,
-): string[] | undefined {
-	if (!techStack) {
-		return undefined;
-	}
-
-	const unique = [
-		...new Set(
-			techStack
-				.map((item) => item.trim())
-				.filter(
-					(item) => item.length > 0 && item.length <= MAX_TECH_ITEM_LENGTH,
-				),
-		),
-	].slice(0, MAX_TECH_STACK_ITEMS);
-
-	return unique.length > 0 ? unique : undefined;
-}
-
-function limitText(
-	value: string | undefined,
-	field: string,
-	max: number,
-): string | undefined {
-	const text = optionalText(value);
-	if (text && text.length > max) {
-		throw new Error(`${field} must be under ${max} characters`);
-	}
-	return text;
-}
-
-type MembershipEntry = {
-	startup: Doc<"startups">;
-	role: Doc<"memberships">["role"];
-};
-
-async function loadMemberships(
-	ctx: QueryCtx,
-	userId: Id<"users">,
-): Promise<MembershipEntry[]> {
-	const memberships = await ctx.db
-		.query("memberships")
-		.withIndex("by_user", (q) => q.eq("userId", userId))
-		.take(50);
-
-	const entries: MembershipEntry[] = [];
-	for (const membership of memberships) {
-		const startup = await ctx.db.get(membership.startupId);
-		if (startup) {
-			entries.push({ startup, role: membership.role });
-		}
-	}
-
-	// Stable order for the switcher (edge SHELL-01/ordering): break ties on slug.
-	entries.sort(
-		(a, b) =>
-			a.startup.name.localeCompare(b.startup.name) ||
-			a.startup.slug.localeCompare(b.startup.slug),
-	);
-	return entries;
-}
+} from "./membership.rules";
+import { loadStartupPlan } from "./plan.rules";
+import { toSearchText, uniqueSlug } from "./startups.rules";
 
 /** Every Startup the caller belongs to, for the switcher and palette (SHELL-07). */
 export const listMemberships = query({
@@ -90,7 +34,7 @@ export const listMemberships = query({
 	handler: async (ctx) => {
 		const userId = await requireUserId(ctx);
 		const user = await ctx.db.get(userId);
-		const memberships = await loadMemberships(ctx, userId);
+		const memberships = await loadMembershipsOf(ctx, userId);
 
 		return memberships.map((entry) => ({
 			startup: {
@@ -127,7 +71,6 @@ export const create = mutation({
 		const slug = await uniqueSlug(ctx, name);
 
 		const startupId = await ctx.db.insert("startups", {
-			founderUserId: userId,
 			name,
 			slug,
 			tagline,
@@ -139,7 +82,6 @@ export const create = mutation({
 			linkedinUrl: assertUrl(args.linkedinUrl, "LinkedIn"),
 			githubUrl: assertUrl(args.githubUrl, "GitHub"),
 			isPublic: true,
-			followerCount: 0,
 			searchText: toSearchText({ name, tagline, description, category, stage }),
 		});
 
@@ -246,7 +188,7 @@ export const update = mutation({
 			techStack:
 				args.techStack === undefined
 					? startup.techStack
-					: normalizeTechStack(args.techStack),
+					: normalizeTags(args.techStack, TECH_STACK_LIMITS),
 			location:
 				args.location === undefined
 					? startup.location
@@ -334,12 +276,11 @@ export const getPublic = query({
 
 		const userId = await getAuthUserId(ctx);
 
-		// Team member profiles and membership/follow state are signed-in only.
+		// Team member profiles and membership state are signed-in only.
 		const team: {
 			role: Doc<"memberships">["role"];
 			user: ReturnType<typeof toPublicUser>;
 		}[] = [];
-		let isFollowing = false;
 		let membership: Doc<"memberships"> | null = null;
 
 		if (userId) {
@@ -359,14 +300,6 @@ export const getPublic = query({
 					});
 				}
 			}
-
-			const follow = await ctx.db
-				.query("follows")
-				.withIndex("by_user_and_startup", (q) =>
-					q.eq("userId", userId).eq("startupId", startup._id),
-				)
-				.unique();
-			isFollowing = follow !== null;
 		}
 
 		return {
@@ -389,10 +322,8 @@ export const getPublic = query({
 			techStack: startup.techStack ?? [],
 			location: startup.location ?? null,
 			remote: startup.remote ?? null,
-			followerCount: startup.followerCount,
 			isAuthenticated: userId !== null,
 			isMember: membership !== null,
-			isFollowing,
 			team,
 		};
 	},

@@ -13,7 +13,6 @@ export function useProfileEditor() {
 
 	const [name, setName] = useState<string | null>(null);
 	const [username, setUsername] = useState<string | null>(null);
-	const [headline, setHeadline] = useState<string | null>(null);
 	const [bio, setBio] = useState<string | null>(null);
 	const [skills, setSkills] = useState<string | null>(null);
 	const [location, setLocation] = useState<string | null>(null);
@@ -25,7 +24,6 @@ export function useProfileEditor() {
 	const values = {
 		name: name ?? user?.name ?? "",
 		username: username ?? user?.username ?? "",
-		headline: headline ?? user?.headline ?? "",
 		bio: bio ?? user?.bio ?? "",
 		skills: skills ?? (user?.skills ?? []).join(", "),
 		location: location ?? user?.location ?? "",
@@ -47,7 +45,6 @@ export function useProfileEditor() {
 			await updateProfile({
 				name: result.data.name ?? "",
 				username: result.data.username ?? "",
-				headline: result.data.headline ?? "",
 				bio: result.data.bio ?? "",
 				skills: result.data.skills ?? [],
 				location: result.data.location ?? "",
@@ -71,7 +68,6 @@ export function useProfileEditor() {
 		values,
 		setName,
 		setUsername,
-		setHeadline,
 		setBio,
 		setSkills,
 		setLocation,
