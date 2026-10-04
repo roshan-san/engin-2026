@@ -4,7 +4,7 @@
 > Decisions are captured in CONTEXT.md. This log preserves the alternatives considered.
 
 **Date:** 2026-10-04 (revision of 2026-10-01 context)
-**Phase:** 01-founder-hiring-publish
+**Phase:** 01-founder-hiring-publish (renamed 01-hiring-screen-drafts; split into Phases 1–3 on 2026-10-04 — phase numbers below are pre-split)
 **Areas discussed:** review of all 18 original decisions, cancel refunds, Role close, member view, credit model
 
 ---

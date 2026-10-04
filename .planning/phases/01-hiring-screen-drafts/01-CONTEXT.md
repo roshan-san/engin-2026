@@ -34,10 +34,10 @@ Also OPS-01: the Dodo test-mode INR products and Convex env vars.
 
 Requirements: HIRE-01..10 and OPS-01. **HIRE-05 is rewritten** (see D-20): founders don't claim codes in the app any more.
 
-Not in this phase:
-- the public hackathon page, Discover and the pricing page (Phase 2)
-- the trial run screen at `/s/$slug/trials/$trialCycleId` (Phase 3)
-- the Settings screen, including the stealth toggle (Phase 6)
+Not in Phases 1–3:
+- the public hackathon page and Discover (Phase 4), the pricing page (Phase 6)
+- the trial run screen at `/s/$slug/trials/$trialCycleId` (Phases 7–9)
+- the Settings screen, including the stealth toggle (Phase 13)
 
 </domain>
 
@@ -50,7 +50,7 @@ Not in this phase:
 - **D-03:** Hackathon rows act according to their status:
   - every row shows title, Role, dates, status badge and participant count
   - Unpublished: Publish / Edit / Cancel
-  - Open or Running: a link to `/s/$slug/trials/$trialCycleId` (Phase 3; it may land on its stub for now) and Cancel where the backend allows it
+  - Open or Running: a link to `/s/$slug/trials/$trialCycleId` (Phases 7–9; it may land on its stub for now) and Cancel where the backend allows it
   - Closed or Cancelled: read-only
 - **D-04:** The empty state is a guided first step, "Run your first hiring hackathon". One button opens the new-hackathon page with "+ New Role" ready. When the founder has their free signup credit, the copy says the first hackathon is free ("Your first hackathon is on us"). Never mention codes.
 - **D-05:** Non-founder members see both tabs **read-only**: no credit badge and no actions. The backend `list` queries already allow members, and every mutation stays founder-guarded.
@@ -74,7 +74,7 @@ Not in this phase:
   - With a credit, the button reads "Publish (uses 1 credit, N left)". When the only credit is the signup one, it reads "Publish, uses your free credit". It calls `trialCycles.publish({ acceptTerms: true })`, and the UI guards against double-submit.
   - With no credit, the main button reads "Pay ₹2,999" (Free plan) or "Pay ₹1,499" (Pro top-up) and calls `billing.checkout.createHackathonCheckout`, then redirects. A Free founder also sees a **Go Pro option**: "or go Pro, ₹999/month: hackathons at ₹1,499 + a bigger workspace", which starts the Pro checkout through the existing upgrade path (`useUpgrade`). No code field.
 - **D-15:** Fixes after a failed click:
-  - **Stealth:** show the backend message only, with no inline "Turn off stealth" button. Accepted gap: until Phase 6 Settings ships, there's no in-app stealth toggle.
+  - **Stealth:** show the backend message only, with no inline "Turn off stealth" button. Accepted gap: until Phase 13 Settings ships, there's no in-app stealth toggle.
   - **Dates passed** (`NEW_DATES_MESSAGE`): date fields (start/end/deadline) appear **inside the publish dialog** and save through `reschedule` (or the D-07 `update`). Then Publish is enabled. One shared date-fields component serves the form and the dialog.
   - Role closed: message only. This can't happen once D-22 is in place, but the message stays.
 
@@ -86,7 +86,7 @@ Not in this phase:
 ### Credits & pricing model (backend changes)
 - **D-19:** **Signup credit:** every new account gets 1 free hackathon credit when it is created, with **no expiry**. Add a new credit source (e.g. `signup`) with grant key `signup:{userId}` so it's idempotent. Hook the grant into user creation: `convex/auth.ts` has no callback today, so add `callbacks.afterUserCreatedOrUpdated` (or equivalent) that grants only on creation. The multi-Google-account abuse risk is accepted for now. — **Reversibility:** one-way — once founders have received free credits, taking the offer back is a public pricing change.
 - **D-20:** **Remove launch/UPI codes completely:** `claimLaunchCode`, `createLaunchCode`, their table/schema, the `launch`/`upi` credit sources, tests and the CLAUDE.md operator line. HIRE-05 becomes "every new founder account starts with 1 free credit, shown in the balance". Pro discount codes live in Dodo (the user's go-to-market plan, not app work). `grantRerunCredit` stays as the only operator grant.
-- **D-21:** **Pro is a workspace plan with no included hackathon credits.** Every hackathon is paid per run: ₹2,999 on Free, ₹1,499 on Pro (Dodo products already split this way). Pro keeps its `PLAN_LIMITS` perks (capacity, unlimited open Roles, members, stealth). Remove the monthly Pro credit machinery: the `pro_monthly` credit source, `grantMonthlyProCredits` and its cron/daily job, `MAX_BANKED_PRO_CREDITS`, `MAX_PRO_USERS_SCAN` (if unused after), `expireProCredits` / the resubscribe un-expire logic and their webhook calls, and their tests. Credits that were bought (`purchase`), the signup credit, and `rerun` credits never expire on cancel. Cancelling Pro only drops the workspace back to Free limits (nothing is deleted; adding beyond Free is blocked) and the hackathon price back to ₹2,999. The rule to show users: "Your first hackathon is free. After that ₹2,999 each, or ₹1,499 on Pro." The **pricing page (Phase 2, PUBL-06) must say this.** Why: with included credits, a founder can pay ₹999 for one month, run the hackathons and cancel, so nobody would ever buy the ₹2,999 single. — **Reversibility:** one-way — once Pro is sold with no included credits, adding credits later is fine, but removing them after promising them would be a public pricing change.
+- **D-21:** **Pro is a workspace plan with no included hackathon credits.** Every hackathon is paid per run: ₹2,999 on Free, ₹1,499 on Pro (Dodo products already split this way). Pro keeps its `PLAN_LIMITS` perks (capacity, unlimited open Roles, members, stealth). Remove the monthly Pro credit machinery: the `pro_monthly` credit source, `grantMonthlyProCredits` and its cron/daily job, `MAX_BANKED_PRO_CREDITS`, `MAX_PRO_USERS_SCAN` (if unused after), `expireProCredits` / the resubscribe un-expire logic and their webhook calls, and their tests. Credits that were bought (`purchase`), the signup credit, and `rerun` credits never expire on cancel. Cancelling Pro only drops the workspace back to Free limits (nothing is deleted; adding beyond Free is blocked) and the hackathon price back to ₹2,999. The rule to show users: "Your first hackathon is free. After that ₹2,999 each, or ₹1,499 on Pro." The **pricing page (Phase 6, PUBL-06) must say this.** Why: with included credits, a founder can pay ₹999 for one month, run the hackathons and cancel, so nobody would ever buy the ₹2,999 single. — **Reversibility:** one-way — once Pro is sold with no included credits, adding credits later is fine, but removing them after promising them would be a public pricing change.
 - **D-22:** **Cancel refunds the credit before the start.** Cancelling an **open** hackathon (published, not yet started) returns the credit that paid for it. Cancelling a **running** one does not. Cancelling an unpublished one costs nothing. The cancel confirm states which case applies ("Your credit will be returned" or "Cancelling won't return your credit"). The planner chooses how to refund: re-grant the same source with its original expiry, or un-spend the credit row, keyed so it can't refund twice.
 - **D-23:** **Closing a Role is blocked** while it has an unpublished, open or running hackathon: "Cancel this Role's hackathons first." Change `roles.close` and add a test.
 
@@ -110,7 +110,7 @@ Not in this phase:
 - `convex/hiring/publish.rules.ts`, `convex/billing/credits.rules.ts`, `convex/billing/credits.ts`, `convex/billing/webhooks.ts` and their tests are the source of truth for current behaviour.
 
 ### Project
-- `.planning/REQUIREMENTS.md` (HIRE-01..10, OPS-01), `.planning/ROADMAP.md` Phase 1 success criteria. Criterion 3 (launch code claim) is superseded by D-19/D-20.
+- `.planning/REQUIREMENTS.md` (HIRE-01..10, OPS-01), `.planning/ROADMAP.md` Phases 1–3 success criteria (written after D-19/D-20; no code claim).
 - `CLAUDE.md`: repo architecture, guard pattern, bounded reads, route/feature layout, hooks own `useQuery`/`useMutation`, schema per domain.
 - `convex/_generated/ai/guidelines.md`: Convex API conventions.
 
@@ -162,17 +162,17 @@ Not in this phase:
 <deferred>
 ## Deferred Ideas
 
-- Inline "Turn off stealth" in the publish dialog: not chosen. Stealth is handled by Phase 6 Settings (TEAM-03).
+- Inline "Turn off stealth" in the publish dialog: not chosen. Stealth is handled by Phase 13 Settings (TEAM-03).
 - Soft-timeout / "No payment yet" checkout banners: not chosen (simple version). Revisit if founders get confused.
 - Reading Dodo's return-URL status for an instant "Payment cancelled": not chosen.
-- The pricing page must explain the model (first hackathon free, then ₹2,999 each or ₹1,499 on Pro, Pro = bigger workspace + stealth): Phase 2, PUBL-06/07.
+- The pricing page must explain the model (first hackathon free, then ₹2,999 each or ₹1,499 on Pro, Pro = bigger workspace + stealth): Phase 6, PUBL-06/07.
 - Pro discount codes: in the Dodo dashboard, part of the go-to-market plan, not app work.
-- **No direct founder↔participant DMs** (decided 2026-10-04): founders only post announcements to all participants. This changes RUN-04 (Phase 3: drop private per-participant threads, keep announcements) and TEAM-06 (Phase 7: Threads likely shrinks to announcements). Settle the details in Phase 3 discuss. It doesn't touch Phase 1.
+- **No direct founder↔participant DMs** (decided 2026-10-04): founders only post announcements to all participants. This changes RUN-04 (Phase 8: drop private per-participant threads, keep announcements) and TEAM-06 (Phase 14: Threads likely shrinks to announcements). Settle the details in Phase 8 discuss. It doesn't touch Phases 1–3.
 - No admin `grantCredit` command (UPI payers / incubator packs): declined. Every paid hackathon goes through Dodo, and `grantRerunCredit` stays.
 
 </deferred>
 
 ---
 
-*Phase: 01-founder-hiring-publish*
+*Phase: 01-hiring-screen-drafts (shared by 02-credits-publish, 03-dodo-checkout)*
 *Context gathered: 2026-10-01, revised 2026-10-04*
