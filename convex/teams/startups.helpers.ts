@@ -23,13 +23,22 @@ export async function setUpStartup(t: TestConvex, headcount = 1) {
 
 /** Signs someone up and adds them to the setup's Startup as a Member. */
 export async function joinAsMember(setup: Setup, name: string) {
-	const member = await signUp(setup.t, name);
+	return await join(setup, name, "member");
+}
+
+/** Signs someone up and adds them to the setup's Startup as a co-Founder. */
+export async function joinAsCoFounder(setup: Setup, name: string) {
+	return await join(setup, name, "founder");
+}
+
+async function join(setup: Setup, name: string, role: "founder" | "member") {
+	const person = await signUp(setup.t, name);
 	await setup.t.run(async (ctx) => {
 		await ctx.db.insert("memberships", {
 			startupId: setup.startupId,
-			userId: member.userId,
-			role: "member",
+			userId: person.userId,
+			role,
 		});
 	});
-	return member;
+	return person;
 }

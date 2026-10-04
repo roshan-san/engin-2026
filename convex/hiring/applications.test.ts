@@ -9,7 +9,7 @@ import {
 } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
-import { createTrial } from "./trialCycles.helpers";
+import { createTrial, enterTrial } from "./trialCycles.helpers";
 
 async function evidenceOf(t: TestConvex, username: string) {
 	const profile = await t.query(api.people.users.getByUsername, { username });
@@ -19,9 +19,7 @@ async function evidenceOf(t: TestConvex, username: string) {
 test("an Applicant can withdraw before a decision", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const trialCycleId = await createTrial(setup, {
-		admission: "application",
-	});
+	const trialCycleId = await createTrial(setup);
 	const alice = await signUp(t, "Alice");
 	await alice.as.mutation(api.hiring.applications.applyToTrial, {
 		acceptTerms: true,
@@ -42,16 +40,10 @@ test("leaving before the start frees the spot and leaves no record", async () =>
 	const trialCycleId = await createTrial(setup, { maxContributors: 1 });
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
-		acceptTerms: true,
-		trialCycleId,
-	});
+	await enterTrial(setup, trialCycleId, alice);
 
 	await alice.as.mutation(api.hiring.applications.leaveTrial, { trialCycleId });
-	await bob.as.mutation(api.hiring.applications.joinTrial, {
-		acceptTerms: true,
-		trialCycleId,
-	});
+	await enterTrial(setup, trialCycleId, bob);
 
 	expect((await evidenceOf(t, "alice"))?.trialCyclesLeft).toBe(0);
 });
@@ -61,10 +53,7 @@ test("Leaving a started Trial Cycle is recorded publicly and never takes Score b
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
-		acceptTerms: true,
-		trialCycleId,
-	});
+	await enterTrial(setup, trialCycleId, alice);
 	await advancePast(t, DAY + HOUR);
 
 	await alice.as.mutation(api.hiring.applications.leaveTrial, { trialCycleId });
@@ -79,14 +68,14 @@ test("a person gets one attempt per Trial Cycle", async () => {
 	const setup = await setUpStartup(t);
 	const trialCycleId = await createTrial(setup);
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
+	await alice.as.mutation(api.hiring.applications.applyToTrial, {
 		acceptTerms: true,
 		trialCycleId,
 	});
 	await alice.as.mutation(api.hiring.applications.leaveTrial, { trialCycleId });
 
 	await expect(
-		alice.as.mutation(api.hiring.applications.joinTrial, {
+		alice.as.mutation(api.hiring.applications.applyToTrial, {
 			acceptTerms: true,
 			trialCycleId,
 		}),
@@ -102,14 +91,14 @@ test("a person can hold 5 live entries, and a cancelled Trial Cycle frees a slot
 	}
 	const alice = await signUp(t, "Alice");
 	for (const trialCycleId of trials.slice(0, 5)) {
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
+		await alice.as.mutation(api.hiring.applications.applyToTrial, {
 			trialCycleId,
 			acceptTerms: true,
 		});
 	}
 
 	await expect(
-		alice.as.mutation(api.hiring.applications.joinTrial, {
+		alice.as.mutation(api.hiring.applications.applyToTrial, {
 			trialCycleId: trials[5],
 			acceptTerms: true,
 		}),
@@ -120,7 +109,7 @@ test("a person can hold 5 live entries, and a cancelled Trial Cycle frees a slot
 	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
 		trialCycleId: trials[0],
 	});
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
+	await alice.as.mutation(api.hiring.applications.applyToTrial, {
 		trialCycleId: trials[5],
 		acceptTerms: true,
 	});
@@ -131,14 +120,14 @@ test("Pro gives no extra entries", async () => {
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice", "pro");
 	for (let index = 0; index < 5; index += 1) {
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
+		await alice.as.mutation(api.hiring.applications.applyToTrial, {
 			trialCycleId: await createTrial(setup),
 			acceptTerms: true,
 		});
 	}
 
 	await expect(
-		alice.as.mutation(api.hiring.applications.joinTrial, {
+		alice.as.mutation(api.hiring.applications.applyToTrial, {
 			trialCycleId: await createTrial(setup),
 			acceptTerms: true,
 		}),
@@ -148,21 +137,18 @@ test("Pro gives no extra entries", async () => {
 test("a startup's own Founders and Members can't enter its hackathon", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const openTrial = await createTrial(setup);
-	const applicationTrial = await createTrial(setup, {
-		admission: "application",
-	});
+	const trialCycleId = await createTrial(setup);
 	const member = await joinAsMember(setup, "Mia");
 
 	await expect(
-		setup.founder.as.mutation(api.hiring.applications.joinTrial, {
-			trialCycleId: openTrial,
+		setup.founder.as.mutation(api.hiring.applications.applyToTrial, {
+			trialCycleId,
 			acceptTerms: true,
 		}),
 	).rejects.toThrow("on this startup's team");
 	await expect(
 		member.as.mutation(api.hiring.applications.applyToTrial, {
-			trialCycleId: applicationTrial,
+			trialCycleId,
 			acceptTerms: true,
 		}),
 	).rejects.toThrow("on this startup's team");
@@ -175,13 +161,13 @@ test("entering requires the IP acknowledgment, and records when it was given", a
 	const alice = await signUp(t, "Alice");
 
 	await expect(
-		alice.as.mutation(api.hiring.applications.joinTrial, {
+		alice.as.mutation(api.hiring.applications.applyToTrial, {
 			trialCycleId,
 			acceptTerms: false,
 		}),
 	).rejects.toThrow("IP terms");
 
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
+	await alice.as.mutation(api.hiring.applications.applyToTrial, {
 		trialCycleId,
 		acceptTerms: true,
 	});

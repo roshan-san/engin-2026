@@ -8,6 +8,21 @@ export function toDateInput(value: number): string {
 	return new Date(value).toISOString().slice(0, 10);
 }
 
+/** A `datetime-local` value ("2026-10-05T10:00") read as the viewer's local time. */
+export function fromDateTimeInput(value: string): number {
+	const [date = "", time = "00:00"] = value.split("T");
+	const [year, month, day] = date.split("-").map(Number);
+	const [hours, minutes] = time.split(":").map(Number);
+	return new Date(year, month - 1, day, hours, minutes).getTime();
+}
+
+/** The `datetime-local` value for a timestamp, in the viewer's local time. */
+export function toDateTimeInput(value: number): string {
+	const date = new Date(value);
+	const pad = (part: number) => String(part).padStart(2, "0");
+	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export function formatDate(value: number): string {
 	return new Date(value).toLocaleDateString();
 }

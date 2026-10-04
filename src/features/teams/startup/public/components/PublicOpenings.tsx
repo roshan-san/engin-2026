@@ -88,13 +88,10 @@ export function PublicOpenings({
 									</Badge>
 								</div>
 								{isAuthenticated ? (
-									<ApplyButtons
-										trialCycleId={trial._id}
-										admission={trial.admission}
-									/>
+									<ApplyButtons trialCycleId={trial._id} />
 								) : (
 									<Button asChild size="sm">
-										<Link to="/">Sign in to join</Link>
+										<Link to="/">Sign in to apply</Link>
 									</Button>
 								)}
 							</li>

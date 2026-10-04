@@ -5,12 +5,19 @@ import { MAX_TRIAL_CHALLENGES } from "../lib/limits";
 import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import { type Setup, setUpStartup } from "../teams/startups.helpers";
-import { createDraftTrial, createTrial } from "./trialCycles.helpers";
+import {
+	createDraftTrial,
+	createTrial,
+	enterTrial,
+} from "./trialCycles.helpers";
 
 async function setUpOpenTrial() {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+	const trialCycleId = await createTrial(setup, {
+		startsInMs: DAY,
+		challenges: [{ title: "Build the API", description: "Do: Build the API" }],
+	});
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
 	return { t, setup, trialCycleId, alice, bob };
@@ -30,16 +37,9 @@ async function addChallenge(
 
 test("starting a Trial Cycle copies every Challenge onto each Participant's Board in todo", async () => {
 	const { t, setup, trialCycleId, alice, bob } = await setUpOpenTrial();
-	await addChallenge(setup, trialCycleId, "Build the API");
 	await addChallenge(setup, trialCycleId, "Write the docs");
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
-		acceptTerms: true,
-		trialCycleId,
-	});
-	await bob.as.mutation(api.hiring.applications.joinTrial, {
-		acceptTerms: true,
-		trialCycleId,
-	});
+	await enterTrial(setup, trialCycleId, alice);
+	await enterTrial(setup, trialCycleId, bob);
 
 	await advancePast(t, DAY + HOUR);
 
@@ -58,7 +58,6 @@ test("starting a Trial Cycle copies every Challenge onto each Participant's Boar
 
 test("Founders list Challenges and remove one before the start", async () => {
 	const { setup, trialCycleId } = await setUpOpenTrial();
-	await addChallenge(setup, trialCycleId, "Build the API");
 	const docsId = await addChallenge(setup, trialCycleId, "Write the docs");
 
 	await setup.founder.as.mutation(api.hiring.challenges.remove, {
@@ -93,10 +92,7 @@ test("only Founders of the Startup can add, list or remove Challenges", async ()
 
 test("Challenges cannot be added once the Trial Cycle has started", async () => {
 	const { t, setup, trialCycleId, alice } = await setUpOpenTrial();
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
-		acceptTerms: true,
-		trialCycleId,
-	});
+	await enterTrial(setup, trialCycleId, alice);
 	await advancePast(t, DAY + HOUR);
 
 	await expect(addChallenge(setup, trialCycleId, "Too late")).rejects.toThrow(
@@ -106,7 +102,8 @@ test("Challenges cannot be added once the Trial Cycle has started", async () => 
 
 test("a Trial Cycle has a bounded number of Challenges", async () => {
 	const { setup, trialCycleId } = await setUpOpenTrial();
-	for (let i = 0; i < MAX_TRIAL_CHALLENGES; i++) {
+	// The open trial already has one Starting Pulse.
+	for (let i = 1; i < MAX_TRIAL_CHALLENGES; i++) {
 		await addChallenge(setup, trialCycleId, `Challenge ${i}`);
 	}
 
@@ -115,10 +112,10 @@ test("a Trial Cycle has a bounded number of Challenges", async () => {
 	).rejects.toThrow("at most");
 });
 
-test("Founders can seed Challenges on a draft before paying to publish it", async () => {
+test("Founders can add Challenges to a draft before paying to publish it", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const trialCycleId = await createDraftTrial(setup);
+	const trialCycleId = await createDraftTrial(setup, { challenges: [] });
 
 	await addChallenge(setup, trialCycleId, "Build the API");
 

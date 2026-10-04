@@ -1,18 +1,14 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { buildSearchText, optionalText, requireText } from "../lib/text";
+import { MAX_LISTED_ROLES, ROLE_TEXT_LIMITS } from "../lib/limits";
+import { buildSearchText, limitText, requireLimitedText } from "../lib/text";
 import { logActivity } from "../teams/activity.rules";
 import {
 	requireFounderMembership,
 	requireMembership,
 } from "../teams/membership.rules";
-
-function parseSkills(skills: string[]): string[] {
-	return [
-		...new Set(skills.map((skill) => skill.trim()).filter(Boolean)),
-	].slice(0, 12);
-}
+import { parseSkills, requireNoLiveHackathons } from "./roles.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -24,7 +20,7 @@ export const list = query({
 			.query("roles")
 			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
 			.order("desc")
-			.take(50);
+			.take(MAX_LISTED_ROLES);
 	},
 });
 
@@ -59,9 +55,21 @@ export const create = mutation({
 			throw new Error("Headcount must be a whole number of at least 1");
 		}
 
-		const title = requireText(args.title, "Role title");
-		const type = requireText(args.type, "Role type");
-		const description = requireText(args.description, "Role description");
+		const title = requireLimitedText(
+			args.title,
+			"Role title",
+			ROLE_TEXT_LIMITS.title,
+		);
+		const type = requireLimitedText(
+			args.type,
+			"Role type",
+			ROLE_TEXT_LIMITS.title,
+		);
+		const description = requireLimitedText(
+			args.description,
+			"Role description",
+			ROLE_TEXT_LIMITS.description,
+		);
 		const skills = parseSkills(args.skills);
 
 		const roleId = await ctx.db.insert("roles", {
@@ -70,7 +78,7 @@ export const create = mutation({
 			type,
 			skills,
 			description,
-			location: optionalText(args.location),
+			location: limitText(args.location, "Location", ROLE_TEXT_LIMITS.title),
 			remote: args.remote,
 			headcount: args.headcount,
 			status: "open",
@@ -99,6 +107,7 @@ export const close = mutation({
 		}
 
 		await requireFounderMembership(ctx, role.startupId, userId);
+		await requireNoLiveHackathons(ctx, role._id);
 		await ctx.db.patch(args.roleId, { status: "closed" });
 	},
 });

@@ -20,6 +20,7 @@ export const activityKind = v.union(
 	v.literal("cycle_started"),
 	v.literal("pulse_verified"),
 	v.literal("role_posted"),
+	v.literal("trial_cycle_published"),
 	v.literal("trial_cycle_started"),
 	v.literal("trial_cycle_closed"),
 	v.literal("offer_accepted"),

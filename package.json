@@ -12,7 +12,8 @@
     "check-types": "tsc --noEmit",
     "check": "pnpm lint && pnpm format && pnpm check-types",
     "ui": "pnpm dlx shadcn@latest add",
-    "test": "vitest run"
+    "test": "vitest run",
+    "data:clear": "node scripts/clear-dev-data.mjs"
   },
   "dependencies": {
     "@auth/core": "0.41.3",

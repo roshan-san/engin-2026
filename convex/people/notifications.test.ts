@@ -35,28 +35,10 @@ async function slugOf(t: TestConvex, startupId: Id<"startups">) {
 }
 
 describe("hiring", () => {
-	test("a Participant joining an open Trial Cycle notifies the Founder with a slug-carrying link", async () => {
+	test("applying to a Trial Cycle notifies the Founder with a slug-carrying link", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup);
-		const alice = await signUp(t, "Alice");
-		const slug = await slugOf(t, setup.startupId);
-
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
-
-		const notifications = await notificationsFor(setup.founder.as);
-		expect(hrefOf(notifications, "Someone joined Build a feature")).toBe(
-			`/s/${slug}/trials/${trialCycleId}`,
-		);
-	});
-
-	test("applying to an application-admission Trial Cycle notifies the Founder with a slug-carrying link", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { admission: "application" });
 		const alice = await signUp(t, "Alice");
 		const slug = await slugOf(t, setup.startupId);
 
@@ -74,7 +56,7 @@ describe("hiring", () => {
 	test("rejecting an application notifies the Applicant with a slug-carrying link", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { admission: "application" });
+		const trialCycleId = await createTrial(setup);
 		const bob = await signUp(t, "Bob");
 		const slug = await slugOf(t, setup.startupId);
 		await bob.as.mutation(api.hiring.applications.applyToTrial, {

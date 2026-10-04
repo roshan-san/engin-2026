@@ -7,11 +7,9 @@ import { trialCycleHref } from "../lib/links";
 import { notify } from "../people/notifications.rules";
 import { getMembership } from "../teams/membership.rules";
 import {
-	expireProCredits,
 	grantCredit,
-	grantMonthlyProCredit,
+	grantProMonthCredits,
 	HACKATHON_PAYMENT_KIND,
-	keepProCredits,
 } from "./credits.rules";
 
 export const subscriptionEvent = v.union(
@@ -63,7 +61,6 @@ export const applySubscriptionEvent = internalMutation({
 		subscriptionId: v.string(),
 		metadataUserId: v.optional(v.string()),
 		email: v.optional(v.string()),
-		nextBillingAt: v.optional(v.number()),
 	},
 	handler: async (ctx, args): Promise<void> => {
 		const userId = await resolveWebhookUser(ctx, {
@@ -76,20 +73,27 @@ export const applySubscriptionEvent = internalMutation({
 			return;
 		}
 
-		const now = Date.now();
-		if (args.event === "active" || args.event === "renewed") {
-			await ctx.db.patch(userId, { planTier: "pro" });
-			await keepProCredits(ctx, userId, now);
-			await grantMonthlyProCredit(ctx, userId, now);
+		// Pro changes limits and the hackathon price, and each Pro month includes
+		// credits that lapse at its end. Ending Pro keeps that month's credits.
+		const isPro = args.event === "active" || args.event === "renewed";
+		if (!isPro) {
+			await ctx.db.patch(userId, { planTier: "free", proStartedAt: undefined });
 			return;
 		}
-
-		await ctx.db.patch(userId, { planTier: "free" });
-		if (args.event === "cancelled") {
-			await expireProCredits(ctx, userId, args.nextBillingAt ?? now);
-		} else if (args.event === "expired") {
-			await expireProCredits(ctx, userId, now);
+		const user = await ctx.db.get(userId);
+		if (!user) {
+			return;
 		}
+		const now = Date.now();
+		// A renewal keeps the Pro run; going Pro from Free starts a new one.
+		const proStartedAt =
+			user.planTier === "pro" ? (user.proStartedAt ?? now) : now;
+		await ctx.db.patch(userId, { planTier: "pro", proStartedAt });
+		await grantProMonthCredits(
+			ctx,
+			{ ...user, planTier: "pro", proStartedAt },
+			now,
+		);
 	},
 });
 

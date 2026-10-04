@@ -1,6 +1,7 @@
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { TestConvex } from "../lib/testing.helpers";
+import { onUserSignedIn } from "./users.rules";
 
 export type Person = Awaited<ReturnType<typeof signUp>>;
 
@@ -20,6 +21,19 @@ export async function signUp(
 			}),
 	);
 	return { userId, as: t.withIdentity({ subject: `${userId}|session` }) };
+}
+
+/** A first sign-in through Google: the account is created and gets its signup credit. */
+export async function signUpNew(t: TestConvex, name: string) {
+	const person = await signUp(t, name);
+	await t.run(
+		async (ctx) =>
+			await onUserSignedIn(ctx, {
+				userId: person.userId,
+				existingUserId: null,
+			}),
+	);
+	return person;
 }
 
 /** The Score shown on someone's public profile. */

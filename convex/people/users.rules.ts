@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { grantSignupCredit } from "../billing/credits.rules";
 
 type PublicUser = {
 	_id: Id<"users">;
@@ -38,4 +39,17 @@ export async function loadPublicUser(
 	}
 	const user = await ctx.db.get(userId);
 	return user ? toPublicUser(user) : null;
+}
+
+/**
+ * Runs after every sign-in (`convex/auth.ts`). `existingUserId` is null only
+ * when the account was just created, which earns the signup credit.
+ */
+export async function onUserSignedIn(
+	ctx: MutationCtx,
+	args: { userId: Id<"users">; existingUserId: Id<"users"> | null },
+): Promise<void> {
+	if (args.existingUserId === null) {
+		await grantSignupCredit(ctx, args.userId);
+	}
 }

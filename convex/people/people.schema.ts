@@ -10,6 +10,8 @@ export const peopleTables = {
 		email: v.optional(v.string()),
 		emailVerificationTime: v.optional(v.number()),
 		planTier: v.optional(planTier),
+		/** When the current Pro run began; Pro months and their credits count from it. */
+		proStartedAt: v.optional(v.number()),
 		username: v.optional(v.string()),
 		bio: v.optional(v.string()),
 		skills: v.optional(v.array(v.string())),

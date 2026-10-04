@@ -24,9 +24,10 @@ export const MAX_INVITES_PER_EMAIL = 20;
 export const CYCLE_ENDING_SOON_MS = 2 * 24 * 60 * 60 * 1000;
 /** Bound on one person's unspent hackathon credits read at once. */
 export const MAX_USER_CREDITS = 50;
-/** Free launch codes Engin may create per window (design: Free allowance). */
-export const MAX_LAUNCH_CODES = 10;
-export const LAUNCH_CODE_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
+/** Hackathon credits each Pro month includes; unused ones lapse at month end. */
+export const PRO_MONTHLY_CREDITS = 2;
+/** Bound on Pro users the daily Pro credit grant reads. */
+export const MAX_PRO_USERS_SCAN = 500;
 
 /** A Plan's limits (issue #19). Publishing hackathons is gated by credits, not
  * by the Plan (design: Founder Pro subscription). `null` means unlimited —
@@ -60,11 +61,6 @@ export const MAX_PLAN_USAGE_SCAN = 200;
 export const RERUN_MIN_APPLICATIONS = 3;
 export const RERUN_CREDIT_TTL_MS = 60 * 24 * 60 * 60 * 1000;
 
-/** Pro includes one hackathon credit a month; unused ones bank up to this. */
-export const MAX_BANKED_PRO_CREDITS = 3;
-/** Bound on the Pro users the daily credit job reads. */
-export const MAX_PRO_USERS_SCAN = 500;
-
 /** Lengths of free-text profile and Pitch fields. */
 export const MAX_BIO = 280;
 export const MAX_LOCATION = 80;
@@ -74,3 +70,19 @@ export const SKILL_LIMITS = { maxItems: 10, maxLength: 32 };
 export const TECH_STACK_LIMITS = { maxItems: 12, maxLength: 24 };
 /** Startups read for one person's switcher. */
 export const MAX_USER_MEMBERSHIPS = 50;
+/** Lengths of hackathon (Trial Cycle) text; the client forms use the same numbers. */
+export const TRIAL_TEXT_LIMITS = {
+	title: 120,
+	description: 4000,
+	prize: 200,
+	detail: 2000,
+};
+/** Lengths of Starting Pulse (Challenge) text. */
+export const CHALLENGE_TEXT_LIMITS = { title: 120, description: 2000 };
+export const ROLE_TEXT_LIMITS = {
+	title: 120,
+	description: 2000,
+	skills: { maxItems: 12, maxLength: 40 },
+};
+/** Roles read for one Startup's Hiring screen. */
+export const MAX_LISTED_ROLES = 50;

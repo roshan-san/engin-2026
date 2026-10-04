@@ -12,7 +12,6 @@ import {
 type ParticipantTrialActionsProps = {
 	readonly trialCycleId: Id<"trialCycles">;
 	readonly trialStatus: string;
-	readonly admission: "open" | "application";
 	readonly myStatus: string | null;
 	readonly isPending: boolean;
 	readonly run: (action: () => Promise<unknown>, fallback: string) => void;
@@ -21,20 +20,17 @@ type ParticipantTrialActionsProps = {
 export function ParticipantTrialActions({
 	trialCycleId,
 	trialStatus,
-	admission,
 	myStatus,
 	isPending,
 	run,
 }: ParticipantTrialActionsProps) {
 	const applyToTrial = useMutation(api.hiring.applications.applyToTrial);
-	const joinTrial = useMutation(api.hiring.applications.joinTrial);
 	const leaveTrial = useMutation(api.hiring.applications.leaveTrial);
 
 	if (!myStatus) {
 		if (trialStatus !== "open") {
 			return null;
 		}
-		const isOpenAdmission = admission === "open";
 		return (
 			<Button
 				type="button"
@@ -45,18 +41,16 @@ export function ParticipantTrialActions({
 					}
 					run(
 						() =>
-							isOpenAdmission
-								? joinTrial({ trialCycleId, acceptTerms: true })
-								: applyToTrial({
-										trialCycleId,
-										message: askForMessage(),
-										acceptTerms: true,
-									}),
-						isOpenAdmission ? "Could not join" : "Could not apply",
+							applyToTrial({
+								trialCycleId,
+								message: askForMessage(),
+								acceptTerms: true,
+							}),
+						"Could not apply",
 					);
 				}}
 			>
-				{isOpenAdmission ? "Join Trial Cycle" : "Apply"}
+				Apply
 			</Button>
 		);
 	}

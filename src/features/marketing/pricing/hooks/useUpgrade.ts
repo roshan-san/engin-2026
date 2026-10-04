@@ -15,7 +15,10 @@ export function useUpgrade() {
 	const createCheckout = useAction(api.billing.plan.createCheckoutLink);
 	const [isLoading, setIsLoading] = useState(false);
 
-	async function upgrade(interval: BillingInterval = "yearly") {
+	async function upgrade(
+		interval: BillingInterval = "yearly",
+		returnUrl = `${window.location.origin}/my-pulses`,
+	) {
 		if (!isAuthenticated) {
 			toast.error("Sign in to upgrade");
 			return;
@@ -24,7 +27,7 @@ export function useUpgrade() {
 		setIsLoading(true);
 		try {
 			const result = await createCheckout({
-				returnUrl: `${window.location.origin}/my-pulses`,
+				returnUrl,
 				interval,
 			});
 			window.location.href = result.checkoutUrl;

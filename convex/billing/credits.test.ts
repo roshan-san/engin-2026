@@ -1,10 +1,16 @@
 import { describe, expect, test, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { createDraftTrial, createTrial } from "../hiring/trialCycles.helpers";
+import {
+	createDraftTrial,
+	createTrial,
+	startedTrialWith,
+} from "../hiring/trialCycles.helpers";
 import { createTest, DAY, HOUR, type TestConvex } from "../lib/testing.helpers";
-import { signUp } from "../people/users.helpers";
-import { setUpStartup } from "../teams/startups.helpers";
+import { signUp, signUpNew } from "../people/users.helpers";
+import { onUserSignedIn } from "../people/users.rules";
+import { proMonthOf } from "./credits.rules";
+import { type Setup, setUpStartup } from "../teams/startups.helpers";
 import { balanceOf, giveCredit } from "./credits.helpers";
 
 async function applyWith(
@@ -21,90 +27,50 @@ async function applyWith(
 	}
 }
 
-describe("launch codes", () => {
-	test("a launch code gives the founder who claims it one credit", async () => {
+describe("signup credit", () => {
+	test("a new account starts with one credit that never expires", async () => {
 		const t = createTest();
-		const founder = await signUp(t, "Founder");
-		const code = await t.mutation(internal.billing.credits.createLaunchCode, {
-			source: "launch",
-			issuedTo: "E-cell session",
-		});
 
-		await founder.as.mutation(api.billing.credits.claimLaunchCode, { code });
+		const founder = await signUpNew(t, "Founder");
 
-		const balance = await founder.as.query(api.billing.credits.balance, {});
-		expect(balance.available).toBe(1);
-		expect(balance.credits[0]?.source).toBe("launch");
+		const { available, credits } = await founder.as.query(
+			api.billing.credits.balance,
+			{},
+		);
+		expect(available).toBe(1);
+		expect(credits).toEqual([
+			expect.objectContaining({ source: "signup", expiresAt: null }),
+		]);
 	});
 
-	test("a launch code claims whatever its case, spaces or dashes", async () => {
+	test("signing in again to an existing account grants nothing", async () => {
 		const t = createTest();
-		const founder = await signUp(t, "Founder");
-		const code = await t.mutation(internal.billing.credits.createLaunchCode, {
-			source: "launch",
-			issuedTo: "E-cell session",
-		});
-		const typed = ` ${code.slice(0, 4).toLowerCase()}-${code.slice(4)} `;
+		const founder = await signUpNew(t, "Founder");
 
-		await founder.as.mutation(api.billing.credits.claimLaunchCode, {
-			code: typed,
-		});
+		await t.run(
+			async (ctx) =>
+				await onUserSignedIn(ctx, {
+					userId: founder.userId,
+					existingUserId: founder.userId,
+				}),
+		);
 
 		expect(await balanceOf(founder.as)).toBe(1);
 	});
 
-	test("a launch code can be claimed once", async () => {
+	test("the signup grant gives each user one credit, however often it runs", async () => {
 		const t = createTest();
-		const alice = await signUp(t, "Alice");
-		const bob = await signUp(t, "Bob");
-		const code = await t.mutation(internal.billing.credits.createLaunchCode, {
-			source: "launch",
-			issuedTo: "E-cell session",
-		});
-		await alice.as.mutation(api.billing.credits.claimLaunchCode, { code });
+		const founder = await signUpNew(t, "Founder");
 
-		await expect(
-			bob.as.mutation(api.billing.credits.claimLaunchCode, { code }),
-		).rejects.toThrow("already been used");
-		expect(await balanceOf(bob.as)).toBe(0);
-	});
+		await t.run(
+			async (ctx) =>
+				await onUserSignedIn(ctx, {
+					userId: founder.userId,
+					existingUserId: null,
+				}),
+		);
 
-	test("an unknown code is rejected", async () => {
-		const t = createTest();
-		const founder = await signUp(t, "Founder");
-
-		await expect(
-			founder.as.mutation(api.billing.credits.claimLaunchCode, {
-				code: "NOPE-NOPE-NOPE",
-			}),
-		).rejects.toThrow("doesn't exist");
-	});
-
-	test("Engin can create 10 launch codes per 90 days, and UPI codes don't count", async () => {
-		const t = createTest();
-		for (let index = 0; index < 10; index += 1) {
-			await t.mutation(internal.billing.credits.createLaunchCode, {
-				source: "launch",
-				issuedTo: `Session ${index}`,
-			});
-		}
-
-		await expect(
-			t.mutation(internal.billing.credits.createLaunchCode, {
-				source: "launch",
-				issuedTo: "One too many",
-			}),
-		).rejects.toThrow("10 codes per 90 days");
-		await t.mutation(internal.billing.credits.createLaunchCode, {
-			source: "upi",
-			issuedTo: "Paid by UPI",
-		});
-
-		vi.advanceTimersByTime(91 * DAY);
-		await t.mutation(internal.billing.credits.createLaunchCode, {
-			source: "launch",
-			issuedTo: "Next quarter",
-		});
+		expect(await balanceOf(founder.as)).toBe(1);
 	});
 });
 
@@ -112,10 +78,7 @@ describe("re-run credits", () => {
 	test("a hackathon with fewer than 3 applications earns its founder a re-run credit for 60 days", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, {
-			admission: "application",
-			startsInMs: DAY,
-		});
+		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		await applyWith(t, trialCycleId, ["Alice", "Bob"]);
 		vi.advanceTimersByTime(DAY + HOUR);
 
@@ -145,10 +108,7 @@ describe("re-run credits", () => {
 	test("3 applications earn no re-run credit", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, {
-			admission: "application",
-			startsInMs: DAY,
-		});
+		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		await applyWith(t, trialCycleId, ["Alice", "Bob", "Cara"]);
 		vi.advanceTimersByTime(DAY + HOUR);
 
@@ -197,5 +157,115 @@ describe("re-run credits", () => {
 		await expect(
 			t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
 		).rejects.toThrow("published through the paid gate");
+	});
+});
+
+describe("cancel refund", () => {
+	async function cancel(setup: Setup, trialCycleId: Id<"trialCycles">) {
+		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
+			trialCycleId,
+		});
+	}
+
+	test("cancelling an open hackathon returns the exact credit that paid for it", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const creditId = await giveCredit(t, setup.founder.userId, {
+			source: "signup",
+		});
+		// createTrial adds a purchase credit, but the signup credit is spent first.
+		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+
+		await cancel(setup, trialCycleId);
+
+		const { credits } = await setup.founder.as.query(
+			api.billing.credits.balance,
+			{},
+		);
+		expect(credits.map((credit) => credit._id)).toContain(creditId);
+		expect(credits).toHaveLength(2);
+	});
+
+	test("a co-founder's cancel returns the credit to the founder who published", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const cofounder = await signUp(t, "Cody");
+		await t.run(async (ctx) => {
+			await ctx.db.insert("memberships", {
+				startupId: setup.startupId,
+				userId: cofounder.userId,
+				role: "founder",
+			});
+		});
+		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+
+		await cofounder.as.mutation(api.hiring.trialCycles.cancel, {
+			trialCycleId,
+		});
+
+		expect(await balanceOf(setup.founder.as)).toBe(1);
+		expect(await balanceOf(cofounder.as)).toBe(0);
+	});
+
+	test("cancelling a running hackathon returns nothing", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const alice = await signUp(t, "Alice");
+		const trialCycleId = await startedTrialWith(setup, [alice]);
+
+		await cancel(setup, trialCycleId);
+
+		expect(await balanceOf(setup.founder.as)).toBe(0);
+	});
+
+	test("cancelling an unpublished hackathon leaves the balance alone", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		await giveCredit(t, setup.founder.userId);
+		const trialCycleId = await createDraftTrial(setup);
+
+		await cancel(setup, trialCycleId);
+
+		expect(await balanceOf(setup.founder.as)).toBe(1);
+	});
+
+	test("a refunded re-run credit keeps its original expiry", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const expiresAt = Date.now() + 10 * DAY;
+		await giveCredit(t, setup.founder.userId, { source: "rerun", expiresAt });
+		const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
+		await setup.founder.as.mutation(api.hiring.trialCycles.publish, {
+			trialCycleId,
+			acceptTerms: true,
+		});
+
+		await cancel(setup, trialCycleId);
+
+		const { credits } = await setup.founder.as.query(
+			api.billing.credits.balance,
+			{},
+		);
+		expect(credits).toEqual([
+			expect.objectContaining({ source: "rerun", expiresAt }),
+		]);
+	});
+});
+
+describe("Pro months", () => {
+	test("a Pro month that starts on the 31st ends on the last day of a shorter month", () => {
+		const startedAt = Date.parse("2027-01-31T09:00:00Z");
+
+		const first = proMonthOf(startedAt, Date.parse("2027-02-10T00:00:00Z"));
+		const second = proMonthOf(startedAt, Date.parse("2027-03-01T00:00:00Z"));
+
+		expect(first).toEqual({
+			month: 0,
+			endsAt: Date.parse("2027-02-28T09:00:00Z"),
+		});
+		expect(second).toEqual({
+			month: 1,
+			endsAt: Date.parse("2027-03-31T09:00:00Z"),
+		});
 	});
 });

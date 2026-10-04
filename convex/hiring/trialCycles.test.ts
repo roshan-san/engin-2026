@@ -17,6 +17,7 @@ import {
 	applicationIdOf,
 	createDraftTrial,
 	createTrial,
+	enterTrial,
 	startedTrialWith,
 } from "./trialCycles.helpers";
 
@@ -37,13 +38,28 @@ async function publish(
 }
 
 describe("joining and starting", () => {
-	test("a person can join an open-admission Trial Cycle", async () => {
+	test("an accepted applicant becomes a Participant", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup);
 		const alice = await signUp(t, "Alice");
 
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
+		await enterTrial(setup, trialCycleId, alice);
+
+		const trial = await alice.as.query(api.hiring.trialCycles.get, {
+			trialCycleId,
+		});
+		expect(trial?.isParticipant).toBe(true);
+		expect(trial?.participantCount).toBe(1);
+	});
+
+	test("an applicant is not a Participant until accepted", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const trialCycleId = await createTrial(setup);
+		const alice = await signUp(t, "Alice");
+
+		await alice.as.mutation(api.hiring.applications.applyToTrial, {
 			acceptTerms: true,
 			trialCycleId,
 		});
@@ -51,7 +67,9 @@ describe("joining and starting", () => {
 		const trial = await alice.as.query(api.hiring.trialCycles.get, {
 			trialCycleId,
 		});
-		expect(trial?.isParticipant).toBe(true);
+		expect(trial?.myStatus).toBe("applied");
+		expect(trial?.isParticipant).toBe(false);
+		expect(trial?.participantCount).toBe(0);
 	});
 
 	test("a Trial Cycle with Participants becomes active at its start time", async () => {
@@ -59,10 +77,7 @@ describe("joining and starting", () => {
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, alice);
 
 		await advancePast(t, DAY + HOUR);
 
@@ -93,10 +108,7 @@ describe("joining and starting", () => {
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, alice);
 
 		await advancePast(t, DAY + HOUR);
 
@@ -105,15 +117,10 @@ describe("joining and starting", () => {
 		);
 	});
 
-	test("nobody can apply to or join a Trial Cycle after its application deadline", async () => {
+	test("nobody can apply to a Trial Cycle after its application deadline", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const openTrial = await createTrial(setup, {
-			startsInMs: 2 * DAY,
-			applicationDeadlineInMs: DAY,
-		});
-		const applicationTrial = await createTrial(setup, {
-			admission: "application",
+		const trialCycleId = await createTrial(setup, {
 			startsInMs: 2 * DAY,
 			applicationDeadlineInMs: DAY,
 		});
@@ -122,15 +129,9 @@ describe("joining and starting", () => {
 		vi.advanceTimersByTime(DAY + HOUR);
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.joinTrial, {
-				acceptTerms: true,
-				trialCycleId: openTrial,
-			}),
-		).rejects.toThrow("no longer accepting");
-		await expect(
 			alice.as.mutation(api.hiring.applications.applyToTrial, {
 				acceptTerms: true,
-				trialCycleId: applicationTrial,
+				trialCycleId,
 			}),
 		).rejects.toThrow("no longer accepting");
 	});
@@ -138,10 +139,7 @@ describe("joining and starting", () => {
 	test("pending applications are rejected when a Trial Cycle starts", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, {
-			admission: "application",
-			startsInMs: DAY,
-		});
+		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
 		const bob = await signUp(t, "Bob");
 		await alice.as.mutation(api.hiring.applications.applyToTrial, {
@@ -177,10 +175,7 @@ describe("cancelling", () => {
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, alice);
 		await advancePast(t, DAY + HOUR);
 
 		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
@@ -201,10 +196,7 @@ describe("cancelling", () => {
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, alice);
 		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
 			trialCycleId,
 		});
@@ -256,37 +248,6 @@ describe("cancelling", () => {
 });
 
 describe("drafts and publishing", () => {
-	test("a new Trial Cycle is a hidden draft: not listed, not joinable, not scheduled", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-
-		expect(
-			await alice.as.query(api.hiring.trialCycles.get, { trialCycleId }),
-		).toBeNull();
-		expect(
-			(await t.query(api.hiring.opportunities.search, {})).trials,
-		).toHaveLength(0);
-		expect(
-			await t.query(api.hiring.trialCycles.listOpenByStartup, {
-				startupId: setup.startupId,
-			}),
-		).toHaveLength(0);
-		await expect(
-			alice.as.mutation(api.hiring.applications.joinTrial, {
-				acceptTerms: true,
-				trialCycleId,
-			}),
-		).rejects.toThrow("isn't published yet");
-
-		await advancePast(t, 2 * DAY);
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
-		});
-		expect(trial?.status).toBe("draft");
-	});
-
 	test("publishing spends one credit, opens the hackathon and schedules its start", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
@@ -309,10 +270,7 @@ describe("drafts and publishing", () => {
 		expect(trials.map((card) => card.prize)).toEqual(["₹5,000 to the winner"]);
 
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, alice);
 		await advancePast(t, DAY + HOUR);
 		expect(
 			(await alice.as.query(api.hiring.trialCycles.get, { trialCycleId }))
@@ -416,22 +374,106 @@ describe("drafts and publishing", () => {
 	});
 });
 
-describe("spending credits", () => {
-	test("publishing spends launch credits first, then re-run, Pro, UPI and purchase", async () => {
+describe("publish checks", () => {
+	test("a draft with no Starting Pulse can't be published", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		for (const source of [
-			"purchase",
-			"upi",
-			"pro_monthly",
-			"rerun",
-			"launch",
-		] as const) {
+		const trialCycleId = await createDraftTrial(setup, { challenges: [] });
+		await giveCredit(t, setup.founder.userId);
+
+		await expect(publish(setup.founder.as, trialCycleId)).rejects.toThrow(
+			"Add at least one Starting Pulse before publishing",
+		);
+
+		expect(await balanceOf(setup.founder.as)).toBe(1);
+	});
+
+	test("stealth is reported before a missing Starting Pulse, and that before passed dates", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const trialCycleId = await createDraftTrial(setup, {
+			startsInMs: DAY,
+			challenges: [],
+		});
+		await giveCredit(t, setup.founder.userId);
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			isPublic: false,
+		});
+		vi.advanceTimersByTime(2 * DAY);
+
+		await expect(publish(setup.founder.as, trialCycleId)).rejects.toThrow(
+			"Turn off stealth mode",
+		);
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			isPublic: true,
+		});
+		await expect(publish(setup.founder.as, trialCycleId)).rejects.toThrow(
+			"Starting Pulse",
+		);
+		await setup.founder.as.mutation(api.hiring.challenges.add, {
+			trialCycleId,
+			title: "Build the API",
+		});
+		await expect(publish(setup.founder.as, trialCycleId)).rejects.toThrow(
+			"Pick new dates",
+		);
+
+		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
+			trialCycleId,
+		});
+		expect(trial?.status).toBe("draft");
+		expect(trial?.ipAcknowledgedAt).toBeUndefined();
+		expect(await balanceOf(setup.founder.as)).toBe(1);
+	});
+
+	test("publishing tells the other co-founders and logs the activity", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const cofounder = await signUp(t, "Cody");
+		await t.run(async (ctx) => {
+			await ctx.db.insert("memberships", {
+				startupId: setup.startupId,
+				userId: cofounder.userId,
+				role: "founder",
+			});
+		});
+		const trialCycleId = await createDraftTrial(setup);
+		await giveCredit(t, setup.founder.userId);
+
+		await publish(setup.founder.as, trialCycleId);
+
+		expect(await notificationTitles(cofounder.as)).toContain(
+			"Build a feature is published",
+		);
+		expect(await notificationTitles(setup.founder.as)).not.toContain(
+			"Build a feature is published",
+		);
+		const { activity } = await setup.founder.as.query(
+			api.teams.activity.dashboard,
+			{ startupId: setup.startupId },
+		);
+		expect(
+			activity.filter((row) => row.kind === "trial_cycle_published"),
+		).toHaveLength(1);
+	});
+});
+
+describe("spending credits", () => {
+	test("publishing spends Pro credits first, then re-runs, then the signup credit, then purchases", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		for (const source of ["purchase", "signup", "rerun"] as const) {
 			await giveCredit(t, setup.founder.userId, { source });
 		}
+		await giveCredit(t, setup.founder.userId, {
+			source: "pro_monthly",
+			expiresAt: Date.now() + 20 * DAY,
+		});
 
 		const spent = [];
-		for (let index = 0; index < 5; index += 1) {
+		for (let index = 0; index < 4; index += 1) {
 			const trialCycleId = await createDraftTrial(setup);
 			await publish(setup.founder.as, trialCycleId);
 			const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
@@ -440,13 +482,7 @@ describe("spending credits", () => {
 			spent.push(trial?.creditSource);
 		}
 
-		expect(spent).toEqual([
-			"launch",
-			"rerun",
-			"pro_monthly",
-			"upi",
-			"purchase",
-		]);
+		expect(spent).toEqual(["pro_monthly", "rerun", "signup", "purchase"]);
 	});
 
 	test("within one source, the credit expiring soonest is spent first", async () => {

@@ -60,6 +60,19 @@ export function limitText(
 	return text;
 }
 
+/** A required form field, trimmed, that must stay under `max` characters. */
+export function requireLimitedText(
+	value: string,
+	field: string,
+	max: number,
+): string {
+	const text = requireText(value, field);
+	if (text.length > max) {
+		throw new Error(`${field} must be under ${max} characters`);
+	}
+	return text;
+}
+
 /**
  * A tag list (skills, tech stack): trimmed, deduplicated, too-long tags dropped
  * and capped at `maxItems`. An empty list becomes `undefined`.

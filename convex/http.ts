@@ -17,18 +17,12 @@ type SubscriptionPayload = {
 		subscription_id: string;
 		customer?: { email?: string };
 		metadata?: Record<string, unknown>;
-		next_billing_date?: Date | string;
 	};
 };
 
 function metadataString(metadata: Metadata, key: string): string | undefined {
 	const value = metadata?.[key];
 	return typeof value === "string" ? value : undefined;
-}
-
-/** Dodo parses dates into `Date`s; accept an ISO string as well. */
-function toMillis(value: Date | string | undefined): number | undefined {
-	return value === undefined ? undefined : new Date(value).getTime();
 }
 
 function onSubscription(event: Infer<typeof subscriptionEvent>) {
@@ -38,7 +32,6 @@ function onSubscription(event: Infer<typeof subscriptionEvent>) {
 			subscriptionId: payload.data.subscription_id,
 			metadataUserId: metadataString(payload.data.metadata, "userId"),
 			email: payload.data.customer?.email,
-			nextBillingAt: toMillis(payload.data.next_billing_date),
 		});
 	};
 }

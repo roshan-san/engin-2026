@@ -3,12 +3,31 @@ import { api } from "../_generated/api";
 import { createTest, DAY } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { signUp } from "../people/users.helpers";
-import { setUpStartup } from "../teams/startups.helpers";
+import {
+	joinAsMember,
+	type Setup,
+	setUpStartup,
+} from "../teams/startups.helpers";
 import {
 	applicationIdOf,
+	closeWithVerdict,
+	createDraftTrial,
 	createTrial,
 	startedTrialWith,
 } from "./trialCycles.helpers";
+
+async function closeRole(setup: Setup) {
+	await setup.founder.as.mutation(api.hiring.roles.close, {
+		roleId: setup.roleId,
+	});
+}
+
+async function roleStatusOf(setup: Setup) {
+	const roles = await setup.founder.as.query(api.hiring.roles.list, {
+		startupId: setup.startupId,
+	});
+	return roles.find((role) => role._id === setup.roleId)?.status;
+}
 
 test("reaching the Headcount fills the Role and tidies up what depended on it", async () => {
 	const t = createTest();
@@ -106,4 +125,76 @@ test("a filled Role cannot be reopened", async () => {
 		startupId: setup.startupId,
 	});
 	expect(roles[0]?.status).toBe("closed");
+});
+
+test("a Role with an unpublished hackathon can't close", async () => {
+	const setup = await setUpStartup(createTest());
+	await createDraftTrial(setup);
+
+	await expect(closeRole(setup)).rejects.toThrow(
+		"Cancel this Role's hackathons first.",
+	);
+
+	expect(await roleStatusOf(setup)).toBe("open");
+});
+
+test("a Role with an open or running hackathon can't close", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const openTrial = await createTrial(setup, { startsInMs: 5 * DAY });
+
+	await expect(closeRole(setup)).rejects.toThrow(
+		"Cancel this Role's hackathons first.",
+	);
+
+	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
+		trialCycleId: openTrial,
+	});
+	await startedTrialWith(setup, [await signUp(t, "Alice")]);
+
+	await expect(closeRole(setup)).rejects.toThrow(
+		"Cancel this Role's hackathons first.",
+	);
+});
+
+test("a Role whose hackathons are all closed or cancelled closes", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const alice = await signUp(t, "Alice");
+	const finished = await startedTrialWith(setup, [alice]);
+	await closeWithVerdict(setup, finished, alice, "passed");
+	const dropped = await createDraftTrial(setup);
+	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
+		trialCycleId: dropped,
+	});
+
+	await closeRole(setup);
+
+	expect(await roleStatusOf(setup)).toBe("closed");
+});
+
+test("a Member can't close a Role", async () => {
+	const setup = await setUpStartup(createTest());
+	const member = await joinAsMember(setup, "Mia");
+
+	await expect(
+		member.as.mutation(api.hiring.roles.close, { roleId: setup.roleId }),
+	).rejects.toThrow("Only founders");
+
+	expect(await roleStatusOf(setup)).toBe("open");
+});
+
+test("an overlong Role title is refused", async () => {
+	const setup = await setUpStartup(createTest());
+
+	await expect(
+		setup.founder.as.mutation(api.hiring.roles.create, {
+			startupId: setup.startupId,
+			title: "x".repeat(121),
+			type: "full-time",
+			skills: [],
+			description: "Build things",
+			headcount: 1,
+		}),
+	).rejects.toThrow("Role title must be under 120 characters");
 });

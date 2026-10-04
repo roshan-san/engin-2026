@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import { createTrial } from "../hiring/trialCycles.helpers";
+import { createTrial, enterTrial } from "../hiring/trialCycles.helpers";
 import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import { joinAsMember, setUpStartup } from "./startups.helpers";
@@ -101,10 +101,7 @@ test("finishing a Board Pulse is not evidence: only a Verdict or membership is",
 		startupId: setup.startupId,
 	});
 	const alice = await signUp(t, "Alice");
-	await alice.as.mutation(api.hiring.applications.joinTrial, {
-		acceptTerms: true,
-		trialCycleId: trial._id,
-	});
+	await enterTrial(setup, trial._id, alice);
 	await advancePast(t, DAY + HOUR);
 
 	const [pulse] = await alice.as.query(api.work.pulses.listBoard, {

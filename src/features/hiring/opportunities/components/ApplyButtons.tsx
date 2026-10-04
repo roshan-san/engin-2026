@@ -12,12 +12,10 @@ import { toErrorMessage } from "~/lib/validation";
 
 type ApplyButtonsProps = {
 	readonly trialCycleId: Id<"trialCycles">;
-	readonly admission?: "open" | "application";
 };
 
-export function ApplyButtons({ trialCycleId, admission }: ApplyButtonsProps) {
+export function ApplyButtons({ trialCycleId }: ApplyButtonsProps) {
 	const applyToTrial = useMutation(api.hiring.applications.applyToTrial);
-	const joinTrial = useMutation(api.hiring.applications.joinTrial);
 	const [isPending, setIsPending] = useState(false);
 
 	async function run(action: () => Promise<unknown>, success: string) {
@@ -30,27 +28,6 @@ export function ApplyButtons({ trialCycleId, admission }: ApplyButtonsProps) {
 		} finally {
 			setIsPending(false);
 		}
-	}
-
-	if (admission === "open") {
-		return (
-			<Button
-				type="button"
-				size="sm"
-				disabled={isPending}
-				onClick={() => {
-					if (!confirmIpTerms()) {
-						return;
-					}
-					void run(
-						() => joinTrial({ trialCycleId, acceptTerms: true }),
-						"Joined Trial Cycle",
-					);
-				}}
-			>
-				Join
-			</Button>
-		);
 	}
 
 	return (

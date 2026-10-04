@@ -73,7 +73,6 @@ export const search = query({
 				_id: trial._id,
 				title: trial.title,
 				description: trial.description,
-				admission: trial.admission,
 				participantCount: trial.participantCount,
 				maxContributors: trial.maxContributors,
 				startsAt: trial.startsAt,

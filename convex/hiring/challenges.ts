@@ -7,10 +7,12 @@ import {
 	query,
 } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_TRIAL_CHALLENGES } from "../lib/limits";
-import { optionalText, requireText } from "../lib/text";
 import { requireFounderMembership } from "../teams/membership.rules";
-import { listChallenges } from "./challenges.rules";
+import {
+	buildChallengeFields,
+	listChallenges,
+	requireChallengeRoom,
+} from "./challenges.rules";
 
 async function requireTrialAsFounder(
 	ctx: QueryCtx | MutationCtx,
@@ -55,17 +57,12 @@ export const add = mutation({
 			args.trialCycleId,
 		);
 		requireNotStarted(trial.status);
-		if ((await listChallenges(ctx, trial._id)).length >= MAX_TRIAL_CHALLENGES) {
-			throw new Error(
-				`A Trial Cycle can have at most ${MAX_TRIAL_CHALLENGES} Challenges`,
-			);
-		}
+		requireChallengeRoom((await listChallenges(ctx, trial._id)).length + 1);
 
 		return await ctx.db.insert("challenges", {
 			trialCycleId: trial._id,
 			startupId: trial.startupId,
-			title: requireText(args.title, "Challenge title"),
-			description: optionalText(args.description),
+			...buildChallengeFields(args),
 			createdByUserId: userId,
 		});
 	},

@@ -11,14 +11,14 @@ import type { Person } from "../people/users.helpers";
 import type { Setup } from "../teams/startups.helpers";
 
 type TrialOverrides = {
-	admission?: "open" | "application";
 	maxContributors?: number;
 	startsInMs?: number;
 	applicationDeadlineInMs?: number;
 	prize?: string;
+	challenges?: { title: string; description?: string }[];
 };
 
-/** A draft Trial Cycle: created, not paid for, not public. */
+/** A draft Trial Cycle: created, not paid for, not public. Has one Starting Pulse unless told otherwise. */
 export async function createDraftTrial(
 	setup: Setup,
 	overrides: TrialOverrides = {},
@@ -30,7 +30,6 @@ export async function createDraftTrial(
 		roleId: setup.roleId,
 		title: "Build a feature",
 		description: "Ship it",
-		admission: overrides.admission ?? "open",
 		maxContributors: overrides.maxContributors ?? 5,
 		startsAt,
 		endsAt: startsAt + 7 * DAY,
@@ -39,6 +38,7 @@ export async function createDraftTrial(
 				? undefined
 				: now + overrides.applicationDeadlineInMs,
 		prize: overrides.prize,
+		challenges: overrides.challenges ?? [{ title: "Ship the feature" }],
 	});
 }
 
@@ -63,13 +63,27 @@ export async function createTrial(
 export async function startedTrialWith(setup: Setup, participants: Person[]) {
 	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 	for (const participant of participants) {
-		await participant.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, participant);
 	}
 	await advancePast(setup.t, DAY + HOUR);
 	return trialCycleId;
+}
+
+/** The only way in: the person applies, then a Founder accepts them. */
+export async function enterTrial(
+	setup: Setup,
+	trialCycleId: Id<"trialCycles">,
+	person: Person,
+) {
+	const applicationId = await person.as.mutation(
+		api.hiring.applications.applyToTrial,
+		{ trialCycleId, acceptTerms: true },
+	);
+	await setup.founder.as.mutation(api.hiring.applications.decide, {
+		applicationId,
+		status: "joined",
+	});
+	return applicationId;
 }
 
 export async function applicationIdOf(

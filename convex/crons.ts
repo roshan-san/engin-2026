@@ -4,9 +4,9 @@ import { internal } from "./_generated/api";
 const crons = cronJobs();
 
 crons.daily(
-	"grant monthly Pro hackathon credits",
+	"start each Pro month with its hackathon credits",
 	{ hourUTC: 0, minuteUTC: 10 },
-	internal.billing.credits.grantMonthlyProCredits,
+	internal.billing.credits.grantProCredits,
 	{},
 );
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
-import { createTrial } from "../hiring/trialCycles.helpers";
+import { createTrial, enterTrial } from "../hiring/trialCycles.helpers";
 import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
 import { type Person, signUp } from "../people/users.helpers";
 import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
@@ -9,18 +9,14 @@ import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
 async function setUpBoards() {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
-	await setup.founder.as.mutation(api.hiring.challenges.add, {
-		trialCycleId,
-		title: "Build the API",
+	const trialCycleId = await createTrial(setup, {
+		startsInMs: DAY,
+		challenges: [{ title: "Build the API" }],
 	});
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
 	for (const participant of [alice, bob]) {
-		await participant.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, participant);
 	}
 	await advancePast(t, DAY + HOUR);
 
@@ -187,10 +183,7 @@ describe("editing a Board", () => {
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, alice);
 
 		await expect(
 			alice.as.mutation(api.work.pulses.create, {

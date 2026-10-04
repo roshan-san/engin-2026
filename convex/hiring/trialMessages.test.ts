@@ -4,7 +4,11 @@ import { advancePast, createTest, DAY } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { signUp } from "../people/users.helpers";
 import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
-import { createTrial, startedTrialWith } from "./trialCycles.helpers";
+import {
+	createTrial,
+	enterTrial,
+	startedTrialWith,
+} from "./trialCycles.helpers";
 
 async function trialWithTwoParticipants() {
 	const t = createTest();
@@ -152,7 +156,7 @@ describe("Threads", () => {
 	test("an Applicant has no Thread and cannot post", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { admission: "application" });
+		const trialCycleId = await createTrial(setup);
 		const applicant = await signUp(t, "Amy");
 		await applicant.as.mutation(api.hiring.applications.applyToTrial, {
 			acceptTerms: true,
@@ -177,15 +181,12 @@ describe("Threads", () => {
 		).rejects.toThrow("not a Participant");
 	});
 
-	test("a Thread opens at admission, before the Trial Cycle starts", async () => {
+	test("a Thread opens when an applicant is accepted, before the Trial Cycle starts", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createTrial(setup);
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.joinTrial, {
-			acceptTerms: true,
-			trialCycleId,
-		});
+		await enterTrial(setup, trialCycleId, alice);
 
 		await alice.as.mutation(api.hiring.trialMessages.send, {
 			trialCycleId,

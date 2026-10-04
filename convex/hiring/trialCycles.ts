@@ -1,23 +1,27 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_LISTED_TRIALS, MAX_TRIAL_PARTICIPANTS } from "../lib/limits";
-import { buildSearchText, optionalText, requireText } from "../lib/text";
+import { MAX_LISTED_TRIALS } from "../lib/limits";
 import { loadPublicUser } from "../people/users.rules";
-import { trialAdmission, trialVerdict } from "../schema";
+import { trialVerdict } from "../schema";
 import { logActivity } from "../teams/activity.rules";
 import {
 	getMembership,
 	requireFounderMembership,
 	requireMembership,
 } from "../teams/membership.rules";
+import { replaceChallenges } from "./challenges.rules";
 import { requireIpTerms } from "./ipTerms.rules";
 import { publishDraft, requirePublishable } from "./publish.rules";
 import {
+	buildDraftFields,
 	cancelTrial,
+	draftFields,
 	getTrialApplication,
 	isTrialLive,
 	listTrialApplications,
+	requireOpenRoleOf,
+	requireValidSchedule,
 	startTrial,
 } from "./trialCycles.rules";
 import { closeWithVerdicts } from "./verdicts.rules";
@@ -103,59 +107,53 @@ export const get = query({
 	},
 });
 
-/** Creates a draft. Nothing is public or scheduled until `publish`. */
+/** Creates a draft with its Starting Pulses. Nothing is public or scheduled until `publish`. */
 export const create = mutation({
-	args: {
-		startupId: v.id("startups"),
-		roleId: v.id("roles"),
-		title: v.string(),
-		description: v.string(),
-		admission: trialAdmission,
-		maxContributors: v.number(),
-		startsAt: v.number(),
-		endsAt: v.number(),
-		applicationDeadline: v.optional(v.number()),
-		prize: v.optional(v.string()),
-	},
+	args: { startupId: v.id("startups"), ...draftFields },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		await requireFounderMembership(ctx, args.startupId, userId);
 
-		const role = await ctx.db.get(args.roleId);
-		if (!role || role.startupId !== args.startupId) {
-			throw new Error("Role not found");
-		}
-		if (role.status !== "open") {
-			throw new Error("This Role is closed");
-		}
-		if (args.endsAt <= args.startsAt) {
-			throw new Error("Trial Cycle end must be after start");
-		}
-
-		const title = requireText(args.title, "Title");
-		const description = requireText(args.description, "Description");
-		const maxContributors = Math.min(
-			MAX_TRIAL_PARTICIPANTS,
-			Math.max(1, Math.floor(args.maxContributors)),
-		);
+		const role = await requireOpenRoleOf(ctx, args.startupId, args.roleId);
+		requireValidSchedule(args, Date.now());
+		const fields = buildDraftFields(args, role);
 
 		const trialCycleId = await ctx.db.insert("trialCycles", {
 			startupId: args.startupId,
-			roleId: args.roleId,
-			title,
-			description,
-			admission: args.admission,
-			maxContributors,
-			applicationDeadline: args.applicationDeadline,
-			startsAt: args.startsAt,
-			endsAt: args.endsAt,
-			prize: optionalText(args.prize),
+			...fields,
 			status: "draft",
 			participantCount: 0,
-			searchText: buildSearchText(title, description, role.title),
 		});
+		await replaceChallenges(
+			ctx,
+			{ _id: trialCycleId, startupId: args.startupId },
+			args.challenges,
+			userId,
+		);
 
 		return trialCycleId;
+	},
+});
+
+/** Replaces a whole draft, Starting Pulses included. Published hackathons don't change here. */
+export const update = mutation({
+	args: { trialCycleId: v.id("trialCycles"), ...draftFields },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const trial = await ctx.db.get(args.trialCycleId);
+		if (!trial) {
+			throw new Error("Trial Cycle not found");
+		}
+
+		await requireFounderMembership(ctx, trial.startupId, userId);
+		if (trial.status !== "draft") {
+			throw new Error("Only an unpublished hackathon can be edited");
+		}
+		const role = await requireOpenRoleOf(ctx, trial.startupId, args.roleId);
+		requireValidSchedule(args, Date.now());
+
+		await ctx.db.patch(trial._id, buildDraftFields(args, role));
+		await replaceChallenges(ctx, trial, args.challenges, userId);
 	},
 });
 
@@ -199,9 +197,7 @@ export const reschedule = mutation({
 		if (trial.status !== "draft") {
 			throw new Error("Only a draft's dates can change");
 		}
-		if (args.endsAt <= args.startsAt) {
-			throw new Error("Trial Cycle end must be after start");
-		}
+		requireValidSchedule(args, Date.now());
 
 		await ctx.db.patch(trial._id, {
 			startsAt: args.startsAt,

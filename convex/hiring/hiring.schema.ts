@@ -3,10 +3,6 @@ import { v } from "convex/values";
 import { creditSource } from "../billing/billing.schema";
 
 export const openingStatus = v.union(v.literal("open"), v.literal("closed"));
-export const trialAdmission = v.union(
-	v.literal("open"),
-	v.literal("application"),
-);
 export const trialStatus = v.union(
 	/** Created but not paid for: hidden, not joinable, no start scheduled. */
 	v.literal("draft"),
@@ -62,16 +58,21 @@ export const hiringTables = {
 		roleId: v.id("roles"),
 		title: v.string(),
 		description: v.string(),
-		admission: trialAdmission,
 		maxContributors: v.number(),
 		applicationDeadline: v.optional(v.number()),
 		startsAt: v.number(),
 		endsAt: v.number(),
 		/** Optional prize text, paid off-platform, e.g. "₹5,000 to the winner". */
 		prize: v.optional(v.string()),
+		/** Optional "More details" a Founder adds to the draft. */
+		expectedOutcome: v.optional(v.string()),
+		evaluationCriteria: v.optional(v.string()),
+		compensation: v.optional(v.string()),
 		publishedByUserId: v.optional(v.id("users")),
 		/** The credit that paid for publishing; a "rerun" can't earn another re-run credit. */
 		creditSource: v.optional(creditSource),
+		/** The credit that paid; cancelling before the start un-spends it. */
+		creditId: v.optional(v.id("hackathonCredits")),
 		/** When the publishing Founder acknowledged that contributors keep their IP. */
 		ipAcknowledgedAt: v.optional(v.number()),
 		status: trialStatus,

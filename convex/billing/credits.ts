@@ -1,20 +1,15 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "../_generated/server";
+import { internalMutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import {
-	LAUNCH_CODE_WINDOW_MS,
-	MAX_LAUNCH_CODES,
 	MAX_PRO_USERS_SCAN,
 	RERUN_CREDIT_TTL_MS,
 	RERUN_MIN_APPLICATIONS,
 } from "../lib/limits";
-import { requireText } from "../lib/text";
 import {
-	generateCode,
 	grantCredit,
-	grantMonthlyProCredit,
+	grantProMonthCredits,
 	listSpendableCredits,
-	normalizeCode,
 } from "./credits.rules";
 
 export const balance = query({
@@ -30,66 +25,6 @@ export const balance = query({
 				expiresAt: credit.expiresAt ?? null,
 			})),
 		};
-	},
-});
-
-export const claimLaunchCode = mutation({
-	args: { code: v.string() },
-	handler: async (ctx, args) => {
-		const userId = await requireUserId(ctx);
-		const code = normalizeCode(args.code);
-		const credit = code
-			? await ctx.db
-					.query("hackathonCredits")
-					.withIndex("by_code", (q) => q.eq("code", code))
-					.first()
-			: null;
-		if (!credit) {
-			throw new Error("That code doesn't exist. Check it and try again.");
-		}
-		if (credit.ownerUserId !== undefined) {
-			throw new Error("That code has already been used.");
-		}
-
-		await ctx.db.patch(credit._id, {
-			ownerUserId: userId,
-		});
-	},
-});
-
-/**
- * Run by Engin (`pnpm exec convex run billing/credits:createLaunchCode`).
- * UPI codes are paid for, so only free launch codes count against the budget.
- */
-export const createLaunchCode = internalMutation({
-	args: {
-		source: v.union(v.literal("launch"), v.literal("upi")),
-		issuedTo: v.string(),
-	},
-	handler: async (ctx, args) => {
-		const issuedTo = requireText(args.issuedTo, "Issued to");
-		if (args.source === "launch") {
-			const since = Date.now() - LAUNCH_CODE_WINDOW_MS;
-			const recent = await ctx.db
-				.query("hackathonCredits")
-				.withIndex("by_source", (q) =>
-					q.eq("source", "launch").gt("_creationTime", since),
-				)
-				.take(MAX_LAUNCH_CODES);
-			if (recent.length >= MAX_LAUNCH_CODES) {
-				throw new Error(
-					`The launch-code budget is ${MAX_LAUNCH_CODES} codes per 90 days`,
-				);
-			}
-		}
-
-		const code = generateCode();
-		await ctx.db.insert("hackathonCredits", {
-			source: args.source,
-			code,
-			issuedTo,
-		});
-		return code.toUpperCase();
 	},
 });
 
@@ -137,8 +72,12 @@ export const grantRerunCredit = internalMutation({
 	},
 });
 
-/** Daily (convex/crons.ts): every Pro user gets this month's credit, once. */
-export const grantMonthlyProCredits = internalMutation({
+/**
+ * Daily: starts each Pro user's new Pro month with its credits. Yearly Pro
+ * has no monthly webhook, and a late renewal webhook shouldn't delay them.
+ * A Pro user from before Pro months existed starts one today.
+ */
+export const grantProCredits = internalMutation({
 	args: {},
 	handler: async (ctx) => {
 		const now = Date.now();
@@ -147,12 +86,15 @@ export const grantMonthlyProCredits = internalMutation({
 			.withIndex("by_plan_tier", (q) => q.eq("planTier", "pro"))
 			.take(MAX_PRO_USERS_SCAN);
 
-		let granted = 0;
 		for (const user of proUsers) {
-			if (await grantMonthlyProCredit(ctx, user._id, now)) {
-				granted += 1;
+			if (user.proStartedAt === undefined) {
+				await ctx.db.patch(user._id, { proStartedAt: now });
 			}
+			await grantProMonthCredits(
+				ctx,
+				{ ...user, proStartedAt: user.proStartedAt ?? now },
+				now,
+			);
 		}
-		return granted;
 	},
 });

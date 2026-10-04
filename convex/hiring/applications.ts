@@ -98,9 +98,6 @@ export const applyToTrial = mutation({
 			throw new Error("Trial Cycle not found");
 		}
 		requireAcceptingEntries(trial);
-		if (trial.admission !== "application") {
-			throw new Error("This Trial Cycle is open to join directly");
-		}
 		requireIpTerms(args.acceptTerms);
 		await requireCanEnter(ctx, trial, userId);
 
@@ -121,39 +118,6 @@ export const applyToTrial = mutation({
 		});
 
 		return applicationId;
-	},
-});
-
-export const joinTrial = mutation({
-	args: { trialCycleId: v.id("trialCycles"), acceptTerms: v.boolean() },
-	handler: async (ctx, args) => {
-		const userId = await requireUserId(ctx);
-		const trial = await ctx.db.get(args.trialCycleId);
-		if (!trial) {
-			throw new Error("Trial Cycle not found");
-		}
-		requireAcceptingEntries(trial);
-		if (trial.admission !== "open") {
-			throw new Error("You need to apply to this Trial Cycle");
-		}
-		requireIpTerms(args.acceptTerms);
-		await requireCanEnter(ctx, trial, userId);
-		await takeParticipantSpot(ctx, trial);
-
-		await ctx.db.insert("applications", {
-			userId,
-			startupId: trial.startupId,
-			roleId: trial.roleId,
-			trialCycleId: trial._id,
-			status: "joined",
-			ipAcknowledgedAt: Date.now(),
-		});
-
-		await notifyFounders(ctx, trial.startupId, {
-			kind: "application",
-			title: `Someone joined ${trial.title}`,
-			href: await trialCycleHref(ctx, trial),
-		});
 	},
 });
 

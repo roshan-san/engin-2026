@@ -9,14 +9,16 @@ import { checkout, getHackathonProductId } from "./dodo.client";
 
 /**
  * Runs the publish checks before taking money, and records the Founder's IP
- * acknowledgment so the webhook can publish once the payment lands.
+ * acknowledgment so the webhook can publish once the payment lands. The
+ * product is picked before the stamp, so a missing product setting leaves
+ * the draft untouched rather than looking like a checkout in progress.
  */
 export const prepareHackathonCheckout = internalMutation({
 	args: { userId: v.id("users"), trialCycleId: v.id("trialCycles") },
 	handler: async (
 		ctx,
 		args,
-	): Promise<{ email: string; name: string; planTier: "free" | "pro" }> => {
+	): Promise<{ email: string; name: string; productId: string }> => {
 		const trial = await ctx.db.get(args.trialCycleId);
 		if (!trial) {
 			throw new Error("Trial Cycle not found");
@@ -28,12 +30,13 @@ export const prepareHackathonCheckout = internalMutation({
 		if (!user?.email) {
 			throw new Error("Add an email to your account before paying");
 		}
+		const productId = getHackathonProductId(user.planTier ?? "free");
 		await ctx.db.patch(trial._id, { ipAcknowledgedAt: now });
 
 		return {
 			email: user.email,
 			name: user.name ?? user.email,
-			planTier: user.planTier ?? "free",
+			productId,
 		};
 	},
 });
@@ -57,9 +60,7 @@ export const createHackathonCheckout = action({
 		);
 		const session = await checkout(ctx, {
 			payload: {
-				product_cart: [
-					{ product_id: getHackathonProductId(payer.planTier), quantity: 1 },
-				],
+				product_cart: [{ product_id: payer.productId, quantity: 1 }],
 				customer: { email: payer.email, name: payer.name },
 				return_url: args.returnUrl,
 				billing_currency: "INR",

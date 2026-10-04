@@ -65,6 +65,8 @@ export const SCREEN_TITLES: Partial<Record<string, string>> = {
 	"/_shell/_authed/s/$slug/_member/cycles/": "Cycles",
 	"/_shell/_authed/s/$slug/_member/cycles/$cycleId": "Cycle",
 	"/_shell/_authed/s/$slug/_member/hiring/": "Hiring",
+	"/_shell/_authed/s/$slug/_member/hiring/new": "New hackathon",
+	"/_shell/_authed/s/$slug/_member/hiring/$trialCycleId/edit": "Edit hackathon",
 	"/_shell/_authed/s/$slug/_member/team/": "Team",
 	"/_shell/_authed/s/$slug/_member/pitch/": "Pitch",
 	"/_shell/_authed/s/$slug/_member/activity/": "Activity",

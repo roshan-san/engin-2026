@@ -1,13 +1,85 @@
-import type { Infer } from "convex/values";
+import { type Infer, type ObjectType, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
+import { refundPublishCredit } from "../billing/credits.rules";
+import {
+	MAX_TRIAL_APPLICATIONS,
+	MAX_TRIAL_PARTICIPANTS,
+	TRIAL_TEXT_LIMITS,
+} from "../lib/limits";
 import { trialCycleHref } from "../lib/links";
+import { buildSearchText, limitText, requireLimitedText } from "../lib/text";
 import { notify, notifyFounders } from "../people/notifications.rules";
 import type { trialVerdict } from "../schema";
 import { seedBoards } from "./challenges.rules";
 
 type TrialCtx = QueryCtx | MutationCtx;
+
+/** Everything a Founder sets on a draft; `create` and `update` both take all of it. */
+export const draftFields = {
+	roleId: v.id("roles"),
+	title: v.string(),
+	description: v.string(),
+	maxContributors: v.number(),
+	startsAt: v.number(),
+	endsAt: v.number(),
+	applicationDeadline: v.optional(v.number()),
+	prize: v.optional(v.string()),
+	expectedOutcome: v.optional(v.string()),
+	evaluationCriteria: v.optional(v.string()),
+	compensation: v.optional(v.string()),
+	challenges: v.array(
+		v.object({ title: v.string(), description: v.optional(v.string()) }),
+	),
+};
+
+export type DraftInput = ObjectType<typeof draftFields>;
+
+/**
+ * The stored draft fields, trimmed and bounded. Optional fields left out come
+ * back `undefined`, so a patch clears them.
+ */
+export function buildDraftFields(input: DraftInput, role: Doc<"roles">) {
+	const title = requireLimitedText(
+		input.title,
+		"Title",
+		TRIAL_TEXT_LIMITS.title,
+	);
+	const description = requireLimitedText(
+		input.description,
+		"Description",
+		TRIAL_TEXT_LIMITS.description,
+	);
+	return {
+		roleId: role._id,
+		title,
+		description,
+		maxContributors: Math.min(
+			MAX_TRIAL_PARTICIPANTS,
+			Math.max(1, Math.floor(input.maxContributors)),
+		),
+		startsAt: input.startsAt,
+		endsAt: input.endsAt,
+		applicationDeadline: input.applicationDeadline,
+		prize: limitText(input.prize, "Prize", TRIAL_TEXT_LIMITS.prize),
+		expectedOutcome: limitText(
+			input.expectedOutcome,
+			"Expected outcome",
+			TRIAL_TEXT_LIMITS.detail,
+		),
+		evaluationCriteria: limitText(
+			input.evaluationCriteria,
+			"Evaluation criteria",
+			TRIAL_TEXT_LIMITS.detail,
+		),
+		compensation: limitText(
+			input.compensation,
+			"Compensation",
+			TRIAL_TEXT_LIMITS.detail,
+		),
+		searchText: buildSearchText(title, description, role.title),
+	};
+}
 
 export function isPassed(
 	verdict: Infer<typeof trialVerdict> | undefined,
@@ -42,6 +114,52 @@ export function isTrialLive(trial: Doc<"trialCycles">): boolean {
 	return trial.status === "open" || trial.status === "active";
 }
 
+/**
+ * One schedule rule for create, update and reschedule: the end follows the
+ * start, the start is ahead, and a deadline (if set) falls between now and the start.
+ */
+export function requireValidSchedule(
+	schedule: {
+		startsAt: number;
+		endsAt: number;
+		applicationDeadline?: number;
+	},
+	now: number,
+): void {
+	if (schedule.endsAt <= schedule.startsAt) {
+		throw new Error("Trial Cycle end must be after start");
+	}
+	if (schedule.startsAt <= now) {
+		throw new Error("Pick a start time in the future");
+	}
+	const deadline = schedule.applicationDeadline;
+	if (deadline === undefined) {
+		return;
+	}
+	if (deadline <= now) {
+		throw new Error("Pick an application deadline in the future");
+	}
+	if (deadline > schedule.startsAt) {
+		throw new Error("The application deadline must be before the start");
+	}
+}
+
+/** The Role a hackathon is for: it belongs to this Startup and is still open. */
+export async function requireOpenRoleOf(
+	ctx: TrialCtx,
+	startupId: Id<"startups">,
+	roleId: Id<"roles">,
+): Promise<Doc<"roles">> {
+	const role = await ctx.db.get(roleId);
+	if (!role || role.startupId !== startupId) {
+		throw new Error("Role not found");
+	}
+	if (role.status !== "open") {
+		throw new Error("This Role is closed");
+	}
+	return role;
+}
+
 /** Entry closes at the application deadline, or at the start when none is set. */
 export function requireAcceptingEntries(trial: Doc<"trialCycles">) {
 	if (trial.status === "draft") {
@@ -59,6 +177,7 @@ export async function cancelTrial(
 	trial: Doc<"trialCycles">,
 	reason?: string,
 ): Promise<void> {
+	await refundPublishCredit(ctx, trial);
 	await ctx.db.patch(trial._id, { status: "cancelled" });
 
 	const href = await trialCycleHref(ctx, trial);

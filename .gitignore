@@ -30,3 +30,4 @@ dist
 scripts/.jwt_private_key.txt
 scripts/.jwks.txt
 .planning/
+openspec/
