@@ -79,3 +79,27 @@ export const pitchSchema = z.object({
 });
 
 export type PitchInput = z.infer<typeof pitchSchema>;
+
+export const settingsSchema = pitchSchema.pick({
+	name: true,
+	tagline: true,
+	description: true,
+	category: true,
+	stage: true,
+	website: true,
+	twitterUrl: true,
+	linkedinUrl: true,
+	githubUrl: true,
+	location: true,
+	remote: true,
+	isPublic: true,
+});
+
+export const pitchSectionsSchema = pitchSchema.pick({
+	problem: true,
+	solution: true,
+	product: true,
+	traction: true,
+	teamBlurb: true,
+	techStack: true,
+});

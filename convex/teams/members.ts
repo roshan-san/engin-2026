@@ -1,8 +1,12 @@
 import { v } from "convex/values";
-import { query } from "../_generated/server";
+import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { toMemberUser } from "../people/users.rules";
-import { requireMembership } from "./membership.rules";
+import { removeMember, requireRemovableMembership } from "./members.rules";
+import {
+	requireFounderMembership,
+	requireMembership,
+} from "./membership.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -28,5 +32,22 @@ export const list = query({
 		}
 
 		return members;
+	},
+});
+
+export const remove = mutation({
+	args: { membershipId: v.id("memberships") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const membership = await ctx.db.get(args.membershipId);
+		if (!membership) {
+			throw new Error("Member not found");
+		}
+		await requireFounderMembership(ctx, membership.startupId, userId);
+
+		await removeMember(
+			ctx,
+			await requireRemovableMembership(ctx, args.membershipId),
+		);
 	},
 });

@@ -6,8 +6,9 @@ export type KanbanMove =
 	| { kind: "return" };
 
 /**
- * Mirrors the backend's rules so refused drops can be shown before they are
- * sent: anyone moves work up to review; only a Founder takes it out of review.
+ * Mirrors the backend's rules (and its messages) so refused drops can be shown
+ * before they are sent: anyone moves work up to review; only a Founder takes
+ * it out of review.
  */
 export function kanbanMove(
 	from: PulseStatus,
@@ -18,7 +19,7 @@ export function kanbanMove(
 		return null;
 	}
 	if (from === "done") {
-		return { kind: "refused", reason: "Verified Pulses are final" };
+		return { kind: "refused", reason: "This Pulse is already verified" };
 	}
 	if (from === "review") {
 		if (!isFounder) {

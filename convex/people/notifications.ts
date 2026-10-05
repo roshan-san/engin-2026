@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
+import { loadUnread } from "./notifications.rules";
 
 const FEED_SIZE = 30;
 
@@ -25,7 +26,7 @@ export const list = query({
 				createdAt: notification._creationTime,
 				isRead: notification.readAt !== undefined,
 			})),
-			unreadCount: notifications.filter((n) => n.readAt === undefined).length,
+			unreadCount: (await loadUnread(ctx, userId)).length,
 		};
 	},
 });
@@ -44,5 +45,17 @@ export const markRead = mutation({
 		}
 
 		await ctx.db.patch(args.notificationId, { readAt: Date.now() });
+	},
+});
+
+export const markAllRead = mutation({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await requireUserId(ctx);
+
+		const readAt = Date.now();
+		for (const notification of await loadUnread(ctx, userId)) {
+			await ctx.db.patch(notification._id, { readAt });
+		}
 	},
 });

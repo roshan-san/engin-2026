@@ -1,12 +1,16 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { isTrialParticipant } from "../hiring/trialCycles.rules";
+import {
+	getTrialApplication,
+	isTrialParticipant,
+} from "../hiring/trialCycles.rules";
 import { MAX_BOARD_PULSES } from "../lib/limits";
 import { getMembership } from "../teams/membership.rules";
 
 /**
- * Whose Board `viewerUserId` may read: a Participant only their own, a Founder
- * anyone's. Members who aren't Founders see no Boards (ADR 0003).
+ * Whose Board `viewerUserId` may read: a Participant only their own (still
+ * after the close), a Founder anyone's. Members who aren't Founders see no
+ * Boards (ADR 0003).
  */
 export async function requireBoardAccess(
 	ctx: QueryCtx,
@@ -16,7 +20,11 @@ export async function requireBoardAccess(
 ): Promise<Id<"users">> {
 	const ownerId = requestedOwnerId ?? viewerUserId;
 	if (ownerId === viewerUserId) {
-		if (await isTrialParticipant(ctx, trial._id, viewerUserId)) {
+		const application = await getTrialApplication(ctx, trial._id, viewerUserId);
+		if (
+			application?.status === "joined" ||
+			application?.status === "completed"
+		) {
 			return ownerId;
 		}
 	}

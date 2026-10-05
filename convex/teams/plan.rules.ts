@@ -98,3 +98,28 @@ export async function loadStartupPlan(
 		},
 	};
 }
+
+/** Refuses adding a Member slot (Member, Member Invite or Offer) past the Plan's cap. */
+export async function requireMemberSlot(
+	ctx: PlanCtx,
+	startup: Doc<"startups">,
+): Promise<void> {
+	const plan = await loadStartupPlan(ctx, startup);
+	if (plan.usage.members >= plan.limits.members) {
+		const tier = plan.tier === "pro" ? "Pro" : "Free";
+		throw new Error(
+			`Your ${tier} plan allows ${plan.limits.members} members, counting pending invites and offers`,
+		);
+	}
+}
+
+/** Stealth mode is Pro only; turning it off is always allowed. */
+export async function requireStealthAllowed(
+	ctx: PlanCtx,
+	startup: Doc<"startups">,
+): Promise<void> {
+	const plan = await loadStartupPlan(ctx, startup);
+	if (!plan.limits.stealth) {
+		throw new Error("Stealth mode is a Pro feature");
+	}
+}

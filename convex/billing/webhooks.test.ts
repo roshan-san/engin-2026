@@ -4,7 +4,11 @@ import { createDraftTrial } from "../hiring/trialCycles.helpers";
 import { createTest, DAY, type TestConvex } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { signUp } from "../people/users.helpers";
-import { joinAsCoFounder, setUpStartup } from "../teams/startups.helpers";
+import {
+	goStealth,
+	joinAsCoFounder,
+	setUpStartup,
+} from "../teams/startups.helpers";
 import { balanceOf, giveCredit } from "./credits.helpers";
 
 beforeEach(() => {
@@ -305,10 +309,7 @@ describe("hackathon payments", () => {
 		});
 		expect(trial?.ipAcknowledgedAt).toBeDefined();
 
-		await setup.founder.as.mutation(api.teams.startups.update, {
-			startupId: setup.startupId,
-			isPublic: false,
-		});
+		await goStealth(setup);
 		await expect(
 			t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 				userId: setup.founder.userId,

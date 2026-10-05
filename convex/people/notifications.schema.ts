@@ -3,11 +3,12 @@ import { v } from "convex/values";
 
 export const notificationKind = v.union(
 	v.literal("invite"),
+	v.literal("team"),
 	v.literal("pulse"),
 	v.literal("cycle"),
 	v.literal("trial_cycle"),
 	v.literal("application"),
-	v.literal("message"),
+	v.literal("announcement"),
 	v.literal("billing"),
 	v.literal("offer"),
 );
@@ -20,5 +21,7 @@ export const notificationsTables = {
 		body: v.optional(v.string()),
 		href: v.optional(v.string()),
 		readAt: v.optional(v.number()),
-	}).index("by_user", ["userId"]),
+	})
+		.index("by_user", ["userId"])
+		.index("by_user_and_read", ["userId", "readAt"]),
 };

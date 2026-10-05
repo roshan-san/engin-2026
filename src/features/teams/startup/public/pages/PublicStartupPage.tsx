@@ -145,11 +145,7 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 				</section>
 			)}
 
-			<PublicOpenings
-				slug={startup.slug}
-				startupId={startup._id}
-				isAuthenticated={startup.isAuthenticated}
-			/>
+			<PublicOpenings startupId={startup._id} />
 		</div>
 	);
 }

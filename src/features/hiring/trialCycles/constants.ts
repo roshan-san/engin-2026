@@ -1,3 +1,4 @@
+import type { Doc } from "@convex/_generated/dataModel";
 import { SCORE_WEIGHTS } from "@convex/people/scoreWeights.rules";
 
 export const VERDICTS = [
@@ -12,12 +13,17 @@ export function verdictLabel(verdict: Verdict): string {
 	return VERDICTS.find((entry) => entry.value === verdict)?.label ?? verdict;
 }
 
-export const LEAVING_SCORE_PENALTY = -SCORE_WEIGHTS.leaving;
+export type OfferStatus = Doc<"offers">["status"];
 
-/** Asks an Applicant for an optional note to the Founder. */
-export function askForMessage(): string | undefined {
-	return window.prompt("Add a message for the Founder (optional)") ?? undefined;
-}
+/** How an Offer reads next to its Verdict. */
+export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
+	pending: "Offer pending",
+	accepted: "Offer accepted",
+	declined: "Offer declined",
+	withdrawn: "Offer withdrawn",
+};
+
+export const LEAVING_SCORE_PENALTY = -SCORE_WEIGHTS.leaving;
 
 /** What a contributor agrees to on entry (design: IP of submissions). */
 export const CONTRIBUTOR_IP_TERMS =
@@ -27,16 +33,21 @@ export const CONTRIBUTOR_IP_TERMS =
 export const FOUNDER_IP_TERMS =
 	"Participants keep ownership of what they submit. My startup may use their work only if they accept our Offer, or if we pay them for it separately.";
 
-export function confirmIpTerms(): boolean {
-	return window.confirm(CONTRIBUTOR_IP_TERMS);
-}
-
 export type TrialStatus = "draft" | "open" | "active" | "closed" | "cancelled";
 
 /** What founders read for each status; a draft is "unpublished" in the UI. */
 export const TRIAL_STATUS_LABELS: Record<TrialStatus, string> = {
 	draft: "Unpublished",
 	open: "Open",
+	active: "Running",
+	closed: "Closed",
+	cancelled: "Cancelled",
+};
+
+/** What the public reads on a hackathon page; drafts never reach it. */
+export const PUBLIC_TRIAL_STATUS_LABELS: Record<TrialStatus, string> = {
+	draft: "Unpublished",
+	open: "Accepting applications",
 	active: "Running",
 	closed: "Closed",
 	cancelled: "Cancelled",
@@ -59,10 +70,3 @@ export const CANCELLABLE_STATUSES: readonly TrialStatus[] = [
 	"open",
 	"active",
 ];
-
-/** Per-hackathon prices; must match the Dodo products for each plan. */
-export const HACKATHON_PRICE_LABELS = {
-	free: "₹2,999",
-	pro: "₹1,499",
-} as const;
-export const PRO_PRICE_LABEL = "₹999/month";

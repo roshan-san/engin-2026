@@ -1,30 +1,45 @@
-import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { toErrorMessage } from "~/lib/validation";
+import type { TrialStatus } from "~/features/hiring/trialCycles/constants";
+import { useTrialChallenges } from "~/features/hiring/trialCycles/hooks/useTrialChallenges";
 
 type TrialChallengesProps = {
 	readonly trialCycleId: Id<"trialCycles">;
+	readonly status: TrialStatus;
+	/** A Founder, while the hackathon is unpublished, open or running. */
+	readonly canEdit: boolean;
 };
 
-/** Challenges are copied onto each Participant's Board when the Trial Cycle starts. */
-export function TrialChallenges({ trialCycleId }: TrialChallengesProps) {
-	const challenges = useQuery(api.hiring.challenges.list, { trialCycleId });
-	const addChallenge = useMutation(api.hiring.challenges.add);
-	const removeChallenge = useMutation(api.hiring.challenges.remove);
+type Challenge = { _id: Id<"challenges">; title: string };
+
+export function TrialChallenges({
+	trialCycleId,
+	status,
+	canEdit,
+}: TrialChallengesProps) {
+	const { challenges, isPending, add, remove } =
+		useTrialChallenges(trialCycleId);
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
+	const [confirming, setConfirming] = useState<Challenge | null>(null);
+	const isRunning = status === "active";
 
-	async function run(action: () => Promise<unknown>) {
-		try {
-			await action();
-		} catch (error) {
-			toast.error(toErrorMessage(error, "Could not update Challenges"));
+	async function removeConfirmed() {
+		if (confirming && (await remove(confirming._id))) {
+			setConfirming(null);
 		}
 	}
 
@@ -33,69 +48,113 @@ export function TrialChallenges({ trialCycleId }: TrialChallengesProps) {
 			<div>
 				<h2 className="text-lg font-semibold">Challenges</h2>
 				<p className="text-sm text-muted-foreground">
-					Every Participant gets their own copy on their Board when the Trial
-					Cycle starts.
+					{isRunning
+						? "A Challenge you add now goes straight onto every Participant's Board."
+						: "Every Participant gets their own copy on their Board when the hackathon starts."}
 				</p>
 			</div>
 			{challenges === undefined ? (
 				<p className="text-sm text-muted-foreground">Loading…</p>
+			) : challenges.length === 0 ? (
+				<p className="text-sm text-muted-foreground">No Challenges yet.</p>
 			) : (
-				<ul className="space-y-2">
-					{challenges.map((challenge) => (
+				<ol className="space-y-2">
+					{challenges.map((challenge, index) => (
 						<li
 							key={challenge._id}
 							className="flex items-start gap-3 rounded-lg border p-4"
 						>
+							<span className="text-sm text-muted-foreground">
+								{index + 1}.
+							</span>
 							<div className="min-w-0 flex-1">
-								<p className="font-medium">{challenge.title}</p>
+								<p className="font-medium break-words">{challenge.title}</p>
 								{challenge.description ? (
-									<p className="whitespace-pre-wrap text-sm text-muted-foreground">
+									<p className="whitespace-pre-wrap text-sm break-words text-muted-foreground">
 										{challenge.description}
 									</p>
 								) : null}
 							</div>
-							<Button
-								type="button"
-								size="sm"
-								variant="ghost"
-								onClick={() =>
-									void run(() =>
-										removeChallenge({ challengeId: challenge._id }),
-									)
-								}
-							>
-								Remove
-							</Button>
+							{canEdit ? (
+								<Button
+									type="button"
+									size="sm"
+									variant="ghost"
+									disabled={isPending}
+									onClick={() =>
+										isRunning
+											? setConfirming(challenge)
+											: void remove(challenge._id)
+									}
+								>
+									Remove
+								</Button>
+							) : null}
 						</li>
 					))}
-				</ul>
+				</ol>
 			)}
-			<form
-				className="space-y-2"
-				onSubmit={(event) => {
-					event.preventDefault();
-					void run(async () => {
-						await addChallenge({ trialCycleId, title, description });
-						setTitle("");
-						setDescription("");
-					});
+			{canEdit ? (
+				<form
+					className="space-y-2"
+					onSubmit={(event) => {
+						event.preventDefault();
+						void add(title, description).then((added) => {
+							if (added) {
+								setTitle("");
+								setDescription("");
+							}
+						});
+					}}
+				>
+					<Input
+						value={title}
+						onChange={(event) => setTitle(event.target.value)}
+						placeholder="Challenge title"
+						className="h-11"
+					/>
+					<Textarea
+						value={description}
+						onChange={(event) => setDescription(event.target.value)}
+						placeholder="What should Participants deliver? (optional)"
+					/>
+					<Button type="submit" disabled={isPending || !title.trim()}>
+						Add Challenge
+					</Button>
+				</form>
+			) : null}
+			<AlertDialog
+				open={confirming !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setConfirming(null);
+					}
 				}}
 			>
-				<Input
-					value={title}
-					onChange={(event) => setTitle(event.target.value)}
-					placeholder="Challenge title"
-					className="h-11"
-				/>
-				<Textarea
-					value={description}
-					onChange={(event) => setDescription(event.target.value)}
-					placeholder="What should Participants deliver? (optional)"
-				/>
-				<Button type="submit" disabled={!title.trim()}>
-					Add Challenge
-				</Button>
-			</form>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Remove “{confirming?.title}”?</AlertDialogTitle>
+						<AlertDialogDescription>
+							It leaves the Challenge list and the public page. Participants
+							keep their copies and any work on them, and they're told it was
+							removed.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={isPending}>Keep it</AlertDialogCancel>
+						<AlertDialogAction
+							variant="destructive"
+							disabled={isPending}
+							onClick={(event) => {
+								event.preventDefault();
+								void removeConfirmed();
+							}}
+						>
+							Remove Challenge
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</section>
 	);
 }

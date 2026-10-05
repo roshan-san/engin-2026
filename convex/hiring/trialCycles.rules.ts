@@ -115,6 +115,25 @@ export function isTrialLive(trial: Doc<"trialCycles">): boolean {
 }
 
 /**
+ * A hackathon anyone may read: published, and its Startup isn't in stealth.
+ * Drafts, stealth and missing all come back `null`, so they look the same.
+ */
+export async function loadPublicTrial(
+	ctx: TrialCtx,
+	trialCycleId: Id<"trialCycles">,
+) {
+	const trial = await ctx.db.get(trialCycleId);
+	if (!trial || trial.status === "draft") {
+		return null;
+	}
+	const startup = await ctx.db.get(trial.startupId);
+	if (!startup?.isPublic) {
+		return null;
+	}
+	return { trial, startup };
+}
+
+/**
  * One schedule rule for create, update and reschedule: the end follows the
  * start, the start is ahead, and a deadline (if set) falls between now and the start.
  */

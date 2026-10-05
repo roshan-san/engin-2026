@@ -1,13 +1,14 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
-import { action, query } from "../_generated/server";
+import { action, internalQuery, query } from "../_generated/server";
 import { isProUser, requireUserId } from "../lib/auth";
 import {
 	type BillingInterval,
 	checkout,
 	getProductIdForInterval,
 } from "./dodo.client";
+import { loadProUpgradeBlock, requireProUpgradable } from "./plan.rules";
 
 export const getPlan = query({
 	args: {},
@@ -18,6 +19,7 @@ export const getPlan = query({
 		return {
 			isPro: pro,
 			planTier: pro ? ("pro" as const) : ("free" as const),
+			canUpgrade: (await loadProUpgradeBlock(ctx, userId)) === null,
 		};
 	},
 });
@@ -33,10 +35,9 @@ export const createCheckoutLink = action({
 			throw new Error("Not authenticated");
 		}
 
-		const user = await ctx.runQuery(internal.people.users.getById, { userId });
-		if (!user?.email) {
-			throw new Error("Add an email to your account before upgrading");
-		}
+		const buyer = await ctx.runQuery(internal.billing.plan.prepareProCheckout, {
+			userId,
+		});
 
 		const interval: BillingInterval = args.interval ?? "yearly";
 		const productId = getProductIdForInterval(interval);
@@ -44,10 +45,7 @@ export const createCheckoutLink = action({
 		const session = await checkout(ctx, {
 			payload: {
 				product_cart: [{ product_id: productId, quantity: 1 }],
-				customer: {
-					email: user.email,
-					name: user.name ?? user.email,
-				},
+				customer: buyer,
 				return_url: args.returnUrl,
 				billing_currency: "INR",
 				metadata: {
@@ -63,4 +61,11 @@ export const createCheckoutLink = action({
 
 		return { checkoutUrl: session.checkout_url };
 	},
+});
+
+/** Runs the Pro checks before any checkout session is created. */
+export const prepareProCheckout = internalQuery({
+	args: { userId: v.id("users") },
+	handler: async (ctx, args): Promise<{ email: string; name: string }> =>
+		await requireProUpgradable(ctx, args.userId),
 });

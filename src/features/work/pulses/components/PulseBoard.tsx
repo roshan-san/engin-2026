@@ -1,63 +1,106 @@
-import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { EmptyState } from "~/components/shared/EmptyState";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "~/components/ui/select";
 import { PulseProofLinks } from "~/features/work/pulses/components/PulseProofLinks";
 import {
+	type ProofLinkKind,
 	type PulseStatus,
 	WORKABLE_PULSE_STATUSES,
 } from "~/features/work/pulses/constants";
-import { toErrorMessage } from "~/lib/validation";
+import { useTrialBoard } from "~/features/work/pulses/hooks/useTrialBoard";
 
 type PulseBoardProps = {
 	readonly startupId: Id<"startups">;
 	readonly trialCycleId: Id<"trialCycles">;
-	/** A Board can only be changed while its Trial Cycle is active. */
+	/** Before the start the Board is empty: Challenges arrive when it starts. */
+	readonly hasStarted: boolean;
+	/** Only the Participant, only while the hackathon runs. */
 	readonly isEditable: boolean;
+	/** A Founder reading someone else's Board; it is never editable then. */
+	readonly participant?: { userId: Id<"users">; name: string };
 };
 
-/** A Participant's own Board: they add, edit, move and delete its Pulses. */
+type BoardPulse = {
+	_id: Id<"pulses">;
+	title: string;
+	description: string | null;
+	status: PulseStatus;
+	proofLinks: { kind: ProofLinkKind; url: string }[];
+};
+
+/**
+ * A Trial Board in To do, In progress and Done columns: the Participant's
+ * own, or one a Founder reads to judge.
+ */
 export function PulseBoard({
 	startupId,
 	trialCycleId,
-	isEditable,
+	hasStarted,
+	isEditable: canEdit,
+	participant,
 }: PulseBoardProps) {
-	const pulses = useQuery(api.work.pulses.listBoard, { trialCycleId });
-	const createPulse = useMutation(api.work.pulses.create);
-	const updatePulse = useMutation(api.work.pulses.update);
-	const setStatus = useMutation(api.work.pulses.setStatus);
-	const removePulse = useMutation(api.work.pulses.remove);
+	const isEditable = canEdit && participant === undefined;
+	const board = useTrialBoard({
+		startupId,
+		trialCycleId,
+		participantUserId: participant?.userId,
+		enabled: true,
+	});
+	const { pulses, pendingId } = board;
 	const [title, setTitle] = useState("");
-	const [pendingId, setPendingId] = useState<string | null>(null);
+	const [renaming, setRenaming] = useState<BoardPulse | null>(null);
+	const [renameTo, setRenameTo] = useState("");
+	const [deleting, setDeleting] = useState<BoardPulse | null>(null);
 
-	async function run(id: string, action: () => Promise<unknown>) {
-		setPendingId(id);
-		try {
-			await action();
-		} catch (error) {
-			toast.error(toErrorMessage(error, "Could not update Pulse"));
-		} finally {
-			setPendingId(null);
+	async function create() {
+		if (title.trim() && (await board.create(title.trim()))) {
+			setTitle("");
 		}
 	}
 
-	async function create() {
-		if (!title.trim()) {
-			return;
+	async function rename() {
+		if (renaming && (await board.rename(renaming._id, renameTo))) {
+			setRenaming(null);
 		}
-		await run("new", async () => {
-			await createPulse({ startupId, title: title.trim(), trialCycleId });
-			setTitle("");
-		});
+	}
+
+	async function remove() {
+		if (deleting && (await board.remove(deleting._id))) {
+			setDeleting(null);
+		}
 	}
 
 	return (
 		<section className="space-y-4">
-			<h2 className="text-lg font-semibold">Your Board</h2>
+			<h2 className="text-lg font-semibold break-words">
+				{participant ? `${participant.name}'s Board` : "Your Board"}
+			</h2>
 			{isEditable ? (
 				<form
 					className="flex flex-col gap-2 sm:flex-row"
@@ -72,7 +115,11 @@ export function PulseBoard({
 						placeholder="Break the work down: add a Pulse"
 						className="h-11 flex-1"
 					/>
-					<Button type="submit" disabled={!title.trim()} className="h-11">
+					<Button
+						type="submit"
+						disabled={!title.trim() || pendingId === "new"}
+						className="h-11"
+					>
 						Add Pulse
 					</Button>
 				</form>
@@ -81,89 +128,212 @@ export function PulseBoard({
 				<p className="text-sm text-muted-foreground">Loading…</p>
 			) : pulses.length === 0 ? (
 				<EmptyState
-					title="Nothing on your Board yet"
-					description="The Challenges from the Founders appear here when the Trial Cycle starts. Split them into Pulses as you go."
+					title={
+						participant
+							? "No Pulses on this Board"
+							: "Nothing on your Board yet"
+					}
+					description={
+						hasStarted
+							? participant
+								? `${participant.name} hasn't added any Pulses.`
+								: "Add a Pulse for each piece of work you take on."
+							: "The Challenges appear here when the hackathon starts."
+					}
 				/>
 			) : (
-				<ul className="space-y-2">
-					{pulses.map((pulse) => (
-						<li
-							key={pulse._id}
-							className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center"
-						>
-							<div className="min-w-0 flex-1">
-								<p className="font-medium">{pulse.title}</p>
-								{pulse.description ? (
-									<p className="text-sm text-muted-foreground">
-										{pulse.description}
-									</p>
-								) : null}
-							</div>
-							<div className="flex flex-wrap items-center gap-2">
-								<PulseProofLinks
-									pulseId={pulse._id}
-									proofLinks={pulse.proofLinks}
-									canEdit={isEditable}
-									isPending={pendingId === pulse._id}
-									run={(action) => void run(pulse._id, action)}
-								/>
-								<select
-									value={pulse.status}
-									disabled={!isEditable || pendingId === pulse._id}
-									onChange={(event) =>
-										void run(pulse._id, () =>
-											setStatus({
-												pulseId: pulse._id,
-												status: event.target.value as PulseStatus,
-											}),
-										)
-									}
-									className="border-input h-8 rounded-md border bg-transparent px-2 text-sm"
-								>
-									{WORKABLE_PULSE_STATUSES.map((status) => (
-										<option key={status.value} value={status.value}>
-											{status.label}
-										</option>
-									))}
-								</select>
-								{isEditable ? (
-									<>
-										<Button
-											type="button"
-											size="sm"
-											variant="outline"
-											disabled={pendingId === pulse._id}
-											onClick={() => {
-												const next = window.prompt("Rename Pulse", pulse.title);
-												if (next?.trim()) {
-													void run(pulse._id, () =>
-														updatePulse({ pulseId: pulse._id, title: next }),
-													);
-												}
-											}}
-										>
-											Rename
-										</Button>
-										<Button
-											type="button"
-											size="sm"
-											variant="ghost"
-											disabled={pendingId === pulse._id}
-											onClick={() =>
-												void run(pulse._id, () =>
-													removePulse({ pulseId: pulse._id }),
-												)
+				<div className="grid gap-4 md:grid-cols-3">
+					{WORKABLE_PULSE_STATUSES.map((column) => {
+						const items = pulses.filter(
+							(pulse) => pulse.status === column.value,
+						);
+						return (
+							<div key={column.value} className="min-w-0 space-y-2">
+								<h3 className="text-sm font-medium text-muted-foreground">
+									{column.label} · {items.length}
+								</h3>
+								<ul className="space-y-2">
+									{items.map((pulse) => (
+										<BoardPulseCard
+											key={pulse._id}
+											pulse={pulse}
+											isEditable={isEditable}
+											isPending={pendingId === pulse._id}
+											onMove={(status) =>
+												void board.setStatus(pulse._id, status)
 											}
-										>
-											Delete
-										</Button>
-									</>
-								) : null}
+											onRename={() => {
+												setRenameTo(pulse.title);
+												setRenaming(pulse);
+											}}
+											onDelete={() => setDeleting(pulse)}
+											onAddProofLink={(url) =>
+												board.addProofLink(pulse._id, url)
+											}
+											onRemoveProofLink={(url) =>
+												void board.removeProofLink(pulse._id, url)
+											}
+										/>
+									))}
+								</ul>
 							</div>
-						</li>
-					))}
-				</ul>
+						);
+					})}
+				</div>
 			)}
+
+			<Dialog
+				open={renaming !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setRenaming(null);
+					}
+				}}
+			>
+				<DialogContent>
+					<form
+						className="space-y-4"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void rename();
+						}}
+					>
+						<DialogHeader>
+							<DialogTitle>Rename Pulse</DialogTitle>
+						</DialogHeader>
+						<Input
+							aria-label="Pulse title"
+							value={renameTo}
+							onChange={(event) => setRenameTo(event.target.value)}
+							className="h-11"
+							autoFocus
+						/>
+						<DialogFooter>
+							<Button
+								type="submit"
+								disabled={!renameTo.trim() || pendingId !== null}
+							>
+								Save
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
+
+			<AlertDialog
+				open={deleting !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setDeleting(null);
+					}
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete “{deleting?.title}”?</AlertDialogTitle>
+						<AlertDialogDescription>
+							It leaves your Board with its proof links. This can't be undone.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={pendingId !== null}>
+							Keep it
+						</AlertDialogCancel>
+						<AlertDialogAction
+							variant="destructive"
+							disabled={pendingId !== null}
+							onClick={(event) => {
+								event.preventDefault();
+								void remove();
+							}}
+						>
+							Delete Pulse
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</section>
+	);
+}
+
+type BoardPulseCardProps = {
+	readonly pulse: BoardPulse;
+	readonly isEditable: boolean;
+	readonly isPending: boolean;
+	readonly onMove: (status: PulseStatus) => void;
+	readonly onRename: () => void;
+	readonly onDelete: () => void;
+	readonly onAddProofLink: (url: string) => Promise<boolean>;
+	readonly onRemoveProofLink: (url: string) => void;
+};
+
+function BoardPulseCard({
+	pulse,
+	isEditable,
+	isPending,
+	onMove,
+	onRename,
+	onDelete,
+	onAddProofLink,
+	onRemoveProofLink,
+}: BoardPulseCardProps) {
+	return (
+		<li className="space-y-3 rounded-lg border p-3">
+			<div className="min-w-0">
+				<p className="font-medium break-words">{pulse.title}</p>
+				{pulse.description ? (
+					<p className="whitespace-pre-wrap text-sm break-words text-muted-foreground">
+						{pulse.description}
+					</p>
+				) : null}
+			</div>
+			<div className="flex flex-wrap items-center gap-1">
+				<PulseProofLinks
+					proofLinks={pulse.proofLinks}
+					canEdit={isEditable}
+					isPending={isPending}
+					onAdd={onAddProofLink}
+					onRemove={onRemoveProofLink}
+				/>
+			</div>
+			{isEditable ? (
+				<div className="flex flex-wrap items-center gap-2">
+					<Select
+						value={pulse.status}
+						disabled={isPending}
+						onValueChange={(status) => onMove(status as PulseStatus)}
+					>
+						<SelectTrigger size="sm" aria-label="Move Pulse">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{WORKABLE_PULSE_STATUSES.map((status) => (
+								<SelectItem key={status.value} value={status.value}>
+									{status.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<Button
+						type="button"
+						size="sm"
+						variant="ghost"
+						disabled={isPending}
+						onClick={onRename}
+					>
+						Rename
+					</Button>
+					<Button
+						type="button"
+						size="sm"
+						variant="ghost"
+						disabled={isPending}
+						onClick={onDelete}
+					>
+						Delete
+					</Button>
+				</div>
+			) : null}
+		</li>
 	);
 }

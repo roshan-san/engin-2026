@@ -20,7 +20,7 @@ export function BottomTabBar() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
-	const { count, isLoading } = useNotifications();
+	const { count, countLabel, isLoading } = useNotifications();
 	const [sheetOpen, setSheetOpen] = useState(false);
 
 	const inboxActive =
@@ -51,7 +51,7 @@ export function BottomTabBar() {
 							/>
 							{showBadge ? (
 								<span className="absolute -top-1 -right-2 flex h-4 min-w-4 items-center justify-center rounded-md bg-primary px-1 text-xs text-primary-foreground tabular-nums">
-									{count}
+									{countLabel}
 								</span>
 							) : null}
 						</span>

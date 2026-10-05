@@ -4,62 +4,43 @@ import { isPassed } from "../hiring/trialCycles.rules";
 import { MAX_USER_APPLICATIONS } from "../lib/limits";
 
 /**
- * Public Trial Cycle history: Score-earning Verdicts with the Startup that
- * issued them, Evaluations the person chose to show, and Leaving.
+ * Public Trial Cycle history, newest first: Passed Verdicts with the Startup
+ * that issued them, any Verdict whose Evaluation the person chose to show, and
+ * Leaving. Evaluation text only leaves the backend when it is public.
  */
 export async function loadTrialHistory(ctx: QueryCtx, userId: Id<"users">) {
 	const applications = await ctx.db
 		.query("applications")
 		.withIndex("by_user", (q) => q.eq("userId", userId))
+		.order("desc")
 		.take(MAX_USER_APPLICATIONS);
 
-	const verdicts = [];
-	const evaluations = [];
-	const trialCyclesLeft = [];
+	const trialHistory = [];
 	for (const application of applications) {
-		const isScoredVerdict =
-			application.status === "completed" &&
-			isPassed(application.verdict) &&
-			!application.scoreExcluded;
-		const isShownEvaluation =
-			application.evaluationPublic && application.evaluation;
-		if (
-			!isScoredVerdict &&
-			!isShownEvaluation &&
-			application.status !== "left"
-		) {
+		const isPassedVerdict =
+			application.status === "completed" && isPassed(application.verdict);
+		const evaluation =
+			application.evaluationPublic && application.evaluation
+				? application.evaluation
+				: null;
+		const outcome =
+			application.status === "left" ? ("left" as const) : application.verdict;
+		if (!outcome || (!isPassedVerdict && !evaluation && outcome !== "left")) {
 			continue;
 		}
+
 		const trial = await ctx.db.get(application.trialCycleId);
 		const startup = await ctx.db.get(application.startupId);
-		const context = {
+		trialHistory.push({
+			_id: application._id,
 			trialTitle: trial?.title ?? "Trial Cycle",
 			startupName: startup?.name ?? "Startup",
-		};
-		if (
-			isScoredVerdict &&
-			(application.verdict === "passed" ||
-				application.verdict === "passed_with_offer")
-		) {
-			verdicts.push({
-				...context,
-				_id: application._id,
-				startupSlug: startup?.isPublic ? startup.slug : null,
-				verdict: application.verdict,
-			});
-		}
-		if (isShownEvaluation && application.evaluation) {
-			evaluations.push({
-				...context,
-				_id: application._id,
-				verdict: application.verdict ?? null,
-				evaluation: application.evaluation,
-			});
-		}
-		if (application.status === "left") {
-			trialCyclesLeft.push({ ...context, _id: application._id });
-		}
+			startupSlug: startup?.isPublic ? startup.slug : null,
+			outcome,
+			earnsScore: isPassedVerdict && !application.scoreExcluded,
+			evaluation,
+		});
 	}
 
-	return { verdicts, evaluations, trialCyclesLeft };
+	return trialHistory;
 }

@@ -49,3 +49,24 @@ export function formatDateRange(startAt: number, endAt: number): string {
 export function daysRemaining(endAt: number): number {
 	return Math.ceil((endAt - Date.now()) / MS_PER_DAY);
 }
+
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+	["year", 365 * MS_PER_DAY],
+	["month", 30 * MS_PER_DAY],
+	["week", 7 * MS_PER_DAY],
+	["day", MS_PER_DAY],
+	["hour", 60 * 60 * 1000],
+	["minute", 60 * 1000],
+];
+
+/** "3 hours ago", "yesterday", or "just now" under a minute. */
+export function formatRelativeTime(value: number, now = Date.now()): string {
+	const elapsed = value - now;
+	const format = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+	for (const [unit, size] of RELATIVE_UNITS) {
+		if (Math.abs(elapsed) >= size) {
+			return format.format(Math.round(elapsed / size), unit);
+		}
+	}
+	return "just now";
+}

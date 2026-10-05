@@ -130,17 +130,14 @@ export const hiringTables = {
 		.index("by_role_and_status", ["roleId", "status"])
 		.index("by_user_and_status", ["userId", "status"])
 		.index("by_startup", ["startupId"])
-		.index("by_startup_and_status", ["startupId", "status"]),
+		.index("by_startup_and_status", ["startupId", "status"])
+		.index("by_trial", ["trialCycleId"]),
 
-	/**
-	 * A message in one Participant's Thread with the Founders, or, without
-	 * `participantUserId`, an Announcement to every Participant (ADR 0003).
-	 */
-	trialMessages: defineTable({
+	/** Founder-to-all-Participants news; there are no private Threads. */
+	trialAnnouncements: defineTable({
 		trialCycleId: v.id("trialCycles"),
-		/** The author: the Participant, or the Founder replying or announcing. */
+		/** The Founder who posted it. */
 		userId: v.id("users"),
-		participantUserId: v.optional(v.id("users")),
 		body: v.string(),
-	}).index("by_trial_and_participant", ["trialCycleId", "participantUserId"]),
+	}).index("by_trial", ["trialCycleId"]),
 };

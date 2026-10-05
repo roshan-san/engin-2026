@@ -2,7 +2,11 @@ import { expect, test } from "vitest";
 import { api } from "../_generated/api";
 import { createTest } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
-import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
+import {
+	joinAsCoFounder,
+	joinAsMember,
+	setUpStartup,
+} from "../teams/startups.helpers";
 import { cyclePulseFor } from "./cycles.helpers";
 
 async function setUpReview() {
@@ -118,4 +122,45 @@ test("a Founder's own Pulse also goes through review", async () => {
 	await setup.founder.as.mutation(api.work.pulses.verify, { pulseId });
 
 	expect(await statusOf()).toBe("done");
+});
+
+test("a Founder submitting their own Pulse notifies only the other Founders", async () => {
+	const { setup } = await setUpReview();
+	const asha = await joinAsCoFounder(setup, "Asha");
+	const { pulseId } = await cyclePulseFor(setup, setup.founder);
+
+	await setup.founder.as.mutation(api.work.pulses.setStatus, {
+		pulseId,
+		status: "review",
+	});
+
+	expect(await notificationTitles(asha.as)).toContain(
+		"Hero section is ready for review",
+	);
+	expect(await notificationTitles(setup.founder.as)).not.toContain(
+		"Hero section is ready for review",
+	);
+});
+
+test("a Pulse in review keeps its title and proof until it is reviewed", async () => {
+	const { bob, pulseId } = await setUpReview();
+	await bob.as.mutation(api.work.pulses.addProofLink, {
+		pulseId,
+		kind: "pr",
+		url: "https://github.com/acme/web/pull/7",
+	});
+	await bob.as.mutation(api.work.pulses.setStatus, {
+		pulseId,
+		status: "review",
+	});
+
+	await expect(
+		bob.as.mutation(api.work.pulses.update, { pulseId, title: "Renamed" }),
+	).rejects.toThrow("This Pulse is awaiting review");
+	await expect(
+		bob.as.mutation(api.work.pulses.removeProofLink, {
+			pulseId,
+			url: "https://github.com/acme/web/pull/7",
+		}),
+	).rejects.toThrow("This Pulse is awaiting review");
 });

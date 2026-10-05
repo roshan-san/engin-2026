@@ -2,7 +2,8 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function useGoogleSignIn() {
+/** Signs in with Google, then lands on `returnTo` (a path in this app). */
+export function useGoogleSignIn(returnTo = "/my-pulses") {
 	const { signIn } = useAuthActions();
 	const [isPending, setIsPending] = useState(false);
 
@@ -10,7 +11,7 @@ export function useGoogleSignIn() {
 		setIsPending(true);
 		try {
 			await signIn("google", {
-				redirectTo: `${window.location.origin}/my-pulses`,
+				redirectTo: `${window.location.origin}${returnTo}`,
 			});
 		} catch (error) {
 			toast.error(

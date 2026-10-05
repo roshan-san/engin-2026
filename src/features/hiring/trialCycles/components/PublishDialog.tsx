@@ -19,12 +19,12 @@ import {
 	type TrialScheduleValue,
 	TrialScheduleFields,
 } from "~/features/hiring/trialCycles/components/TrialScheduleFields";
-import {
-	FOUNDER_IP_TERMS,
-	HACKATHON_PRICE_LABELS,
-	PRO_PRICE_LABEL,
-} from "~/features/hiring/trialCycles/constants";
+import { FOUNDER_IP_TERMS } from "~/features/hiring/trialCycles/constants";
 import { usePublishHackathon } from "~/features/hiring/trialCycles/hooks/usePublishHackathon";
+import {
+	HACKATHON_PRICE_LABELS,
+	PRO_PRICE_LABELS,
+} from "~/features/marketing/pricing/constants";
 
 type PublishDialogProps = {
 	readonly open: boolean;
@@ -160,8 +160,8 @@ export function PublishDialog({
 									onClick={goPro}
 									className="h-auto whitespace-normal py-2"
 								>
-									or go Pro, {PRO_PRICE_LABEL}: 2 hackathons a month included +
-									a bigger workspace
+									or go Pro, {PRO_PRICE_LABELS.monthly}/month: 2 hackathons a
+									month included + a bigger workspace
 								</Button>
 							)}
 						</>

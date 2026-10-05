@@ -12,7 +12,11 @@ import {
 } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { scoreOf, signUp } from "../people/users.helpers";
-import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
+import {
+	goStealth,
+	joinAsMember,
+	setUpStartup,
+} from "../teams/startups.helpers";
 import {
 	applicationIdOf,
 	createDraftTrial,
@@ -337,10 +341,7 @@ describe("drafts and publishing", () => {
 		const setup = await setUpStartup(t);
 		const trialCycleId = await createDraftTrial(setup);
 		await giveCredit(t, setup.founder.userId);
-		await setup.founder.as.mutation(api.teams.startups.update, {
-			startupId: setup.startupId,
-			isPublic: false,
-		});
+		await goStealth(setup);
 
 		await expect(publish(setup.founder.as, trialCycleId)).rejects.toThrow(
 			"Turn off stealth mode",
@@ -396,10 +397,7 @@ describe("publish checks", () => {
 			challenges: [],
 		});
 		await giveCredit(t, setup.founder.userId);
-		await setup.founder.as.mutation(api.teams.startups.update, {
-			startupId: setup.startupId,
-			isPublic: false,
-		});
+		await goStealth(setup);
 		vi.advanceTimersByTime(2 * DAY);
 
 		await expect(publish(setup.founder.as, trialCycleId)).rejects.toThrow(

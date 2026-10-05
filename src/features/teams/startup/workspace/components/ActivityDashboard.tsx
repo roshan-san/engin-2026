@@ -1,4 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { PageLoading } from "~/components/globals/PageLoading";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { useActivityDashboard } from "~/features/teams/startup/workspace/hooks/useActivityDashboard";
 import { formatDate } from "~/lib/dates";
 
@@ -11,14 +13,15 @@ const STAT_LABELS = [
 	{ key: "activeCycles", label: "Active Cycles" },
 	{ key: "verifiedPulsesLast30Days", label: "Verified Pulses (30d)" },
 	{ key: "openRoles", label: "Open Roles" },
-	{ key: "openTrialCycles", label: "Open Trial Cycles" },
+	{ key: "openTrialCycles", label: "Open hackathons" },
 ] as const;
 
+/** Headline stats and the most recent events the viewer may see. */
 export function ActivityDashboard({ startupId }: ActivityDashboardProps) {
 	const { dashboard, isLoading } = useActivityDashboard(startupId);
 
 	if (isLoading || !dashboard) {
-		return null;
+		return <PageLoading rows={4} />;
 	}
 
 	return (
@@ -32,26 +35,29 @@ export function ActivityDashboard({ startupId }: ActivityDashboardProps) {
 				))}
 			</div>
 
-			{dashboard.activity.length > 0 ? (
-				<div className="space-y-2">
-					<h2 className="text-sm font-medium text-muted-foreground">
-						Activity
-					</h2>
+			<section className="space-y-2">
+				<h2 className="text-sm font-medium text-muted-foreground">Recent</h2>
+				{dashboard.activity.length === 0 ? (
+					<EmptyState
+						title="No activity yet"
+						description="Joins, Cycles, verified Pulses and hackathons will show up here."
+					/>
+				) : (
 					<ul className="space-y-1">
 						{dashboard.activity.map((item) => (
 							<li
 								key={item._id}
-								className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-2 text-sm"
+								className="flex items-start justify-between gap-3 rounded-lg border border-border/60 px-4 py-2 text-sm"
 							>
-								<span>{item.summary}</span>
-								<span className="text-muted-foreground">
+								<span className="min-w-0 break-words">{item.summary}</span>
+								<span className="shrink-0 text-muted-foreground">
 									{formatDate(item.createdAt)}
 								</span>
 							</li>
 						))}
 					</ul>
-				</div>
-			) : null}
+				)}
+			</section>
 		</div>
 	);
 }

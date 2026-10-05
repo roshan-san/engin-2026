@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { createTest, DAY } from "../lib/testing.helpers";
-import { setUpStartup } from "../teams/startups.helpers";
+import { goStealth, setUpStartup } from "../teams/startups.helpers";
 import { signUp } from "./users.helpers";
 
 /** A closed Cycle with one Verified Pulse per given title, all by `userId`. */
@@ -62,10 +62,7 @@ test("a profile shows internal Verified Pulses and Cycles as Proof of Work per p
 test("work at a private Startup is shown only as aggregate counts", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await setup.founder.as.mutation(api.teams.startups.update, {
-		startupId: setup.startupId,
-		isPublic: false,
-	});
+	await goStealth(setup);
 	await shipInClosedCycle(t, setup.startupId, setup.founder.userId, ["Hero"]);
 
 	const profile = await (await signUp(t, "Visitor")).as.query(

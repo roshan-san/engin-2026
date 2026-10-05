@@ -1,12 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { StubScreen } from "~/components/shared/StubScreen";
+import { ProfileEditorPage } from "~/features/people/profile/pages/ProfileEditorPage";
 
 export const Route = createFileRoute("/_shell/_authed/profile/")({
-	component: () => (
-		<StubScreen
-			title="Edit profile"
-			emptyTitle="Profile editor coming soon"
-			emptyDescription="Edit your profile details here."
-		/>
-	),
+	component: ProfileEditorPage,
 });

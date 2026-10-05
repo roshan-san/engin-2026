@@ -34,7 +34,11 @@ export function AppSidebar() {
 		select: (state) => state.location.pathname,
 	});
 	const { focused } = useFocusedStartup();
-	const { count, isLoading: notificationsLoading } = useNotifications();
+	const {
+		count,
+		countLabel,
+		isLoading: notificationsLoading,
+	} = useNotifications();
 	const { togglePalette } = useCommands();
 	const DiscoverIcon = DISCOVER_NAV.icon;
 
@@ -85,7 +89,7 @@ export function AppSidebar() {
 									</SidebarMenuButton>
 									{showBadge ? (
 										<SidebarMenuBadge className="bg-primary text-primary-foreground rounded-md tabular-nums">
-											{count}
+											{countLabel}
 										</SidebarMenuBadge>
 									) : null}
 								</SidebarMenuItem>

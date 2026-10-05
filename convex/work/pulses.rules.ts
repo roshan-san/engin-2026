@@ -8,7 +8,12 @@ import { loadPublicUser } from "../people/users.rules";
 import type { proofLink } from "../schema";
 import { requireFounderMembership } from "../teams/membership.rules";
 import { requireBoardOwner } from "./boards.rules";
-import { requireCycleAccess } from "./cycles.rules";
+import { getTrialApplication } from "../hiring/trialCycles.rules";
+import {
+	getCycleAccess,
+	requireCycleAccess,
+	requireOpenCycle,
+} from "./cycles.rules";
 
 type PulseCtx = QueryCtx | MutationCtx;
 type ProofLink = Infer<typeof proofLink>;
@@ -93,7 +98,8 @@ export async function requireWorkablePulse(
 		return { pulse, context };
 	}
 
-	await requireCycleAccess(ctx, context.cycleId, userId);
+	const { cycle } = await requireCycleAccess(ctx, context.cycleId, userId);
+	requireOpenCycle(cycle);
 	if (pulse.status === "review") {
 		throw new Error("This Pulse is awaiting review");
 	}
@@ -113,6 +119,10 @@ export async function requireSubmittedPulse(
 	await requireFounderMembership(ctx, pulse.startupId, userId);
 	if (pulse.trialCycleId) {
 		throw new Error("Pulses on a Board are not reviewed");
+	}
+	const cycle = pulse.cycleId ? await ctx.db.get(pulse.cycleId) : null;
+	if (cycle) {
+		requireOpenCycle(cycle);
 	}
 	if (pulse.status !== "review") {
 		throw new Error("This Pulse is not awaiting review");
@@ -142,4 +152,58 @@ export async function resolveReview(
 		body: outcome.reviewNote,
 		href: await pulseHref(ctx, pulse),
 	});
+}
+
+/** Where a Pulse lives, as My Pulses labels and links it. */
+export type PulsePlace =
+	| { kind: "cycle"; cycleId: Id<"cycles">; title: string }
+	| { kind: "trial"; trialCycleId: Id<"trialCycles">; title: string };
+
+/**
+ * Where `viewerId` can open `pulse`, or `null` once they can't: removed from
+ * its Cycle, or no longer holding a Board in its Trial Cycle. `cache` is keyed
+ * by Cycle or Trial Cycle id so a list resolves each one once.
+ */
+export async function loadPulsePlace(
+	ctx: QueryCtx,
+	pulse: Doc<"pulses">,
+	viewerId: Id<"users">,
+	cache: Map<string, PulsePlace | null>,
+): Promise<PulsePlace | null> {
+	const key = pulse.trialCycleId ?? pulse.cycleId;
+	if (!key) {
+		return null;
+	}
+	if (pulse.trialCycleId && pulse.participantUserId !== viewerId) {
+		return null;
+	}
+	const cached = cache.get(key);
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	let place: PulsePlace | null = null;
+	if (pulse.trialCycleId) {
+		const trial = await ctx.db.get(pulse.trialCycleId);
+		const application = trial
+			? await getTrialApplication(ctx, trial._id, viewerId)
+			: null;
+		if (
+			trial &&
+			(application?.status === "joined" || application?.status === "completed")
+		) {
+			place = { kind: "trial", trialCycleId: trial._id, title: trial.title };
+		}
+	} else if (pulse.cycleId) {
+		const access = await getCycleAccess(ctx, pulse.cycleId, viewerId);
+		if (access) {
+			place = {
+				kind: "cycle",
+				cycleId: access.cycle._id,
+				title: access.cycle.title,
+			};
+		}
+	}
+	cache.set(key, place);
+	return place;
 }

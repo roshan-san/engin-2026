@@ -42,3 +42,10 @@ async function join(setup: Setup, name: string, role: "founder" | "member") {
 	});
 	return person;
 }
+
+/** Puts the setup's Startup in stealth. Stealth is Pro only through the API. */
+export async function goStealth(setup: Setup) {
+	await setup.t.run(async (ctx) => {
+		await ctx.db.patch(setup.startupId, { isPublic: false });
+	});
+}

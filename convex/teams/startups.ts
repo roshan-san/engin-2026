@@ -25,7 +25,7 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "./membership.rules";
-import { loadStartupPlan } from "./plan.rules";
+import { loadStartupPlan, requireStealthAllowed } from "./plan.rules";
 import { toSearchText, uniqueSlug } from "./startups.rules";
 
 /** Every Startup the caller belongs to, for the switcher and palette (SHELL-07). */
@@ -126,6 +126,9 @@ export const update = mutation({
 		const startup = await ctx.db.get(args.startupId);
 		if (!startup) {
 			throw new Error("Startup not found");
+		}
+		if (args.isPublic === false && startup.isPublic) {
+			await requireStealthAllowed(ctx, startup);
 		}
 
 		const name = args.name

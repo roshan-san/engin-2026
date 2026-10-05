@@ -95,16 +95,9 @@ export const getByUsername = query({
 			}
 		}
 
-		const { verdicts, evaluations, trialCyclesLeft } = await loadTrialHistory(
-			ctx,
-			user._id,
-		);
-
 		return {
 			...toPublicUser(user),
-			verdicts,
-			evaluations,
-			trialCyclesLeft,
+			trialHistory: await loadTrialHistory(ctx, user._id),
 			bio: user.bio ?? null,
 			skills: user.skills ?? [],
 			location: user.location ?? null,

@@ -1,41 +1,44 @@
-import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
-import { useMutation } from "convex/react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
-	inferProofLinkKind,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
 	type ProofLinkKind,
 	proofLinkLabel,
 } from "~/features/work/pulses/constants";
 
 type PulseProofLinksProps = {
-	readonly pulseId: Id<"pulses">;
 	readonly proofLinks: readonly { kind: ProofLinkKind; url: string }[];
 	readonly canEdit: boolean;
 	readonly isPending: boolean;
-	readonly run: (action: () => Promise<unknown>) => void;
+	/** Resolves true once the link is saved; the kind is inferred from the URL. */
+	readonly onAdd: (url: string) => Promise<boolean>;
+	readonly onRemove: (url: string) => void;
 };
 
 export function PulseProofLinks({
-	pulseId,
 	proofLinks,
 	canEdit,
 	isPending,
-	run,
+	onAdd,
+	onRemove,
 }: PulseProofLinksProps) {
-	const addProofLink = useMutation(api.work.pulses.addProofLink);
-	const removeProofLink = useMutation(api.work.pulses.removeProofLink);
+	const [isAdding, setIsAdding] = useState(false);
+	const [url, setUrl] = useState("");
 
-	function add() {
-		const url = window.prompt(
-			"Link to your work (PR, commit, deploy, design…)",
-		);
-		if (!url?.trim()) {
-			return;
+	async function add() {
+		if (url.trim() && (await onAdd(url.trim()))) {
+			setUrl("");
+			setIsAdding(false);
 		}
-		run(() =>
-			addProofLink({ pulseId, url, kind: inferProofLinkKind(url.trim()) }),
-		);
 	}
 
 	return (
@@ -54,9 +57,7 @@ export function PulseProofLinks({
 							variant="ghost"
 							aria-label={`Remove ${proofLinkLabel(link.kind)}`}
 							disabled={isPending}
-							onClick={() =>
-								run(() => removeProofLink({ pulseId, url: link.url }))
-							}
+							onClick={() => onRemove(link.url)}
 						>
 							×
 						</Button>
@@ -69,11 +70,47 @@ export function PulseProofLinks({
 					size="sm"
 					variant="outline"
 					disabled={isPending}
-					onClick={add}
+					onClick={() => setIsAdding(true)}
 				>
 					Add proof
 				</Button>
 			) : null}
+			<Dialog open={isAdding} onOpenChange={setIsAdding}>
+				<DialogContent>
+					<form
+						className="space-y-4"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void add();
+						}}
+					>
+						<DialogHeader>
+							<DialogTitle>Add proof of work</DialogTitle>
+							<DialogDescription>
+								Paste a link to a PR, commit, deploy, design, doc or demo.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="space-y-2">
+							<Label htmlFor="proof-link-url">Link</Label>
+							<Input
+								id="proof-link-url"
+								type="url"
+								inputMode="url"
+								value={url}
+								onChange={(event) => setUrl(event.target.value)}
+								placeholder="https://github.com/…/pull/12"
+								className="h-11"
+								autoFocus
+							/>
+						</div>
+						<DialogFooter>
+							<Button type="submit" disabled={isPending || !url.trim()}>
+								Add proof
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 }

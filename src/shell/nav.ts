@@ -7,24 +7,33 @@ import {
 	MessagesSquare,
 	Presentation,
 	RefreshCw,
+	Settings,
+	Ticket,
 	UserPlus,
 	Users,
 } from "lucide-react";
 
 type PersonalNavItem = {
-	readonly label: "Inbox" | "My Pulses" | "Threads";
-	readonly to: "/inbox" | "/my-pulses" | "/threads";
+	readonly label: "Inbox" | "My Pulses" | "My Entries" | "Threads";
+	readonly to: "/inbox" | "/my-pulses" | "/my-entries" | "/threads";
 	readonly icon: LucideIcon;
 };
 
 type StartupNavItem = {
-	readonly label: "Cycles" | "Hiring" | "Team" | "Pitch" | "Activity";
+	readonly label:
+		| "Cycles"
+		| "Hiring"
+		| "Team"
+		| "Pitch"
+		| "Activity"
+		| "Settings";
 	readonly to:
 		| "/s/$slug/cycles"
 		| "/s/$slug/hiring"
 		| "/s/$slug/team"
 		| "/s/$slug/pitch"
-		| "/s/$slug/activity";
+		| "/s/$slug/activity"
+		| "/s/$slug/settings";
 	readonly icon: LucideIcon;
 };
 
@@ -32,6 +41,7 @@ type StartupNavItem = {
 export const PERSONAL_NAV: readonly PersonalNavItem[] = [
 	{ label: "Inbox", to: "/inbox", icon: Inbox },
 	{ label: "My Pulses", to: "/my-pulses", icon: ListChecks },
+	{ label: "My Entries", to: "/my-entries", icon: Ticket },
 	{ label: "Threads", to: "/threads", icon: MessagesSquare },
 ];
 
@@ -42,6 +52,7 @@ export const STARTUP_NAV: readonly StartupNavItem[] = [
 	{ label: "Team", to: "/s/$slug/team", icon: Users },
 	{ label: "Pitch", to: "/s/$slug/pitch", icon: Presentation },
 	{ label: "Activity", to: "/s/$slug/activity", icon: Activity },
+	{ label: "Settings", to: "/s/$slug/settings", icon: Settings },
 ];
 
 /** Final sidebar group — every Startup's contributors. */
@@ -58,8 +69,10 @@ export const DISCOVER_NAV: {
 /** Mobile top-bar screen titles (D-17), keyed by TanStack Router route id. */
 export const SCREEN_TITLES: Partial<Record<string, string>> = {
 	"/_shell/_authed/my-pulses/": "My Pulses",
+	"/_shell/_authed/my-entries/": "My Entries",
 	"/_shell/_authed/inbox/": "Inbox",
 	"/_shell/_authed/threads/": "Threads",
+	"/_shell/_authed/threads/$trialCycleId": "Thread",
 	"/_shell/_authed/profile/": "Edit profile",
 	"/_shell/_authed/startups/new": "Create Startup",
 	"/_shell/_authed/s/$slug/_member/cycles/": "Cycles",
@@ -73,6 +86,7 @@ export const SCREEN_TITLES: Partial<Record<string, string>> = {
 	"/_shell/_authed/s/$slug/_member/settings/": "Settings",
 	"/_shell/_authed/s/$slug/trials/$trialCycleId": "Trial Cycle",
 	"/_shell/discover/": "Discover",
+	"/_shell/hackathons/$trialCycleId": "Hackathon",
 	"/_shell/pricing/": "Pricing",
 	"/_shell/startup/$slug": "Pitch",
 	"/_shell/u/$username": "Profile",

@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
+import { MAX_TRIAL_APPLICATIONS, MAX_USER_APPLICATIONS } from "../lib/limits";
 import { trialCycleHref } from "../lib/links";
 import { optionalText } from "../lib/text";
 import { notify, notifyFounders } from "../people/notifications.rules";
@@ -11,8 +11,10 @@ import {
 	requireMembership,
 } from "../teams/membership.rules";
 import {
+	holdsLiveEntry,
 	releaseParticipantSpot,
 	requireCanEnter,
+	requireRoomToApply,
 	takeParticipantSpot,
 } from "./applications.rules";
 import { requireIpTerms } from "./ipTerms.rules";
@@ -30,7 +32,7 @@ export const listMine = query({
 			.query("applications")
 			.withIndex("by_user", (q) => q.eq("userId", userId))
 			.order("desc")
-			.take(MAX_TRIAL_APPLICATIONS);
+			.take(MAX_USER_APPLICATIONS);
 
 		const results = [];
 		for (const application of applications) {
@@ -41,10 +43,17 @@ export const listMine = query({
 				_id: application._id,
 				status: application.status,
 				message: application.message ?? null,
+				verdict: application.verdict ?? null,
+				evaluation: application.evaluation ?? null,
+				evaluationPublic: application.evaluationPublic ?? false,
 				startupName: startup?.name ?? "Startup",
 				startupSlug: startup?.slug ?? "",
 				roleTitle: role?.title ?? null,
 				trialTitle: trial?.title ?? null,
+				trialStatus: trial?.status ?? null,
+				startsAt: trial?.startsAt ?? null,
+				endsAt: trial?.endsAt ?? null,
+				isLive: holdsLiveEntry(application, trial),
 				trialCycleId: application.trialCycleId,
 				roleId: application.roleId,
 			});
@@ -98,6 +107,7 @@ export const applyToTrial = mutation({
 			throw new Error("Trial Cycle not found");
 		}
 		requireAcceptingEntries(trial);
+		await requireRoomToApply(ctx, trial);
 		requireIpTerms(args.acceptTerms);
 		await requireCanEnter(ctx, trial, userId);
 

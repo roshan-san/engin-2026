@@ -1,7 +1,7 @@
 import type { Infer } from "convex/values";
-import type { Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
-import { MAX_STARTUP_FOUNDERS } from "../lib/limits";
+import type { Doc, Id } from "../_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { MAX_STARTUP_FOUNDERS, MAX_UNREAD_NOTIFICATIONS } from "../lib/limits";
 import type { notificationKind } from "../schema";
 
 type NotificationKind = Infer<typeof notificationKind>;
@@ -38,4 +38,17 @@ export async function notifyFounders(
 			await notify(ctx, { ...notification, userId: founder.userId });
 		}
 	}
+}
+
+/** The person's unread notifications, up to `MAX_UNREAD_NOTIFICATIONS`. */
+export async function loadUnread(
+	ctx: QueryCtx | MutationCtx,
+	userId: Id<"users">,
+): Promise<Doc<"notifications">[]> {
+	return await ctx.db
+		.query("notifications")
+		.withIndex("by_user_and_read", (q) =>
+			q.eq("userId", userId).eq("readAt", undefined),
+		)
+		.take(MAX_UNREAD_NOTIFICATIONS);
 }

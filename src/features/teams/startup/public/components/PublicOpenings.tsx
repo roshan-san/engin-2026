@@ -3,21 +3,14 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { ApplyButtons } from "~/features/hiring/opportunities/components/ApplyButtons";
+import { ApplyDialog } from "~/features/hiring/opportunities/components/ApplyDialog";
 import { formatDate } from "~/lib/dates";
 
 type PublicOpeningsProps = {
-	readonly slug: string;
 	readonly startupId: Id<"startups">;
-	readonly isAuthenticated: boolean;
 };
 
-export function PublicOpenings({
-	slug,
-	startupId,
-	isAuthenticated,
-}: PublicOpeningsProps) {
+export function PublicOpenings({ startupId }: PublicOpeningsProps) {
 	const roles = useQuery(api.hiring.roles.listOpenByStartup, { startupId });
 	const trials = useQuery(api.hiring.trialCycles.listOpenByStartup, {
 		startupId,
@@ -45,7 +38,7 @@ export function PublicOpenings({
 									<p className="text-sm text-muted-foreground">{role.type}</p>
 								</div>
 								<p className="text-sm text-muted-foreground">
-									Join through a Trial Cycle
+									Join through a hackathon
 								</p>
 							</li>
 						))}
@@ -54,12 +47,12 @@ export function PublicOpenings({
 			</section>
 
 			<section className="space-y-3">
-				<h2 className="text-lg font-semibold">Trial Cycles</h2>
+				<h2 className="text-lg font-semibold">Hackathons</h2>
 				{trials === undefined ? (
 					<p className="text-sm text-muted-foreground">Loading…</p>
 				) : trials.length === 0 ? (
 					<p className="text-sm text-muted-foreground">
-						No Trial Cycles open right now.
+						No hackathons open right now.
 					</p>
 				) : (
 					<ul className="space-y-2">
@@ -69,17 +62,13 @@ export function PublicOpenings({
 								className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
 							>
 								<div className="min-w-0 flex-1">
-									{isAuthenticated ? (
-										<Link
-											to="/s/$slug/trials/$trialCycleId"
-											params={{ slug, trialCycleId: trial._id }}
-											className="font-medium hover:underline"
-										>
-											{trial.title}
-										</Link>
-									) : (
-										<p className="font-medium">{trial.title}</p>
-									)}
+									<Link
+										to="/hackathons/$trialCycleId"
+										params={{ trialCycleId: trial._id }}
+										className="font-medium hover:underline"
+									>
+										{trial.title}
+									</Link>
 									<p className="text-sm text-muted-foreground">
 										{formatDate(trial.startsAt)} – {formatDate(trial.endsAt)}
 									</p>
@@ -87,13 +76,11 @@ export function PublicOpenings({
 										{trial.participantCount}/{trial.maxContributors}
 									</Badge>
 								</div>
-								{isAuthenticated ? (
-									<ApplyButtons trialCycleId={trial._id} />
-								) : (
-									<Button asChild size="sm">
-										<Link to="/">Sign in to apply</Link>
-									</Button>
-								)}
+								<ApplyDialog
+									trialCycleId={trial._id}
+									title={trial.title}
+									size="sm"
+								/>
 							</li>
 						))}
 					</ul>

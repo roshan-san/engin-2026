@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import type { MutationCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_INVITES_PER_EMAIL } from "../lib/limits";
+import { MAX_INVITES_PER_EMAIL, MAX_PLAN_USAGE_SCAN } from "../lib/limits";
 import { notify } from "../people/notifications.rules";
 import { memberRole } from "../schema";
 import {
@@ -13,6 +13,7 @@ import {
 	resolveInvitee,
 } from "./invitations.rules";
 import { getMembership, requireFounderMembership } from "./membership.rules";
+import { requireMemberSlot } from "./plan.rules";
 
 export const listInvites = query({
 	args: { startupId: v.id("startups") },
@@ -20,10 +21,13 @@ export const listInvites = query({
 		const userId = await requireUserId(ctx);
 		await requireFounderMembership(ctx, args.startupId, userId);
 
-		return await ctx.db
+		const pending = await ctx.db
 			.query("invites")
-			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
-			.take(50);
+			.withIndex("by_startup_and_status", (q) =>
+				q.eq("startupId", args.startupId).eq("status", "pending"),
+			)
+			.take(MAX_PLAN_USAGE_SCAN);
+		return pending.filter(isInviteLive);
 	},
 });
 
@@ -37,6 +41,10 @@ export const create = mutation({
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		await requireFounderMembership(ctx, args.startupId, userId);
+		const startup = await ctx.db.get(args.startupId);
+		if (!startup) {
+			throw new Error("Startup not found");
+		}
 
 		const { email, user: invitee } = await resolveInvitee(ctx, args.invitee);
 		if (invitee && (await getMembership(ctx, args.startupId, invitee._id))) {
@@ -51,6 +59,15 @@ export const create = mutation({
 				)
 				.take(MAX_INVITES_PER_EMAIL)
 		).find((invite) => invite.status === "pending");
+
+		// A live pending Member Invite already holds its slot.
+		const holdsSlot =
+			pending !== undefined &&
+			pending.role === "member" &&
+			isInviteLive(pending);
+		if (args.role === "member" && !holdsSlot) {
+			await requireMemberSlot(ctx, startup);
+		}
 
 		if (pending) {
 			await ctx.db.patch(pending._id, {
@@ -73,11 +90,10 @@ export const create = mutation({
 
 		// People who haven't signed up see it in their invites once they do.
 		if (invitee) {
-			const startup = await ctx.db.get(args.startupId);
 			await notify(ctx, {
 				userId: invitee._id,
 				kind: "invite",
-				title: `You were invited to ${startup?.name ?? "a startup"}`,
+				title: `You were invited to ${startup.name}`,
 				href: `/invite/${token}`,
 			});
 		}
@@ -112,6 +128,7 @@ export const listMine = query({
 		const invites = await ctx.db
 			.query("invites")
 			.withIndex("by_email", (q) => q.eq("email", user.email as string))
+			.order("desc")
 			.take(50);
 
 		const results = [];
@@ -127,6 +144,7 @@ export const listMine = query({
 				token: invite.token,
 				role: invite.role,
 				expiresAt: invite.expiresAt,
+				createdAt: invite._creationTime,
 				startupName: startup?.name ?? "Unknown startup",
 				inviterName: inviter?.name ?? inviter?.email ?? "Someone",
 			});

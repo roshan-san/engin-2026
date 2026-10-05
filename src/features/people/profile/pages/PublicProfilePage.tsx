@@ -3,7 +3,6 @@ import { PageLoading } from "~/components/globals/PageLoading";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import type { Verdict } from "~/features/hiring/trialCycles/constants";
 import {
 	ProofOfWork,
 	type ProofOfWorkData,
@@ -12,7 +11,10 @@ import {
 	type ScoreEvidence,
 	ScoreEvidenceCard,
 } from "~/features/people/profile/components/ScoreEvidence";
-import { TrialHistory } from "~/features/people/profile/components/TrialHistory";
+import {
+	TrialHistory,
+	type TrialHistoryEntry,
+} from "~/features/people/profile/components/TrialHistory";
 import { initials } from "~/lib/initials";
 
 type PublicProfile = {
@@ -27,18 +29,7 @@ type PublicProfile = {
 	portfolioUrl: string | null;
 	evidence: ScoreEvidence;
 	proofOfWork: ProofOfWorkData;
-	evaluations: Array<{
-		_id: string;
-		trialTitle: string;
-		startupName: string;
-		verdict: Verdict | null;
-		evaluation: string;
-	}>;
-	trialCyclesLeft: Array<{
-		_id: string;
-		trialTitle: string;
-		startupName: string;
-	}>;
+	trialHistory: TrialHistoryEntry[];
 	startups: Array<{
 		_id: string;
 		name: string;
@@ -129,10 +120,7 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 
 			<ProofOfWork proofOfWork={profile.proofOfWork} />
 
-			<TrialHistory
-				evaluations={profile.evaluations}
-				trialCyclesLeft={profile.trialCyclesLeft}
-			/>
+			<TrialHistory trialHistory={profile.trialHistory} />
 
 			<section className="space-y-3">
 				<h2 className="text-lg font-semibold">Startups</h2>

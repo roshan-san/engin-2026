@@ -1,9 +1,32 @@
 import type { Doc, Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
-import { MAX_ROLE_OFFERS, MAX_ROLE_TRIALS } from "../lib/limits";
-import { INBOX_HREF } from "../lib/links";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import {
+	MAX_ROLE_OFFERS,
+	MAX_ROLE_TRIALS,
+	MAX_TRIAL_APPLICATIONS,
+} from "../lib/limits";
+import { trialCycleHref } from "../lib/links";
 import { notify } from "../people/notifications.rules";
 import { cancelTrial } from "./trialCycles.rules";
+
+export type OfferSummary = Pick<Doc<"offers">, "_id" | "status">;
+
+/** A Trial Cycle's Offers keyed by the Application they were made on (at most one each). */
+export async function loadTrialOffers(
+	ctx: QueryCtx,
+	trialCycleId: Id<"trialCycles">,
+): Promise<Map<Id<"applications">, OfferSummary>> {
+	const offers = await ctx.db
+		.query("offers")
+		.withIndex("by_trial", (q) => q.eq("trialCycleId", trialCycleId))
+		.take(MAX_TRIAL_APPLICATIONS);
+	return new Map(
+		offers.map((offer) => [
+			offer.applicationId,
+			{ _id: offer._id, status: offer.status },
+		]),
+	);
+}
 
 export async function withdrawOffer(
 	ctx: MutationCtx,
@@ -11,11 +34,12 @@ export async function withdrawOffer(
 ): Promise<void> {
 	await ctx.db.patch(offer._id, { status: "withdrawn" });
 	const startup = await ctx.db.get(offer.startupId);
+	const trial = await ctx.db.get(offer.trialCycleId);
 	await notify(ctx, {
 		userId: offer.userId,
 		kind: "offer",
 		title: `Your Offer from ${startup?.name ?? "a Startup"} was withdrawn`,
-		href: INBOX_HREF,
+		href: trial ? await trialCycleHref(ctx, trial) : undefined,
 	});
 }
 

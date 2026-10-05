@@ -41,6 +41,7 @@ export const workTables = {
 		reviewNote: v.optional(v.string()),
 	})
 		.index("by_startup", ["startupId"])
+		.index("by_startup_and_status", ["startupId", "status"])
 		.index("by_cycle", ["cycleId"])
 		.index("by_trial", ["trialCycleId"])
 		.index("by_trial_and_participant", ["trialCycleId", "participantUserId"])

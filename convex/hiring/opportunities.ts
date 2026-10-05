@@ -69,12 +69,15 @@ export const search = query({
 			if (!startup?.isPublic) {
 				continue;
 			}
+			const role = await ctx.db.get(trial.roleId);
 			trialCards.push({
 				_id: trial._id,
 				title: trial.title,
 				description: trial.description,
+				roleTitle: role?.title ?? "Role",
 				participantCount: trial.participantCount,
 				maxContributors: trial.maxContributors,
+				deadline: trial.applicationDeadline ?? trial.startsAt,
 				startsAt: trial.startsAt,
 				endsAt: trial.endsAt,
 				prize: trial.prize ?? null,

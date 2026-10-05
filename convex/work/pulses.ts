@@ -1,23 +1,33 @@
 import { v } from "convex/values";
+import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_BOARD_PULSES, MAX_PROOF_LINKS } from "../lib/limits";
+import {
+	MAX_BOARD_PULSES,
+	MAX_CYCLE_PULSES,
+	MAX_PROOF_LINKS,
+	MAX_USER_PULSES,
+} from "../lib/limits";
 import { pulseHref } from "../lib/links";
 import { assertUrl, optionalText, requireText } from "../lib/text";
 import { notifyFounders } from "../people/notifications.rules";
 import { proofLinkKind, pulseStatus } from "../schema";
 import { logActivity } from "../teams/activity.rules";
-import { requireMembership } from "../teams/membership.rules";
+import { loadPublicUser } from "../people/users.rules";
 import {
-	createBoardPulse,
-	requireBoardAccess,
-	requireBoardOwner,
-} from "./boards.rules";
-import { requireCycleAccess } from "./cycles.rules";
+	loadMembershipsOf,
+	requireMembership,
+} from "../teams/membership.rules";
+import { createBoardPulse, requireBoardAccess } from "./boards.rules";
 import {
-	loadPulseContext,
+	loadCyclePulses,
+	requireCycleAccess,
+	requireOpenCycle,
+} from "./cycles.rules";
+import {
+	loadPulsePlace,
+	type PulsePlace,
 	proofLinksOf,
-	requirePulse,
 	requireSubmittedPulse,
 	requireWorkablePulse,
 	resolveReview,
@@ -25,25 +35,28 @@ import {
 	withAssignees,
 } from "./pulses.rules";
 
-const PULSE_PAGE_SIZE = 80;
-const MY_PULSES_PAGE_SIZE = 50;
-
 export const listForCycle = query({
 	args: { cycleId: v.id("cycles") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireCycleAccess(ctx, args.cycleId, userId);
+		const { membership } = await requireCycleAccess(ctx, args.cycleId, userId);
 
 		const pulses = await ctx.db
 			.query("pulses")
 			.withIndex("by_cycle", (q) => q.eq("cycleId", args.cycleId))
 			.order("desc")
-			.take(PULSE_PAGE_SIZE);
+			.take(MAX_CYCLE_PULSES);
 
-		return await withAssignees(ctx, pulses);
+		const isFounder = membership.role === "founder";
+		return (await withAssignees(ctx, pulses)).map((pulse, index) => ({
+			...pulse,
+			/** Its creator or a Founder; the status lock still applies. */
+			canDelete: isFounder || pulses[index]?.createdByUserId === userId,
+		}));
 	},
 });
 
+/** The viewer's own Pulses, newest first, on Cycles and Boards they can still open. */
 export const listMine = query({
 	args: {},
 	handler: async (ctx) => {
@@ -52,15 +65,73 @@ export const listMine = query({
 			.query("pulses")
 			.withIndex("by_assignee", (q) => q.eq("assigneeUserId", userId))
 			.order("desc")
-			.take(MY_PULSES_PAGE_SIZE);
+			.take(MAX_USER_PULSES);
 
+		const places = new Map<string, PulsePlace | null>();
+		const startups = new Map<Id<"startups">, Doc<"startups"> | null>();
 		const results = [];
 		for (const pulse of pulses) {
-			const startup = await ctx.db.get(pulse.startupId);
+			const place = await loadPulsePlace(ctx, pulse, userId, places);
+			if (!place) {
+				continue;
+			}
+			if (!startups.has(pulse.startupId)) {
+				startups.set(pulse.startupId, await ctx.db.get(pulse.startupId));
+			}
+			const startup = startups.get(pulse.startupId);
+			if (!startup) {
+				continue;
+			}
 			results.push({
 				...toPulse(pulse),
-				startupName: startup?.name ?? "Startup",
+				startupName: startup.name,
+				startupSlug: startup.slug,
+				place,
 			});
+		}
+		return results;
+	},
+});
+
+/** Cycle Pulses awaiting review across every Startup the viewer founds. */
+export const listToReview = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await requireUserId(ctx);
+		const memberships = await loadMembershipsOf(ctx, userId);
+
+		const results = [];
+		for (const { startup, role } of memberships) {
+			if (role !== "founder") {
+				continue;
+			}
+			const pulses = await ctx.db
+				.query("pulses")
+				.withIndex("by_startup_and_status", (q) =>
+					q.eq("startupId", startup._id).eq("status", "review"),
+				)
+				.take(MAX_CYCLE_PULSES);
+			const cycles = new Map<Id<"cycles">, Doc<"cycles"> | null>();
+			for (const pulse of pulses) {
+				if (!pulse.cycleId) {
+					continue;
+				}
+				if (!cycles.has(pulse.cycleId)) {
+					cycles.set(pulse.cycleId, await ctx.db.get(pulse.cycleId));
+				}
+				const cycle = cycles.get(pulse.cycleId);
+				if (!cycle || cycle.status === "closed") {
+					continue;
+				}
+				results.push({
+					...toPulse(pulse),
+					assignee: await loadPublicUser(ctx, pulse.assigneeUserId),
+					startupName: startup.name,
+					startupSlug: startup.slug,
+					cycleId: cycle._id,
+					cycleTitle: cycle.title,
+				});
+			}
 		}
 		return results;
 	},
@@ -123,6 +194,10 @@ export const create = mutation({
 		if (cycle.startupId !== args.startupId) {
 			throw new Error("Cycle not found");
 		}
+		requireOpenCycle(cycle);
+		if ((await loadCyclePulses(ctx, cycle._id)).length >= MAX_CYCLE_PULSES) {
+			throw new Error(`A Cycle can have at most ${MAX_CYCLE_PULSES} Pulses`);
+		}
 
 		return await ctx.db.insert("pulses", {
 			startupId: args.startupId,
@@ -159,6 +234,7 @@ export const setStatus = mutation({
 		status: pulseStatus,
 	},
 	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
 		const { pulse, context } = await requireWorkablePulse(ctx, args.pulseId);
 
 		if (context.kind === "trial") {
@@ -177,11 +253,16 @@ export const setStatus = mutation({
 		}
 		await ctx.db.patch(pulse._id, { status: args.status });
 		if (args.status === "review") {
-			await notifyFounders(ctx, pulse.startupId, {
-				kind: "pulse",
-				title: `${pulse.title} is ready for review`,
-				href: await pulseHref(ctx, pulse),
-			});
+			await notifyFounders(
+				ctx,
+				pulse.startupId,
+				{
+					kind: "pulse",
+					title: `${pulse.title} is ready for review`,
+					href: await pulseHref(ctx, pulse),
+				},
+				{ except: userId },
+			);
 		}
 	},
 });
@@ -217,6 +298,9 @@ export const assignToMe = mutation({
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const { pulse } = await requireWorkablePulse(ctx, args.pulseId);
+		if (pulse.assigneeUserId && pulse.assigneeUserId !== userId) {
+			throw new Error("Someone else has taken this Pulse");
+		}
 		await ctx.db.patch(pulse._id, {
 			assigneeUserId: userId,
 			status: pulse.status === "todo" ? "in_progress" : pulse.status,
@@ -259,18 +343,12 @@ export const remove = mutation({
 	args: { pulseId: v.id("pulses") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const pulse = await requirePulse(ctx, args.pulseId);
-
-		const context = await loadPulseContext(ctx, pulse);
-		if (context.kind === "trial") {
-			await requireBoardOwner(ctx, context.trial, pulse, userId);
-			await ctx.db.delete(pulse._id);
-			return;
-		}
-
-		const membership = await requireMembership(ctx, pulse.startupId, userId);
-		if (membership.role !== "founder" && pulse.createdByUserId !== userId) {
-			throw new Error("You cannot delete this Pulse");
+		const { pulse, context } = await requireWorkablePulse(ctx, args.pulseId);
+		if (context.kind === "cycle") {
+			const membership = await requireMembership(ctx, pulse.startupId, userId);
+			if (membership.role !== "founder" && pulse.createdByUserId !== userId) {
+				throw new Error("You cannot delete this Pulse");
+			}
 		}
 
 		await ctx.db.delete(pulse._id);

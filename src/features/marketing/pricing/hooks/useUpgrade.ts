@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export type BillingInterval = "monthly" | "yearly";
 
 export function useUpgrade() {
-	const { isAuthenticated } = useConvexAuth();
+	const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
 	const plan = useQuery(
 		api.billing.plan.getPlan,
 		isAuthenticated ? {} : "skip",
@@ -17,7 +17,7 @@ export function useUpgrade() {
 
 	async function upgrade(
 		interval: BillingInterval = "yearly",
-		returnUrl = `${window.location.origin}/my-pulses`,
+		returnUrl = `${window.location.origin}/pricing`,
 	) {
 		if (!isAuthenticated) {
 			toast.error("Sign in to upgrade");
@@ -40,7 +40,9 @@ export function useUpgrade() {
 
 	return {
 		isAuthenticated,
+		isAuthLoading,
 		plan,
+		canUpgrade: plan?.canUpgrade ?? false,
 		isLoading,
 		upgrade,
 	};

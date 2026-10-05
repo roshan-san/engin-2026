@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
@@ -10,8 +11,9 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "../teams/membership.rules";
-import { replaceChallenges } from "./challenges.rules";
+import { listChallenges, replaceChallenges } from "./challenges.rules";
 import { requireIpTerms } from "./ipTerms.rules";
+import { loadTrialOffers } from "./offers.rules";
 import { publishDraft, requirePublishable } from "./publish.rules";
 import {
 	buildDraftFields,
@@ -20,6 +22,7 @@ import {
 	getTrialApplication,
 	isTrialLive,
 	listTrialApplications,
+	loadPublicTrial,
 	requireOpenRoleOf,
 	requireValidSchedule,
 	startTrial,
@@ -50,12 +53,69 @@ export const list = query({
 export const listOpenByStartup = query({
 	args: { startupId: v.id("startups") },
 	handler: async (ctx, args) => {
+		const startup = await ctx.db.get(args.startupId);
+		if (!startup?.isPublic) {
+			return [];
+		}
 		return await ctx.db
 			.query("trialCycles")
 			.withIndex("by_startup_and_status", (q) =>
 				q.eq("startupId", args.startupId).eq("status", "open"),
 			)
 			.take(MAX_LISTED_TRIALS);
+	},
+});
+
+/**
+ * The public hackathon page: readable signed out, and never private fields.
+ * Takes the raw URL id, so a made-up address is "not found", not an error.
+ */
+export const getPublic = query({
+	args: { trialCycleId: v.string() },
+	handler: async (ctx, args) => {
+		const trialCycleId = ctx.db.normalizeId("trialCycles", args.trialCycleId);
+		const loaded = trialCycleId
+			? await loadPublicTrial(ctx, trialCycleId)
+			: null;
+		if (!loaded) {
+			return null;
+		}
+		const { trial, startup } = loaded;
+
+		const userId = await getAuthUserId(ctx);
+		const membership = userId
+			? await getMembership(ctx, startup._id, userId)
+			: null;
+		const myEntry = userId
+			? await getTrialApplication(ctx, trial._id, userId)
+			: null;
+		const role = await ctx.db.get(trial.roleId);
+		const challenges = await listChallenges(ctx, trial._id);
+
+		return {
+			_id: trial._id,
+			title: trial.title,
+			description: trial.description,
+			status: trial.status,
+			startsAt: trial.startsAt,
+			endsAt: trial.endsAt,
+			deadline: trial.applicationDeadline ?? trial.startsAt,
+			participantCount: trial.participantCount,
+			maxContributors: trial.maxContributors,
+			prize: trial.prize ?? null,
+			expectedOutcome: trial.expectedOutcome ?? null,
+			evaluationCriteria: trial.evaluationCriteria ?? null,
+			compensation: trial.compensation ?? null,
+			startup: { name: startup.name, slug: startup.slug },
+			role: { title: role?.title ?? "Role", type: role?.type ?? null },
+			challenges: challenges.map((challenge) => ({
+				_id: challenge._id,
+				title: challenge.title,
+				description: challenge.description ?? null,
+			})),
+			isMember: membership !== null,
+			myEntryStatus: myEntry?.status ?? null,
+		};
 	},
 });
 
@@ -78,12 +138,14 @@ export const get = query({
 		const role = await ctx.db.get(trial.roleId);
 		const startup = await ctx.db.get(trial.startupId);
 
+		const offers = await loadTrialOffers(ctx, trial._id);
 		const applicants = [];
 		if (isMember) {
 			for (const item of await listTrialApplications(ctx, trial._id)) {
 				applicants.push({
 					...item,
 					user: await loadPublicUser(ctx, item.userId),
+					offer: offers.get(item._id) ?? null,
 				});
 			}
 		}
@@ -102,6 +164,7 @@ export const get = query({
 			myVerdict: application?.verdict ?? null,
 			myEvaluation: application?.evaluation ?? null,
 			myEvaluationPublic: application?.evaluationPublic ?? false,
+			myOffer: application ? (offers.get(application._id) ?? null) : null,
 			applicants,
 		};
 	},

@@ -1,7 +1,11 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { CHALLENGE_TEXT_LIMITS, MAX_TRIAL_CHALLENGES } from "../lib/limits";
+import { trialCycleHref } from "../lib/links";
 import { limitText, requireLimitedText } from "../lib/text";
+import { notify } from "../people/notifications.rules";
+import { logActivity } from "../teams/activity.rules";
+import { listTrialApplications } from "./trialCycles.rules";
 
 export type ChallengeInput = { title: string; description?: string };
 
@@ -26,6 +30,20 @@ export function requireChallengeRoom(count: number): void {
 		throw new Error(
 			`A hackathon can have at most ${MAX_TRIAL_CHALLENGES} Starting Pulses`,
 		);
+	}
+}
+
+/**
+ * Challenges change while the hackathon is a draft, open or running; once
+ * running, changes reach every current Participant's Board.
+ */
+export function requireChallengesEditable(trial: Doc<"trialCycles">): void {
+	if (
+		trial.status !== "draft" &&
+		trial.status !== "open" &&
+		trial.status !== "active"
+	) {
+		throw new Error("Challenges can't change after the Trial Cycle ends");
 	}
 }
 
@@ -57,16 +75,24 @@ async function copyChallengeToBoard(
 	});
 }
 
+/** Gives each Participant their own copy of one Challenge, e.g. one added mid-trial. */
+export async function seedChallenge(
+	ctx: MutationCtx,
+	challenge: Doc<"challenges">,
+	participantUserIds: Id<"users">[],
+): Promise<void> {
+	for (const participantUserId of participantUserIds) {
+		await copyChallengeToBoard(ctx, challenge, participantUserId);
+	}
+}
+
 export async function seedBoards(
 	ctx: MutationCtx,
 	trialCycleId: Id<"trialCycles">,
 	participantUserIds: Id<"users">[],
 ): Promise<void> {
-	const challenges = await listChallenges(ctx, trialCycleId);
-	for (const participantUserId of participantUserIds) {
-		for (const challenge of challenges) {
-			await copyChallengeToBoard(ctx, challenge, participantUserId);
-		}
+	for (const challenge of await listChallenges(ctx, trialCycleId)) {
+		await seedChallenge(ctx, challenge, participantUserIds);
 	}
 }
 
@@ -94,4 +120,38 @@ export async function replaceChallenges(
 			createdByUserId: userId,
 		});
 	}
+}
+
+/** Mid-trial changes reach whoever is in now: Participants who left are out. */
+export async function listCurrentParticipantIds(
+	ctx: MutationCtx,
+	trial: Doc<"trialCycles">,
+): Promise<Id<"users">[]> {
+	if (trial.status !== "active") {
+		return [];
+	}
+	const applications = await listTrialApplications(ctx, trial._id);
+	return applications
+		.filter((application) => application.status === "joined")
+		.map((application) => application.userId);
+}
+
+/** Tells each current Participant and logs it for the Startup. */
+export async function announceChallengeChange(
+	ctx: MutationCtx,
+	trial: Doc<"trialCycles">,
+	participantIds: Id<"users">[],
+	title: string,
+	kind: "trial_challenge_added" | "trial_challenge_removed",
+) {
+	const href = await trialCycleHref(ctx, trial);
+	for (const userId of participantIds) {
+		await notify(ctx, { userId, kind: "trial_cycle", title, href });
+	}
+	await logActivity(ctx, {
+		startupId: trial.startupId,
+		kind,
+		trialCycleId: trial._id,
+		summary: title,
+	});
 }

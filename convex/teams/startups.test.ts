@@ -7,7 +7,7 @@ import {
 } from "../hiring/trialCycles.helpers";
 import { createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
-import { joinAsMember, setUpStartup } from "./startups.helpers";
+import { goStealth, joinAsMember, setUpStartup } from "./startups.helpers";
 
 describe("Pitch", () => {
 	test("only a Founder can edit the Pitch", async () => {
@@ -38,10 +38,7 @@ describe("Pitch", () => {
 	test("a non-public Startup's Pitch is not returned to anyone", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		await setup.founder.as.mutation(api.teams.startups.update, {
-			startupId: setup.startupId,
-			isPublic: false,
-		});
+		await goStealth(setup);
 		const slug = (await t.run(async (ctx) => await ctx.db.get(setup.startupId)))
 			?.slug as string;
 
@@ -215,10 +212,7 @@ describe("getBySlug", () => {
 		const setup = await setUpStartup(t);
 		const bob = await joinAsMember(setup, "Bob");
 		const visitor = await signUp(t, "Visitor");
-		await setup.founder.as.mutation(api.teams.startups.update, {
-			startupId: setup.startupId,
-			isPublic: false,
-		});
+		await goStealth(setup);
 		const slug = (await t.run(async (ctx) => await ctx.db.get(setup.startupId)))
 			?.slug as string;
 
@@ -354,10 +348,7 @@ describe("Plan usage", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const bob = await joinAsMember(setup, "Bob");
-		await setup.founder.as.mutation(api.teams.startups.update, {
-			startupId: setup.startupId,
-			isPublic: false,
-		});
+		await goStealth(setup);
 		const slug = (await t.run(async (ctx) => await ctx.db.get(setup.startupId)))
 			?.slug as string;
 
@@ -395,5 +386,97 @@ describe("Plan usage", () => {
 			slug,
 		});
 		expect(result?.plan).toBeNull();
+	});
+});
+
+describe("settings and stealth", () => {
+	async function slugOf(setup: Awaited<ReturnType<typeof setUpStartup>>) {
+		return (await setup.t.run(async (ctx) => await ctx.db.get(setup.startupId)))
+			?.slug as string;
+	}
+
+	test("a Free Startup can't turn on stealth and stays public", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+
+		await expect(
+			setup.founder.as.mutation(api.teams.startups.update, {
+				startupId: setup.startupId,
+				isPublic: false,
+			}),
+		).rejects.toThrow("Stealth mode is a Pro feature");
+
+		expect(
+			await t.query(api.teams.startups.getPublic, {
+				slug: await slugOf(setup),
+			}),
+		).not.toBeNull();
+	});
+
+	test("a Pro Founder turns stealth on and off, hiding and restoring the public Pitch", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		await t.run(async (ctx) => {
+			await ctx.db.patch(setup.founder.userId, { planTier: "pro" });
+		});
+		const slug = await slugOf(setup);
+
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			isPublic: false,
+		});
+		expect(await t.query(api.teams.startups.getPublic, { slug })).toBeNull();
+
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			isPublic: true,
+		});
+		expect(
+			await t.query(api.teams.startups.getPublic, { slug }),
+		).not.toBeNull();
+	});
+
+	test("a Free Startup already in stealth can still turn it off and save settings", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		await goStealth(setup);
+
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			name: "Acme Labs",
+			isPublic: false,
+		});
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			isPublic: true,
+		});
+
+		const pitch = await t.query(api.teams.startups.getPublic, {
+			slug: await slugOf(setup),
+		});
+		expect(pitch?.name).toBe("Acme Labs");
+	});
+
+	test("the public Pitch shows a renamed Startup and drops a cleared section", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			problem: "Hiring is slow",
+			traction: "10 pilots",
+		});
+
+		await setup.founder.as.mutation(api.teams.startups.update, {
+			startupId: setup.startupId,
+			name: "Acme Labs",
+			traction: "",
+		});
+
+		const pitch = await t.query(api.teams.startups.getPublic, {
+			slug: await slugOf(setup),
+		});
+		expect(pitch?.name).toBe("Acme Labs");
+		expect(pitch?.problem).toBe("Hiring is slow");
+		expect(pitch?.traction).toBeNull();
 	});
 });

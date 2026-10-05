@@ -5,17 +5,21 @@ import { PageLoading } from "~/components/globals/PageLoading";
 import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { useContributors } from "~/features/discover/hooks/useContributors";
+import { useDiscoverHackathons } from "~/features/discover/hooks/useDiscoverHackathons";
 import { useDiscoverStartups } from "~/features/discover/hooks/useDiscoverStartups";
+import { formatDate, formatDateRange } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 import { useRegisterSearch } from "~/shell/command/CommandProvider";
 
 const TABS = [
+	{ value: "hackathons", label: "Hackathons" },
 	{ value: "startups", label: "Startups" },
 	{ value: "contributors", label: "Contributors" },
 ] as const;
 
 export function DiscoverPage() {
-	const [tab, setTab] = useState<(typeof TABS)[number]["value"]>("startups");
+	const [tab, setTab] = useState<(typeof TABS)[number]["value"]>("hackathons");
+	const hackathons = useDiscoverHackathons();
 	const { term, setTerm, results } = useDiscoverStartups();
 	const contributors = useContributors();
 	const registerSearch = useRegisterSearch();
@@ -27,7 +31,7 @@ export function DiscoverPage() {
 					Discover
 				</h1>
 				<p className="max-w-xl text-muted-foreground">
-					Startups and proven contributors on Engin.
+					Open hiring hackathons, startups and proven contributors on Engin.
 				</p>
 			</div>
 
@@ -49,7 +53,47 @@ export function DiscoverPage() {
 				))}
 			</div>
 
-			{tab === "startups" ? (
+			{tab === "hackathons" ? (
+				hackathons === undefined ? (
+					<PageLoading rows={4} />
+				) : hackathons.length === 0 ? (
+					<p className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
+						No hackathons are open right now.
+					</p>
+				) : (
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+						{hackathons.map((hackathon) => (
+							<Link
+								key={hackathon._id}
+								to="/hackathons/$trialCycleId"
+								params={{ trialCycleId: hackathon._id }}
+								className="group flex flex-col gap-2 rounded-xl border border-border p-6 hover:bg-muted/20"
+							>
+								<h2 className="text-lg font-semibold tracking-tight break-words group-hover:text-primary">
+									{hackathon.title}
+								</h2>
+								<p className="text-sm text-muted-foreground">
+									{hackathon.startupName} · {hackathon.roleTitle}
+								</p>
+								<p className="mt-4 flex-1 text-sm">
+									Apply by {formatDate(hackathon.deadline)}
+								</p>
+								<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+									<span>
+										{formatDateRange(hackathon.startsAt, hackathon.endsAt)}
+									</span>
+									<Badge variant="outline">
+										{hackathon.participantCount}/{hackathon.maxContributors}
+									</Badge>
+									{hackathon.prize ? (
+										<Badge variant="secondary">{hackathon.prize}</Badge>
+									) : null}
+								</div>
+							</Link>
+						))}
+					</div>
+				)
+			) : tab === "startups" ? (
 				<div className="space-y-8">
 					<div className="relative max-w-xl">
 						<Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

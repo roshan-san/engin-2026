@@ -1,14 +1,14 @@
+import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute } from "@tanstack/react-router";
-import { StubScreen } from "~/components/shared/StubScreen";
+import { CyclePage } from "~/features/work/cycles/pages/CyclePage";
 
 export const Route = createFileRoute(
 	"/_shell/_authed/s/$slug/_member/cycles/$cycleId",
 )({
-	component: () => (
-		<StubScreen
-			title="Cycle"
-			emptyTitle="Board coming soon"
-			emptyDescription="This Cycle's Pulses will show up here."
-		/>
-	),
+	component: CycleRoute,
 });
+
+function CycleRoute() {
+	const { slug, cycleId } = Route.useParams();
+	return <CyclePage slug={slug} cycleId={cycleId as Id<"cycles">} />;
+}

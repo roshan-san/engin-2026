@@ -108,36 +108,32 @@ describe("hiring", () => {
 		).toBe(`/s/${slug}/trials/${trialCycleId}`);
 	});
 
-	test("a Thread message and its Announcement counterpart carry a slug-carrying link", async () => {
+	test("an Announcement notifies Participants with a slug-carrying link", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
 		const slug = await slugOf(t, setup.startupId);
 		const trialCycleId = await startedTrialWith(setup, [alice]);
 
-		await alice.as.mutation(api.hiring.trialMessages.send, {
-			trialCycleId,
-			body: "Question",
-		});
-		const founderNotifications = await notificationsFor(setup.founder.as);
-		expect(
-			hrefOf(founderNotifications, "Alice sent a message in Build a feature"),
-		).toBe(`/s/${slug}/trials/${trialCycleId}`);
-
-		await setup.founder.as.mutation(api.hiring.trialMessages.announce, {
+		await setup.founder.as.mutation(api.hiring.announcements.post, {
 			trialCycleId,
 			body: "Standup moved",
 		});
-		const aliceNotifications = await notificationsFor(alice.as);
-		expect(
-			hrefOf(aliceNotifications, "New announcement in Build a feature"),
-		).toBe(`/s/${slug}/trials/${trialCycleId}`);
+
+		const notifications = await notificationsFor(alice.as);
+		const announcement = notifications.find(
+			(notification) =>
+				notification.title === "New announcement in Build a feature",
+		);
+		expect(announcement?.kind).toBe("announcement");
+		expect(announcement?.href).toBe(`/s/${slug}/trials/${trialCycleId}`);
 	});
 
-	test("withdrawing an Offer notifies the Participant to check their Inbox", async () => {
+	test("withdrawing an Offer notifies the Participant with a link to the Trial Cycle", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
+		const slug = await slugOf(t, setup.startupId);
 		const trialCycleId = await startedTrialWith(setup, [alice]);
 		await closeWithVerdict(setup, trialCycleId, alice, "passed_with_offer");
 		const [offer] = await alice.as.query(api.hiring.offers.listMine, {});
@@ -148,11 +144,11 @@ describe("hiring", () => {
 
 		const notifications = await notificationsFor(alice.as);
 		expect(hrefOf(notifications, "Your Offer from Acme was withdrawn")).toBe(
-			"/inbox",
+			`/s/${slug}/trials/${trialCycleId}`,
 		);
 	});
 
-	test("accepting an Offer notifies the Founder with a slug-carrying Team link", async () => {
+	test("accepting an Offer notifies the Founder with a link to the Trial Cycle", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
@@ -167,7 +163,7 @@ describe("hiring", () => {
 
 		const notifications = await notificationsFor(setup.founder.as);
 		expect(hrefOf(notifications, "Alice accepted your Offer")).toBe(
-			`/s/${slug}/team`,
+			`/s/${slug}/trials/${trialCycleId}`,
 		);
 	});
 
@@ -230,5 +226,88 @@ describe("work", () => {
 		expect(hrefOf(bobNotifications, "Hero section was verified")).toBe(
 			`/s/${slug}/cycles/${cycleId}`,
 		);
+	});
+});
+
+async function seedNotifications(
+	t: TestConvex,
+	userId: Id<"users">,
+	count: number,
+) {
+	await t.run(async (ctx) => {
+		for (let index = 0; index < count; index++) {
+			await ctx.db.insert("notifications", {
+				userId,
+				kind: "team",
+				title: `Notice ${index}`,
+			});
+		}
+	});
+}
+
+describe("inbox", () => {
+	test("the unread count covers unread notifications beyond the listed ones", async () => {
+		const t = createTest();
+		const alice = await signUp(t, "Alice");
+		await seedNotifications(t, alice.userId, 35);
+
+		const feed = await alice.as.query(api.people.notifications.list, {});
+
+		expect(feed.notifications).toHaveLength(30);
+		expect(feed.unreadCount).toBe(35);
+	});
+
+	test("marking one notification read lowers the unread count", async () => {
+		const t = createTest();
+		const alice = await signUp(t, "Alice");
+		await seedNotifications(t, alice.userId, 2);
+		const [first] = await notificationsFor(alice.as);
+
+		await alice.as.mutation(api.people.notifications.markRead, {
+			notificationId: first._id,
+		});
+
+		const feed = await alice.as.query(api.people.notifications.list, {});
+		expect(feed.unreadCount).toBe(1);
+		expect(feed.notifications[0].isRead).toBe(true);
+	});
+
+	test("mark all read clears every unread notification", async () => {
+		const t = createTest();
+		const alice = await signUp(t, "Alice");
+		await seedNotifications(t, alice.userId, 40);
+
+		await alice.as.mutation(api.people.notifications.markAllRead, {});
+
+		const feed = await alice.as.query(api.people.notifications.list, {});
+		expect(feed.unreadCount).toBe(0);
+		expect(feed.notifications.every((n) => n.isRead)).toBe(true);
+	});
+
+	test("mark all read leaves other people's notifications alone", async () => {
+		const t = createTest();
+		const alice = await signUp(t, "Alice");
+		const bob = await signUp(t, "Bob");
+		await seedNotifications(t, alice.userId, 2);
+		await seedNotifications(t, bob.userId, 3);
+
+		await alice.as.mutation(api.people.notifications.markAllRead, {});
+
+		const feed = await bob.as.query(api.people.notifications.list, {});
+		expect(feed.unreadCount).toBe(3);
+	});
+
+	test("nobody can mark someone else's notification read", async () => {
+		const t = createTest();
+		const alice = await signUp(t, "Alice");
+		const bob = await signUp(t, "Bob");
+		await seedNotifications(t, alice.userId, 1);
+		const [notification] = await notificationsFor(alice.as);
+
+		const attempt = bob.as.mutation(api.people.notifications.markRead, {
+			notificationId: notification._id,
+		});
+
+		await expect(attempt).rejects.toThrow("Notification not found");
 	});
 });

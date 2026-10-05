@@ -14,6 +14,7 @@ export function inviteLink(token: string): string {
 	return `${window.location.origin}/invite/${token}`;
 }
 
+/** The Team screen: members, live pending Invites and the Founder's actions. */
 export function useTeamInvites() {
 	const { member: startup } = useStartupRoute();
 	const startupId = startup?.startup._id;
@@ -29,10 +30,12 @@ export function useTeamInvites() {
 	);
 	const createInvite = useMutation(api.teams.invitations.create);
 	const revokeInvite = useMutation(api.teams.invitations.revoke);
+	const removeMember = useMutation(api.teams.members.remove);
 
 	const [invitee, setInvitee] = useState("");
 	const [role, setRole] = useState<InviteRole>("member");
 	const [isPending, setIsPending] = useState(false);
+	const [removingId, setRemovingId] = useState<Id<"memberships"> | null>(null);
 
 	async function submitInvite(event: React.FormEvent) {
 		event.preventDefault();
@@ -64,6 +67,20 @@ export function useTeamInvites() {
 		}
 	}
 
+	async function remove(membershipId: Id<"memberships">): Promise<boolean> {
+		setRemovingId(membershipId);
+		try {
+			await removeMember({ membershipId });
+			toast.success("Removed from the team");
+			return true;
+		} catch (error) {
+			toast.error(toErrorMessage(error, "Could not remove member"));
+			return false;
+		} finally {
+			setRemovingId(null);
+		}
+	}
+
 	async function copyLink(token: string) {
 		try {
 			await navigator.clipboard.writeText(inviteLink(token));
@@ -75,6 +92,7 @@ export function useTeamInvites() {
 
 	return {
 		startup,
+		plan: startup?.plan ?? null,
 		isFounder,
 		members,
 		invites,
@@ -83,8 +101,10 @@ export function useTeamInvites() {
 		role,
 		setRole,
 		isPending,
+		removingId,
 		submitInvite,
 		revoke,
+		remove,
 		copyLink,
 	};
 }

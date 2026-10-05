@@ -13,16 +13,19 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
 import { Route as ShellDiscoverIndexRouteImport } from './routes/_shell/discover/index'
+import { Route as ShellHackathonsTrialCycleIdRouteImport } from './routes/_shell/hackathons/$trialCycleId'
 import { Route as ShellInviteTokenRouteImport } from './routes/_shell/invite/$token'
 import { Route as ShellPricingIndexRouteImport } from './routes/_shell/pricing/index'
 import { Route as ShellStartupSlugRouteImport } from './routes/_shell/startup/$slug'
 import { Route as ShellUUsernameRouteImport } from './routes/_shell/u/$username'
 import { Route as ShellAuthedInboxIndexRouteImport } from './routes/_shell/_authed/inbox/index'
+import { Route as ShellAuthedMyEntriesIndexRouteImport } from './routes/_shell/_authed/my-entries/index'
 import { Route as ShellAuthedMyPulsesIndexRouteImport } from './routes/_shell/_authed/my-pulses/index'
 import { Route as ShellAuthedProfileIndexRouteImport } from './routes/_shell/_authed/profile/index'
 import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_authed/s/$slug/route'
 import { Route as ShellAuthedStartupsNewRouteImport } from './routes/_shell/_authed/startups/new'
 import { Route as ShellAuthedThreadsIndexRouteImport } from './routes/_shell/_authed/threads/index'
+import { Route as ShellAuthedThreadsTrialCycleIdRouteImport } from './routes/_shell/_authed/threads/$trialCycleId'
 import { Route as ShellAuthedSSlugIndexRouteImport } from './routes/_shell/_authed/s/$slug/index'
 import { Route as ShellAuthedSSlugMemberRouteRouteImport } from './routes/_shell/_authed/s/$slug/_member/route'
 import { Route as ShellAuthedSSlugTrialsTrialCycleIdRouteImport } from './routes/_shell/_authed/s/$slug/trials/$trialCycleId'
@@ -54,6 +57,12 @@ const ShellDiscoverIndexRoute = ShellDiscoverIndexRouteImport.update({
   path: '/discover/',
   getParentRoute: () => ShellRouteRoute,
 } as any)
+const ShellHackathonsTrialCycleIdRoute =
+  ShellHackathonsTrialCycleIdRouteImport.update({
+    id: '/hackathons/$trialCycleId',
+    path: '/hackathons/$trialCycleId',
+    getParentRoute: () => ShellRouteRoute,
+  } as any)
 const ShellInviteTokenRoute = ShellInviteTokenRouteImport.update({
   id: '/invite/$token',
   path: '/invite/$token',
@@ -79,6 +88,12 @@ const ShellAuthedInboxIndexRoute = ShellAuthedInboxIndexRouteImport.update({
   path: '/inbox/',
   getParentRoute: () => ShellAuthedRouteRoute,
 } as any)
+const ShellAuthedMyEntriesIndexRoute =
+  ShellAuthedMyEntriesIndexRouteImport.update({
+    id: '/my-entries/',
+    path: '/my-entries/',
+    getParentRoute: () => ShellAuthedRouteRoute,
+  } as any)
 const ShellAuthedMyPulsesIndexRoute =
   ShellAuthedMyPulsesIndexRouteImport.update({
     id: '/my-pulses/',
@@ -105,6 +120,12 @@ const ShellAuthedThreadsIndexRoute = ShellAuthedThreadsIndexRouteImport.update({
   path: '/threads/',
   getParentRoute: () => ShellAuthedRouteRoute,
 } as any)
+const ShellAuthedThreadsTrialCycleIdRoute =
+  ShellAuthedThreadsTrialCycleIdRouteImport.update({
+    id: '/threads/$trialCycleId',
+    path: '/threads/$trialCycleId',
+    getParentRoute: () => ShellAuthedRouteRoute,
+  } as any)
 const ShellAuthedSSlugIndexRoute = ShellAuthedSSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -178,6 +199,7 @@ const ShellAuthedSSlugMemberHiringTrialCycleIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/hackathons/$trialCycleId': typeof ShellHackathonsTrialCycleIdRoute
   '/invite/$token': typeof ShellInviteTokenRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
@@ -185,7 +207,9 @@ export interface FileRoutesByFullPath {
   '/pricing/': typeof ShellPricingIndexRoute
   '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/startups/new': typeof ShellAuthedStartupsNewRoute
+  '/threads/$trialCycleId': typeof ShellAuthedThreadsTrialCycleIdRoute
   '/inbox/': typeof ShellAuthedInboxIndexRoute
+  '/my-entries/': typeof ShellAuthedMyEntriesIndexRoute
   '/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
   '/profile/': typeof ShellAuthedProfileIndexRoute
   '/threads/': typeof ShellAuthedThreadsIndexRoute
@@ -203,13 +227,16 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/hackathons/$trialCycleId': typeof ShellHackathonsTrialCycleIdRoute
   '/invite/$token': typeof ShellInviteTokenRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
   '/discover': typeof ShellDiscoverIndexRoute
   '/pricing': typeof ShellPricingIndexRoute
   '/startups/new': typeof ShellAuthedStartupsNewRoute
+  '/threads/$trialCycleId': typeof ShellAuthedThreadsTrialCycleIdRoute
   '/inbox': typeof ShellAuthedInboxIndexRoute
+  '/my-entries': typeof ShellAuthedMyEntriesIndexRoute
   '/my-pulses': typeof ShellAuthedMyPulsesIndexRoute
   '/profile': typeof ShellAuthedProfileIndexRoute
   '/threads': typeof ShellAuthedThreadsIndexRoute
@@ -230,6 +257,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
+  '/_shell/hackathons/$trialCycleId': typeof ShellHackathonsTrialCycleIdRoute
   '/_shell/invite/$token': typeof ShellInviteTokenRoute
   '/_shell/startup/$slug': typeof ShellStartupSlugRoute
   '/_shell/u/$username': typeof ShellUUsernameRoute
@@ -237,7 +265,9 @@ export interface FileRoutesById {
   '/_shell/pricing/': typeof ShellPricingIndexRoute
   '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/_shell/_authed/startups/new': typeof ShellAuthedStartupsNewRoute
+  '/_shell/_authed/threads/$trialCycleId': typeof ShellAuthedThreadsTrialCycleIdRoute
   '/_shell/_authed/inbox/': typeof ShellAuthedInboxIndexRoute
+  '/_shell/_authed/my-entries/': typeof ShellAuthedMyEntriesIndexRoute
   '/_shell/_authed/my-pulses/': typeof ShellAuthedMyPulsesIndexRoute
   '/_shell/_authed/profile/': typeof ShellAuthedProfileIndexRoute
   '/_shell/_authed/threads/': typeof ShellAuthedThreadsIndexRoute
@@ -258,6 +288,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/hackathons/$trialCycleId'
     | '/invite/$token'
     | '/startup/$slug'
     | '/u/$username'
@@ -265,7 +296,9 @@ export interface FileRouteTypes {
     | '/pricing/'
     | '/s/$slug'
     | '/startups/new'
+    | '/threads/$trialCycleId'
     | '/inbox/'
+    | '/my-entries/'
     | '/my-pulses/'
     | '/profile/'
     | '/threads/'
@@ -283,13 +316,16 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/hackathons/$trialCycleId'
     | '/invite/$token'
     | '/startup/$slug'
     | '/u/$username'
     | '/discover'
     | '/pricing'
     | '/startups/new'
+    | '/threads/$trialCycleId'
     | '/inbox'
+    | '/my-entries'
     | '/my-pulses'
     | '/profile'
     | '/threads'
@@ -309,6 +345,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_shell'
     | '/_shell/_authed'
+    | '/_shell/hackathons/$trialCycleId'
     | '/_shell/invite/$token'
     | '/_shell/startup/$slug'
     | '/_shell/u/$username'
@@ -316,7 +353,9 @@ export interface FileRouteTypes {
     | '/_shell/pricing/'
     | '/_shell/_authed/s/$slug'
     | '/_shell/_authed/startups/new'
+    | '/_shell/_authed/threads/$trialCycleId'
     | '/_shell/_authed/inbox/'
+    | '/_shell/_authed/my-entries/'
     | '/_shell/_authed/my-pulses/'
     | '/_shell/_authed/profile/'
     | '/_shell/_authed/threads/'
@@ -369,6 +408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellDiscoverIndexRouteImport
       parentRoute: typeof ShellRouteRoute
     }
+    '/_shell/hackathons/$trialCycleId': {
+      id: '/_shell/hackathons/$trialCycleId'
+      path: '/hackathons/$trialCycleId'
+      fullPath: '/hackathons/$trialCycleId'
+      preLoaderRoute: typeof ShellHackathonsTrialCycleIdRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
     '/_shell/invite/$token': {
       id: '/_shell/invite/$token'
       path: '/invite/$token'
@@ -404,6 +450,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedInboxIndexRouteImport
       parentRoute: typeof ShellAuthedRouteRoute
     }
+    '/_shell/_authed/my-entries/': {
+      id: '/_shell/_authed/my-entries/'
+      path: '/my-entries'
+      fullPath: '/my-entries/'
+      preLoaderRoute: typeof ShellAuthedMyEntriesIndexRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
+    }
     '/_shell/_authed/my-pulses/': {
       id: '/_shell/_authed/my-pulses/'
       path: '/my-pulses'
@@ -437,6 +490,13 @@ declare module '@tanstack/react-router' {
       path: '/threads'
       fullPath: '/threads/'
       preLoaderRoute: typeof ShellAuthedThreadsIndexRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
+    }
+    '/_shell/_authed/threads/$trialCycleId': {
+      id: '/_shell/_authed/threads/$trialCycleId'
+      path: '/threads/$trialCycleId'
+      fullPath: '/threads/$trialCycleId'
+      preLoaderRoute: typeof ShellAuthedThreadsTrialCycleIdRouteImport
       parentRoute: typeof ShellAuthedRouteRoute
     }
     '/_shell/_authed/s/$slug/': {
@@ -585,7 +645,9 @@ const ShellAuthedSSlugRouteRouteWithChildren =
 interface ShellAuthedRouteRouteChildren {
   ShellAuthedSSlugRouteRoute: typeof ShellAuthedSSlugRouteRouteWithChildren
   ShellAuthedStartupsNewRoute: typeof ShellAuthedStartupsNewRoute
+  ShellAuthedThreadsTrialCycleIdRoute: typeof ShellAuthedThreadsTrialCycleIdRoute
   ShellAuthedInboxIndexRoute: typeof ShellAuthedInboxIndexRoute
+  ShellAuthedMyEntriesIndexRoute: typeof ShellAuthedMyEntriesIndexRoute
   ShellAuthedMyPulsesIndexRoute: typeof ShellAuthedMyPulsesIndexRoute
   ShellAuthedProfileIndexRoute: typeof ShellAuthedProfileIndexRoute
   ShellAuthedThreadsIndexRoute: typeof ShellAuthedThreadsIndexRoute
@@ -594,7 +656,9 @@ interface ShellAuthedRouteRouteChildren {
 const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
   ShellAuthedSSlugRouteRoute: ShellAuthedSSlugRouteRouteWithChildren,
   ShellAuthedStartupsNewRoute: ShellAuthedStartupsNewRoute,
+  ShellAuthedThreadsTrialCycleIdRoute: ShellAuthedThreadsTrialCycleIdRoute,
   ShellAuthedInboxIndexRoute: ShellAuthedInboxIndexRoute,
+  ShellAuthedMyEntriesIndexRoute: ShellAuthedMyEntriesIndexRoute,
   ShellAuthedMyPulsesIndexRoute: ShellAuthedMyPulsesIndexRoute,
   ShellAuthedProfileIndexRoute: ShellAuthedProfileIndexRoute,
   ShellAuthedThreadsIndexRoute: ShellAuthedThreadsIndexRoute,
@@ -605,6 +669,7 @@ const ShellAuthedRouteRouteWithChildren =
 
 interface ShellRouteRouteChildren {
   ShellAuthedRouteRoute: typeof ShellAuthedRouteRouteWithChildren
+  ShellHackathonsTrialCycleIdRoute: typeof ShellHackathonsTrialCycleIdRoute
   ShellInviteTokenRoute: typeof ShellInviteTokenRoute
   ShellStartupSlugRoute: typeof ShellStartupSlugRoute
   ShellUUsernameRoute: typeof ShellUUsernameRoute
@@ -614,6 +679,7 @@ interface ShellRouteRouteChildren {
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellAuthedRouteRoute: ShellAuthedRouteRouteWithChildren,
+  ShellHackathonsTrialCycleIdRoute: ShellHackathonsTrialCycleIdRoute,
   ShellInviteTokenRoute: ShellInviteTokenRoute,
   ShellStartupSlugRoute: ShellStartupSlugRoute,
   ShellUUsernameRoute: ShellUUsernameRoute,

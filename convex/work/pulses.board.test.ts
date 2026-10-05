@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
-import { createTrial, enterTrial } from "../hiring/trialCycles.helpers";
+import {
+	applicationIdOf,
+	createTrial,
+	enterTrial,
+} from "../hiring/trialCycles.helpers";
 import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
 import { type Person, signUp } from "../people/users.helpers";
 import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
@@ -27,7 +31,27 @@ async function setUpBoards() {
 		});
 	}
 
-	return { t, setup, trialCycleId, alice, bob, boardOf };
+	/** Runs out the clock and closes with a Passed Verdict for everyone. */
+	async function close() {
+		await advancePast(t, 8 * DAY);
+		const verdicts = [];
+		for (const participant of [alice, bob]) {
+			verdicts.push({
+				applicationId: await applicationIdOf(
+					t,
+					trialCycleId,
+					participant.userId,
+				),
+				verdict: "passed" as const,
+			});
+		}
+		await setup.founder.as.mutation(api.hiring.trialCycles.close, {
+			trialCycleId,
+			verdicts,
+		});
+	}
+
+	return { t, setup, trialCycleId, alice, bob, boardOf, close };
 }
 
 async function firstPulseOf(
@@ -53,6 +77,28 @@ describe("reading a Board", () => {
 
 		expect(await boardOf(setup.founder, alice)).toHaveLength(1);
 		expect(await boardOf(setup.founder, bob)).toHaveLength(1);
+	});
+
+	test("a completed Participant still reads their Board after the close but cannot change it", async () => {
+		const { alice, boardOf, close } = await setUpBoards();
+		const { _id: pulseId } = await firstPulseOf(boardOf, alice);
+
+		await close();
+
+		expect(await boardOf(alice)).toHaveLength(1);
+		await expect(
+			alice.as.mutation(api.work.pulses.setStatus, { pulseId, status: "done" }),
+		).rejects.toThrow("This Pulse is not on your Board");
+	});
+
+	test("a Participant who left cannot read their Board", async () => {
+		const { trialCycleId, alice, boardOf } = await setUpBoards();
+
+		await alice.as.mutation(api.hiring.applications.leaveTrial, {
+			trialCycleId,
+		});
+
+		await expect(boardOf(alice)).rejects.toThrow("access to this Board");
 	});
 
 	test("a Member who is not a Founder cannot read a Board", async () => {
@@ -201,5 +247,45 @@ describe("editing a Board", () => {
 		await expect(
 			setup.founder.as.mutation(api.work.pulses.verify, { pulseId }),
 		).rejects.toThrow("not reviewed");
+	});
+});
+
+describe("proof links", () => {
+	test("a Participant adds and removes proof links on a Board Pulse while it runs", async () => {
+		const { alice, boardOf } = await setUpBoards();
+		const { _id: pulseId } = await firstPulseOf(boardOf, alice);
+		const url = "https://github.com/acme/api/pull/12";
+
+		await alice.as.mutation(api.work.pulses.addProofLink, {
+			pulseId,
+			kind: "pr",
+			url,
+		});
+		expect((await firstPulseOf(boardOf, alice)).proofLinks).toEqual([
+			{ kind: "pr", url },
+		]);
+
+		await alice.as.mutation(api.work.pulses.removeProofLink, { pulseId, url });
+		expect((await firstPulseOf(boardOf, alice)).proofLinks ?? []).toEqual([]);
+	});
+
+	test("the eleventh proof link on a Pulse is refused", async () => {
+		const { alice, boardOf } = await setUpBoards();
+		const { _id: pulseId } = await firstPulseOf(boardOf, alice);
+		for (let i = 0; i < 10; i++) {
+			await alice.as.mutation(api.work.pulses.addProofLink, {
+				pulseId,
+				kind: "commit",
+				url: `https://github.com/acme/api/commit/${i}`,
+			});
+		}
+
+		await expect(
+			alice.as.mutation(api.work.pulses.addProofLink, {
+				pulseId,
+				kind: "commit",
+				url: "https://github.com/acme/api/commit/10",
+			}),
+		).rejects.toThrow("A Pulse can have at most 10 Proof Links");
 	});
 });

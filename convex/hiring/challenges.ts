@@ -7,40 +7,47 @@ import {
 	query,
 } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { requireFounderMembership } from "../teams/membership.rules";
 import {
+	requireFounderMembership,
+	requireMembership,
+} from "../teams/membership.rules";
+import {
+	announceChallengeChange,
 	buildChallengeFields,
 	listChallenges,
+	listCurrentParticipantIds,
 	requireChallengeRoom,
+	requireChallengesEditable,
+	seedChallenge,
 } from "./challenges.rules";
+
+async function requireTrial(
+	ctx: QueryCtx | MutationCtx,
+	trialCycleId: Id<"trialCycles">,
+) {
+	const trial = await ctx.db.get(trialCycleId);
+	if (!trial) {
+		throw new Error("Trial Cycle not found");
+	}
+	return trial;
+}
 
 async function requireTrialAsFounder(
 	ctx: QueryCtx | MutationCtx,
 	trialCycleId: Id<"trialCycles">,
 ) {
 	const userId = await requireUserId(ctx);
-	const trial = await ctx.db.get(trialCycleId);
-	if (!trial) {
-		throw new Error("Trial Cycle not found");
-	}
+	const trial = await requireTrial(ctx, trialCycleId);
 	await requireFounderMembership(ctx, trial.startupId, userId);
 	return { trial, userId };
-}
-
-/**
- * Copies are made at the start, so later changes belong to mid-trial
- * Challenges. Drafts count as not started, so Founders seed before paying.
- */
-function requireNotStarted(status: string) {
-	if (status !== "draft" && status !== "open") {
-		throw new Error("Challenges can only change before the Trial Cycle starts");
-	}
 }
 
 export const list = query({
 	args: { trialCycleId: v.id("trialCycles") },
 	handler: async (ctx, args) => {
-		const { trial } = await requireTrialAsFounder(ctx, args.trialCycleId);
+		const userId = await requireUserId(ctx);
+		const trial = await requireTrial(ctx, args.trialCycleId);
+		await requireMembership(ctx, trial.startupId, userId);
 		return await listChallenges(ctx, trial._id);
 	},
 });
@@ -56,18 +63,36 @@ export const add = mutation({
 			ctx,
 			args.trialCycleId,
 		);
-		requireNotStarted(trial.status);
+		requireChallengesEditable(trial);
 		requireChallengeRoom((await listChallenges(ctx, trial._id)).length + 1);
 
-		return await ctx.db.insert("challenges", {
+		const challengeId = await ctx.db.insert("challenges", {
 			trialCycleId: trial._id,
 			startupId: trial.startupId,
 			...buildChallengeFields(args),
 			createdByUserId: userId,
 		});
+
+		const participantIds = await listCurrentParticipantIds(ctx, trial);
+		if (participantIds.length > 0) {
+			const challenge = await ctx.db.get(challengeId);
+			if (challenge) {
+				await seedChallenge(ctx, challenge, participantIds);
+				await announceChallengeChange(
+					ctx,
+					trial,
+					participantIds,
+					`New Challenge in ${trial.title}: ${challenge.title}`,
+					"trial_challenge_added",
+				);
+			}
+		}
+
+		return challengeId;
 	},
 });
 
+/** Participants keep their copies: the work on a Board belongs to them. */
 export const remove = mutation({
 	args: { challengeId: v.id("challenges") },
 	handler: async (ctx, args) => {
@@ -76,7 +101,19 @@ export const remove = mutation({
 			throw new Error("Challenge not found");
 		}
 		const { trial } = await requireTrialAsFounder(ctx, challenge.trialCycleId);
-		requireNotStarted(trial.status);
+		requireChallengesEditable(trial);
+
 		await ctx.db.delete(challenge._id);
+
+		const participantIds = await listCurrentParticipantIds(ctx, trial);
+		if (participantIds.length > 0) {
+			await announceChallengeChange(
+				ctx,
+				trial,
+				participantIds,
+				`Challenge removed from ${trial.title}: ${challenge.title}`,
+				"trial_challenge_removed",
+			);
+		}
 	},
 });

@@ -17,12 +17,17 @@ export const inviteStatus = v.union(
 );
 export const activityKind = v.union(
 	v.literal("member_joined"),
+	v.literal("member_removed"),
 	v.literal("cycle_started"),
+	v.literal("cycle_closed"),
 	v.literal("pulse_verified"),
 	v.literal("role_posted"),
 	v.literal("trial_cycle_published"),
 	v.literal("trial_cycle_started"),
 	v.literal("trial_cycle_closed"),
+	v.literal("trial_challenge_added"),
+	v.literal("trial_challenge_removed"),
+	v.literal("trial_announcement_posted"),
 	v.literal("offer_accepted"),
 );
 
