@@ -3,6 +3,7 @@ import type { QueryCtx } from "../_generated/server";
 import { query } from "../_generated/server";
 import { buildSearchText } from "../lib/text";
 
+/** Without a search term, the newest open ones come first. */
 const PAGE_SIZE = 30;
 
 async function findRoles(ctx: QueryCtx, term: string) {
@@ -10,6 +11,7 @@ async function findRoles(ctx: QueryCtx, term: string) {
 		return await ctx.db
 			.query("roles")
 			.withIndex("by_status", (q) => q.eq("status", "open"))
+			.order("desc")
 			.take(PAGE_SIZE);
 	}
 
@@ -32,6 +34,7 @@ async function findTrials(ctx: QueryCtx, term: string) {
 		: await ctx.db
 				.query("trialCycles")
 				.withIndex("by_status", (q) => q.eq("status", "open"))
+				.order("desc")
 				.take(PAGE_SIZE);
 
 	return open;

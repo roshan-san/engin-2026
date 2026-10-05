@@ -13,7 +13,10 @@
     "check": "pnpm lint && pnpm format && pnpm check-types",
     "ui": "pnpm dlx shadcn@latest add",
     "test": "vitest run",
-    "data:clear": "node scripts/clear-dev-data.mjs"
+    "data:clear": "node scripts/clear-dev-data.mjs",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:signin": "pnpm dlx tsx e2e/support/explore.ts"
   },
   "dependencies": {
     "@auth/core": "0.41.3",
@@ -43,6 +46,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
     "@edge-runtime/vm": "5.0.0",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/router-plugin": "1.168.40",
     "@types/node": "22.10.2",

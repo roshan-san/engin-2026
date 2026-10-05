@@ -47,7 +47,13 @@ export function RolePicker({
 					<Select
 						value={value}
 						disabled={disabled}
-						onValueChange={(roleId) => onChange(roleId as Id<"roles">)}
+						onValueChange={(roleId) => {
+							// A just-created Role is picked before its option renders, and
+							// Radix reports "" for it in between; keep the pick.
+							if (roleId) {
+								onChange(roleId as Id<"roles">);
+							}
+						}}
 					>
 						<SelectTrigger id="hackathon-role" className="h-11 w-full">
 							<SelectValue placeholder="Pick the Role you're hiring for" />

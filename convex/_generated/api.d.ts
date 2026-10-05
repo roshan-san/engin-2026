@@ -14,6 +14,7 @@ import type * as billing_credits from "../billing/credits.js";
 import type * as billing_plan from "../billing/plan.js";
 import type * as billing_webhooks from "../billing/webhooks.js";
 import type * as crons from "../crons.js";
+import type * as e2e_seed from "../e2e/seed.js";
 import type * as hiring_announcements from "../hiring/announcements.js";
 import type * as hiring_applications from "../hiring/applications.js";
 import type * as hiring_challenges from "../hiring/challenges.js";
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   "billing/plan": typeof billing_plan;
   "billing/webhooks": typeof billing_webhooks;
   crons: typeof crons;
+  "e2e/seed": typeof e2e_seed;
   "hiring/announcements": typeof hiring_announcements;
   "hiring/applications": typeof hiring_applications;
   "hiring/challenges": typeof hiring_challenges;

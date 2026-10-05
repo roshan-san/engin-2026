@@ -1,5 +1,5 @@
 {
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "vite.config.ts", "e2e", "playwright.config.ts"],
   "exclude": ["convex"],
   "compilerOptions": {
     "target": "ES2022",

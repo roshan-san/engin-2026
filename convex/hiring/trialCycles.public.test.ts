@@ -270,6 +270,16 @@ describe("listings", () => {
 		]);
 	});
 
+	test("the newest open hackathon is listed first", async () => {
+		const t = createTest();
+		const older = await createTrial(await setUpStartup(t));
+		const newer = await createTrial(await setUpStartup(t));
+
+		const { trials } = await t.query(api.hiring.opportunities.search, {});
+
+		expect(trials.map((trial) => trial._id)).toEqual([newer, older]);
+	});
+
 	test("drafts and stealth startups' hackathons aren't listed", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
