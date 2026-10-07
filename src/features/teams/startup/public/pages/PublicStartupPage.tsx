@@ -11,6 +11,9 @@ import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
 import { PublicOpenings } from "~/features/teams/startup/public/components/PublicOpenings";
 import { StartupAvatar } from "~/shell/topbar/StartupAvatar";
 
+/** Chips hold user text: let them shrink and truncate instead of widening the page. */
+const CHIP_CLASS = "max-w-full shrink";
+
 type PublicStartupPageProps = {
 	readonly slug: string;
 };
@@ -57,13 +60,25 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 				<div className="space-y-4">
 					{hasChips ? (
 						<div className="flex flex-wrap gap-2">
-							{category ? <Badge variant="secondary">{category}</Badge> : null}
-							{stage ? <Badge variant="outline">{stage}</Badge> : null}
+							{category ? (
+								<Badge variant="secondary" className={CHIP_CLASS}>
+									<span className="truncate">{category}</span>
+								</Badge>
+							) : null}
+							{stage ? (
+								<Badge variant="outline" className={CHIP_CLASS}>
+									<span className="truncate">{stage}</span>
+								</Badge>
+							) : null}
 							{startup.location ? (
-								<Badge variant="outline">{startup.location}</Badge>
+								<Badge variant="outline" className={CHIP_CLASS}>
+									<span className="truncate">{startup.location}</span>
+								</Badge>
 							) : null}
 							{startup.remote ? (
-								<Badge variant="outline">Remote-friendly</Badge>
+								<Badge variant="outline" className={CHIP_CLASS}>
+									<span className="truncate">Remote-friendly</span>
+								</Badge>
 							) : null}
 						</div>
 					) : null}
@@ -104,7 +119,9 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 						<ul className="flex flex-wrap gap-2">
 							{startup.techStack.map((tech) => (
 								<li key={tech}>
-									<Badge variant="outline">{tech}</Badge>
+									<Badge variant="outline" className={CHIP_CLASS}>
+										<span className="truncate">{tech}</span>
+									</Badge>
 								</li>
 							))}
 						</ul>
