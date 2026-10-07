@@ -5,12 +5,16 @@ import { SectionLabel } from "~/components/shared/SectionLabel";
 import { InviteForm } from "~/features/teams/team/components/InviteForm";
 import { MemberList } from "~/features/teams/team/components/MemberList";
 import { PendingInvites } from "~/features/teams/team/components/PendingInvites";
+import { TeamsSection } from "~/features/teams/team/components/TeamsSection";
 import { useTeamInvites } from "~/features/teams/team/hooks/useTeamInvites";
+import { useTeams } from "~/features/teams/team/hooks/useTeams";
 
 /** Everyone on the Startup; Founders also invite, revoke and remove. */
 export function TeamPage() {
 	const team = useTeamInvites();
 	const { plan } = team;
+	const startupId = team.startup?.startup._id;
+	const { teams, teamsOf } = useTeams(startupId);
 
 	return (
 		<div className="mx-auto w-full max-w-3xl space-y-6">
@@ -55,6 +59,17 @@ export function TeamPage() {
 				/>
 			) : null}
 
+			{teams === undefined ? (
+				<PageLoading rows={2} />
+			) : (
+				<TeamsSection
+					startupId={startupId}
+					teams={teams}
+					people={(team.members ?? []).map((member) => member.user)}
+					isFounder={team.isFounder}
+				/>
+			)}
+
 			<section className="space-y-1">
 				<SectionLabel>Members</SectionLabel>
 				{team.members === undefined ? (
@@ -64,6 +79,7 @@ export function TeamPage() {
 						members={team.members}
 						onRemove={team.isFounder ? team.remove : undefined}
 						removingId={team.removingId}
+						teamsOf={teamsOf}
 					/>
 				)}
 			</section>

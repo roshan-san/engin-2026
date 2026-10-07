@@ -1,6 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { Row, RowList } from "~/components/shared/RowList";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,16 +12,18 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { Row, RowList } from "~/components/shared/RowList";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import { TeamChip } from "~/features/teams/team/components/TeamChip";
+import type { TeamSummary } from "~/features/teams/team/hooks/useTeams";
 import { initials } from "~/lib/initials";
 
 type Member = {
 	_id: Id<"memberships">;
 	role: "founder" | "member";
 	user: {
+		_id: Id<"users">;
 		name: string | null;
 		username: string | null;
 		image: string | null;
@@ -33,6 +36,8 @@ type MemberListProps = {
 	/** Founders only: removes a Member (never a co-founder). */
 	readonly onRemove?: (membershipId: Id<"memberships">) => Promise<boolean>;
 	readonly removingId?: Id<"memberships"> | null;
+	/** The Teams each person is in, shown as chips. */
+	readonly teamsOf?: (userId: Id<"users">) => TeamSummary[];
 };
 
 function displayName(member: Member): string {
@@ -41,7 +46,12 @@ function displayName(member: Member): string {
 	);
 }
 
-export function MemberList({ members, onRemove, removingId }: MemberListProps) {
+export function MemberList({
+	members,
+	onRemove,
+	removingId,
+	teamsOf,
+}: MemberListProps) {
 	const [confirming, setConfirming] = useState<Member | null>(null);
 
 	return (
@@ -80,6 +90,11 @@ export function MemberList({ members, onRemove, removingId }: MemberListProps) {
 						}
 						trailing={
 							<div className="flex items-center gap-2">
+								<span className="hidden gap-1 sm:flex">
+									{teamsOf?.(member.user._id).map((team) => (
+										<TeamChip key={team._id} name={team.name} />
+									))}
+								</span>
 								<span>{member.role === "founder" ? "Founder" : "Member"}</span>
 								{onRemove && member.role === "member" ? (
 									<Button
