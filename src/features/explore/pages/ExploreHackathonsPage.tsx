@@ -1,54 +1,80 @@
-import { Link } from "@tanstack/react-router";
+import { Search } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
+import { compactCountdown } from "~/components/shared/countdownParts";
+import { EmptyState } from "~/components/shared/EmptyState";
+import { LiveBadge } from "~/components/shared/LiveBadge";
 import { PageHeader } from "~/components/shared/PageHeader";
-import { Badge } from "~/components/ui/badge";
+import { Row, RowList } from "~/components/shared/RowList";
+import { Input } from "~/components/ui/input";
 import { useExploreHackathons } from "~/features/explore/hooks/useExploreHackathons";
-import { formatDate, formatDateRange } from "~/lib/dates";
+import { useRegisterSearch } from "~/shell/command/CommandProvider";
 
 export function ExploreHackathonsPage() {
-	const hackathons = useExploreHackathons();
+	const { term, setTerm, hackathons } = useExploreHackathons();
+	const registerSearch = useRegisterSearch();
+	const now = Date.now();
 
 	return (
-		<div className="mx-auto w-full max-w-6xl space-y-8 py-8">
-			<PageHeader title="Hackathons" hidden />
+		<div className="mx-auto w-full max-w-5xl space-y-6 py-6">
+			<PageHeader
+				title="Hackathons"
+				hidden
+				actions={
+					<div className="relative w-full sm:w-72">
+						<Search
+							aria-hidden
+							className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input
+							ref={registerSearch}
+							value={term}
+							onChange={(event) => setTerm(event.target.value)}
+							placeholder="Search Hackathons"
+							aria-label="Search Hackathons"
+							className="pl-9"
+						/>
+					</div>
+				}
+			/>
+
 			{hackathons === undefined ? (
 				<PageLoading rows={4} />
 			) : hackathons.length === 0 ? (
-				<p className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
-					No Hackathons are open right now.
-				</p>
+				<EmptyState
+					title={
+						term
+							? "No Hackathons match that search."
+							: "No Hackathons are open right now."
+					}
+				/>
 			) : (
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+				<RowList>
 					{hackathons.map((hackathon) => (
-						<Link
+						<Row
 							key={hackathon._id}
 							to="/hackathons/$hackathonId"
 							params={{ hackathonId: hackathon._id }}
-							className="group flex flex-col gap-2 rounded-xl border border-border p-6 hover:bg-muted/20"
-						>
-							<h2 className="text-lg font-semibold tracking-tight break-words group-hover:text-primary">
-								{hackathon.title}
-							</h2>
-							<p className="text-sm text-muted-foreground">
-								{hackathon.startupName} · {hackathon.roleTitle}
-							</p>
-							<p className="mt-4 flex-1 text-sm">
-								Apply by {formatDate(hackathon.deadline)}
-							</p>
-							<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-								<span>
-									{formatDateRange(hackathon.startsAt, hackathon.endsAt)}
+							title={hackathon.title}
+							meta={
+								<span className="flex items-center gap-x-2">
+									<LiveBadge status="open" />
+									<span className="truncate">
+										{[hackathon.startupName, hackathon.prize]
+											.filter(Boolean)
+											.join(" · ")}
+									</span>
 								</span>
-								<Badge variant="outline">
-									{hackathon.participantCount}/{hackathon.maxParticipants}
-								</Badge>
-								{hackathon.prize ? (
-									<Badge variant="secondary">{hackathon.prize}</Badge>
-								) : null}
-							</div>
-						</Link>
+							}
+							trailing={
+								hackathon.endsAt > now ? (
+									<span className="tabular-nums">
+										ends in {compactCountdown(hackathon.endsAt, now)}
+									</span>
+								) : null
+							}
+						/>
 					))}
-				</div>
+				</RowList>
 			)}
 		</div>
 	);

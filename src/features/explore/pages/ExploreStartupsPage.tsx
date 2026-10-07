@@ -1,58 +1,77 @@
-import { Link } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { PageHeader } from "~/components/shared/PageHeader";
+import { Row, RowList } from "~/components/shared/RowList";
 import { Input } from "~/components/ui/input";
 import { useExploreStartups } from "~/features/explore/hooks/useExploreStartups";
 import { useRegisterSearch } from "~/shell/command/CommandProvider";
+import { StartupAvatar } from "~/shell/topbar/StartupAvatar";
 
 export function ExploreStartupsPage() {
 	const { term, setTerm, results } = useExploreStartups();
 	const registerSearch = useRegisterSearch();
 
 	return (
-		<div className="mx-auto w-full max-w-6xl space-y-8 py-8">
-			<PageHeader title="Startups" hidden />
-			<div className="relative max-w-xl">
-				<Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-				<Input
-					ref={registerSearch}
-					value={term}
-					onChange={(event) => setTerm(event.target.value)}
-					placeholder="Search Startups"
-					className="h-12 rounded-full pl-10"
-				/>
-			</div>
+		<div className="mx-auto w-full max-w-5xl space-y-6 py-6">
+			<PageHeader
+				title="Startups"
+				hidden
+				actions={
+					<div className="relative w-full sm:w-72">
+						<Search
+							aria-hidden
+							className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input
+							ref={registerSearch}
+							value={term}
+							onChange={(event) => setTerm(event.target.value)}
+							placeholder="Search Startups"
+							aria-label="Search Startups"
+							className="pl-9"
+						/>
+					</div>
+				}
+			/>
 
 			{results === undefined ? (
 				<PageLoading rows={4} />
 			) : results.startups.length === 0 ? (
-				<p className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
-					{term ? "No startups match that search." : "No public startups yet."}
-				</p>
+				<EmptyState
+					title={
+						term ? "No startups match that search." : "No public startups yet."
+					}
+				/>
 			) : (
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-					{results.startups.map((startup) => (
-						<Link
-							key={startup._id}
-							to="/startup/$slug"
-							params={{ slug: startup.slug }}
-							className="group flex flex-col rounded-xl border border-border p-6 hover:bg-muted/20"
-						>
-							<h2 className="text-lg font-semibold tracking-tight group-hover:text-primary">
-								{startup.name}
-							</h2>
-							{startup.tagline ? (
-								<p className="mt-2 line-clamp-2 flex-1 text-muted-foreground">
-									{startup.tagline}
-								</p>
-							) : (
-								<span className="mt-2 flex-1" />
-							)}
-							<p className="mt-6 text-sm text-muted-foreground">New on Engin</p>
-						</Link>
-					))}
-				</div>
+				<RowList>
+					{results.startups.map((startup) => {
+						const meta = [startup.stage, startup.category]
+							.filter(Boolean)
+							.join(" · ");
+						return (
+							<Row
+								key={startup._id}
+								to="/startup/$slug"
+								params={{ slug: startup.slug }}
+								leading={
+									<StartupAvatar name={startup.name} className="size-8" />
+								}
+								title={startup.name}
+								meta={
+									<>
+										{startup.tagline ? (
+											<span className="block truncate">{startup.tagline}</span>
+										) : null}
+										{meta ? (
+											<span className="block truncate">{meta}</span>
+										) : null}
+									</>
+								}
+							/>
+						);
+					})}
+				</RowList>
 			)}
 		</div>
 	);
