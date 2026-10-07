@@ -1,4 +1,5 @@
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -134,11 +135,19 @@ export function useCreateStartupWizard() {
 		website: "",
 	});
 	const [isPending, setIsPending] = useState(false);
+	/** Set once the Startup exists; the wizard then shows "Invite your team". */
+	const [created, setCreated] = useState<{
+		startupId: Id<"startups">;
+		slug: string;
+		name: string;
+	} | null>(null);
 
 	const step = createStartupSteps[stepIndex];
 	const isLast = stepIndex === createStartupSteps.length - 1;
 	const value = stepValue(data, step.id);
 	const canContinue = !step.required || value.trim().length > 0;
+	/** Skip all submits what's filled in so far, so it needs a name first. */
+	const canSkipAll = !isLast && data.name.trim().length > 0;
 
 	const goNext = useCallback(() => {
 		if (!canContinue || isLast) return;
@@ -176,9 +185,10 @@ export function useCreateStartupWizard() {
 				website: result.data.website,
 			});
 			toast.success("Startup created");
-			await navigate({
-				to: "/s/$slug/cycles",
-				params: { slug: created.slug },
+			setCreated({
+				startupId: created.startupId,
+				slug: created.slug,
+				name: result.data.name,
 			});
 		} catch (error) {
 			toast.error(toErrorMessage(error, "Failed to create startup"));
@@ -204,6 +214,22 @@ export function useCreateStartupWizard() {
 		}
 	}
 
+	function skipAll() {
+		if (canSkipAll && !isPending) {
+			void create();
+		}
+	}
+
+	/** Leaves the invite screen for the new Startup's Cycles. */
+	function finish() {
+		if (created) {
+			void navigate({
+				to: "/s/$slug/cycles",
+				params: { slug: created.slug },
+			});
+		}
+	}
+
 	function handleKeyDown(event: React.KeyboardEvent) {
 		if (event.key === "Enter" && !step.multiline && canContinue) {
 			event.preventDefault();
@@ -226,12 +252,16 @@ export function useCreateStartupWizard() {
 		stepIndex,
 		value,
 		canContinue,
+		canSkipAll,
 		isLast,
 		isPending,
 		data,
 		goBack,
 		continueStep,
 		skipStep,
+		skipAll,
+		created,
+		finish,
 		handleKeyDown,
 		updateValue,
 	};

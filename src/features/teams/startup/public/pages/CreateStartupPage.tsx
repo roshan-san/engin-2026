@@ -5,6 +5,7 @@ import { PageHeader } from "~/components/shared/PageHeader";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
+import { InviteTeamStep } from "~/features/teams/startup/public/components/InviteTeamStep";
 import {
 	createStartupSteps,
 	useCreateStartupWizard,
@@ -19,15 +20,31 @@ export function CreateStartupPage() {
 		stepIndex,
 		value,
 		canContinue,
+		canSkipAll,
 		isLast,
 		isPending,
 		data,
 		goBack,
 		continueStep,
 		skipStep,
+		skipAll,
+		created,
+		finish,
 		handleKeyDown,
 		updateValue,
 	} = useCreateStartupWizard();
+
+	if (created) {
+		return (
+			<div className="mx-auto w-full max-w-3xl">
+				<InviteTeamStep
+					startupId={created.startupId}
+					startupName={created.name}
+					onDone={finish}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<div className="mx-auto w-full max-w-3xl space-y-8">
@@ -56,6 +73,18 @@ export function CreateStartupPage() {
 				)}
 
 				<div className="flex items-center gap-3">
+					{canSkipAll ? (
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="text-muted-foreground"
+							disabled={isPending}
+							onClick={skipAll}
+						>
+							Skip all
+						</Button>
+					) : null}
 					<div className="flex gap-1.5" aria-hidden>
 						{createStartupSteps.map((wizardStep, index) => (
 							<span
