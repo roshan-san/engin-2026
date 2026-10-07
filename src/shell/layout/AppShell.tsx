@@ -1,37 +1,22 @@
-import { SidebarProvider } from "~/components/ui/sidebar";
 import { CommandPalette } from "~/shell/command/CommandPalette";
 import {
 	CommandProvider,
 	ShellKeyboard,
 } from "~/shell/command/CommandProvider";
 import { ShortcutSheet } from "~/shell/command/ShortcutSheet";
-import { BottomTabBar } from "~/shell/mobile/BottomTabBar";
-import { MobileTopBar } from "~/shell/mobile/MobileTopBar";
-import { AppSidebar } from "~/shell/sidebar/AppSidebar";
+import { TopBar } from "~/shell/topbar/TopBar";
 
 /**
- * Signed-in frame. `SidebarProvider` is the outer container (it already
- * renders a `flex min-h-svh w-full` wrapper); the desktop sidebar mounts as
- * its first child, hidden below `md`. Below `md`, the slim top bar and the
- * bottom tab bar take over — `main` reserves `pb-20` so the last content row
- * never sits under the tab bar. `CommandProvider` wraps the frame so the
- * palette and shortcut sheet are only ever mounted in the signed-in shell.
+ * Signed-in frame: a sticky top bar over the page. `CommandProvider` wraps
+ * it so the palette and shortcut sheet only mount in the signed-in shell.
  */
 export function AppShell({ children }: { readonly children: React.ReactNode }) {
 	return (
 		<CommandProvider>
-			<SidebarProvider className="bg-background text-foreground">
-				<div className="hidden md:flex">
-					<AppSidebar />
-				</div>
-				<div className="flex min-w-0 flex-1 flex-col">
-					<MobileTopBar />
-					<main className="flex-1 px-4 py-4 pb-20 md:px-6 md:pb-4">
-						{children}
-					</main>
-				</div>
-				<BottomTabBar />
-			</SidebarProvider>
+			<div className="flex min-h-dvh flex-col bg-background text-foreground">
+				<TopBar />
+				<main className="flex-1 px-4 py-6 md:px-6">{children}</main>
+			</div>
 			<ShellKeyboard />
 			<CommandPalette />
 			<ShortcutSheet />

@@ -8,10 +8,13 @@ const DAY = 24 * 60 * 60 * 1000;
 export type Startup = Awaited<ReturnType<typeof startupOf>>;
 
 /** A Startup founded by `founder`, with one open Role. */
-export async function startupOf(founder: Person) {
+export async function startupOf(
+	founder: Person,
+	name = `Acme ${founder.username}`,
+) {
 	const { startupId, slug } = await founder.api.mutation(
 		api.teams.startups.create,
-		{ name: `Acme ${founder.username}` },
+		{ name },
 	);
 	const roleId = await founder.api.mutation(api.hiring.roles.create, {
 		startupId,

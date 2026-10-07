@@ -1,14 +1,28 @@
+import { useRouterState } from "@tanstack/react-router";
 import { PublicHeader } from "~/components/shared/PublicHeader";
+import { buildShellContext } from "~/shell/context";
+import { ContextTabs } from "~/shell/topbar/ContextTabs";
 
-/** Signed-out frame. Plan 01-05 restyles PublicHeader itself. */
+/**
+ * Signed-out frame. On Explore it adds the section tabs; the context is
+ * built purely from the path, since memberships need a signed-in user.
+ */
 export function PublicShell({
 	children,
 }: {
 	readonly children: React.ReactNode;
 }) {
+	const pathname = useRouterState({ select: (s) => s.location.pathname });
+	const context = buildShellContext({ pathname, memberships: [] });
+
 	return (
 		<div className="flex min-h-dvh flex-col bg-background text-foreground">
 			<PublicHeader />
+			{context.kind === "explore" ? (
+				<div className="border-b border-border px-4 sm:px-6">
+					<ContextTabs context={context} className="md:h-11" />
+				</div>
+			) : null}
 			<main className="flex-1 px-4 py-6 md:px-6">{children}</main>
 		</div>
 	);
