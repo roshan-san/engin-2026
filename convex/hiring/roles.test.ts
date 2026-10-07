@@ -1,5 +1,6 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
 import { createTest, DAY } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { signUp } from "../people/users.helpers";
@@ -13,6 +14,7 @@ import {
 	closeWithVerdict,
 	createDraftHackathon,
 	createHackathon,
+	cycleIdOf,
 	startedHackathonWith,
 } from "./hackathons.helpers";
 
@@ -207,4 +209,120 @@ test("an overlong Role title is refused", async () => {
 			headcount: 1,
 		}),
 	).rejects.toThrow("Role title must be under 120 characters");
+});
+
+describe("Teams", () => {
+	async function teamOf(setup: Setup, name: string) {
+		return await setup.founder.as.mutation(api.teams.teams.create, {
+			startupId: setup.startupId,
+			name,
+		});
+	}
+
+	async function hackathonCycleTeam(
+		setup: Setup,
+		hackathonId: Id<"hackathons">,
+	) {
+		const cycleId = await cycleIdOf(setup.t, hackathonId);
+		const view = await setup.founder.as.query(api.work.cycles.get, { cycleId });
+		return view?.cycle.teamId;
+	}
+
+	test("a Role takes a Team from its own Startup only", async () => {
+		const setup = await setUpStartup(createTest());
+		const other = await setUpStartup(setup.t);
+		const payments = await teamOf(setup, "Payments");
+		const foreign = await teamOf(other, "Elsewhere");
+
+		await expect(
+			setup.founder.as.mutation(api.hiring.roles.create, {
+				startupId: setup.startupId,
+				title: "Designer",
+				type: "full-time",
+				skills: [],
+				description: "Designs",
+				headcount: 1,
+				teamId: foreign,
+			}),
+		).rejects.toThrow("Team not found");
+		const roleId = await setup.founder.as.mutation(api.hiring.roles.create, {
+			startupId: setup.startupId,
+			title: "Designer",
+			type: "full-time",
+			skills: [],
+			description: "Designs",
+			headcount: 1,
+			teamId: payments,
+		});
+
+		const roles = await setup.founder.as.query(api.hiring.roles.list, {
+			startupId: setup.startupId,
+		});
+		expect(roles.find((role) => role._id === roleId)?.teamId).toBe(payments);
+		await expect(
+			setup.founder.as.mutation(api.hiring.roles.setTeam, {
+				roleId,
+				teamId: foreign,
+			}),
+		).rejects.toThrow("Team not found");
+	});
+
+	test("a Member can't change a Role's Team", async () => {
+		const setup = await setUpStartup(createTest());
+		const bob = await joinAsMember(setup, "Bob");
+		const payments = await teamOf(setup, "Payments");
+
+		await expect(
+			bob.as.mutation(api.hiring.roles.setTeam, {
+				roleId: setup.roleId,
+				teamId: payments,
+			}),
+		).rejects.toThrow("Only founders can perform this action");
+	});
+
+	test("a hackathon's Cycle follows its Role's Team", async () => {
+		const setup = await setUpStartup(createTest());
+		const payments = await teamOf(setup, "Payments");
+		const growth = await teamOf(setup, "Growth");
+		await setup.founder.as.mutation(api.hiring.roles.setTeam, {
+			roleId: setup.roleId,
+			teamId: payments,
+		});
+		const hackathonId = await createDraftHackathon(setup);
+		const createdIn = await hackathonCycleTeam(setup, hackathonId);
+
+		await setup.founder.as.mutation(api.hiring.roles.setTeam, {
+			roleId: setup.roleId,
+			teamId: null,
+		});
+		const afterClearing = await hackathonCycleTeam(setup, hackathonId);
+
+		const growthRoleId = await setup.founder.as.mutation(
+			api.hiring.roles.create,
+			{
+				startupId: setup.startupId,
+				title: "Marketer",
+				type: "full-time",
+				skills: [],
+				description: "Grows",
+				headcount: 1,
+				teamId: growth,
+			},
+		);
+		const startsAt = Date.now() + DAY;
+		await setup.founder.as.mutation(api.hiring.hackathons.update, {
+			hackathonId,
+			roleId: growthRoleId,
+			title: "Build a feature",
+			description: "Ship it",
+			maxParticipants: 5,
+			startsAt,
+			endsAt: startsAt + 7 * DAY,
+			starterTasks: [{ title: "Ship the feature" }],
+		});
+
+		expect(createdIn).toBe(payments);
+		expect(afterClearing).toBeUndefined();
+		expect(await hackathonCycleTeam(setup, hackathonId)).toBe(growth);
+	});
 });

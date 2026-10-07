@@ -11,20 +11,6 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "../teams/membership.rules";
-import { requireIpTerms } from "./ipTerms.rules";
-import { loadHackathonOffers } from "./offers.rules";
-import { publishDraft, requirePublishable } from "./publish.rules";
-import {
-	announceStarterTaskChange,
-	insertStarterTask,
-	listCurrentParticipantIds,
-	loadStarterTasks,
-	replaceStarterTasks,
-	requireStarterTask,
-	requireStarterTaskRoom,
-	requireStarterTasksEditable,
-	seedStarterTask,
-} from "./starterTasks.rules";
 import {
 	buildDraftFields,
 	cancelHackathon,
@@ -40,6 +26,20 @@ import {
 	startHackathon,
 	syncHackathonCycle,
 } from "./hackathons.rules";
+import { requireIpTerms } from "./ipTerms.rules";
+import { loadHackathonOffers } from "./offers.rules";
+import { publishDraft, requirePublishable } from "./publish.rules";
+import {
+	announceStarterTaskChange,
+	insertStarterTask,
+	listCurrentParticipantIds,
+	loadStarterTasks,
+	replaceStarterTasks,
+	requireStarterTask,
+	requireStarterTaskRoom,
+	requireStarterTasksEditable,
+	seedStarterTask,
+} from "./starterTasks.rules";
 import { closeWithVerdicts } from "./verdicts.rules";
 
 export const list = query({
@@ -57,7 +57,11 @@ export const list = query({
 		return await Promise.all(
 			hackathons.map(async (hackathon) => {
 				const role = await ctx.db.get(hackathon.roleId);
-				return { ...hackathon, roleTitle: role?.title ?? "Role" };
+				return {
+					...hackathon,
+					roleTitle: role?.title ?? "Role",
+					teamId: role?.teamId,
+				};
 			}),
 		);
 	},
@@ -212,7 +216,12 @@ export const create = mutation({
 		requireValidSchedule(args, Date.now());
 		const fields = buildDraftFields(args, role);
 
-		const hackathonId = await insertDraftHackathon(ctx, args.startupId, fields);
+		const hackathonId = await insertDraftHackathon(
+			ctx,
+			args.startupId,
+			fields,
+			role.teamId,
+		);
 		const hackathon = await requireHackathon(ctx, hackathonId);
 		await replaceStarterTasks(ctx, hackathon, args.starterTasks, userId);
 
@@ -239,7 +248,7 @@ export const update = mutation({
 
 		const fields = buildDraftFields(args, role);
 		await ctx.db.patch(hackathon._id, fields);
-		await syncHackathonCycle(ctx, hackathon, fields);
+		await syncHackathonCycle(ctx, hackathon, fields, role);
 		await replaceStarterTasks(ctx, hackathon, args.starterTasks, userId);
 	},
 });

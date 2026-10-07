@@ -47,9 +47,11 @@ export async function insertDraftHackathon(
 	ctx: MutationCtx,
 	startupId: Id<"startups">,
 	fields: ReturnType<typeof buildDraftFields>,
+	teamId?: Id<"teams">,
 ): Promise<Id<"hackathons">> {
 	const cycleId = await ctx.db.insert("cycles", {
 		startupId,
+		teamId,
 		kind: "hackathon",
 		title: fields.title,
 		startAt: fields.startsAt,
@@ -67,13 +69,15 @@ export async function insertDraftHackathon(
 	return hackathonId;
 }
 
-/** Keeps the Cycle's title and dates in step with an edited or rescheduled draft. */
+/** Keeps the Cycle's title, dates and Team in step with an edited or rescheduled draft. */
 export async function syncHackathonCycle(
 	ctx: MutationCtx,
 	hackathon: Doc<"hackathons">,
 	fields: { title?: string; startsAt: number; endsAt: number },
+	role?: Doc<"roles">,
 ): Promise<void> {
 	await ctx.db.patch(hackathon.cycleId, {
+		...(role && { teamId: role.teamId }),
 		...(fields.title !== undefined && { title: fields.title }),
 		startAt: fields.startsAt,
 		endAt: fields.endsAt,

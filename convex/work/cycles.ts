@@ -9,6 +9,7 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "../teams/membership.rules";
+import { requireTeamInStartup } from "../teams/teams.rules";
 import {
 	addCycleMember,
 	carryOverTasks,
@@ -134,10 +135,14 @@ export const create = mutation({
 		startAt: v.number(),
 		endAt: v.number(),
 		memberUserIds: v.optional(v.array(v.id("users"))),
+		teamId: v.optional(v.id("teams")),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		await requireFounderMembership(ctx, args.startupId, userId);
+		if (args.teamId) {
+			await requireTeamInStartup(ctx, args.teamId, args.startupId);
+		}
 
 		const title = requireText(args.title, "Cycle title");
 		const goal = parseGoal(args.goal);
@@ -153,6 +158,7 @@ export const create = mutation({
 			startAt: args.startAt,
 			endAt: args.endAt,
 			status: "planned",
+			teamId: args.teamId,
 		});
 
 		const cycle = await ctx.db.get(cycleId);
@@ -162,6 +168,27 @@ export const create = mutation({
 			}
 		}
 		return cycleId;
+	},
+});
+
+/** Files a team Cycle under a Team, or none. A hackathon's Cycle follows its Role. */
+export const setTeam = mutation({
+	args: { cycleId: v.id("cycles"), teamId: v.union(v.id("teams"), v.null()) },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const cycle = await ctx.db.get(args.cycleId);
+		if (!cycle) {
+			throw new Error("Cycle not found");
+		}
+		await requireFounderMembership(ctx, cycle.startupId, userId);
+		if (cycle.kind !== "team") {
+			throw new Error("A hackathon's Cycle takes its Role's Team");
+		}
+		if (args.teamId) {
+			await requireTeamInStartup(ctx, args.teamId, cycle.startupId);
+		}
+
+		await ctx.db.patch(cycle._id, { teamId: args.teamId ?? undefined });
 	},
 });
 

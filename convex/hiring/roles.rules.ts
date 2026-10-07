@@ -23,6 +23,23 @@ export async function requireNoLiveHackathons(
 	}
 }
 
+/** A draft hackathon's Cycle carries its Role's Team; published ones keep theirs. */
+export async function syncRoleTeamToDrafts(
+	ctx: MutationCtx,
+	roleId: Id<"roles">,
+	teamId: Id<"teams"> | undefined,
+): Promise<void> {
+	const hackathons = await ctx.db
+		.query("hackathons")
+		.withIndex("by_role", (q) => q.eq("roleId", roleId))
+		.take(MAX_ROLE_HACKATHONS);
+	for (const hackathon of hackathons) {
+		if (hackathon.status === "draft") {
+			await ctx.db.patch(hackathon.cycleId, { teamId });
+		}
+	}
+}
+
 export function parseSkills(skills: string[]): string[] {
 	return normalizeTags(skills, ROLE_TEXT_LIMITS.skills) ?? [];
 }

@@ -33,6 +33,7 @@ import type * as teams_explore from "../teams/explore.js";
 import type * as teams_invitations from "../teams/invitations.js";
 import type * as teams_members from "../teams/members.js";
 import type * as teams_startups from "../teams/startups.js";
+import type * as teams_teams from "../teams/teams.js";
 import type * as work_cycles from "../work/cycles.js";
 import type * as work_tasks from "../work/tasks.js";
 
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   "teams/invitations": typeof teams_invitations;
   "teams/members": typeof teams_members;
   "teams/startups": typeof teams_startups;
+  "teams/teams": typeof teams_teams;
   "work/cycles": typeof work_cycles;
   "work/tasks": typeof work_tasks;
 }>;

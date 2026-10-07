@@ -8,7 +8,12 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "../teams/membership.rules";
-import { parseSkills, requireNoLiveHackathons } from "./roles.rules";
+import { requireTeamInStartup } from "../teams/teams.rules";
+import {
+	parseSkills,
+	requireNoLiveHackathons,
+	syncRoleTeamToDrafts,
+} from "./roles.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -46,10 +51,14 @@ export const create = mutation({
 		location: v.optional(v.string()),
 		remote: v.optional(v.boolean()),
 		headcount: v.number(),
+		teamId: v.optional(v.id("teams")),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		await requireFounderMembership(ctx, args.startupId, userId);
+		if (args.teamId) {
+			await requireTeamInStartup(ctx, args.teamId, args.startupId);
+		}
 
 		if (!Number.isInteger(args.headcount) || args.headcount < 1) {
 			throw new Error("Headcount must be a whole number of at least 1");
@@ -82,6 +91,7 @@ export const create = mutation({
 			remote: args.remote,
 			headcount: args.headcount,
 			status: "open",
+			teamId: args.teamId,
 			searchText: buildSearchText(title, type, description, ...skills),
 		});
 
@@ -93,6 +103,26 @@ export const create = mutation({
 		});
 
 		return roleId;
+	},
+});
+
+/** Files a Role under a Team, or none; its draft hackathons' Cycles follow. */
+export const setTeam = mutation({
+	args: { roleId: v.id("roles"), teamId: v.union(v.id("teams"), v.null()) },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const role = await ctx.db.get(args.roleId);
+		if (!role) {
+			throw new Error("Role not found");
+		}
+		await requireFounderMembership(ctx, role.startupId, userId);
+		if (args.teamId) {
+			await requireTeamInStartup(ctx, args.teamId, role.startupId);
+		}
+
+		const teamId = args.teamId ?? undefined;
+		await ctx.db.patch(role._id, { teamId });
+		await syncRoleTeamToDrafts(ctx, role._id, teamId);
 	},
 });
 

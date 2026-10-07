@@ -228,6 +228,70 @@ describe("creating", () => {
 	});
 });
 
+describe("Teams", () => {
+	test("a Cycle takes a Team and a Founder can change it", async () => {
+		const { setup, bob } = await setUpTeam();
+		const other = await setUpStartup(setup.t);
+		const payments = await setup.founder.as.mutation(api.teams.teams.create, {
+			startupId: setup.startupId,
+			name: "Payments",
+		});
+		const foreign = await other.founder.as.mutation(api.teams.teams.create, {
+			startupId: other.startupId,
+			name: "Elsewhere",
+		});
+		const cycleId = await setup.founder.as.mutation(api.work.cycles.create, {
+			startupId: setup.startupId,
+			title: "Cycle 12",
+			goal: "Ship it",
+			startAt: Date.now(),
+			endAt: Date.now() + DAY,
+			teamId: payments,
+		});
+		const teamOf = async () =>
+			(await setup.founder.as.query(api.work.cycles.get, { cycleId }))?.cycle
+				.teamId;
+		const createdIn = await teamOf();
+
+		await setup.founder.as.mutation(api.work.cycles.setTeam, {
+			cycleId,
+			teamId: null,
+		});
+
+		expect(createdIn).toBe(payments);
+		expect(await teamOf()).toBeUndefined();
+		await expect(
+			setup.founder.as.mutation(api.work.cycles.setTeam, {
+				cycleId,
+				teamId: foreign,
+			}),
+		).rejects.toThrow("Team not found");
+		await expect(
+			bob.as.mutation(api.work.cycles.setTeam, { cycleId, teamId: payments }),
+		).rejects.toThrow("Only founders can perform this action");
+	});
+
+	test("a Cycle can't take another Startup's Team", async () => {
+		const { setup } = await setUpTeam();
+		const other = await setUpStartup(setup.t);
+		const foreign = await other.founder.as.mutation(api.teams.teams.create, {
+			startupId: other.startupId,
+			name: "Elsewhere",
+		});
+
+		await expect(
+			setup.founder.as.mutation(api.work.cycles.create, {
+				startupId: setup.startupId,
+				title: "Cycle 12",
+				goal: "Ship it",
+				startAt: Date.now(),
+				endAt: Date.now() + DAY,
+				teamId: foreign,
+			}),
+		).rejects.toThrow("Team not found");
+	});
+});
+
 describe("starting", () => {
 	test("a planned Cycle stays planned past its start date until a Founder starts it", async () => {
 		const { t, setup, statusOf } = await setUpTeam();
