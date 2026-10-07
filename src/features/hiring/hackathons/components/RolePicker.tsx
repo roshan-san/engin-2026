@@ -74,14 +74,16 @@ export function RolePicker({
 			)}
 
 			{showForm ? (
-				<NewRoleForm
-					startupId={startupId}
-					onCreated={(roleId) => {
-						onChange(roleId);
-						setIsAdding(false);
-					}}
-					onCancel={hasOpenRoles ? () => setIsAdding(false) : undefined}
-				/>
+				<div className="pt-3">
+					<NewRoleForm
+						startupId={startupId}
+						onCreated={(roleId) => {
+							onChange(roleId);
+							setIsAdding(false);
+						}}
+						onCancel={hasOpenRoles ? () => setIsAdding(false) : undefined}
+					/>
+				</div>
 			) : (
 				<Button
 					type="button"

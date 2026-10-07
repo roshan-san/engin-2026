@@ -2,9 +2,13 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { PageHeader } from "~/components/shared/PageHeader";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { HACKATHON_STATUS_GROUPS } from "~/features/hiring/hackathons/constants";
+import { NewRoleDialog } from "~/features/hiring/roles/components/NewRoleDialog";
 import { useRoles } from "~/features/hiring/roles/hooks/useRoles";
 import { CreditBadge } from "~/features/hiring/screen/components/CreditBadge";
 import {
@@ -25,20 +29,24 @@ export function HiringPage() {
 	const isFounder = member?.role === "founder";
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-6">
-			<header className="flex flex-wrap items-center justify-between gap-3">
-				<h1 className="text-xl font-semibold">Hiring</h1>
-				<div className="flex flex-wrap items-center gap-3">
-					{isFounder ? <CreditBadge /> : null}
-					{isFounder ? (
-						<Button asChild size="sm">
-							<Link to="/s/$slug/hiring/new" params={{ slug }}>
-								New Hackathon
-							</Link>
-						</Button>
-					) : null}
-				</div>
-			</header>
+		<div className="mx-auto w-full max-w-5xl space-y-6">
+			<PageHeader
+				hidden
+				title="Hiring"
+				actions={
+					isFounder ? (
+						<>
+							<CreditBadge />
+							{startupId ? <NewRoleDialog startupId={startupId} /> : null}
+							<Button asChild size="sm">
+								<Link to="/s/$slug/hiring/new" params={{ slug }}>
+									New Hackathon
+								</Link>
+							</Button>
+						</>
+					) : null
+				}
+			/>
 
 			<Tabs defaultValue="hackathons" className="gap-4">
 				<TabsList>
@@ -82,7 +90,7 @@ function HackathonsTab({
 	}
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-8">
 			{HACKATHON_STATUS_GROUPS.map((group) => {
 				const items = hackathons.filter((hackathon: HackathonListItem) =>
 					group.statuses.includes(hackathon.status),
@@ -92,10 +100,8 @@ function HackathonsTab({
 				}
 				return (
 					<section key={group.label} className="space-y-2">
-						<h2 className="text-sm font-medium text-muted-foreground">
-							{group.label}
-						</h2>
-						<ul className="space-y-2">
+						<SectionLabel>{group.label}</SectionLabel>
+						<RowList>
 							{items.map((hackathon) => (
 								<HackathonRow
 									key={hackathon._id}
@@ -105,7 +111,7 @@ function HackathonsTab({
 									creditCount={isFounder ? creditCount : undefined}
 								/>
 							))}
-						</ul>
+						</RowList>
 					</section>
 				);
 			})}
@@ -122,13 +128,14 @@ function RolesTab({ startupId, isFounder }: TabProps) {
 	if (openRoles.length === 0 && closedRoles.length === 0) {
 		return (
 			<EmptyState
-				title={`No Roles yet.${isFounder ? " Add one when you set up a hackathon." : ""}`}
+				title="No Roles yet."
+				body={isFounder ? "Add one when you set up a hackathon." : undefined}
 			/>
 		);
 	}
 
 	return (
-		<ul className="space-y-2">
+		<RowList>
 			{[...openRoles, ...closedRoles].map((role) => (
 				<RoleRow
 					key={role._id}
@@ -138,6 +145,6 @@ function RolesTab({ startupId, isFounder }: TabProps) {
 					onClose={() => void close(role._id)}
 				/>
 			))}
-		</ul>
+		</RowList>
 	);
 }

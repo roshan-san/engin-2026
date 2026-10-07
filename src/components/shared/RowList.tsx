@@ -10,7 +10,9 @@ type RowListProps = {
 /** The default way to show a list: rows divided by hairlines, no cards. */
 export function RowList({ children, className }: RowListProps) {
 	return (
-		<ul className={cn("divide-y divide-border", className)}>{children}</ul>
+		<ul className={cn("-mx-2 divide-y divide-border", className)}>
+			{children}
+		</ul>
 	);
 }
 

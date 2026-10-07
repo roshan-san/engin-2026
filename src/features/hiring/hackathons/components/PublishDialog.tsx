@@ -77,7 +77,7 @@ export function PublishDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="flex items-start gap-3 rounded-lg border p-3">
+				<div className="flex items-start gap-3">
 					<Checkbox
 						id="publish-ip-terms"
 						checked={acceptTerms}

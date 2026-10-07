@@ -2,18 +2,18 @@ import type { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { useState } from "react";
-import { Badge } from "~/components/ui/badge";
+import { LiveBadge } from "~/components/shared/LiveBadge";
+import { Row } from "~/components/shared/RowList";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import { isConfirmingPayment } from "~/features/hiring/screen/checkoutStatus";
 import { CancelHackathonDialog } from "~/features/hiring/hackathons/components/CancelHackathonDialog";
 import { PublishDialog } from "~/features/hiring/hackathons/components/PublishDialog";
 import {
 	CANCELLABLE_STATUSES,
-	HACKATHON_STATUS_LABELS,
 	type HackathonStatus,
 } from "~/features/hiring/hackathons/constants";
 import { useCancelHackathon } from "~/features/hiring/hackathons/hooks/useCancelHackathon";
+import { isConfirmingPayment } from "~/features/hiring/screen/checkoutStatus";
 import { formatDateRange, toDateTimeInput } from "~/lib/dates";
 
 /** Only an open hackathon (published, not started) gets its credit back. */
@@ -46,73 +46,80 @@ export function HackathonRow({
 	const isDraft = hackathon.status === "draft";
 	const canCancel =
 		isFounder && CANCELLABLE_STATUSES.includes(hackathon.status);
+	const hasActions = isFounder && (isDraft || canCancel);
+	const isLinked = isFounder || !isDraft;
 
 	return (
-		<li className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-			<div className="min-w-0 space-y-1">
-				<HackathonTitle
-					slug={slug}
-					hackathon={hackathon}
-					isFounder={isFounder}
-				/>
-				<p className="text-sm text-muted-foreground">
-					{hackathon.roleTitle} ·{" "}
-					{formatDateRange(hackathon.startsAt, hackathon.endsAt)}
-				</p>
-				<div className="flex flex-wrap items-center gap-2">
-					<Badge variant={isDraft ? "secondary" : "outline"}>
-						{HACKATHON_STATUS_LABELS[hackathon.status]}
-					</Badge>
-					<span className="text-sm text-muted-foreground">
-						{hackathon.participantCount}/{hackathon.maxParticipants}{" "}
-						participants
-					</span>
-				</div>
-				{isConfirmingPayment(hackathon, creditCount) ? (
-					<div className="flex items-start gap-2 pt-1 text-sm text-muted-foreground">
-						<Spinner className="mt-0.5 shrink-0" />
-						<p>
-							Confirming payment… this publishes automatically.
-							<br />
-							Didn&apos;t finish paying? Publish to pay again.
-						</p>
+		<>
+			{/* The title link stretches over the row; the actions sit above it. */}
+			<Row
+				className={
+					isLinked ? "relative transition-colors hover:bg-accent" : undefined
+				}
+				title={
+					<HackathonTitle
+						slug={slug}
+						hackathon={hackathon}
+						isFounder={isFounder}
+					/>
+				}
+				meta={
+					<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 whitespace-normal">
+						<LiveBadge status={hackathon.status} />
+						<span>{hackathon.roleTitle}</span>
+						<span>{formatDateRange(hackathon.startsAt, hackathon.endsAt)}</span>
+						<span className="tabular-nums">
+							{hackathon.participantCount}/{hackathon.maxParticipants}{" "}
+							participants
+						</span>
+						{isConfirmingPayment(hackathon, creditCount) ? (
+							<span className="flex basis-full items-start gap-2 pt-1">
+								<Spinner className="mt-0.5 shrink-0" />
+								<span>
+									Confirming payment… this publishes automatically.
+									<br />
+									Didn&apos;t finish paying? Publish to pay again.
+								</span>
+							</span>
+						) : null}
 					</div>
-				) : null}
-			</div>
-
-			{isFounder && (isDraft || canCancel) ? (
-				<div className="flex shrink-0 flex-wrap gap-2">
-					{isDraft ? (
-						<Button
-							type="button"
-							size="sm"
-							onClick={() => setIsPublishOpen(true)}
-						>
-							Publish
-						</Button>
-					) : null}
-					{isDraft ? (
-						<Button asChild variant="outline" size="sm">
-							<Link
-								to="/s/$slug/hiring/$hackathonId/edit"
-								params={{ slug, hackathonId: hackathon._id }}
-							>
-								Edit
-							</Link>
-						</Button>
-					) : null}
-					{canCancel ? (
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							onClick={() => setIsCancelOpen(true)}
-						>
-							Cancel
-						</Button>
-					) : null}
-				</div>
-			) : null}
+				}
+				trailing={
+					hasActions ? (
+						<div className="relative flex flex-wrap justify-end gap-2">
+							{isDraft ? (
+								<Button
+									type="button"
+									size="sm"
+									onClick={() => setIsPublishOpen(true)}
+								>
+									Publish
+								</Button>
+							) : null}
+							{isDraft ? (
+								<Button asChild variant="outline" size="sm">
+									<Link
+										to="/s/$slug/hiring/$hackathonId/edit"
+										params={{ slug, hackathonId: hackathon._id }}
+									>
+										Edit
+									</Link>
+								</Button>
+							) : null}
+							{canCancel ? (
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={() => setIsCancelOpen(true)}
+								>
+									Cancel
+								</Button>
+							) : null}
+						</div>
+					) : null
+				}
+			/>
 
 			{isFounder && isDraft && isPublishOpen ? (
 				<PublishDialog
@@ -148,7 +155,7 @@ export function HackathonRow({
 					}}
 				/>
 			) : null}
-		</li>
+		</>
 	);
 }
 
@@ -163,12 +170,12 @@ function HackathonTitle({
 			<Link
 				to="/s/$slug/hiring/$hackathonId/edit"
 				params={{ slug, hackathonId: hackathon._id }}
-				className="block truncate font-medium hover:underline"
+				className="block truncate after:absolute after:inset-0"
 			>
 				{hackathon.title}
 			</Link>
 		) : (
-			<p className="truncate font-medium">{hackathon.title}</p>
+			<span className="block truncate">{hackathon.title}</span>
 		);
 	}
 
@@ -176,7 +183,7 @@ function HackathonTitle({
 		<Link
 			to="/s/$slug/hackathons/$hackathonId"
 			params={{ slug, hackathonId: hackathon._id }}
-			className="block truncate font-medium hover:underline"
+			className="block truncate after:absolute after:inset-0"
 		>
 			{hackathon.title}
 		</Link>

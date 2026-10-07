@@ -3,6 +3,7 @@ import { Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { PageHeader } from "~/components/shared/PageHeader";
 import { Button } from "~/components/ui/button";
 import { HackathonForm } from "~/features/hiring/hackathons/components/HackathonForm";
 import { useHackathonDraft } from "~/features/hiring/hackathons/hooks/useHackathonDraft";
@@ -25,10 +26,10 @@ export function HackathonFormPage(props: HackathonFormPageProps) {
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-2xl space-y-6">
-			<h1 className="text-xl font-semibold">
-				{props.mode === "create" ? "New Hackathon" : "Edit Hackathon"}
-			</h1>
+		<div className="mx-auto w-full max-w-3xl space-y-6">
+			<PageHeader
+				title={props.mode === "create" ? "New Hackathon" : "Edit Hackathon"}
+			/>
 			{props.mode === "create" ? (
 				<CreateHackathon slug={slug} startupId={member.startup._id} />
 			) : (

@@ -1,6 +1,7 @@
 import { MAX_STARTER_TASKS } from "@convex/lib/limits";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { FieldDescription, FieldLegend, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
@@ -51,19 +52,18 @@ export function StarterTasksField({
 
 	return (
 		<FieldSet>
-			<FieldLegend>Starter Tasks</FieldLegend>
+			<FieldLegend className="mb-1">
+				<SectionLabel as="h3">Starter Tasks</SectionLabel>
+			</FieldLegend>
 			<FieldDescription>
 				Each Participant starts with these on their Board. Up to{" "}
 				{MAX_STARTER_TASKS}.
 			</FieldDescription>
 
 			{value.length > 0 ? (
-				<ol className="flex flex-col gap-3">
+				<ol className="divide-y divide-border">
 					{value.map((task, index) => (
-						<li
-							key={task.key}
-							className="flex flex-col gap-2 rounded-lg border p-3"
-						>
+						<li key={task.key} className="flex flex-col gap-2 py-3">
 							<div className="flex items-center gap-2">
 								<span className="w-5 shrink-0 text-sm text-muted-foreground">
 									{index + 1}.

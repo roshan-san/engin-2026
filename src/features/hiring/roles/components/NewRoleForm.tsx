@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import {
 	Field,
@@ -43,8 +44,10 @@ export function NewRoleForm({
 	);
 
 	return (
-		<FieldSet className="rounded-lg border p-4">
-			<FieldLegend variant="label">New Role</FieldLegend>
+		<FieldSet>
+			<FieldLegend variant="label" className="mb-4">
+				<SectionLabel as="h3">New Role</SectionLabel>
+			</FieldLegend>
 			<FieldGroup className="gap-4">
 				<Field>
 					<FieldLabel htmlFor="role-title">Title</FieldLabel>

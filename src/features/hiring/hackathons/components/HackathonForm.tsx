@@ -2,6 +2,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { GOAL_MAX, MAX_HACKATHON_PARTICIPANTS } from "@convex/lib/limits";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import {
 	Collapsible,
@@ -14,7 +15,6 @@ import {
 	FieldError,
 	FieldGroup,
 	FieldLabel,
-	FieldSeparator,
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
@@ -71,155 +71,185 @@ export function HackathonForm({
 					void onSubmit("publish");
 				}}
 			>
-				<FieldGroup>
-					<RolePicker
-						startupId={startupId}
-						value={values.roleId}
-						onChange={(roleId) => setField("roleId", roleId)}
-						disabled={isPending}
-					/>
-
-					<FieldSeparator />
-
-					<Field>
-						<FieldLabel htmlFor="hackathon-title">Title</FieldLabel>
-						<Input
-							id="hackathon-title"
-							value={values.title}
+				<div className="space-y-8">
+					<section className="space-y-4">
+						<SectionLabel>Role</SectionLabel>
+						<RolePicker
+							startupId={startupId}
+							value={values.roleId}
+							onChange={(roleId) => setField("roleId", roleId)}
 							disabled={isPending}
-							onChange={(event) => setField("title", event.target.value)}
-							placeholder="Build our onboarding flow"
-							className="h-11"
 						/>
-					</Field>
-					<Field>
-						<FieldLabel htmlFor="hackathon-description">Description</FieldLabel>
-						<Textarea
-							id="hackathon-description"
-							value={values.description}
+					</section>
+
+					<section className="space-y-4">
+						<SectionLabel>Hackathon</SectionLabel>
+						<FieldGroup className="gap-4">
+							<Field>
+								<FieldLabel htmlFor="hackathon-title">Title</FieldLabel>
+								<Input
+									id="hackathon-title"
+									value={values.title}
+									disabled={isPending}
+									onChange={(event) => setField("title", event.target.value)}
+									placeholder="Build our onboarding flow"
+									className="h-11"
+								/>
+							</Field>
+							<Field>
+								<FieldLabel htmlFor="hackathon-description">
+									Description
+								</FieldLabel>
+								<Textarea
+									id="hackathon-description"
+									value={values.description}
+									disabled={isPending}
+									onChange={(event) =>
+										setField("description", event.target.value)
+									}
+									placeholder="What Participants build, and what good looks like"
+									rows={5}
+								/>
+							</Field>
+							<Field>
+								<FieldLabel htmlFor="hackathon-max">
+									Max participants
+								</FieldLabel>
+								<Input
+									id="hackathon-max"
+									type="number"
+									inputMode="numeric"
+									min={1}
+									max={MAX_HACKATHON_PARTICIPANTS}
+									value={values.maxParticipants}
+									disabled={isPending}
+									onChange={(event) =>
+										setField("maxParticipants", event.target.value)
+									}
+									className="h-11 sm:max-w-32"
+								/>
+								<FieldDescription>
+									Up to {MAX_HACKATHON_PARTICIPANTS}.
+								</FieldDescription>
+							</Field>
+						</FieldGroup>
+					</section>
+
+					<section className="space-y-4">
+						<SectionLabel>Schedule</SectionLabel>
+						<HackathonScheduleFields
+							value={values.schedule}
+							onChange={(schedule) => setField("schedule", schedule)}
 							disabled={isPending}
-							onChange={(event) => setField("description", event.target.value)}
-							placeholder="What Participants build, and what good looks like"
-							rows={5}
 						/>
-					</Field>
-					<Field>
-						<FieldLabel htmlFor="hackathon-max">Max participants</FieldLabel>
-						<Input
-							id="hackathon-max"
-							type="number"
-							inputMode="numeric"
-							min={1}
-							max={MAX_HACKATHON_PARTICIPANTS}
-							value={values.maxParticipants}
-							disabled={isPending}
-							onChange={(event) =>
-								setField("maxParticipants", event.target.value)
+					</section>
+
+					<section className="space-y-4">
+						<SectionLabel>Prize</SectionLabel>
+						<Field>
+							<FieldLabel htmlFor="hackathon-prize">
+								Prize (optional)
+							</FieldLabel>
+							<Input
+								id="hackathon-prize"
+								value={values.prize}
+								disabled={isPending}
+								onChange={(event) => setField("prize", event.target.value)}
+								placeholder="₹5,000 to the winner"
+								className="h-11"
+							/>
+							<FieldDescription>Paid by you, outside Engin.</FieldDescription>
+						</Field>
+					</section>
+
+					<section>
+						<StarterTasksField
+							value={values.starterTasks}
+							onChange={(starterTasks) =>
+								setField("starterTasks", starterTasks)
 							}
-							className="h-11 sm:max-w-32"
-						/>
-						<FieldDescription>
-							Up to {MAX_HACKATHON_PARTICIPANTS}.
-						</FieldDescription>
-					</Field>
-
-					<HackathonScheduleFields
-						value={values.schedule}
-						onChange={(schedule) => setField("schedule", schedule)}
-						disabled={isPending}
-					/>
-
-					<Field>
-						<FieldLabel htmlFor="hackathon-prize">Prize (optional)</FieldLabel>
-						<Input
-							id="hackathon-prize"
-							value={values.prize}
 							disabled={isPending}
-							onChange={(event) => setField("prize", event.target.value)}
-							placeholder="₹5,000 to the winner"
-							className="h-11"
 						/>
-						<FieldDescription>Paid by you, outside Engin.</FieldDescription>
-					</Field>
+					</section>
 
-					<FieldSeparator />
+					<section className="space-y-4">
+						<SectionLabel>Outcome</SectionLabel>
+						<FieldGroup className="gap-4">
+							<Field>
+								<FieldLabel htmlFor="hackathon-outcome">
+									Expected outcome
+								</FieldLabel>
+								<Input
+									id="hackathon-outcome"
+									value={values.expectedOutcome}
+									disabled={isPending}
+									maxLength={GOAL_MAX}
+									onChange={(event) =>
+										setField("expectedOutcome", event.target.value)
+									}
+									placeholder="A working payments API"
+									className="h-11"
+								/>
+								<FieldDescription>
+									Needed to publish. One line: what Participants should have
+									built by the end.
+								</FieldDescription>
+							</Field>
 
-					<StarterTasksField
-						value={values.starterTasks}
-						onChange={(starterTasks) => setField("starterTasks", starterTasks)}
-						disabled={isPending}
-					/>
-
-					<Field>
-						<FieldLabel htmlFor="hackathon-outcome">
-							Expected outcome
-						</FieldLabel>
-						<Input
-							id="hackathon-outcome"
-							value={values.expectedOutcome}
-							disabled={isPending}
-							maxLength={GOAL_MAX}
-							onChange={(event) =>
-								setField("expectedOutcome", event.target.value)
-							}
-							placeholder="A working payments API"
-							className="h-11"
-						/>
-						<FieldDescription>
-							Needed to publish. One line: what Participants should have built
-							by the end.
-						</FieldDescription>
-					</Field>
-
-					<Collapsible defaultOpen={hasDetails} className="flex flex-col gap-4">
-						<CollapsibleTrigger asChild>
-							<Button
-								type="button"
-								variant="ghost"
-								className="group self-start px-0 hover:bg-transparent"
+							<Collapsible
+								defaultOpen={hasDetails}
+								className="flex flex-col gap-4"
 							>
-								More details
-								<ChevronDown className="transition-transform group-data-[state=open]:rotate-180" />
-							</Button>
-						</CollapsibleTrigger>
-						<CollapsibleContent>
-							<FieldGroup className="gap-4">
-								<Field>
-									<FieldLabel htmlFor="hackathon-criteria">
-										Evaluation criteria
-									</FieldLabel>
-									<Textarea
-										id="hackathon-criteria"
-										value={values.evaluationCriteria}
-										disabled={isPending}
-										onChange={(event) =>
-											setField("evaluationCriteria", event.target.value)
-										}
-										rows={3}
-									/>
-								</Field>
-								<Field>
-									<FieldLabel htmlFor="hackathon-compensation">
-										Compensation
-									</FieldLabel>
-									<Textarea
-										id="hackathon-compensation"
-										value={values.compensation}
-										disabled={isPending}
-										onChange={(event) =>
-											setField("compensation", event.target.value)
-										}
-										placeholder="What the hire is paid"
-										rows={2}
-									/>
-								</Field>
-							</FieldGroup>
-						</CollapsibleContent>
-					</Collapsible>
+								<CollapsibleTrigger asChild>
+									<Button
+										type="button"
+										variant="ghost"
+										className="group self-start px-0 hover:bg-transparent"
+									>
+										More details
+										<ChevronDown className="transition-transform group-data-[state=open]:rotate-180" />
+									</Button>
+								</CollapsibleTrigger>
+								<CollapsibleContent>
+									<FieldGroup className="gap-4">
+										<Field>
+											<FieldLabel htmlFor="hackathon-criteria">
+												Evaluation criteria
+											</FieldLabel>
+											<Textarea
+												id="hackathon-criteria"
+												value={values.evaluationCriteria}
+												disabled={isPending}
+												onChange={(event) =>
+													setField("evaluationCriteria", event.target.value)
+												}
+												rows={3}
+											/>
+										</Field>
+										<Field>
+											<FieldLabel htmlFor="hackathon-compensation">
+												Compensation
+											</FieldLabel>
+											<Textarea
+												id="hackathon-compensation"
+												value={values.compensation}
+												disabled={isPending}
+												onChange={(event) =>
+													setField("compensation", event.target.value)
+												}
+												placeholder="What the hire is paid"
+												rows={2}
+											/>
+										</Field>
+									</FieldGroup>
+								</CollapsibleContent>
+							</Collapsible>
 
-					{error ? <FieldError>{error}</FieldError> : null}
+							{error ? <FieldError>{error}</FieldError> : null}
+						</FieldGroup>
+					</section>
 
-					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+					<div className="sticky bottom-0 -mx-4 flex items-center gap-2 border-t bg-background px-4 py-3 md:static md:mx-0 md:justify-end md:border-t-0 md:px-0 md:py-0">
 						<Button asChild variant="ghost" className="h-11">
 							<Link to="/s/$slug/hiring" params={{ slug }}>
 								Back
@@ -239,7 +269,7 @@ export function HackathonForm({
 							Continue to publish
 						</Button>
 					</div>
-				</FieldGroup>
+				</div>
 			</form>
 
 			{savedId && isPublishOpen ? (
