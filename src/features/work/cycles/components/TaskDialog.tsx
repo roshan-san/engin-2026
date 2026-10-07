@@ -9,22 +9,24 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+} from "~/components/ui/sheet";
 import { Textarea } from "~/components/ui/textarea";
 import type { CycleTask } from "~/features/work/cycles/hooks/useCycleTasks";
+import { cn } from "~/lib/utils";
 import { TaskProofLinks } from "~/features/work/tasks/components/TaskProofLinks";
 import { TASK_STATUSES } from "~/features/work/tasks/constants";
+import { useIsMobile } from "~/hooks/use-mobile";
 
 type TaskDialogProps = {
 	/** The open Task, read live from the board; null closes the dialog. */
@@ -64,8 +66,10 @@ export function TaskDialog({
 	onVerify,
 	onSendBack,
 }: TaskDialogProps) {
+	const isMobile = useIsMobile();
+
 	return (
-		<Dialog
+		<Sheet
 			open={task !== null}
 			onOpenChange={(open) => {
 				if (!open) {
@@ -73,7 +77,13 @@ export function TaskDialog({
 				}
 			}}
 		>
-			<DialogContent className="max-h-[90dvh] overflow-y-auto">
+			<SheetContent
+				side={isMobile ? "bottom" : "right"}
+				className={cn(
+					"gap-0 overflow-y-auto p-4",
+					isMobile ? "h-dvh" : "w-full sm:max-w-md",
+				)}
+			>
 				{task ? (
 					<TaskDetails
 						key={task._id}
@@ -91,8 +101,8 @@ export function TaskDialog({
 						onSendBack={onSendBack}
 					/>
 				) : null}
-			</DialogContent>
-		</Dialog>
+			</SheetContent>
+		</Sheet>
 	);
 }
 
@@ -147,12 +157,12 @@ function TaskDetails({
 					void save();
 				}}
 			>
-				<DialogHeader>
-					<DialogTitle>Edit Task</DialogTitle>
-					<DialogDescription>
+				<SheetHeader className="p-0">
+					<SheetTitle>Edit Task</SheetTitle>
+					<SheetDescription>
 						Everyone in the Cycle sees the change.
-					</DialogDescription>
-				</DialogHeader>
+					</SheetDescription>
+				</SheetHeader>
 				<div className="space-y-2">
 					<Label htmlFor="task-title">Title</Label>
 					<Input
@@ -173,7 +183,7 @@ function TaskDetails({
 						rows={4}
 					/>
 				</div>
-				<DialogFooter>
+				<div className="flex justify-end gap-2">
 					<Button
 						type="button"
 						variant="ghost"
@@ -184,20 +194,20 @@ function TaskDetails({
 					<Button type="submit" disabled={!title.trim() || isPending}>
 						Save
 					</Button>
-				</DialogFooter>
+				</div>
 			</form>
 		);
 	}
 
 	return (
 		<div className="min-w-0 space-y-4">
-			<DialogHeader>
-				<DialogTitle className="pr-6 break-words">{task.title}</DialogTitle>
-				<DialogDescription className="flex flex-wrap items-center gap-2">
+			<SheetHeader className="p-0">
+				<SheetTitle className="pr-6 break-words">{task.title}</SheetTitle>
+				<SheetDescription className="flex flex-wrap items-center gap-2">
 					<Badge variant="outline">{statusLabel}</Badge>
 					<span>{assignee}</span>
-				</DialogDescription>
-			</DialogHeader>
+				</SheetDescription>
+			</SheetHeader>
 
 			{task.reviewNote && isWorkableStatus(task.status) ? (
 				<div className="space-y-1 rounded-md border border-destructive/40 bg-destructive/5 p-3">
@@ -219,7 +229,7 @@ function TaskDetails({
 			)}
 
 			<section className="space-y-2">
-				<h3 className="text-sm font-medium">Proof</h3>
+				<SectionLabel as="h3">Proof</SectionLabel>
 				<div className="flex flex-wrap items-center gap-1">
 					{task.proofLinks.length === 0 && !isWorkable ? (
 						<p className="text-sm text-muted-foreground">No proof attached.</p>

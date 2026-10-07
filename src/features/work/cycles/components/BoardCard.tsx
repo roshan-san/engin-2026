@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Link2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -68,7 +68,8 @@ export function BoardCard({
 		<li
 			ref={setNodeRef}
 			className={cn(
-				"rounded-lg border bg-background p-3",
+				"rounded-lg border bg-card p-3",
+				task.status === "review" && "border-l-2 border-l-primary",
 				isDragging && "opacity-40",
 				isPending && "opacity-70",
 			)}
@@ -171,6 +172,7 @@ export function TaskSummary({
 	const [firstProof, ...moreProof] = task.proofLinks;
 	const ownerName =
 		task.assignee?.name ?? task.assignee?.username ?? "Unassigned";
+	const isDone = task.status === "done";
 	const isChangesRequested =
 		task.reviewNote !== null &&
 		(task.status === "todo" || task.status === "in_progress");
@@ -183,15 +185,25 @@ export function TaskSummary({
 					<button
 						type="button"
 						onClick={onOpen}
-						className="block w-full text-left font-medium leading-snug break-words hover:underline focus-visible:underline focus-visible:outline-none"
+						className={cn(
+							"block w-full text-left text-sm font-medium leading-snug break-words hover:underline focus-visible:underline focus-visible:outline-none",
+							isDone && "text-muted-foreground",
+						)}
 					>
 						{task.title}
 					</button>
 				) : (
-					<p className="font-medium leading-snug break-words">{task.title}</p>
+					<p
+						className={cn(
+							"text-sm font-medium leading-snug break-words",
+							isDone && "text-muted-foreground",
+						)}
+					>
+						{task.title}
+					</p>
 				)}
-				{showsOwner ? (
-					<div className="flex min-w-0 items-center gap-1.5 text-xs">
+				<div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+					<div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
 						<Avatar className="size-5 rounded-full">
 							{task.assignee?.image ? (
 								<AvatarImage src={task.assignee.image} alt="" />
@@ -200,29 +212,32 @@ export function TaskSummary({
 								{initials(task.assignee?.name ?? null, null)}
 							</AvatarFallback>
 						</Avatar>
-						<span className="truncate">{ownerName}</span>
-						{task.assigneeLeft ? <Badge variant="outline">Left</Badge> : null}
-					</div>
-				) : (
-					<p className="text-xs text-muted-foreground">{ownerName}</p>
-				)}
-				{firstProof ? (
-					<div className="flex min-w-0 flex-wrap items-center gap-1">
-						<a
-							href={firstProof.url}
-							target="_blank"
-							rel="noreferrer"
-							className="max-w-full truncate rounded-md border px-1.5 py-0.5 text-xs hover:bg-muted"
-						>
-							{proofChipLabel(firstProof)}
-						</a>
-						{moreProof.length > 0 ? (
-							<span className="text-xs text-muted-foreground">
-								+{moreProof.length}
-							</span>
+						<span className={cn("truncate", showsOwner && "text-foreground")}>
+							{ownerName}
+						</span>
+						{showsOwner && task.assigneeLeft ? (
+							<Badge variant="outline">Left</Badge>
 						) : null}
 					</div>
-				) : null}
+					{firstProof ? (
+						<div className="flex min-w-0 items-center gap-1">
+							<a
+								href={firstProof.url}
+								target="_blank"
+								rel="noreferrer"
+								className="inline-flex max-w-full items-center gap-1 truncate text-xs text-muted-foreground hover:text-foreground hover:underline"
+							>
+								<Link2 aria-hidden className="size-3 shrink-0" />
+								<span className="truncate">{proofChipLabel(firstProof)}</span>
+							</a>
+							{moreProof.length > 0 ? (
+								<span className="text-xs text-muted-foreground">
+									+{moreProof.length}
+								</span>
+							) : null}
+						</div>
+					) : null}
+				</div>
 				{isChangesRequested ? (
 					<Badge variant="destructive">Changes requested</Badge>
 				) : null}

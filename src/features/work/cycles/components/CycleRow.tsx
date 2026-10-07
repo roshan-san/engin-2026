@@ -1,41 +1,78 @@
 import type { Doc } from "@convex/_generated/dataModel";
-import { Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
+import { Row } from "~/components/shared/RowList";
 import { Badge } from "~/components/ui/badge";
 import { cycleUrgency } from "~/features/work/cycles/constants";
+import { useCycleProgress } from "~/features/work/cycles/hooks/useCycles";
 import { formatDateRange } from "~/lib/dates";
+import { cn } from "~/lib/utils";
 
 type CycleRowProps = {
 	readonly slug: string;
 	readonly cycle: Doc<"cycles">;
 };
 
+const RING_CLASS: Record<Doc<"cycles">["status"], string> = {
+	active: "border-primary",
+	planned: "border-dashed border-muted-foreground",
+	closed: "border-muted-foreground",
+};
+
+const RING_LABEL: Record<Doc<"cycles">["status"], string> = {
+	active: "Active",
+	planned: "Not started",
+	closed: "Closed",
+};
+
+/** One Cycle in the list: status ring, title, dates, Done/total and a thin progress bar. */
 export function CycleRow({ slug, cycle }: CycleRowProps) {
 	const urgency = cycleUrgency(cycle.endAt, cycle.status);
+	const progress = useCycleProgress(cycle._id);
+	const percent =
+		progress && progress.total > 0
+			? Math.round((progress.done / progress.total) * 100)
+			: 0;
 
 	return (
-		<li>
-			<Link
-				to="/s/$slug/cycles/$cycleId"
-				params={{ slug, cycleId: cycle._id }}
-				className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/40"
-			>
-				<div className="min-w-0 flex-1">
-					<p className="truncate font-medium">{cycle.title}</p>
-					{cycle.goal ? (
-						<p className="text-sm break-words">{cycle.goal}</p>
+		<Row
+			to="/s/$slug/cycles/$cycleId"
+			params={{ slug, cycleId: cycle._id }}
+			leading={
+				<span
+					role="img"
+					aria-label={RING_LABEL[cycle.status]}
+					className={cn(
+						"block size-4 rounded-full border-2",
+						RING_CLASS[cycle.status],
+					)}
+				/>
+			}
+			title={cycle.title}
+			meta={
+				<>
+					{formatDateRange(cycle.startAt, cycle.endAt)}
+					{progress ? (
+						<span className="tabular-nums">
+							{" · "}
+							{progress.done}/{progress.total} done
+						</span>
 					) : null}
-					<p className="text-sm text-muted-foreground">
-						{formatDateRange(cycle.startAt, cycle.endAt)}
-					</p>
+				</>
+			}
+			trailing={
+				<div className="flex items-center gap-3">
+					{urgency === "overdue" ? (
+						<Badge variant="destructive">Overdue</Badge>
+					) : urgency === "ending_soon" ? (
+						<Badge variant="secondary">Ending soon</Badge>
+					) : null}
+					<div aria-hidden className="h-1 w-16 rounded-full bg-muted sm:w-24">
+						<div
+							className="h-full rounded-full bg-primary"
+							style={{ width: `${percent}%` }}
+						/>
+					</div>
 				</div>
-				{urgency === "overdue" ? (
-					<Badge variant="destructive">Overdue</Badge>
-				) : urgency === "ending_soon" ? (
-					<Badge variant="secondary">Ending soon</Badge>
-				) : null}
-				<ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-			</Link>
-		</li>
+			}
+		/>
 	);
 }

@@ -1,5 +1,6 @@
 import { useDroppable } from "@dnd-kit/core";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import {
 	ADD_PROOF_FIRST,
 	canDrop,
@@ -56,21 +57,21 @@ export function BoardColumn({
 			aria-label={label}
 			data-refused={isOver && isRefused ? "true" : undefined}
 			className={cn(
-				"min-w-0 rounded-xl border bg-card/40 p-3 transition-colors",
+				"min-w-0 rounded-lg border border-transparent p-2 transition-colors",
 				isRefused && !isOver && "opacity-50",
 				isOver && isAllowed && "border-primary bg-primary/5",
 				isOver && isRefused && "border-destructive bg-destructive/10",
 			)}
 		>
 			<div className="mb-3 flex items-center justify-between gap-2">
-				<h2 className="text-sm font-medium">{label}</h2>
+				<SectionLabel>{label}</SectionLabel>
 				<span
 					aria-live="polite"
 					className={cn(
-						"text-xs",
+						"text-xs tabular-nums",
 						isOver && isRefused
 							? "font-medium text-destructive"
-							: "tabular-nums text-muted-foreground",
+							: "text-muted-foreground",
 					)}
 				>
 					{isOver && isRefused ? refusedText : count}
@@ -82,7 +83,7 @@ export function BoardColumn({
 			<ul className="min-h-12 space-y-2">
 				{count === 0 && empty ? (
 					<li>
-						<EmptyState title={empty} />
+						<EmptyState size="compact" title={empty} />
 					</li>
 				) : null}
 				{children}

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { PageHeader } from "~/components/shared/PageHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { CloseCycleDialog } from "~/features/work/cycles/components/CloseCycleDialog";
@@ -34,7 +35,7 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 
 	if (view === undefined) {
 		return (
-			<div className="mx-auto w-full max-w-6xl space-y-4">
+			<div className="w-full space-y-4">
 				{back}
 				<PageLoading rows={4} />
 			</div>
@@ -56,46 +57,45 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 	const isClosed = cycle.status === "closed";
 
 	return (
-		<div className="mx-auto w-full max-w-6xl space-y-6">
+		<div className="w-full space-y-6">
 			<div className="space-y-3">
 				{back}
-				<header className="flex flex-wrap items-start justify-between gap-3">
-					<div className="min-w-0 space-y-1">
-						<div className="flex flex-wrap items-center gap-2">
-							<h1 className="text-xl font-semibold break-words">
-								{cycle.title}
-							</h1>
-							<Badge
-								variant={cycle.status === "active" ? "default" : "outline"}
-							>
-								{cycleStatusLabel(cycle.status)}
-							</Badge>
+				<PageHeader
+					title={cycle.title}
+					meta={
+						<div className="space-y-1">
+							{cycle.goal ? (
+								<p className="text-foreground break-words">{cycle.goal}</p>
+							) : null}
+							<p className="flex flex-wrap items-center gap-2">
+								<Badge
+									variant={cycle.status === "active" ? "default" : "outline"}
+								>
+									{cycleStatusLabel(cycle.status)}
+								</Badge>
+								<span>{formatDateRange(cycle.startAt, cycle.endAt)}</span>
+							</p>
 						</div>
-						{cycle.goal ? (
-							<p className="text-sm break-words">{cycle.goal}</p>
-						) : null}
-						<p className="text-sm text-muted-foreground">
-							{formatDateRange(cycle.startAt, cycle.endAt)}
-						</p>
-					</div>
-					{isFounder && cycle.status === "planned" ? (
-						<Button
-							size="sm"
-							disabled={pending === "start"}
-							onClick={() => void start()}
-						>
-							Start Cycle
-						</Button>
-					) : null}
-					{isFounder && cycle.status === "active" ? (
-						<CloseCycleDialog
-							title={cycle.title}
-							plannedCycles={plannedCycles}
-							isPending={pending === "close"}
-							onClose={close}
-						/>
-					) : null}
-				</header>
+					}
+					actions={
+						isFounder && cycle.status === "planned" ? (
+							<Button
+								size="sm"
+								disabled={pending === "start"}
+								onClick={() => void start()}
+							>
+								Start Cycle
+							</Button>
+						) : isFounder && cycle.status === "active" ? (
+							<CloseCycleDialog
+								title={cycle.title}
+								plannedCycles={plannedCycles}
+								isPending={pending === "close"}
+								onClose={close}
+							/>
+						) : null
+					}
+				/>
 				<CycleMembers
 					startupId={cycle.startupId}
 					members={members}

@@ -43,7 +43,7 @@ export function CycleMembers({
 
 	return (
 		<section className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-			<span className="text-muted-foreground">Members:</span>
+			<span className="text-xs text-muted-foreground">Members:</span>
 			<span className="min-w-0 break-words">
 				{members.length === 0
 					? "Founders only"
@@ -113,7 +113,7 @@ function MemberPicker({
 					<li key={member._id}>
 						<label
 							htmlFor={id}
-							className="flex min-h-11 items-center gap-3 rounded-md px-2 hover:bg-muted/40"
+							className="flex min-h-11 items-center gap-3 rounded-md px-2 hover:bg-accent"
 						>
 							<Checkbox
 								id={id}

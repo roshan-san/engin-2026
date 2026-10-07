@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { useState } from "react";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
 	Dialog,
@@ -54,6 +55,7 @@ import {
 	TASK_STATUSES,
 	type TaskStatus,
 } from "~/features/work/tasks/constants";
+import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 
 /** A Participant's lane a Founder can pick. */
@@ -162,10 +164,28 @@ function HackathonBoard({
 		);
 	}
 
+	const shownLane = lane.lanes.find(
+		(option) => option.userId === lane.assigneeUserId,
+	);
+	const laneTasks =
+		board.tasks?.filter(
+			(task) => task.assigneeUserId === lane.assigneeUserId,
+		) ?? [];
+
 	return (
 		<div className="space-y-4">
 			{isFounder ? (
 				<LanePicker lane={lane} countByLane={board.countByLane} />
+			) : null}
+			{isFounder && shownLane ? (
+				<LaneHeader
+					name={shownLane.name}
+					image={
+						laneTasks.find((task) => task.assignee?.image)?.assignee?.image ??
+						null
+					}
+					doneCount={laneTasks.filter((task) => task.status === "done").length}
+				/>
 			) : null}
 			<Board
 				board={board}
@@ -188,6 +208,30 @@ function HackathonBoard({
 						: undefined
 				}
 			/>
+		</div>
+	);
+}
+
+type LaneHeaderProps = {
+	readonly name: string;
+	readonly image: string | null;
+	readonly doneCount: number;
+};
+
+/** Whose lane is shown: the Participant's avatar and name, and how much of it is Done. */
+function LaneHeader({ name, image, doneCount }: LaneHeaderProps) {
+	return (
+		<div className="flex min-w-0 items-center gap-2">
+			<Avatar className="size-6 rounded-full">
+				{image ? <AvatarImage src={image} alt="" /> : null}
+				<AvatarFallback className="text-[10px]">
+					{initials(name, null)}
+				</AvatarFallback>
+			</Avatar>
+			<span className="min-w-0 truncate text-sm font-medium">{name}</span>
+			<span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+				{doneCount} done
+			</span>
 		</div>
 	);
 }
@@ -434,7 +478,7 @@ function Board({
 					</div>
 					<DragOverlay>
 						{active ? (
-							<div className="cursor-grabbing rounded-lg border bg-background p-3 shadow-lg">
+							<div className="cursor-grabbing rounded-lg border bg-card p-3 shadow-lg">
 								<TaskSummary
 									task={active}
 									isFounder={isFounder}
