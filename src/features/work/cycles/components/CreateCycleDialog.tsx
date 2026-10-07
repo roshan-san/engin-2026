@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { GOAL_MAX } from "@convex/lib/limits";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -13,7 +14,8 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { GOAL_MAX } from "@convex/lib/limits";
+import { TeamPicker } from "~/features/teams/team/components/TeamPicker";
+import { useTeams } from "~/features/teams/team/hooks/useTeams";
 import { useCreateCycle } from "~/features/work/cycles/hooks/useCycles";
 
 type CreateCycleDialogProps = {
@@ -30,15 +32,18 @@ export function CreateCycleDialog({ slug, startupId }: CreateCycleDialogProps) {
 	const [goal, setGoal] = useState("");
 	const [startAt, setStartAt] = useState("");
 	const [endAt, setEndAt] = useState("");
+	const [teamId, setTeamId] = useState<Id<"teams"> | null>(null);
+	const { teams } = useTeams(startupId);
 
 	async function submit() {
-		const cycleId = await create({ title, goal, startAt, endAt });
+		const cycleId = await create({ title, goal, startAt, endAt, teamId });
 		if (cycleId) {
 			setOpen(false);
 			setTitle("");
 			setGoal("");
 			setStartAt("");
 			setEndAt("");
+			setTeamId(null);
 			void navigate({
 				to: "/s/$slug/cycles/$cycleId",
 				params: { slug, cycleId },
@@ -114,6 +119,17 @@ export function CreateCycleDialog({ slug, startupId }: CreateCycleDialogProps) {
 							/>
 						</div>
 					</div>
+					{teams && teams.length > 0 ? (
+						<div className="space-y-2">
+							<Label htmlFor="cycle-team">Team</Label>
+							<TeamPicker
+								id="cycle-team"
+								teams={teams}
+								value={teamId}
+								onChange={setTeamId}
+							/>
+						</div>
+					) : null}
 					<DialogFooter>
 						<Button
 							type="submit"

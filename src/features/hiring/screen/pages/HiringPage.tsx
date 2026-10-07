@@ -1,5 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { PageHeader } from "~/components/shared/PageHeader";
@@ -20,6 +21,15 @@ import { RoleRow } from "~/features/hiring/screen/components/RoleRow";
 import { useCheckoutWatch } from "~/features/hiring/screen/hooks/useCheckoutWatch";
 import { useCredits } from "~/features/hiring/screen/hooks/useCredits";
 import { useHiringScreen } from "~/features/hiring/screen/hooks/useHiringScreen";
+import {
+	matchesTeam,
+	TeamFilter,
+	type TeamFilterValue,
+} from "~/features/teams/team/components/TeamFilter";
+import {
+	type TeamSummary,
+	useTeams,
+} from "~/features/teams/team/hooks/useTeams";
 import { useStartupRoute } from "~/shell/startup/StartupRoute";
 
 /** The founders' hiring home: hackathons and Roles; members see it read-only. */
@@ -27,6 +37,8 @@ export function HiringPage() {
 	const { slug, member } = useStartupRoute();
 	const startupId = member?.startup._id;
 	const isFounder = member?.role === "founder";
+	const { teams } = useTeams(startupId);
+	const [teamFilter, setTeamFilter] = useState<TeamFilterValue>("all");
 
 	return (
 		<div className="mx-auto w-full max-w-5xl space-y-6">
@@ -49,19 +61,33 @@ export function HiringPage() {
 			/>
 
 			<Tabs defaultValue="hackathons" className="gap-4">
-				<TabsList>
-					<TabsTrigger value="hackathons">Hackathons</TabsTrigger>
-					<TabsTrigger value="roles">Roles</TabsTrigger>
-				</TabsList>
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<TabsList>
+						<TabsTrigger value="hackathons">Hackathons</TabsTrigger>
+						<TabsTrigger value="roles">Roles</TabsTrigger>
+					</TabsList>
+					<TeamFilter
+						teams={teams}
+						value={teamFilter}
+						onChange={setTeamFilter}
+					/>
+				</div>
 				<TabsContent value="hackathons">
 					<HackathonsTab
 						slug={slug}
 						startupId={startupId}
 						isFounder={isFounder}
+						teams={teams}
+						teamFilter={teamFilter}
 					/>
 				</TabsContent>
 				<TabsContent value="roles">
-					<RolesTab startupId={startupId} isFounder={isFounder} />
+					<RolesTab
+						startupId={startupId}
+						isFounder={isFounder}
+						teams={teams}
+						teamFilter={teamFilter}
+					/>
 				</TabsContent>
 			</Tabs>
 		</div>
@@ -71,16 +97,23 @@ export function HiringPage() {
 type TabProps = {
 	readonly startupId: Id<"startups"> | undefined;
 	readonly isFounder: boolean;
+	readonly teams: TeamSummary[] | undefined;
+	readonly teamFilter: TeamFilterValue;
 };
 
 function HackathonsTab({
 	slug,
 	startupId,
 	isFounder,
+	teams,
+	teamFilter,
 }: TabProps & { readonly slug: string }) {
-	const { hackathons } = useHiringScreen(startupId);
+	const { hackathons: listed } = useHiringScreen(startupId);
+	const hackathons = listed?.filter((hackathon) =>
+		matchesTeam(hackathon.teamId, teamFilter),
+	);
 	const { count: creditCount } = useCredits(isFounder);
-	useCheckoutWatch(hackathons, creditCount);
+	useCheckoutWatch(listed, creditCount);
 
 	if (hackathons === undefined) {
 		return <PageLoading rows={3} />;
@@ -109,6 +142,9 @@ function HackathonsTab({
 									hackathon={hackathon}
 									isFounder={isFounder}
 									creditCount={isFounder ? creditCount : undefined}
+									teamName={
+										teams?.find((team) => team._id === hackathon.teamId)?.name
+									}
 								/>
 							))}
 						</RowList>
@@ -119,8 +155,11 @@ function HackathonsTab({
 	);
 }
 
-function RolesTab({ startupId, isFounder }: TabProps) {
-	const { openRoles, closedRoles, close, closingRoleId } = useRoles(startupId);
+function RolesTab({ startupId, isFounder, teams, teamFilter }: TabProps) {
+	const { roles, close, closingRoleId, setTeam } = useRoles(startupId);
+	const visible = roles?.filter((role) => matchesTeam(role.teamId, teamFilter));
+	const openRoles = visible?.filter((role) => role.status === "open");
+	const closedRoles = visible?.filter((role) => role.status === "closed");
 
 	if (openRoles === undefined || closedRoles === undefined) {
 		return <PageLoading rows={3} />;
@@ -143,6 +182,8 @@ function RolesTab({ startupId, isFounder }: TabProps) {
 					isFounder={isFounder}
 					isClosing={closingRoleId === role._id}
 					onClose={() => void close(role._id)}
+					teams={teams}
+					onSetTeam={(teamId) => void setTeam(role._id, teamId)}
 				/>
 			))}
 		</RowList>

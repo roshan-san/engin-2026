@@ -21,6 +21,8 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { ROLE_TYPES } from "~/features/hiring/roles/constants";
 import { useNewRoleForm } from "~/features/hiring/roles/hooks/useNewRoleForm";
+import { TeamPicker } from "~/features/teams/team/components/TeamPicker";
+import { useTeams } from "~/features/teams/team/hooks/useTeams";
 
 type NewRoleFormProps = {
 	readonly startupId: Id<"startups">;
@@ -42,6 +44,7 @@ export function NewRoleForm({
 		startupId,
 		onCreated,
 	);
+	const { teams } = useTeams(startupId);
 
 	return (
 		<FieldSet>
@@ -94,6 +97,19 @@ export function NewRoleForm({
 						/>
 					</Field>
 				</div>
+				{teams && teams.length > 0 ? (
+					<Field>
+						<FieldLabel htmlFor="role-team">Team</FieldLabel>
+						<TeamPicker
+							id="role-team"
+							teams={teams}
+							value={values.teamId}
+							disabled={isPending}
+							onChange={(teamId) => setField("teamId", teamId)}
+						/>
+						<FieldDescription>Hires from this Role join it.</FieldDescription>
+					</Field>
+				) : null}
 				<Field>
 					<FieldLabel htmlFor="role-skills">Skills</FieldLabel>
 					<Input

@@ -14,6 +14,7 @@ import {
 } from "~/features/hiring/hackathons/constants";
 import { useCancelHackathon } from "~/features/hiring/hackathons/hooks/useCancelHackathon";
 import { isConfirmingPayment } from "~/features/hiring/screen/checkoutStatus";
+import { TeamChip } from "~/features/teams/team/components/TeamChip";
 import { formatDateRange, toDateTimeInput } from "~/lib/dates";
 
 /** Only an open hackathon (published, not started) gets its credit back. */
@@ -32,6 +33,7 @@ type HackathonRowProps = {
 	readonly isFounder: boolean;
 	/** The viewing founder's spendable credits; members never pass it. */
 	readonly creditCount?: number;
+	readonly teamName?: string;
 };
 
 export function HackathonRow({
@@ -39,6 +41,7 @@ export function HackathonRow({
 	hackathon,
 	isFounder,
 	creditCount,
+	teamName,
 }: HackathonRowProps) {
 	const [isCancelOpen, setIsCancelOpen] = useState(false);
 	const [isPublishOpen, setIsPublishOpen] = useState(false);
@@ -67,6 +70,7 @@ export function HackathonRow({
 					<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 whitespace-normal">
 						<LiveBadge status={hackathon.status} />
 						<span>{hackathon.roleTitle}</span>
+						{teamName ? <TeamChip name={teamName} /> : null}
 						<span>{formatDateRange(hackathon.startsAt, hackathon.endsAt)}</span>
 						<span className="tabular-nums">
 							{hackathon.participantCount}/{hackathon.maxParticipants}{" "}
@@ -164,7 +168,7 @@ function HackathonTitle({
 	slug,
 	hackathon,
 	isFounder,
-}: Omit<HackathonRowProps, "creditCount">) {
+}: Omit<HackathonRowProps, "creditCount" | "teamName">) {
 	if (hackathon.status === "draft") {
 		return isFounder ? (
 			<Link

@@ -13,6 +13,7 @@ export function useRoles(startupId: Id<"startups"> | undefined) {
 	);
 	const createRole = useMutation(api.hiring.roles.create);
 	const closeRole = useMutation(api.hiring.roles.close);
+	const setRoleTeam = useMutation(api.hiring.roles.setTeam);
 	const [closingRoleId, setClosingRoleId] = useState<Id<"roles"> | null>(null);
 
 	/** A refusal (live hackathons, not a founder) shows the backend message as is. */
@@ -31,7 +32,16 @@ export function useRoles(startupId: Id<"startups"> | undefined) {
 		}
 	}
 
+	async function setTeam(roleId: Id<"roles">, teamId: Id<"teams"> | null) {
+		try {
+			await setRoleTeam({ roleId, teamId });
+		} catch (error) {
+			toast.error(toErrorMessage(error, "Could not change the Team"));
+		}
+	}
+
 	return {
+		setTeam,
 		roles,
 		openRoles: roles?.filter((role) => role.status === "open"),
 		closedRoles: roles?.filter((role) => role.status === "closed"),

@@ -20,6 +20,7 @@ export type NewCycle = {
 	goal: string;
 	startAt: string;
 	endAt: string;
+	teamId: Id<"teams"> | null;
 };
 
 /** Creates a planned Cycle from date-input values; resolves to its id or null. */
@@ -39,6 +40,7 @@ export function useCreateCycle(startupId: Id<"startups"> | undefined) {
 				goal: input.goal,
 				startAt: fromDateInput(input.startAt),
 				endAt: fromDateInput(input.endAt),
+				teamId: input.teamId ?? undefined,
 			});
 		} catch (error) {
 			toast.error(toErrorMessage(error, "Could not create Cycle"));

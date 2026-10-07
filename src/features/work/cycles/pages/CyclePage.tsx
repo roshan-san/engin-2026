@@ -6,6 +6,9 @@ import { EmptyState } from "~/components/shared/EmptyState";
 import { PageHeader } from "~/components/shared/PageHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { TeamChip } from "~/features/teams/team/components/TeamChip";
+import { TeamPicker } from "~/features/teams/team/components/TeamPicker";
+import { useTeams } from "~/features/teams/team/hooks/useTeams";
 import { CloseCycleDialog } from "~/features/work/cycles/components/CloseCycleDialog";
 import { CycleBoard } from "~/features/work/cycles/components/CycleBoard";
 import { CycleMembers } from "~/features/work/cycles/components/CycleMembers";
@@ -20,7 +23,8 @@ type CyclePageProps = {
 
 /** One Cycle: its lifecycle, its Members and its board. */
 export function CyclePage({ slug, cycleId }: CyclePageProps) {
-	const { view, pending, start, close, setMember } = useCycle(cycleId);
+	const { view, pending, start, close, setMember, setTeam } = useCycle(cycleId);
+	const { teams, teamNames } = useTeams(view?.cycle.startupId);
 
 	const back = (
 		<Link
@@ -74,6 +78,18 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 									{cycleStatusLabel(cycle.status)}
 								</Badge>
 								<span>{formatDateRange(cycle.startAt, cycle.endAt)}</span>
+								{isFounder && cycle.kind === "team" ? (
+									<TeamPicker
+										aria-label="Cycle Team"
+										teams={teams}
+										value={cycle.teamId ?? null}
+										disabled={pending === "team"}
+										onChange={(teamId) => void setTeam(teamId)}
+										className="h-8 w-36"
+									/>
+								) : cycle.teamId && teamNames.get(cycle.teamId) ? (
+									<TeamChip name={teamNames.get(cycle.teamId) ?? ""} />
+								) : null}
 							</p>
 						</div>
 					}

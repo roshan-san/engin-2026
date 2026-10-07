@@ -11,6 +11,7 @@ export type NewRoleValues = {
 	readonly skills: string;
 	readonly description: string;
 	readonly headcount: string;
+	readonly teamId: Id<"teams"> | null;
 };
 
 const EMPTY_ROLE: NewRoleValues = {
@@ -19,6 +20,7 @@ const EMPTY_ROLE: NewRoleValues = {
 	skills: "",
 	description: "",
 	headcount: "1",
+	teamId: null,
 };
 
 /** The inline "+ New Role" form: creates an open Role and hands back its id. */
@@ -51,7 +53,11 @@ export function useNewRoleForm(
 		pendingRef.current = true;
 		setIsPending(true);
 		try {
-			const roleId = await createRole({ startupId, ...parsed.data });
+			const roleId = await createRole({
+				startupId,
+				...parsed.data,
+				teamId: values.teamId ?? undefined,
+			});
 			setValues(EMPTY_ROLE);
 			toast.success("Role created");
 			onCreated(roleId);

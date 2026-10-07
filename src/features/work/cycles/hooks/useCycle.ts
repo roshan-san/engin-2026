@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { toErrorMessage } from "~/lib/validation";
 
-type CycleAction = "start" | "close" | "members";
+type CycleAction = "start" | "close" | "members" | "team";
 
 /** One Cycle's screen data and the Founder's lifecycle and member actions. */
 export function useCycle(cycleId: Id<"cycles">) {
@@ -14,6 +14,7 @@ export function useCycle(cycleId: Id<"cycles">) {
 	const closeCycle = useMutation(api.work.cycles.close);
 	const addMember = useMutation(api.work.cycles.addMember);
 	const removeMember = useMutation(api.work.cycles.removeMember);
+	const setCycleTeam = useMutation(api.work.cycles.setTeam);
 	const [pending, setPending] = useState<CycleAction | null>(null);
 
 	async function run(
@@ -36,6 +37,10 @@ export function useCycle(cycleId: Id<"cycles">) {
 	return {
 		view,
 		pending,
+		setTeam: (teamId: Id<"teams"> | null) =>
+			run("team", "Could not change the Team", () =>
+				setCycleTeam({ cycleId, teamId }),
+			),
 		start: () =>
 			run("start", "Could not start Cycle", () => startCycle({ cycleId })),
 		close: (carryOverToCycleId: Id<"cycles"> | null) =>

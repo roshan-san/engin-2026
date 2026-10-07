@@ -1,6 +1,7 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { Row } from "~/components/shared/RowList";
 import { Badge } from "~/components/ui/badge";
+import { TeamChip } from "~/features/teams/team/components/TeamChip";
 import { cycleUrgency } from "~/features/work/cycles/constants";
 import { useCycleProgress } from "~/features/work/cycles/hooks/useCycleTasks";
 import { formatDateRange } from "~/lib/dates";
@@ -9,6 +10,7 @@ import { cn } from "~/lib/utils";
 type CycleRowProps = {
 	readonly slug: string;
 	readonly cycle: Doc<"cycles">;
+	readonly teamName?: string;
 };
 
 const RING_CLASS: Record<Doc<"cycles">["status"], string> = {
@@ -28,7 +30,7 @@ const RING_LABEL: Record<Doc<"cycles">["status"], string> = {
  * shows Done/total and a progress bar, so the list opens one board
  * subscription per active Cycle rather than one per row.
  */
-export function CycleRow({ slug, cycle }: CycleRowProps) {
+export function CycleRow({ slug, cycle, teamName }: CycleRowProps) {
 	const urgency = cycleUrgency(cycle.endAt, cycle.status);
 	const progress = useCycleProgress(cycle._id, cycle.status === "active");
 	const percent =
@@ -65,6 +67,7 @@ export function CycleRow({ slug, cycle }: CycleRowProps) {
 			}
 			trailing={
 				<div className="flex items-center gap-3">
+					{teamName ? <TeamChip name={teamName} /> : null}
 					{urgency === "overdue" ? (
 						<Badge variant="destructive">Overdue</Badge>
 					) : urgency === "ending_soon" ? (
