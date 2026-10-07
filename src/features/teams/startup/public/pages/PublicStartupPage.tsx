@@ -2,10 +2,14 @@ import { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { PageLoading } from "~/components/globals/PageLoading";
+import { GlowHero } from "~/components/shared/GlowHero";
+import { Row, RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
 import { PublicOpenings } from "~/features/teams/startup/public/components/PublicOpenings";
+import { StartupAvatar } from "~/shell/topbar/StartupAvatar";
 
 type PublicStartupPageProps = {
 	readonly slug: string;
@@ -37,115 +41,110 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 	].filter((link): link is { href: string; label: string } =>
 		Boolean(link.href),
 	);
+	const category = categoryLabel(startup.category);
+	const stage = stageLabel(startup.stage);
+	const hasChips = Boolean(
+		category || stage || startup.location || startup.remote,
+	);
 
 	return (
-		<div className="mx-auto max-w-2xl space-y-10 px-4 py-10">
-			<section className="space-y-4">
-				<div className="flex flex-wrap gap-2">
-					{categoryLabel(startup.category) ? (
-						<Badge variant="secondary">{categoryLabel(startup.category)}</Badge>
+		<div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
+			<GlowHero
+				eyebrow={<StartupAvatar name={startup.name} className="size-14" />}
+				title={startup.name}
+				subtitle={startup.tagline || undefined}
+			>
+				<div className="space-y-4">
+					{hasChips ? (
+						<div className="flex flex-wrap gap-2">
+							{category ? <Badge variant="secondary">{category}</Badge> : null}
+							{stage ? <Badge variant="outline">{stage}</Badge> : null}
+							{startup.location ? (
+								<Badge variant="outline">{startup.location}</Badge>
+							) : null}
+							{startup.remote ? (
+								<Badge variant="outline">Remote-friendly</Badge>
+							) : null}
+						</div>
 					) : null}
-					{stageLabel(startup.stage) ? (
-						<Badge variant="outline">{stageLabel(startup.stage)}</Badge>
+					{links.length > 0 ? (
+						<div className="flex flex-wrap gap-2">
+							{links.map((link) => (
+								<Button key={link.label} asChild variant="outline" size="sm">
+									<a href={link.href} target="_blank" rel="noreferrer">
+										{link.label}
+									</a>
+								</Button>
+							))}
+						</div>
 					) : null}
 				</div>
-				<h1 className="text-3xl font-bold sm:text-4xl">{startup.name}</h1>
-				{startup.tagline ? (
-					<p className="text-lg text-muted-foreground">{startup.tagline}</p>
-				) : null}
-				{links.length > 0 ? (
-					<div className="flex flex-wrap gap-2">
-						{links.map((link) => (
-							<Button key={link.label} asChild variant="outline" size="sm">
-								<a href={link.href} target="_blank" rel="noreferrer">
-									{link.label}
-								</a>
-							</Button>
-						))}
-					</div>
-				) : null}
-				{startup.location || startup.remote ? (
-					<p className="text-sm text-muted-foreground">
-						{[startup.location, startup.remote ? "Remote-friendly" : null]
-							.filter(Boolean)
-							.join(" · ")}
-					</p>
-				) : null}
+			</GlowHero>
+
+			<div className="max-w-3xl space-y-8">
+				{[
+					{ heading: "About", body: startup.description },
+					{ heading: "Problem", body: startup.problem },
+					{ heading: "Solution", body: startup.solution },
+					{ heading: "Product", body: startup.product },
+					{ heading: "Traction", body: startup.traction },
+					{ heading: "Team", body: startup.teamBlurb },
+				].map(({ heading, body }) =>
+					body ? (
+						<section key={heading} className="space-y-2">
+							<SectionLabel>{heading}</SectionLabel>
+							<p className="whitespace-pre-wrap leading-relaxed">{body}</p>
+						</section>
+					) : null,
+				)}
+
 				{startup.techStack.length > 0 ? (
-					<div className="flex flex-wrap gap-2">
-						{startup.techStack.map((tech) => (
-							<Badge key={tech} variant="outline">
-								{tech}
-							</Badge>
-						))}
-					</div>
-				) : null}
-			</section>
-
-			{startup.description ? (
-				<section className="space-y-2">
-					<h2 className="text-lg font-semibold">About</h2>
-					<p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-						{startup.description}
-					</p>
-				</section>
-			) : null}
-
-			{[
-				{ heading: "Problem", body: startup.problem },
-				{ heading: "Solution", body: startup.solution },
-				{ heading: "Product", body: startup.product },
-				{ heading: "Traction", body: startup.traction },
-				{ heading: "Team", body: startup.teamBlurb },
-			].map(({ heading, body }) =>
-				body ? (
-					<section key={heading} className="space-y-2">
-						<h2 className="text-lg font-semibold">{heading}</h2>
-						<p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-							{body}
-						</p>
+					<section className="space-y-2">
+						<SectionLabel>Tech stack</SectionLabel>
+						<ul className="flex flex-wrap gap-2">
+							{startup.techStack.map((tech) => (
+								<li key={tech}>
+									<Badge variant="outline">{tech}</Badge>
+								</li>
+							))}
+						</ul>
 					</section>
-				) : null,
-			)}
+				) : null}
 
-			{startup.isAuthenticated ? (
-				<section className="space-y-3">
-					<h2 className="text-lg font-semibold">Meet the team</h2>
-					<ul className="space-y-2">
-						{startup.team.map((member) => (
-							<li
-								key={member.user._id}
-								className="flex items-center justify-between rounded-lg border px-4 py-3"
-							>
-								<div>
-									<p className="font-medium">
-										{member.user.name ?? member.user.username ?? "Member"}
-									</p>
-									{member.user.username ? (
-										<Link
-											to="/u/$username"
-											params={{ username: member.user.username }}
-											className="text-sm text-muted-foreground hover:text-foreground"
-										>
-											@{member.user.username}
-										</Link>
-									) : null}
-								</div>
-								<Badge variant="secondary">{member.role}</Badge>
-							</li>
-						))}
-					</ul>
+				<section className="space-y-1">
+					<SectionLabel>Meet the team</SectionLabel>
+					{startup.isAuthenticated ? (
+						<RowList>
+							{startup.team.map((member) => {
+								const name =
+									member.user.name ?? member.user.username ?? "Member";
+								return (
+									<Row
+										key={member.user._id}
+										title={name}
+										meta={
+											member.user.username ? `@${member.user.username}` : null
+										}
+										trailing={<span className="capitalize">{member.role}</span>}
+										to={member.user.username ? "/u/$username" : undefined}
+										params={
+											member.user.username
+												? { username: member.user.username }
+												: undefined
+										}
+									/>
+								);
+							})}
+						</RowList>
+					) : (
+						<Button asChild variant="outline" className="mt-2">
+							<Link to="/">Sign in to see the team</Link>
+						</Button>
+					)}
 				</section>
-			) : (
-				<section className="space-y-3">
-					<h2 className="text-lg font-semibold">Meet the team</h2>
-					<Button asChild variant="outline">
-						<Link to="/">Sign in to see the team</Link>
-					</Button>
-				</section>
-			)}
 
-			<PublicOpenings startupId={startup._id} />
+				<PublicOpenings startupId={startup._id} />
+			</div>
 		</div>
 	);
 }

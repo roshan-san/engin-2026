@@ -2,7 +2,8 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { Badge } from "~/components/ui/badge";
+import { Row, RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { ApplyDialog } from "~/features/hiring/opportunities/components/ApplyDialog";
 import { formatDate } from "~/lib/dates";
 
@@ -17,9 +18,9 @@ export function PublicOpenings({ startupId }: PublicOpeningsProps) {
 	});
 
 	return (
-		<div className="space-y-8">
-			<section className="space-y-3">
-				<h2 className="text-lg font-semibold">Open Roles</h2>
+		<>
+			<section className="space-y-1">
+				<SectionLabel>Open Roles</SectionLabel>
 				{roles === undefined ? (
 					<p className="text-sm text-muted-foreground">Loading…</p>
 				) : roles.length === 0 ? (
@@ -27,27 +28,21 @@ export function PublicOpenings({ startupId }: PublicOpeningsProps) {
 						No open Roles right now.
 					</p>
 				) : (
-					<ul className="space-y-2">
+					<RowList>
 						{roles.map((role) => (
-							<li
+							<Row
 								key={role._id}
-								className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
-							>
-								<div className="min-w-0 flex-1">
-									<p className="font-medium">{role.title}</p>
-									<p className="text-sm text-muted-foreground">{role.type}</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Join through a Hackathon
-								</p>
-							</li>
+								title={role.title}
+								meta={role.type}
+								trailing="Join through a Hackathon"
+							/>
 						))}
-					</ul>
+					</RowList>
 				)}
 			</section>
 
-			<section className="space-y-3">
-				<h2 className="text-lg font-semibold">Hackathons</h2>
+			<section className="space-y-1">
+				<SectionLabel>Hackathons</SectionLabel>
 				{hackathons === undefined ? (
 					<p className="text-sm text-muted-foreground">Loading…</p>
 				) : hackathons.length === 0 ? (
@@ -55,38 +50,34 @@ export function PublicOpenings({ startupId }: PublicOpeningsProps) {
 						No Hackathons open right now.
 					</p>
 				) : (
-					<ul className="space-y-2">
+					<RowList>
 						{hackathons.map((hackathon) => (
-							<li
+							<Row
 								key={hackathon._id}
-								className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
-							>
-								<div className="min-w-0 flex-1">
+								title={
 									<Link
 										to="/hackathons/$hackathonId"
 										params={{ hackathonId: hackathon._id }}
-										className="font-medium hover:underline"
+										className="hover:underline"
 									>
 										{hackathon.title}
 									</Link>
-									<p className="text-sm text-muted-foreground">
-										{formatDate(hackathon.startsAt)} –{" "}
-										{formatDate(hackathon.endsAt)}
-									</p>
-									<Badge variant="outline" className="mt-2">
-										{hackathon.participantCount}/{hackathon.maxParticipants}
-									</Badge>
-								</div>
-								<ApplyDialog
-									hackathonId={hackathon._id}
-									title={hackathon.title}
-									size="sm"
-								/>
-							</li>
+								}
+								meta={`${formatDate(hackathon.startsAt)} – ${formatDate(
+									hackathon.endsAt,
+								)} · ${hackathon.participantCount}/${hackathon.maxParticipants} seats`}
+								trailing={
+									<ApplyDialog
+										hackathonId={hackathon._id}
+										title={hackathon.title}
+										size="sm"
+									/>
+								}
+							/>
 						))}
-					</ul>
+					</RowList>
 				)}
 			</section>
-		</div>
+		</>
 	);
 }
