@@ -11,11 +11,11 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, meta, actions, hidden }: PageHeaderProps) {
 	return (
-		<div className="flex items-start justify-between gap-4">
-			<div className="min-w-0">
+		<div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+			<div className="min-w-0 flex-1 basis-48">
 				<h1
 					className={cn(
-						"truncate text-xl font-semibold tracking-[-0.01em]",
+						"break-words text-xl font-semibold tracking-[-0.01em]",
 						hidden && "sr-only",
 					)}
 				>
@@ -26,7 +26,9 @@ export function PageHeader({ title, meta, actions, hidden }: PageHeaderProps) {
 				) : null}
 			</div>
 			{actions ? (
-				<div className="flex shrink-0 items-center gap-2">{actions}</div>
+				<div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+					{actions}
+				</div>
 			) : null}
 		</div>
 	);

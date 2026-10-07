@@ -12,6 +12,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { LiveBadge } from "~/components/shared/LiveBadge";
+import { Row } from "~/components/shared/RowList";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
@@ -31,83 +33,93 @@ export function MyHackathonRow({ entry }: { readonly entry: Entry }) {
 	const canWithdraw = entry.isLive && entry.hackathonStatus === "open";
 
 	return (
-		<li className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-			<div className="min-w-0 space-y-1">
+		<Row
+			title={
 				<Link
 					to="/hackathons/$hackathonId"
 					params={{ hackathonId: entry.hackathonId }}
-					className="font-medium break-words hover:underline"
+					className="hover:underline"
 				>
 					{title}
 				</Link>
-				<p className="text-sm text-muted-foreground break-words">
-					{entry.startupName}
-					{entry.roleTitle ? ` · ${entry.roleTitle}` : null}
-					{entry.startsAt !== null && entry.endsAt !== null
-						? ` · ${formatDateRange(entry.startsAt, entry.endsAt)}`
-						: null}
-				</p>
-				<div className="flex flex-wrap items-center gap-2">
-					<Badge variant={entry.isLive ? "default" : "secondary"}>
-						{entry.verdict
-							? verdictLabel(entry.verdict)
-							: applicationStatusLabel(entry.status, entry.hackathonStatus)}
-					</Badge>
-					{entry.verdict ? (
-						<Link
-							to="/s/$slug/hackathons/$hackathonId"
-							params={{
-								slug: entry.startupSlug,
-								hackathonId: entry.hackathonId,
-							}}
-							className="text-sm hover:underline"
-						>
-							See verdict
-						</Link>
-					) : null}
-				</div>
-			</div>
-
-			{canWithdraw ? (
-				<Button
-					type="button"
-					variant="outline"
-					size="sm"
-					className="self-start sm:self-center"
-					disabled={isPending}
-					onClick={() => setIsConfirmOpen(true)}
-				>
-					Withdraw
-				</Button>
-			) : null}
-
-			<AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Withdraw from “{title}”?</AlertDialogTitle>
-						<AlertDialogDescription>
-							You can't apply to this Hackathon again. Withdrawing frees one of
-							your live entries.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel disabled={isPending}>Stay in</AlertDialogCancel>
-						<AlertDialogAction
-							variant="destructive"
+			}
+			meta={
+				<>
+					<span className="block truncate">
+						{entry.startupName}
+						{entry.roleTitle ? ` · ${entry.roleTitle}` : null}
+						{entry.startsAt !== null && entry.endsAt !== null
+							? ` · ${formatDateRange(entry.startsAt, entry.endsAt)}`
+							: null}
+					</span>
+					<span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+						{entry.hackathonStatus ? (
+							<LiveBadge status={entry.hackathonStatus} />
+						) : null}
+						<Badge variant={entry.isLive ? "default" : "secondary"}>
+							{entry.verdict
+								? verdictLabel(entry.verdict)
+								: applicationStatusLabel(entry.status, entry.hackathonStatus)}
+						</Badge>
+						{entry.verdict ? (
+							<Link
+								to="/s/$slug/hackathons/$hackathonId"
+								params={{
+									slug: entry.startupSlug,
+									hackathonId: entry.hackathonId,
+								}}
+								className="text-foreground hover:underline"
+							>
+								See verdict
+							</Link>
+						) : null}
+					</span>
+				</>
+			}
+			trailing={
+				<>
+					{canWithdraw ? (
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
 							disabled={isPending}
-							onClick={async (event) => {
-								event.preventDefault();
-								if (await leave(entry.hackathonId)) {
-									setIsConfirmOpen(false);
-								}
-							}}
+							onClick={() => setIsConfirmOpen(true)}
 						>
-							{isPending ? <Spinner /> : null}
 							Withdraw
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-		</li>
+						</Button>
+					) : null}
+					<AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Withdraw from “{title}”?</AlertDialogTitle>
+								<AlertDialogDescription>
+									You can't apply to this Hackathon again. Withdrawing frees one
+									of your live entries.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel disabled={isPending}>
+									Stay in
+								</AlertDialogCancel>
+								<AlertDialogAction
+									variant="destructive"
+									disabled={isPending}
+									onClick={async (event) => {
+										event.preventDefault();
+										if (await leave(entry.hackathonId)) {
+											setIsConfirmOpen(false);
+										}
+									}}
+								>
+									{isPending ? <Spinner /> : null}
+									Withdraw
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+				</>
+			}
+		/>
 	);
 }

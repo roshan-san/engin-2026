@@ -208,7 +208,7 @@ export function TaskSummary({
 							{task.assignee?.image ? (
 								<AvatarImage src={task.assignee.image} alt="" />
 							) : null}
-							<AvatarFallback className="bg-border text-[10px] text-foreground">
+							<AvatarFallback className="text-[10px]">
 								{initials(task.assignee?.name ?? null, null)}
 							</AvatarFallback>
 						</Avatar>

@@ -224,7 +224,7 @@ function LaneHeader({ name, image, doneCount }: LaneHeaderProps) {
 		<div className="flex min-w-0 items-center gap-2">
 			<Avatar className="size-6 rounded-full">
 				{image ? <AvatarImage src={image} alt="" /> : null}
-				<AvatarFallback className="bg-border text-[10px] text-foreground">
+				<AvatarFallback className="text-[10px]">
 					{initials(name, null)}
 				</AvatarFallback>
 			</Avatar>

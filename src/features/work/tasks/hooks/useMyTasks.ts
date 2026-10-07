@@ -15,11 +15,7 @@ export function useMyTasks() {
 	return {
 		tasks,
 		toReview,
-		open:
-			tasks?.filter(
-				(task) => task.status === "todo" || task.status === "in_progress",
-			) ?? [],
-		inReview: tasks?.filter((task) => task.status === "review") ?? [],
-		done: tasks?.filter((task) => task.status === "done") ?? [],
+		byStatus: (status: MyTask["status"]) =>
+			tasks?.filter((task) => task.status === status) ?? [],
 	};
 }

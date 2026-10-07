@@ -1,10 +1,9 @@
-import { Link } from "@tanstack/react-router";
-import { Badge } from "~/components/ui/badge";
+import { Row } from "~/components/shared/RowList";
+import { StatusDot } from "~/components/shared/StatusDot";
 import type {
 	MyTask,
 	TaskToReview,
 } from "~/features/work/tasks/hooks/useMyTasks";
-import { TASK_STATUSES } from "~/features/work/tasks/constants";
 
 /** A team Task opens its Cycle; a hackathon Task opens the Hackathon screen. */
 function placeLink(slug: string, place: MyTask["place"]) {
@@ -19,43 +18,37 @@ function placeLink(slug: string, place: MyTask["place"]) {
 			} as const);
 }
 
-function statusLabel(status: MyTask["status"]): string {
-	return TASK_STATUSES.find((item) => item.value === status)?.label ?? status;
-}
-
 /** One of the viewer's Tasks, linking to the Cycle or Hackathon it lives on. */
 export function MyTaskRow({ task }: { readonly task: MyTask }) {
 	const { place } = task;
 	const where = `${task.startupName} · ${place.title}`;
 	const proofCount = task.proofLinks.length;
+	const showsNote =
+		task.reviewNote &&
+		(task.status === "todo" || task.status === "in_progress");
 
 	return (
-		<li>
-			<Link
-				{...placeLink(task.startupSlug, place)}
-				className="block space-y-1 rounded-lg border p-4 hover:bg-muted/30"
-			>
-				<div className="flex items-start justify-between gap-3">
-					<p className="min-w-0 font-medium break-words">{task.title}</p>
-					<Badge variant="outline" className="shrink-0">
-						{statusLabel(task.status)}
-					</Badge>
-				</div>
-				<p className="text-sm break-words text-muted-foreground">
-					{where}
-					{place.kind === "hackathon" ? " (hackathon)" : null}
-					{proofCount > 0
-						? ` · ${proofCount} proof ${proofCount === 1 ? "link" : "links"}`
-						: null}
-				</p>
-				{task.reviewNote &&
-				(task.status === "todo" || task.status === "in_progress") ? (
-					<p className="text-sm break-words text-destructive">
-						Changes requested: {task.reviewNote}
-					</p>
-				) : null}
-			</Link>
-		</li>
+		<Row
+			{...placeLink(task.startupSlug, place)}
+			leading={<StatusDot status={task.status} />}
+			title={task.title}
+			meta={
+				<>
+					<span className="block truncate">
+						{where}
+						{place.kind === "hackathon" ? " (hackathon)" : null}
+						{proofCount > 0
+							? ` · ${proofCount} proof ${proofCount === 1 ? "link" : "links"}`
+							: null}
+					</span>
+					{showsNote ? (
+						<span className="block truncate text-destructive">
+							Changes requested: {task.reviewNote}
+						</span>
+					) : null}
+				</>
+			}
+		/>
 	);
 }
 
@@ -65,17 +58,11 @@ export function ReviewRow({ task }: { readonly task: TaskToReview }) {
 	const assignee =
 		task.assignee?.name ?? task.assignee?.username ?? "Unassigned";
 	return (
-		<li>
-			<Link
-				{...placeLink(task.startupSlug, place)}
-				className="block space-y-1 rounded-lg border p-4 hover:bg-muted/30"
-			>
-				<p className="font-medium break-words">{task.title}</p>
-				<p className="text-sm break-words text-muted-foreground">
-					{assignee} · {task.startupName} · {place.title}
-					{place.kind === "hackathon" ? " (hackathon)" : null}
-				</p>
-			</Link>
-		</li>
+		<Row
+			{...placeLink(task.startupSlug, place)}
+			leading={<StatusDot status="review" />}
+			title={task.title}
+			meta={`${assignee} · ${task.startupName} · ${place.title}${place.kind === "hackathon" ? " (hackathon)" : ""}`}
+		/>
 	);
 }

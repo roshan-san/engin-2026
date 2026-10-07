@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { PageHeader } from "~/components/shared/PageHeader";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import {
 	type Entry,
@@ -14,8 +17,8 @@ export function MyHackathonsPage() {
 	const { entries, live, past } = useMyHackathons();
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-6">
-			<h1 className="text-xl font-semibold">My Hackathons</h1>
+		<div className="mx-auto w-full max-w-5xl space-y-8">
+			<PageHeader hidden title="My Hackathons" />
 			<PendingOffers />
 			{entries === undefined ? (
 				<PageLoading rows={3} />
@@ -53,16 +56,16 @@ type MyHackathonGroupProps = {
 
 function MyHackathonGroup({ heading, entries, empty }: MyHackathonGroupProps) {
 	return (
-		<section className="space-y-3">
-			<h2 className="text-sm font-medium text-muted-foreground">{heading}</h2>
+		<section className="space-y-2">
+			<SectionLabel>{heading}</SectionLabel>
 			{entries.length === 0 ? (
 				<p className="text-sm text-muted-foreground">{empty}</p>
 			) : (
-				<ul className="space-y-2">
+				<RowList>
 					{entries.map((entry) => (
 						<MyHackathonRow key={entry._id} entry={entry} />
 					))}
-				</ul>
+				</RowList>
 			)}
 		</section>
 	);

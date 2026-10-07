@@ -1,5 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useState } from "react";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { DeclineOfferDialog } from "~/features/hiring/offers/components/DeclineOfferDialog";
 import { useOffers } from "~/features/hiring/offers/hooks/useOffers";
@@ -24,13 +26,13 @@ export function PendingOffers() {
 	}
 
 	return (
-		<section className="space-y-3">
-			<h2 className="text-sm font-medium text-muted-foreground">Offers</h2>
-			<ul className="space-y-2">
+		<section className="space-y-2">
+			<SectionLabel>Offers</SectionLabel>
+			<RowList>
 				{pending.map((offer) => (
 					<li
 						key={offer._id}
-						className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center"
+						className="flex flex-col gap-3 px-2 py-3 sm:flex-row sm:items-center"
 					>
 						<p className="min-w-0 flex-1 break-words">
 							<span className="font-medium">{offer.startupName}</span> offered
@@ -57,7 +59,7 @@ export function PendingOffers() {
 						</div>
 					</li>
 				))}
-			</ul>
+			</RowList>
 
 			<DeclineOfferDialog
 				startupName={declining?.startupName ?? null}
