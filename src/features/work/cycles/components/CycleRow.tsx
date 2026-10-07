@@ -2,7 +2,7 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { Row } from "~/components/shared/RowList";
 import { Badge } from "~/components/ui/badge";
 import { cycleUrgency } from "~/features/work/cycles/constants";
-import { useCycleProgress } from "~/features/work/cycles/hooks/useCycles";
+import { useCycleProgress } from "~/features/work/cycles/hooks/useCycleTasks";
 import { formatDateRange } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 
@@ -23,14 +23,19 @@ const RING_LABEL: Record<Doc<"cycles">["status"], string> = {
 	closed: "Closed",
 };
 
-/** One Cycle in the list: status ring, title, dates, Done/total and a thin progress bar. */
+/**
+ * One Cycle in the list: status ring, title and dates. Only an active Cycle
+ * shows Done/total and a progress bar, so the list opens one board
+ * subscription per active Cycle rather than one per row.
+ */
 export function CycleRow({ slug, cycle }: CycleRowProps) {
 	const urgency = cycleUrgency(cycle.endAt, cycle.status);
-	const progress = useCycleProgress(cycle._id);
+	const progress = useCycleProgress(cycle._id, cycle.status === "active");
 	const percent =
 		progress && progress.total > 0
 			? Math.round((progress.done / progress.total) * 100)
 			: 0;
+	const showsProgress = cycle.status === "active";
 
 	return (
 		<Row
@@ -65,12 +70,14 @@ export function CycleRow({ slug, cycle }: CycleRowProps) {
 					) : urgency === "ending_soon" ? (
 						<Badge variant="secondary">Ending soon</Badge>
 					) : null}
-					<div aria-hidden className="h-1 w-16 rounded-full bg-muted sm:w-24">
-						<div
-							className="h-full rounded-full bg-primary"
-							style={{ width: `${percent}%` }}
-						/>
-					</div>
+					{showsProgress ? (
+						<div aria-hidden className="h-1 w-16 rounded-full bg-muted sm:w-24">
+							<div
+								className="h-full rounded-full bg-primary"
+								style={{ width: `${percent}%` }}
+							/>
+						</div>
+					) : null}
 				</div>
 			}
 		/>

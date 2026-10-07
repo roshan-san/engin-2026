@@ -15,18 +15,6 @@ export function useCycles(startupId: Id<"startups"> | undefined) {
 	return { cycles };
 }
 
-/** How much of one Cycle's board is Done; `undefined` while it loads. */
-export function useCycleProgress(cycleId: Id<"cycles">) {
-	const tasks = useQuery(api.work.tasks.listForCycle, { cycleId });
-	if (tasks === undefined) {
-		return undefined;
-	}
-	return {
-		done: tasks.filter((task) => task.status === "done").length,
-		total: tasks.length,
-	};
-}
-
 export type NewCycle = {
 	title: string;
 	goal: string;

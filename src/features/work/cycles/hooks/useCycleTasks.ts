@@ -28,6 +28,24 @@ export function useCycleTasks(cycleId: Id<"cycles">, isFounder: boolean) {
 }
 
 /**
+ * How much of one Cycle's board is Done; `undefined` while it loads or when
+ * `enabled` is false (no subscription is opened then).
+ */
+export function useCycleProgress(cycleId: Id<"cycles">, enabled: boolean) {
+	const tasks = useQuery(
+		api.work.tasks.listForCycle,
+		enabled ? { cycleId } : "skip",
+	);
+	if (tasks === undefined) {
+		return undefined;
+	}
+	return {
+		done: tasks.filter((task) => task.status === "done").length,
+		total: tasks.length,
+	};
+}
+
+/**
  * Every board action on one Cycle, with one pending Task at a time. Refusals
  * show the backend's words.
  */

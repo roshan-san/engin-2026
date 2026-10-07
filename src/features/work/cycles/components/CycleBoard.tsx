@@ -224,7 +224,7 @@ function LaneHeader({ name, image, doneCount }: LaneHeaderProps) {
 		<div className="flex min-w-0 items-center gap-2">
 			<Avatar className="size-6 rounded-full">
 				{image ? <AvatarImage src={image} alt="" /> : null}
-				<AvatarFallback className="text-[10px]">
+				<AvatarFallback className="bg-border text-[10px] text-foreground">
 					{initials(name, null)}
 				</AvatarFallback>
 			</Avatar>
@@ -478,7 +478,12 @@ function Board({
 					</div>
 					<DragOverlay>
 						{active ? (
-							<div className="cursor-grabbing rounded-lg border bg-card p-3 shadow-lg">
+							<div
+								className={cn(
+									"cursor-grabbing rounded-lg border bg-card p-3 shadow-lg",
+									active.status === "review" && "border-l-2 border-l-primary",
+								)}
+							>
 								<TaskSummary
 									task={active}
 									isFounder={isFounder}
