@@ -40,6 +40,39 @@ test("a Founder creates a Role, then publishes a hackathon with the free credit"
 	await expect(page.getByText("0/5 participants")).toBeVisible();
 });
 
+test("a Founder creates a Role from the Hiring screen", async ({ pageAs }) => {
+	const founder = await signUp("Fay");
+	const { slug } = await startupOf(founder);
+	const page = await pageAs(founder);
+
+	await page.goto(`/s/${slug}/hiring`);
+	await page.getByRole("button", { name: "New Role" }).click();
+	await page.getByLabel("Title").fill("Designer");
+	await page.getByLabel("Short description").fill("Designs the product");
+	await page.getByRole("button", { name: "Create Role" }).click();
+	await page.getByRole("tab", { name: "Roles" }).click();
+
+	await expect(
+		page.getByRole("listitem").filter({ hasText: "Designer" }),
+	).toBeVisible();
+});
+
+test("the New Hackathon form does not scroll sideways on a phone", async ({
+	pageAs,
+}) => {
+	const founder = await signUp("Fay");
+	const { slug } = await startupOf(founder);
+	const page = await pageAs(founder);
+
+	await page.setViewportSize({ width: 390, height: 800 });
+	await page.goto(`/s/${slug}/hiring/new`);
+	await expect(page.getByLabel("Title", { exact: true })).toBeVisible();
+
+	expect(
+		await page.evaluate(() => document.documentElement.scrollWidth),
+	).toBeLessThanOrEqual(390);
+});
+
 test("a Founder saves a hackathon draft for later", async ({ pageAs }) => {
 	const founder = await signUp("Fay");
 	const { slug } = await startupOf(founder);

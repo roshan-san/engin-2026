@@ -1,6 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
 	Dialog,
@@ -36,10 +35,7 @@ export function NewRoleDialog({
 				</DialogHeader>
 				<NewRoleForm
 					startupId={startupId}
-					onCreated={() => {
-						setOpen(false);
-						toast.success("Role created");
-					}}
+					onCreated={() => setOpen(false)}
 					onCancel={() => setOpen(false)}
 				/>
 			</DialogContent>

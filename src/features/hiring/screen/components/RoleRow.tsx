@@ -21,11 +21,15 @@ export function RoleRow({ role, isFounder, isClosing, onClose }: RoleRowProps) {
 		<Row
 			className={cn(!isOpen && "opacity-70")}
 			title={role.title}
-			meta={[
-				typeLabel,
-				`${role.headcount} to hire`,
-				...(role.skills.length > 0 ? [role.skills.join(", ")] : []),
-			].join(" · ")}
+			meta={
+				<span className="whitespace-normal">
+					{[
+						typeLabel,
+						`${role.headcount} to hire`,
+						...(role.skills.length > 0 ? [role.skills.join(", ")] : []),
+					].join(" · ")}
+				</span>
+			}
 			trailing={
 				isOpen ? (
 					isFounder ? (
