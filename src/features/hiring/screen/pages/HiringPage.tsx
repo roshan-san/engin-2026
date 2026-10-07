@@ -1,8 +1,10 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { HACKATHON_STATUS_GROUPS } from "~/features/hiring/hackathons/constants";
 import { useRoles } from "~/features/hiring/roles/hooks/useRoles";
 import { CreditBadge } from "~/features/hiring/screen/components/CreditBadge";
 import {
@@ -14,7 +16,6 @@ import { RoleRow } from "~/features/hiring/screen/components/RoleRow";
 import { useCheckoutWatch } from "~/features/hiring/screen/hooks/useCheckoutWatch";
 import { useCredits } from "~/features/hiring/screen/hooks/useCredits";
 import { useHiringScreen } from "~/features/hiring/screen/hooks/useHiringScreen";
-import { HACKATHON_STATUS_GROUPS } from "~/features/hiring/hackathons/constants";
 import { useStartupRoute } from "~/shell/startup/StartupRoute";
 
 /** The founders' hiring home: hackathons and Roles; members see it read-only. */
@@ -120,10 +121,9 @@ function RolesTab({ startupId, isFounder }: TabProps) {
 	}
 	if (openRoles.length === 0 && closedRoles.length === 0) {
 		return (
-			<p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-				No Roles yet.
-				{isFounder ? " Add one when you set up a hackathon." : null}
-			</p>
+			<EmptyState
+				title={`No Roles yet.${isFounder ? " Add one when you set up a hackathon." : ""}`}
+			/>
 		);
 	}
 

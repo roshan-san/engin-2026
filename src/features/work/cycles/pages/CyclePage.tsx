@@ -46,7 +46,7 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 				{back}
 				<EmptyState
 					title="You are not part of this Cycle"
-					description="Ask a Founder to add you to it."
+					body="Ask a Founder to add you to it."
 				/>
 			</div>
 		);

@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { Badge } from "~/components/ui/badge";
-import { useThreads } from "~/features/hiring/threads/hooks/useThreads";
 import { HACKATHON_STATUS_LABELS } from "~/features/hiring/hackathons/constants";
+import { useThreads } from "~/features/hiring/threads/hooks/useThreads";
 import { formatDate, formatRelativeTime } from "~/lib/dates";
 
 /** One thread per Hackathon the user reads Announcements of. */
@@ -23,7 +23,7 @@ export function ThreadsPage() {
 			) : threads.length === 0 ? (
 				<EmptyState
 					title="No Threads yet"
-					description="Once you join a hackathon, or your startup publishes one, its announcements show up here."
+					body="Once you join a hackathon, or your startup publishes one, its announcements show up here."
 				/>
 			) : (
 				<ul className="divide-y rounded-lg border">

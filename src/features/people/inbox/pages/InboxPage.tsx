@@ -31,7 +31,7 @@ export function InboxPage() {
 			{isEmpty ? (
 				<EmptyState
 					title="Nothing here yet"
-					description="Invites, Offers and notifications show up here."
+					body="Invites, Offers and notifications show up here."
 				/>
 			) : null}
 			{inbox.waiting.length > 0 ? (

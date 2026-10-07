@@ -40,7 +40,7 @@ export function ActivityDashboard({ startupId }: ActivityDashboardProps) {
 				{dashboard.activity.length === 0 ? (
 					<EmptyState
 						title="No activity yet"
-						description="Joins, Cycles, verified Tasks and hackathons will show up here."
+						body="Joins, Cycles, verified Tasks and hackathons will show up here."
 					/>
 				) : (
 					<ul className="space-y-1">

@@ -2,8 +2,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import {
 	DndContext,
 	type DragEndEvent,
-	DragOverlay,
 	type DragOverEvent,
+	DragOverlay,
 	type DragStartEvent,
 	KeyboardSensor,
 	MouseSensor,
@@ -157,7 +157,7 @@ function HackathonBoard({
 		return (
 			<EmptyState
 				title="Nobody joined this hackathon"
-				description="Accepted Participants each get a lane here once it starts."
+				body="Accepted Participants each get a lane here once it starts."
 			/>
 		);
 	}

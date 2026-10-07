@@ -2,14 +2,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageLoading } from "~/components/globals/PageLoading";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { Button } from "~/components/ui/button";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyTitle,
-} from "~/components/ui/empty";
 import { HackathonForm } from "~/features/hiring/hackathons/components/HackathonForm";
 import { useHackathonDraft } from "~/features/hiring/hackathons/hooks/useHackathonDraft";
 import { defaultHackathonValues } from "~/features/hiring/hackathons/hooks/useHackathonForm";
@@ -76,27 +70,25 @@ function EditHackathon({
 	}
 	if (draft.kind !== "ready") {
 		return (
-			<Empty className="border border-dashed">
-				<EmptyHeader>
-					<EmptyTitle>
-						{draft.kind === "notDraft"
-							? "This hackathon can't be edited"
-							: "Hackathon not found"}
-					</EmptyTitle>
-					<EmptyDescription>
-						{draft.kind === "notDraft"
-							? "Only an unpublished hackathon's details can be edited here."
-							: "It may have been removed, or it belongs to another Startup."}
-					</EmptyDescription>
-				</EmptyHeader>
-				<EmptyContent>
+			<EmptyState
+				title={
+					draft.kind === "notDraft"
+						? "This hackathon can't be edited"
+						: "Hackathon not found"
+				}
+				body={
+					draft.kind === "notDraft"
+						? "Only an unpublished hackathon's details can be edited here."
+						: "It may have been removed, or it belongs to another Startup."
+				}
+				action={
 					<Button asChild variant="outline">
 						<Link to="/s/$slug/hiring" params={{ slug }}>
 							Back to Hiring
 						</Link>
 					</Button>
-				</EmptyContent>
-			</Empty>
+				}
+			/>
 		);
 	}
 

@@ -1,12 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { Button } from "~/components/ui/button";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyTitle,
-} from "~/components/ui/empty";
 import { useCredits } from "~/features/hiring/screen/hooks/useCredits";
 
 type HiringEmptyStateProps = {
@@ -20,34 +14,30 @@ export function HiringEmptyState({ slug, isFounder }: HiringEmptyStateProps) {
 
 	if (!isFounder) {
 		return (
-			<Empty className="border border-dashed">
-				<EmptyHeader>
-					<EmptyTitle>No Hackathons yet</EmptyTitle>
-					<EmptyDescription>
-						Your Founders' hiring Hackathons will show up here.
-					</EmptyDescription>
-				</EmptyHeader>
-			</Empty>
+			<EmptyState
+				title="No Hackathons yet"
+				body="Your Founders' hiring Hackathons will show up here."
+			/>
 		);
 	}
 
 	return (
-		<Empty className="border border-dashed">
-			<EmptyHeader>
-				<EmptyTitle>Run your first hiring Hackathon</EmptyTitle>
-				<EmptyDescription>
+		<EmptyState
+			title="Run your first hiring Hackathon"
+			body={
+				<>
 					Pick a Role, set the dates and the Starter Tasks, and see how people
 					actually work before you hire.
 					{hasSignupCredit ? " Your first hackathon is on us." : null}
-				</EmptyDescription>
-			</EmptyHeader>
-			<EmptyContent>
+				</>
+			}
+			action={
 				<Button asChild>
 					<Link to="/s/$slug/hiring/new" params={{ slug }}>
 						Set up a Hackathon
 					</Link>
 				</Button>
-			</EmptyContent>
-		</Empty>
+			}
+		/>
 	);
 }

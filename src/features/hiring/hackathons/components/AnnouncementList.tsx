@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { formatDate, formatRelativeTime } from "~/lib/dates";
 
 export type Announcement = {
@@ -18,11 +19,7 @@ export function AnnouncementList({ announcements }: AnnouncementListProps) {
 		return <p className="text-sm text-muted-foreground">Loading…</p>;
 	}
 	if (announcements.length === 0) {
-		return (
-			<p className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-				No announcements yet.
-			</p>
-		);
+		return <EmptyState title="No announcements yet." />;
 	}
 	return (
 		<ul className="space-y-2">

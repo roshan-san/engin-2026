@@ -15,18 +15,18 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
-	APPLICATION_STATUS_LABELS,
-	type ApplicationStatus,
-} from "~/features/hiring/myHackathons/constants";
-import { useRespondToOffer } from "~/features/hiring/offers/hooks/useRespondToOffer";
-import {
+	type HackathonStatus,
 	OFFER_STATUS_LABELS,
 	type OfferStatus,
-	type HackathonStatus,
 	type Verdict,
 	verdictLabel,
 } from "~/features/hiring/hackathons/constants";
 import { useDecideApplication } from "~/features/hiring/hackathons/hooks/useDecideApplication";
+import {
+	APPLICATION_STATUS_LABELS,
+	type ApplicationStatus,
+} from "~/features/hiring/myHackathons/constants";
+import { useRespondToOffer } from "~/features/hiring/offers/hooks/useRespondToOffer";
 
 type Applicant = {
 	_id: Id<"applications">;
@@ -80,7 +80,7 @@ export function HackathonApplicants({
 			{applicants.length === 0 ? (
 				<EmptyState
 					title="No applicants yet"
-					description="People who apply to this hackathon will appear here."
+					body="People who apply to this hackathon will appear here."
 				/>
 			) : (
 				<ul className="space-y-2">

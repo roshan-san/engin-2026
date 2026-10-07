@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { Button } from "~/components/ui/button";
 import {
 	type Verdict,
@@ -14,10 +15,10 @@ export function ProfileEvaluations() {
 		<section className="space-y-3">
 			<h2 className="text-lg font-semibold">Evaluations</h2>
 			{evaluations === undefined ? null : evaluations.length === 0 ? (
-				<p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-					No evaluations yet. Founders' written evaluations appear here after a
-					Hackathon closes.
-				</p>
+				<EmptyState
+					title="No evaluations yet."
+					body="Founders' written evaluations appear here after a Hackathon closes."
+				/>
 			) : (
 				<ul className="space-y-2">
 					{evaluations.map((item) => (

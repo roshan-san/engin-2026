@@ -35,7 +35,7 @@ export function MyTasksPage() {
 			) : tasks.length === 0 ? (
 				<EmptyState
 					title="No Tasks yet"
-					description="Tasks you take on a Cycle or work on in a hackathon show up here."
+					body="Tasks you take on a Cycle or work on in a hackathon show up here."
 					action={
 						<Button asChild size="sm">
 							<Link to="/discover">Find a Hackathon</Link>

@@ -22,7 +22,7 @@ export function MyHackathonsPage() {
 			) : entries.length === 0 ? (
 				<EmptyState
 					title="No Hackathons yet"
-					description="Hackathons you apply to show up here, with where each one stands."
+					body="Hackathons you apply to show up here, with where each one stands."
 					action={
 						<Button asChild size="sm">
 							<Link to="/discover">Find a Hackathon</Link>

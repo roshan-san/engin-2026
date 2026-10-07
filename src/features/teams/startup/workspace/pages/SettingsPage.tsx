@@ -39,7 +39,7 @@ export function SettingsPage() {
 				<h1 className="text-xl font-semibold">Settings</h1>
 				<EmptyState
 					title="Only Founders can change settings"
-					description="Ask a founder if something about the Startup needs changing."
+					body="Ask a founder if something about the Startup needs changing."
 				/>
 			</div>
 		);

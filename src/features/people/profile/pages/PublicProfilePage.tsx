@@ -1,8 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
+import { EmptyState } from "~/components/shared/EmptyState";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import {
+	HackathonHistory,
+	type HackathonHistoryEntry,
+} from "~/features/people/profile/components/HackathonHistory";
 import {
 	ProofOfWork,
 	type ProofOfWorkData,
@@ -11,10 +16,6 @@ import {
 	type ScoreEvidence,
 	ScoreEvidenceCard,
 } from "~/features/people/profile/components/ScoreEvidence";
-import {
-	HackathonHistory,
-	type HackathonHistoryEntry,
-} from "~/features/people/profile/components/HackathonHistory";
 import { initials } from "~/lib/initials";
 
 type PublicProfile = {
@@ -125,9 +126,7 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 			<section className="space-y-3">
 				<h2 className="text-lg font-semibold">Startups</h2>
 				{profile.startups.length === 0 ? (
-					<p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-						No public Startups yet.
-					</p>
+					<EmptyState title="No public Startups yet." />
 				) : (
 					<ul className="space-y-2">
 						{profile.startups.map((startup) => (

@@ -42,7 +42,7 @@ export function WorkspaceApplicants({ startupId }: WorkspaceApplicantsProps) {
 			) : applications.length === 0 ? (
 				<EmptyState
 					title="No applications"
-					description="When people apply to Hackathons, they show up here."
+					body="When people apply to Hackathons, they show up here."
 				/>
 			) : (
 				<ul className="space-y-2">

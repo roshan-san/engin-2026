@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
+import { EmptyState } from "~/components/shared/EmptyState";
 import {
 	ADD_PROOF_FIRST,
 	canDrop,
@@ -80,8 +81,8 @@ export function BoardColumn({
 			) : null}
 			<ul className="min-h-12 space-y-2">
 				{count === 0 && empty ? (
-					<li className="rounded-lg border border-dashed p-3 text-center text-xs text-muted-foreground">
-						{empty}
+					<li>
+						<EmptyState title={empty} />
 					</li>
 				) : null}
 				{children}

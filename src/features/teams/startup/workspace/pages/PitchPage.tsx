@@ -59,7 +59,7 @@ export function PitchPage() {
 				<h1 className="text-xl font-semibold">Pitch</h1>
 				<EmptyState
 					title="Only Founders edit the Pitch"
-					description={
+					body={
 						pitch.isStealth
 							? "This Startup is in stealth, so it has no public Pitch."
 							: "See what everyone else sees on the public Pitch."

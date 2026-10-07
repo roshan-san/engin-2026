@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { EmptyState } from "~/components/shared/EmptyState";
 import {
 	type Verdict,
 	verdictLabel,
@@ -23,9 +24,7 @@ export function HackathonHistory({ hackathonHistory }: HackathonHistoryProps) {
 		<section className="space-y-3">
 			<h2 className="text-lg font-semibold">Hackathons</h2>
 			{hackathonHistory.length === 0 ? (
-				<p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-					No Hackathon verdicts yet.
-				</p>
+				<EmptyState title="No Hackathon verdicts yet." />
 			) : (
 				<ul className="space-y-2">
 					{hackathonHistory.map((item) => (

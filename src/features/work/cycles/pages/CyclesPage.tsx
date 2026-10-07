@@ -27,7 +27,7 @@ export function CyclesPage() {
 			) : cycles.length === 0 ? (
 				<EmptyState
 					title="No Cycles yet"
-					description={
+					body={
 						isFounder
 							? "Plan a Cycle to give the team a board to work on."
 							: "You'll see Cycles here once a Founder adds you to one."
