@@ -1,6 +1,9 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { DeclineOfferDialog } from "~/features/hiring/offers/components/DeclineOfferDialog";
 import type { WaitingItem } from "~/features/people/inbox/hooks/useInbox";
@@ -35,54 +38,64 @@ export function WaitingList({
 	}
 
 	return (
-		<section className="space-y-3">
-			<h2 className="text-sm font-medium text-muted-foreground">
-				Waiting on you
-			</h2>
-			<ul className="space-y-2">
+		<section className="space-y-2">
+			<SectionLabel>Waiting on you</SectionLabel>
+			<RowList>
 				{items.map((item) => (
 					<li
 						key={item.id}
-						className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center"
+						className="flex flex-col gap-3 px-2 py-3 sm:flex-row sm:items-center"
 					>
-						<div className="min-w-0 flex-1 space-y-1">
-							{item.kind === "invite" ? (
-								<p className="break-words">
-									<span className="font-medium">{item.inviterName}</span>{" "}
-									invited you to{" "}
-									<Link
-										to="/invite/$token"
-										params={{ token: item.token }}
-										className="font-medium underline-offset-4 hover:underline"
-									>
-										{item.startupName}
-									</Link>{" "}
-									as {item.role === "founder" ? "a co-founder" : "a member"}.
-								</p>
-							) : (
-								<p className="break-words">
-									<span className="font-medium">{item.startupName}</span>{" "}
-									offered you the {item.roleTitle} Role.{" "}
-									{item.href ? (
+						<div className="flex min-w-0 flex-1 items-start gap-3">
+							<Avatar className="size-8 rounded-full">
+								<AvatarFallback className="text-xs">
+									{(item.kind === "invite"
+										? item.inviterName
+										: item.startupName
+									)
+										.charAt(0)
+										.toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+							<div className="min-w-0 flex-1 space-y-0.5">
+								{item.kind === "invite" ? (
+									<p className="break-words text-sm">
+										<span className="font-medium">{item.inviterName}</span>{" "}
+										invited you to{" "}
 										<Link
-											to={item.href}
-											className="text-sm text-muted-foreground underline underline-offset-4"
+											to="/invite/$token"
+											params={{ token: item.token }}
+											className="font-medium underline-offset-4 hover:underline"
 										>
-											See the Hackathon
-										</Link>
-									) : null}
-								</p>
-							)}
-							<time
-								dateTime={new Date(item.createdAt).toISOString()}
-								title={formatDate(item.createdAt)}
-								className="text-xs text-muted-foreground"
-							>
-								{item.kind === "invite" ? "Invite" : "Offer"} ·{" "}
-								{formatRelativeTime(item.createdAt)}
-							</time>
+											{item.startupName}
+										</Link>{" "}
+										as {item.role === "founder" ? "a co-founder" : "a member"}.
+									</p>
+								) : (
+									<p className="break-words text-sm">
+										<span className="font-medium">{item.startupName}</span>{" "}
+										offered you the {item.roleTitle} Role.{" "}
+										{item.href ? (
+											<Link
+												to={item.href}
+												className="text-muted-foreground underline underline-offset-4"
+											>
+												See the Hackathon
+											</Link>
+										) : null}
+									</p>
+								)}
+								<time
+									dateTime={new Date(item.createdAt).toISOString()}
+									title={formatDate(item.createdAt)}
+									className="block text-xs text-muted-foreground"
+								>
+									{item.kind === "invite" ? "Invite" : "Offer"} ·{" "}
+									{formatRelativeTime(item.createdAt)}
+								</time>
+							</div>
 						</div>
-						<div className="flex gap-2">
+						<div className="flex gap-2 pl-11 sm:pl-0">
 							<Button
 								type="button"
 								size="sm"
@@ -114,7 +127,7 @@ export function WaitingList({
 						</div>
 					</li>
 				))}
-			</ul>
+			</RowList>
 
 			<DeclineOfferDialog
 				startupName={declining?.startupName ?? null}

@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
-import { Badge } from "~/components/ui/badge";
+import { PageHeader } from "~/components/shared/PageHeader";
 import { Button } from "~/components/ui/button";
-import { useThread } from "~/features/hiring/threads/hooks/useThread";
-import { AnnouncementList } from "~/features/hiring/hackathons/components/AnnouncementList";
 import { HACKATHON_STATUS_LABELS } from "~/features/hiring/hackathons/constants";
+import { ThreadMessages } from "~/features/hiring/threads/components/ThreadMessages";
+import { useThread } from "~/features/hiring/threads/hooks/useThread";
 
 type ThreadPageProps = {
 	readonly hackathonId: string;
@@ -28,26 +28,16 @@ export function ThreadPage({ hackathonId }: ThreadPageProps) {
 				<PageLoading rows={3} />
 			) : (
 				<>
-					<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-						<div className="min-w-0 space-y-1">
-							<h1 className="break-words text-xl font-semibold">
-								{thread.title}
-							</h1>
-							<p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-								<span className="break-words">{thread.startupName}</span>
-								<Badge variant="secondary">
-									{HACKATHON_STATUS_LABELS[thread.status]}
-								</Badge>
-							</p>
-						</div>
-						<Button asChild size="sm" variant="outline" className="self-start">
-							<Link to={thread.href}>Open Hackathon</Link>
-						</Button>
-					</div>
-					<p className="text-sm text-muted-foreground">
-						Announcements from the Founders to every Participant.
-					</p>
-					<AnnouncementList announcements={thread.announcements} />
+					<PageHeader
+						title={thread.title}
+						meta={`${thread.startupName} · ${HACKATHON_STATUS_LABELS[thread.status]}`}
+						actions={
+							<Button asChild size="sm" variant="outline">
+								<Link to={thread.href}>Open Hackathon</Link>
+							</Button>
+						}
+					/>
+					<ThreadMessages announcements={thread.announcements} />
 				</>
 			)}
 		</div>

@@ -1,5 +1,7 @@
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { PageHeader } from "~/components/shared/PageHeader";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { NotificationList } from "~/features/people/inbox/components/NotificationList";
 import { WaitingList } from "~/features/people/inbox/components/WaitingList";
@@ -15,8 +17,8 @@ export function InboxPage() {
 		inbox.notifications === undefined
 	) {
 		return (
-			<div className="mx-auto w-full max-w-3xl space-y-6">
-				<h1 className="text-xl font-semibold">Inbox</h1>
+			<div className="mx-auto w-full max-w-5xl space-y-6">
+				<PageHeader hidden title="Inbox" />
 				<PageLoading rows={4} />
 			</div>
 		);
@@ -26,8 +28,23 @@ export function InboxPage() {
 		inbox.waiting.length === 0 && inbox.notifications.length === 0;
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-6">
-			<h1 className="text-xl font-semibold">Inbox</h1>
+		<div className="mx-auto w-full max-w-5xl space-y-6">
+			<PageHeader
+				hidden
+				title="Inbox"
+				actions={
+					inbox.unreadCount > 0 ? (
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							onClick={() => void inbox.readAll()}
+						>
+							Mark all read
+						</Button>
+					) : null
+				}
+			/>
 			{isEmpty ? (
 				<EmptyState
 					title="Nothing here yet"
@@ -45,23 +62,8 @@ export function InboxPage() {
 				/>
 			) : null}
 			{inbox.notifications.length > 0 ? (
-				<section className="space-y-3">
-					<div className="flex items-center justify-between gap-2">
-						<h2 className="text-sm font-medium text-muted-foreground">
-							Notifications
-							{inbox.unreadCount > 0 ? ` · ${inbox.unreadCount} unread` : ""}
-						</h2>
-						{inbox.unreadCount > 0 ? (
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								onClick={() => void inbox.readAll()}
-							>
-								Mark all read
-							</Button>
-						) : null}
-					</div>
+				<section className="space-y-2">
+					<SectionLabel>Notifications</SectionLabel>
 					<NotificationList
 						notifications={inbox.notifications}
 						onRead={(id) => void inbox.read(id)}

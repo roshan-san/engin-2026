@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import { MessagesSquare } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
-import { Badge } from "~/components/ui/badge";
+import { PageHeader } from "~/components/shared/PageHeader";
+import { Row, RowList } from "~/components/shared/RowList";
 import { HACKATHON_STATUS_LABELS } from "~/features/hiring/hackathons/constants";
 import { useThreads } from "~/features/hiring/threads/hooks/useThreads";
 import { formatDate, formatRelativeTime } from "~/lib/dates";
@@ -11,65 +12,45 @@ export function ThreadsPage() {
 	const { threads } = useThreads();
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-6">
-			<div>
-				<h1 className="text-xl font-semibold">Threads</h1>
-				<p className="text-sm text-muted-foreground">
-					Announcements from the Founders of every Hackathon you're in.
-				</p>
-			</div>
+		<div className="mx-auto w-full max-w-5xl space-y-6">
+			<PageHeader hidden title="Threads" />
 			{threads === undefined ? (
 				<PageLoading rows={3} />
 			) : threads.length === 0 ? (
 				<EmptyState
+					icon={MessagesSquare}
 					title="No Threads yet"
 					body="Once you join a hackathon, or your startup publishes one, its announcements show up here."
 				/>
 			) : (
-				<ul className="divide-y rounded-lg border">
+				<RowList>
 					{threads.map((thread) => (
-						<li key={thread.hackathonId}>
-							<Link
-								to="/threads/$hackathonId"
-								params={{ hackathonId: thread.hackathonId }}
-								className="block space-y-1 p-3 hover:bg-muted/40"
-							>
-								<div className="flex items-start justify-between gap-2">
-									<p className="min-w-0 break-words font-medium">
-										{thread.title}
-									</p>
-									<Badge variant="secondary" className="shrink-0">
-										{HACKATHON_STATUS_LABELS[thread.status]}
-									</Badge>
-								</div>
-								<p className="text-sm break-words text-muted-foreground">
-									{thread.startupName} · {thread.announcementCount}{" "}
-									{thread.announcementCount === 1
-										? "announcement"
-										: "announcements"}
-								</p>
-								{thread.latest ? (
-									<p className="flex min-w-0 gap-2 text-sm">
-										<span className="min-w-0 flex-1 truncate">
-											{thread.latest.body}
-										</span>
+						<Row
+							key={thread.hackathonId}
+							to="/threads/$hackathonId"
+							params={{ hackathonId: thread.hackathonId }}
+							title={thread.title}
+							meta={
+								thread.latest
+									? `${thread.startupName} · ${thread.latest.body}`
+									: `${thread.startupName} · No announcements yet.`
+							}
+							trailing={
+								<div className="flex flex-col items-end gap-0.5 text-xs">
+									<span>{HACKATHON_STATUS_LABELS[thread.status]}</span>
+									{thread.latest ? (
 										<time
 											dateTime={new Date(thread.latest.createdAt).toISOString()}
 											title={formatDate(thread.latest.createdAt)}
-											className="shrink-0 text-xs text-muted-foreground"
 										>
 											{formatRelativeTime(thread.latest.createdAt)}
 										</time>
-									</p>
-								) : (
-									<p className="text-sm text-muted-foreground">
-										No announcements yet.
-									</p>
-								)}
-							</Link>
-						</li>
+									) : null}
+								</div>
+							}
+						/>
 					))}
-				</ul>
+				</RowList>
 			)}
 		</div>
 	);
