@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { GlowHero } from "~/components/shared/GlowHero";
+import { Row, RowList } from "~/components/shared/RowList";
+import { ScoreBadge } from "~/components/shared/ScoreBadge";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -14,9 +18,11 @@ import {
 } from "~/features/people/profile/components/ProofOfWork";
 import {
 	type ScoreEvidence,
-	ScoreEvidenceCard,
+	ScoreEvidenceChips,
+	ScoreEvidenceNote,
 } from "~/features/people/profile/components/ScoreEvidence";
 import { initials } from "~/lib/initials";
+import { StartupAvatar } from "~/shell/topbar/StartupAvatar";
 
 type PublicProfile = {
 	name: string | null;
@@ -61,6 +67,12 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 	}
 
 	const displayName = profile.name ?? profile.username ?? "Contributor";
+	const handle = [
+		profile.username ? `@${profile.username}` : null,
+		profile.location,
+	]
+		.filter(Boolean)
+		.join(" · ");
 	const links = [
 		{ href: profile.githubUrl, label: "GitHub" },
 		{ href: profile.linkedinUrl, label: "LinkedIn" },
@@ -70,82 +82,83 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 	);
 
 	return (
-		<div className="mx-auto max-w-2xl space-y-8 px-4 py-10">
-			<div className="flex items-start gap-4">
-				<Avatar className="size-16">
-					{profile.image ? (
-						<AvatarImage src={profile.image} alt={displayName} />
-					) : null}
-					<AvatarFallback>{initials(profile.name, null)}</AvatarFallback>
-				</Avatar>
-				<div className="min-w-0 space-y-1">
-					<h1 className="text-2xl font-bold sm:text-3xl">{displayName}</h1>
-					{profile.username ? (
-						<p className="text-muted-foreground">@{profile.username}</p>
-					) : null}
-					{profile.location ? (
-						<p className="text-sm text-muted-foreground">{profile.location}</p>
+		<div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
+			<GlowHero
+				eyebrow={
+					<Avatar className="size-14">
+						{profile.image ? (
+							<AvatarImage src={profile.image} alt={displayName} />
+						) : null}
+						<AvatarFallback>{initials(profile.name, null)}</AvatarFallback>
+					</Avatar>
+				}
+				title={displayName}
+				subtitle={handle || undefined}
+			>
+				<div className="space-y-4">
+					<div className="flex flex-wrap items-center gap-2">
+						<ScoreBadge score={profile.evidence.score} />
+						<ScoreEvidenceChips evidence={profile.evidence} />
+					</div>
+					{links.length > 0 ? (
+						<div className="flex flex-wrap gap-2">
+							{links.map((link) => (
+								<Button key={link.label} asChild variant="outline" size="sm">
+									<a href={link.href} target="_blank" rel="noreferrer">
+										{link.label}
+									</a>
+								</Button>
+							))}
+						</div>
 					) : null}
 				</div>
-			</div>
+			</GlowHero>
 
-			{profile.bio ? (
-				<p className="whitespace-pre-wrap text-muted-foreground">
-					{profile.bio}
-				</p>
+			{profile.bio || profile.skills.length > 0 ? (
+				<section className="max-w-3xl space-y-4">
+					{profile.bio ? (
+						<p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+							{profile.bio}
+						</p>
+					) : null}
+					{profile.skills.length > 0 ? (
+						<ul className="flex flex-wrap gap-2">
+							{profile.skills.map((skill) => (
+								<li key={skill}>
+									<Badge variant="secondary">{skill}</Badge>
+								</li>
+							))}
+						</ul>
+					) : null}
+				</section>
 			) : null}
-
-			{profile.skills.length > 0 ? (
-				<ul className="flex flex-wrap gap-2">
-					{profile.skills.map((skill) => (
-						<li key={skill}>
-							<Badge variant="secondary">{skill}</Badge>
-						</li>
-					))}
-				</ul>
-			) : null}
-
-			{links.length > 0 ? (
-				<div className="flex flex-wrap gap-2">
-					{links.map((link) => (
-						<Button key={link.label} asChild variant="outline" size="sm">
-							<a href={link.href} target="_blank" rel="noreferrer">
-								{link.label}
-							</a>
-						</Button>
-					))}
-				</div>
-			) : null}
-
-			<ScoreEvidenceCard evidence={profile.evidence} />
 
 			<ProofOfWork proofOfWork={profile.proofOfWork} />
 
 			<HackathonHistory hackathonHistory={profile.hackathonHistory} />
 
-			<section className="space-y-3">
-				<h2 className="text-lg font-semibold">Startups</h2>
+			<section className="space-y-1">
+				<SectionLabel>Startups</SectionLabel>
 				{profile.startups.length === 0 ? (
 					<EmptyState title="No public Startups yet." />
 				) : (
-					<ul className="space-y-2">
+					<RowList>
 						{profile.startups.map((startup) => (
-							<li key={startup._id}>
-								<Link
-									to="/startup/$slug"
-									params={{ slug: startup.slug }}
-									className="block rounded-lg border p-4 hover:bg-muted/30"
-								>
-									<p className="font-medium">{startup.name}</p>
-									<p className="text-sm text-muted-foreground">
-										{startup.tagline ?? startup.role}
-									</p>
-								</Link>
-							</li>
+							<Row
+								key={startup._id}
+								leading={<StartupAvatar name={startup.name} />}
+								title={startup.name}
+								meta={startup.tagline}
+								trailing={<span className="capitalize">{startup.role}</span>}
+								to="/startup/$slug"
+								params={{ slug: startup.slug }}
+							/>
 						))}
-					</ul>
+					</RowList>
 				)}
 			</section>
+
+			<ScoreEvidenceNote />
 		</div>
 	);
 }

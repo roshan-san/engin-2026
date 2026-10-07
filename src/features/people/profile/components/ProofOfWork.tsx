@@ -1,4 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Row, RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
+import { StartupAvatar } from "~/shell/topbar/StartupAvatar";
 
 export type ProofOfWorkData = {
 	startups: Array<{
@@ -32,44 +34,35 @@ export function ProofOfWork({ proofOfWork }: ProofOfWorkProps) {
 	}
 
 	return (
-		<section className="space-y-3">
-			<div>
-				<h2 className="text-lg font-semibold">Proof of Work</h2>
-				<p className="text-sm text-muted-foreground">
-					Internal work a Founder verified. Shown as evidence; it does not
-					change Score.
-				</p>
-			</div>
-			<ul className="space-y-2">
+		<section className="space-y-1">
+			<SectionLabel>Proof of Work</SectionLabel>
+			<p className="text-sm text-muted-foreground">
+				Internal work a Founder verified. Shown as evidence; it does not change
+				Score.
+			</p>
+			<RowList>
 				{proofOfWork.startups.map((startup) => (
-					<li key={startup.startupId}>
-						<Link
-							to="/startup/$slug"
-							params={{ slug: startup.slug }}
-							className="block rounded-lg border p-4 hover:bg-muted/30"
-						>
-							<p className="font-medium">{startup.name}</p>
-							<p className="text-sm text-muted-foreground">
-								{workSummary(startup.verifiedTasks, startup.cyclesCompleted)}
-							</p>
-						</Link>
-					</li>
+					<Row
+						key={startup.startupId}
+						leading={<StartupAvatar name={startup.name} />}
+						title={startup.name}
+						meta={workSummary(startup.verifiedTasks, startup.cyclesCompleted)}
+						to="/startup/$slug"
+						params={{ slug: startup.slug }}
+					/>
 				))}
 				{hasPrivate ? (
-					<li className="rounded-lg border p-4">
-						<p className="font-medium">
-							{proofOfWork.private.startups} private startup
-							{proofOfWork.private.startups === 1 ? "" : "s"}
-						</p>
-						<p className="text-sm text-muted-foreground">
-							{workSummary(
-								proofOfWork.private.verifiedTasks,
-								proofOfWork.private.cyclesCompleted,
-							)}
-						</p>
-					</li>
+					<Row
+						title={`${proofOfWork.private.startups} private startup${
+							proofOfWork.private.startups === 1 ? "" : "s"
+						}`}
+						meta={workSummary(
+							proofOfWork.private.verifiedTasks,
+							proofOfWork.private.cyclesCompleted,
+						)}
+					/>
 				) : null}
-			</ul>
+			</RowList>
 		</section>
 	);
 }
