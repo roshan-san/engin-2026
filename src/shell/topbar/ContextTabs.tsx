@@ -77,7 +77,7 @@ export function ContextTabs({
 		<nav
 			aria-label="Sections"
 			className={cn(
-				"flex h-11 min-w-0 items-stretch overflow-x-auto [scrollbar-width:none] md:h-14 md:overflow-visible [&::-webkit-scrollbar]:hidden",
+				"flex h-11 min-w-0 items-stretch overflow-x-auto [scrollbar-width:none] md:h-14 [&::-webkit-scrollbar]:hidden",
 				className,
 			)}
 		>

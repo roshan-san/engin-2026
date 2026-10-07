@@ -18,9 +18,9 @@ export function TopBar() {
 
 	return (
 		<header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-			<div className="flex flex-wrap items-center gap-x-1 px-4 md:gap-x-3 md:px-6">
-				<EnginMark className="hidden h-14 md:flex" />
-				<div className="flex h-[52px] min-w-0 flex-1 items-center md:h-14 md:flex-none">
+			<div className="flex flex-wrap items-center gap-x-1 px-4 md:flex-nowrap md:gap-x-2 md:px-6 lg:gap-x-3">
+				<EnginMark className="hidden h-14 shrink-0 md:flex" />
+				<div className="flex h-[52px] min-w-0 flex-1 items-center md:h-14 md:flex-initial md:shrink-[10]">
 					<ContextSwitcher context={context} />
 				</div>
 				<ContextTabs
@@ -32,11 +32,11 @@ export function TopBar() {
 					type="button"
 					aria-label="Search"
 					onClick={togglePalette}
-					className="flex size-9 shrink-0 items-center justify-center gap-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground md:h-8 md:w-auto md:px-2.5 md:ring-1 md:ring-border"
+					className="flex size-9 shrink-0 items-center justify-center gap-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground md:h-8 md:ring-1 md:ring-border lg:w-auto lg:px-2.5"
 				>
 					<Search className="size-4" />
-					<span className="hidden md:inline">Search</span>
-					<ShortcutHint id="palette.open" className="hidden md:inline" />
+					<span className="hidden lg:inline">Search</span>
+					<ShortcutHint id="palette.open" className="hidden lg:inline" />
 				</button>
 				<BellLink />
 				<AccountMenu />

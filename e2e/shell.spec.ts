@@ -107,3 +107,52 @@ test("the bell shows unread news", async ({ pageAs }) => {
 		page.getByRole("link", { name: /Inbox, \d+ unread/ }),
 	).toBeVisible();
 });
+
+test("at tablet widths the top bar stays one row on a Startup page", async ({
+	pageAs,
+}) => {
+	const founder = await signUp("Fay");
+	const startup = await startupOf(
+		founder,
+		"A very long startup name that keeps going on",
+	);
+	const page = await pageAs(founder);
+	const sections = page.getByRole("navigation", { name: "Sections" });
+
+	for (const width of [768, 834]) {
+		await page.setViewportSize({ width, height: 1024 });
+		await page.goto(`/s/${startup.slug}/cycles`);
+		await expect(sections.getByRole("link", { name: "Cycles" })).toBeVisible();
+
+		const header = await page.getByRole("banner").boundingBox();
+		const switcher = await page
+			.getByRole("button", { name: /Switch context/ })
+			.boundingBox();
+		const bell = await page.getByRole("link", { name: /^Inbox/ }).boundingBox();
+		expect(header?.height).toBeLessThanOrEqual(57);
+		expect(Math.round(bell?.y ?? -1)).toBe(Math.round(switcher?.y ?? -2));
+	}
+});
+
+test("someone with no Startups sees no sections on another Startup's page", async ({
+	pageAs,
+}) => {
+	const other = await founderWithStartup();
+	const visitor = await signUp("Vic");
+	const page = await pageAs(visitor);
+
+	await page.goto(`/s/${other.slug}/cycles`);
+	await page
+		.getByRole("button", { name: "Switch context, current: Engin" })
+		.click();
+
+	const menu = page.getByRole("menu");
+	await expect(menu.getByRole("menuitem")).toHaveText([
+		/You/,
+		/Explore/,
+		/Create a Startup/,
+	]);
+	await expect(page.getByRole("navigation", { name: "Sections" })).toHaveCount(
+		0,
+	);
+});
