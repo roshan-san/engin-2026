@@ -13,7 +13,11 @@ export function PageHeader({ title, meta, actions, hidden }: PageHeaderProps) {
 		return (
 			<>
 				<h1 className="sr-only">{title}</h1>
-				{actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+				{actions ? (
+					<div className="flex w-full flex-wrap items-center justify-end gap-2">
+						{actions}
+					</div>
+				) : null}
 			</>
 		);
 	}
