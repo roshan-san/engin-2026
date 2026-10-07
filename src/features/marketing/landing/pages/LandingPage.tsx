@@ -1,29 +1,15 @@
-import { MAX_HACKATHON_PARTICIPANTS } from "@convex/lib/limits";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { Link, Navigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
+import { GlowHero } from "~/components/shared/GlowHero";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
+import { CyclesMock } from "~/features/marketing/landing/components/CyclesMock";
+import { HackathonMock } from "~/features/marketing/landing/components/HackathonMock";
+import { ProofMock } from "~/features/marketing/landing/components/ProofMock";
 import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
-
-const FOUNDER_POINTS = [
-	"Post a hackathon with a few scoped Starter Tasks from your real work.",
-	`Admit the applicants you want, up to ${MAX_HACKATHON_PARTICIPANTS} per hackathon.`,
-	"Judge what they build, give each one a verdict, and make offers.",
-];
-
-const CONTRIBUTOR_POINTS = [
-	"Entering is always free.",
-	"You own what you build.",
-	"Your verdicts show on your profile, naming the startup that gave them.",
-];
-
-const STEPS = [
-	{ title: "Apply", body: "Pick an open hackathon and apply." },
-	{ title: "Join", body: "The founders admit you before it starts." },
-	{ title: "Build", body: "Work the Starter Tasks on your own private board." },
-	{ title: "Verdict", body: "The founders judge your work when it closes." },
-];
+import { PublicShell } from "~/shell/layout/PublicShell";
 
 export function LandingPage() {
 	const { isAuthenticated, isLoading } = useConvexAuth();
@@ -37,90 +23,85 @@ export function LandingPage() {
 	}
 
 	return (
-		<div className="flex min-h-dvh flex-col bg-background p-4 text-foreground">
-			<header className="flex items-center justify-between gap-4 px-2">
-				<Link to="/" className="text-2xl font-semibold">
-					Engin
-				</Link>
-				<nav className="flex items-center gap-4 text-sm text-muted-foreground">
-					<Link to="/explore/startups" className="hover:text-foreground">
-						Explore
-					</Link>
-					<Link to="/pricing" className="hover:text-foreground">
-						Pricing
-					</Link>
-				</nav>
-			</header>
-
-			<main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-16 px-2 py-16">
-				<section className="space-y-6">
-					<h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-						Hire by watching people build.
-					</h1>
-					<p className="max-w-2xl text-lg text-muted-foreground">
-						Engin is the online hiring hackathon for early-stage startups.
-						Founders set real Starter Tasks, see real work, and hire from it.
-					</p>
+		<PublicShell>
+			<div className="mx-auto w-full max-w-5xl space-y-16 md:space-y-24">
+				<GlowHero
+					eyebrow={
+						<SectionLabel as="p">
+							The hiring hackathon for early-stage startups
+						</SectionLabel>
+					}
+					title="Hire through hackathons. Run work in Cycles."
+					subtitle="Founders set real Starter Tasks, watch real work happen, and hire from it. Contributors build for free and earn a Score that follows them."
+				>
 					<div className="flex flex-wrap gap-3">
-						<GoogleButton />
-						<Button asChild variant="ghost">
-							<Link to="/explore/hackathons">Browse Hackathons</Link>
+						<GoogleButton label="Get started" variant="default" size="lg" />
+						<Button asChild variant="outline" size="lg">
+							<Link to="/explore/startups">Explore startups</Link>
 						</Button>
 					</div>
-				</section>
+				</GlowHero>
 
-				<section className="grid gap-10 sm:grid-cols-2">
-					<PointList title="For Founders" points={FOUNDER_POINTS}>
-						<Link
-							to="/pricing"
-							className="text-sm underline underline-offset-4"
-						>
-							See pricing
-						</Link>
-					</PointList>
-					<PointList title="For contributors" points={CONTRIBUTOR_POINTS}>
-						<Link
-							to="/explore/hackathons"
-							className="text-sm underline underline-offset-4"
-						>
-							Find a Hackathon
-						</Link>
-					</PointList>
-				</section>
+				<Feature
+					label="Hackathons"
+					title="Hire from real work, not interviews."
+					body="Post a hackathon with a few Starter Tasks from your actual backlog. Every admitted applicant gets a private lane, and you judge what they ship."
+					mock={<HackathonMock />}
+				/>
+				<Feature
+					label="Cycles"
+					title="Run your team's work in Cycles."
+					body="Every Task moves from To do to Done. Review needs a proof link, and only a Founder verifies it, so Done always means done."
+					mock={<CyclesMock />}
+					flip
+				/>
+				<Feature
+					label="Proof of work & Score"
+					title="Work that counts, a Score that shows it."
+					body="Verified proof of work and hackathon verdicts build a Score that follows you from startup to startup. Entering a hackathon is always free."
+					mock={<ProofMock />}
+				/>
 
-				<section className="space-y-6">
-					<h2 className="text-xl font-semibold">How a Hackathon runs</h2>
-					<ol className="grid gap-6 sm:grid-cols-4">
-						{STEPS.map((step, index) => (
-							<li key={step.title} className="space-y-1">
-								<p className="text-sm text-muted-foreground">{index + 1}</p>
-								<p className="font-medium">{step.title}</p>
-								<p className="text-sm text-muted-foreground">{step.body}</p>
-							</li>
-						))}
-					</ol>
-				</section>
-			</main>
-		</div>
+				<footer className="flex flex-col gap-3 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+					<p>
+						<span className="font-semibold text-foreground">Engin</span> · Hire
+						by watching people build.
+					</p>
+					<nav className="flex gap-4">
+						<Link to="/explore/startups" className="hover:text-foreground">
+							Explore
+						</Link>
+						<Link to="/pricing" className="hover:text-foreground">
+							Pricing
+						</Link>
+					</nav>
+				</footer>
+			</div>
+		</PublicShell>
 	);
 }
 
-type PointListProps = {
+type FeatureProps = {
+	readonly label: string;
 	readonly title: string;
-	readonly points: readonly string[];
-	readonly children: ReactNode;
+	readonly body: string;
+	readonly mock: ReactNode;
+	readonly flip?: boolean;
 };
 
-function PointList({ title, points, children }: PointListProps) {
+function Feature({ label, title, body, mock, flip = false }: FeatureProps) {
 	return (
-		<div className="space-y-4">
-			<h2 className="text-xl font-semibold">{title}</h2>
-			<ul className="space-y-2 text-muted-foreground">
-				{points.map((point) => (
-					<li key={point}>{point}</li>
-				))}
-			</ul>
-			{children}
-		</div>
+		<section className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
+			<div className={flip ? "md:order-2" : undefined}>
+				<SectionLabel as="p">{label}</SectionLabel>
+				<h2 className="mt-2 text-xl font-semibold tracking-[-0.01em] md:text-2xl">
+					{title}
+				</h2>
+				<p className="mt-3 text-muted-foreground">{body}</p>
+			</div>
+			<div aria-hidden className="min-w-0 select-none">
+				{mock}
+			</div>
+		</section>
 	);
 }

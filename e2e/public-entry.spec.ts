@@ -50,7 +50,9 @@ test("the landing page invites people to join", async ({ page }) => {
 	await page.goto("/");
 
 	await expect(
-		page.getByRole("heading", { name: "Hire by watching people build." }),
+		page.getByRole("heading", {
+			name: "Hire through hackathons. Run work in Cycles.",
+		}),
 	).toBeVisible();
-	await expect(page.getByRole("button", { name: "Join Engin" })).toBeVisible();
+	await expect(page.getByRole("button", { name: "Get started" })).toBeVisible();
 });

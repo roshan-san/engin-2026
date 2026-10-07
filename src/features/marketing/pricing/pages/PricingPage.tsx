@@ -1,6 +1,9 @@
 import { PLAN_LIMITS, PRO_MONTHLY_CREDITS } from "@convex/lib/limits";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
+import { PageHeader } from "~/components/shared/PageHeader";
+import { Row, RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -8,7 +11,6 @@ import {
 	CardContent,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 } from "~/components/ui/card";
 import {
 	HACKATHON_PRICE_LABELS,
@@ -103,34 +105,31 @@ export function PricingPage() {
 	}
 
 	return (
-		<div className="w-full space-y-8 py-8">
-			<div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-				<div>
-					<h1 className="text-2xl font-bold sm:text-3xl">Pricing</h1>
-					<p className="mt-2 max-w-2xl text-muted-foreground">
-						Founders pay to hire through Hackathons. Contributors are always
-						free.
-					</p>
-				</div>
-
-				<div className="inline-flex w-fit rounded-lg border border-border p-1">
-					{INTERVALS.map((option) => (
-						<button
-							key={option.value}
-							type="button"
-							onClick={() => setInterval(option.value)}
-							className={cn(
-								"rounded-md px-4 py-2 text-sm font-medium transition-colors",
-								interval === option.value
-									? "bg-foreground text-background"
-									: "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							{option.label}
-						</button>
-					))}
-				</div>
-			</div>
+		<div className="mx-auto w-full max-w-5xl space-y-8">
+			<PageHeader
+				title="Pricing"
+				meta="Founders pay to hire through Hackathons. Contributors are always free."
+				actions={
+					<div className="inline-flex w-fit rounded-md bg-accent p-0.5">
+						{INTERVALS.map((option) => (
+							<button
+								key={option.value}
+								type="button"
+								aria-pressed={interval === option.value}
+								onClick={() => setInterval(option.value)}
+								className={cn(
+									"rounded-[5px] px-3 py-1 text-sm font-medium transition-colors",
+									interval === option.value
+										? "bg-background text-foreground"
+										: "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{option.label}
+							</button>
+						))}
+					</div>
+				}
+			/>
 
 			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<PlanCard
@@ -193,30 +192,36 @@ function PlanCard({
 	action,
 }: PlanCardProps) {
 	return (
-		<Card className={cn("shadow-none", highlighted && "border-foreground/20")}>
+		<Card
+			className={cn("gap-5 shadow-none", highlighted && "ring-2 ring-primary")}
+		>
 			<CardHeader>
 				<div className="flex items-center justify-between gap-2">
-					<CardTitle>{title}</CardTitle>
+					<SectionLabel as="h2">{title}</SectionLabel>
 					{isCurrent && <Badge>Current plan</Badge>}
 				</div>
 				<div className="flex items-baseline gap-1">
-					<p className="text-3xl font-bold">{price}</p>
+					<p className="text-[28px] font-[650] tracking-[-0.02em] tabular-nums">
+						{price}
+					</p>
 					{period && <span className="text-muted-foreground">{period}</span>}
 				</div>
 				<p className="text-sm text-muted-foreground">{priceNote}</p>
 			</CardHeader>
 			<CardContent>
-				<dl className="divide-y divide-border text-sm">
+				<RowList>
 					{rows.map((row) => (
-						<div
+						<Row
 							key={row.label}
-							className="flex items-start justify-between gap-4 py-2"
-						>
-							<dt className="text-muted-foreground">{row.label}</dt>
-							<dd className="text-right font-medium">{row.value}</dd>
-						</div>
+							title={row.label}
+							trailing={
+								<span className="block max-w-44 whitespace-normal text-right font-medium text-foreground">
+									{row.value}
+								</span>
+							}
+						/>
 					))}
-				</dl>
+				</RowList>
 			</CardContent>
 			{action && <CardFooter>{action}</CardFooter>}
 		</Card>
