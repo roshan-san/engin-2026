@@ -31,7 +31,7 @@ export function PublicHackathonPage({ hackathonId }: PublicHackathonPageProps) {
 			<div className="mx-auto max-w-lg px-4 py-20 text-center">
 				<h1 className="text-2xl font-bold">Hackathon not found</h1>
 				<Button asChild variant="outline" className="mt-6">
-					<Link to="/discover">Back to Discover</Link>
+					<Link to="/explore/hackathons">Back to Explore</Link>
 				</Button>
 			</div>
 		);

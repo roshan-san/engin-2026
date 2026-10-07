@@ -27,7 +27,7 @@ export function BottomTabBar() {
 		pathname.startsWith("/inbox") || pathname.startsWith("/threads");
 	const myTasksActive = pathname.startsWith("/my-tasks");
 	const startupActive = pathname.startsWith("/s/");
-	const discoverActive = pathname.startsWith("/discover");
+	const discoverActive = pathname.startsWith("/explore");
 	const showBadge = !isLoading && count > 0;
 
 	return (
@@ -102,7 +102,7 @@ export function BottomTabBar() {
 						</span>
 					</button>
 					<Link
-						to="/discover"
+						to="/explore/startups"
 						aria-current={discoverActive ? "page" : undefined}
 						className="flex h-14 flex-col items-center justify-center gap-1 text-xs"
 					>
@@ -117,7 +117,7 @@ export function BottomTabBar() {
 								discoverActive ? "text-primary" : "text-muted-foreground"
 							}
 						>
-							Discover
+							Explore
 						</span>
 					</Link>
 				</div>

@@ -80,7 +80,7 @@ export function CycleGuest() {
 
 			<div className="flex flex-col gap-2 sm:flex-row">
 				<Button asChild className="h-11">
-					<Link to="/discover">Find a Hackathon</Link>
+					<Link to="/explore/hackathons">Find a Hackathon</Link>
 				</Button>
 				<Button asChild variant="ghost" className="h-11">
 					<Link to="/startups/new">Create a Startup</Link>

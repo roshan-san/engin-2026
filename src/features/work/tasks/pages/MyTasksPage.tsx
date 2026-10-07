@@ -38,7 +38,7 @@ export function MyTasksPage() {
 					body="Tasks you take on a Cycle or work on in a hackathon show up here."
 					action={
 						<Button asChild size="sm">
-							<Link to="/discover">Find a Hackathon</Link>
+							<Link to="/explore/hackathons">Find a Hackathon</Link>
 						</Button>
 					}
 				/>

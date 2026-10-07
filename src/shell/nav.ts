@@ -57,12 +57,12 @@ export const STARTUP_NAV: readonly StartupNavItem[] = [
 
 /** Final sidebar group — every Startup's contributors. */
 export const DISCOVER_NAV: {
-	label: "Discover";
-	to: "/discover";
+	label: "Explore";
+	to: "/explore/startups";
 	icon: LucideIcon;
 } = {
-	label: "Discover",
-	to: "/discover",
+	label: "Explore",
+	to: "/explore/startups",
 	icon: Compass,
 };
 
@@ -85,7 +85,9 @@ export const SCREEN_TITLES: Partial<Record<string, string>> = {
 	"/_shell/_authed/s/$slug/_member/activity/": "Activity",
 	"/_shell/_authed/s/$slug/_member/settings/": "Settings",
 	"/_shell/_authed/s/$slug/hackathons/$hackathonId": "Hackathon",
-	"/_shell/discover/": "Discover",
+	"/_shell/explore/startups": "Explore",
+	"/_shell/explore/hackathons": "Explore",
+	"/_shell/explore/people": "Explore",
 	"/_shell/hackathons/$hackathonId": "Hackathon",
 	"/_shell/pricing/": "Pricing",
 	"/_shell/startup/$slug": "Pitch",

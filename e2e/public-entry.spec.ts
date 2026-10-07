@@ -2,7 +2,7 @@ import { expect, test } from "./support/fixtures";
 import { signUp } from "./support/people";
 import { founderWithStartup, publishedHackathon } from "./support/world";
 
-test("a contributor finds a hackathon on Discover, applies, and tracks it in My Hackathons", async ({
+test("a contributor finds a hackathon on Explore, applies, and tracks it in My Hackathons", async ({
 	pageAs,
 }) => {
 	const { hackathonId, title } = await publishedHackathon(
@@ -11,7 +11,7 @@ test("a contributor finds a hackathon on Discover, applies, and tracks it in My 
 	const cara = await signUp("Cara");
 	const page = await pageAs(cara);
 
-	await page.goto("/discover");
+	await page.goto("/explore/hackathons");
 	await page.getByRole("link", { name: title }).click();
 	await expect(page).toHaveURL(new RegExp(`/hackathons/${hackathonId}`));
 	await expect(page.getByText("Accepting applications")).toBeVisible();

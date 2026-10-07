@@ -43,8 +43,8 @@ export function LandingPage() {
 					Engin
 				</Link>
 				<nav className="flex items-center gap-4 text-sm text-muted-foreground">
-					<Link to="/discover" className="hover:text-foreground">
-						Discover
+					<Link to="/explore/startups" className="hover:text-foreground">
+						Explore
 					</Link>
 					<Link to="/pricing" className="hover:text-foreground">
 						Pricing
@@ -64,7 +64,7 @@ export function LandingPage() {
 					<div className="flex flex-wrap gap-3">
 						<GoogleButton />
 						<Button asChild variant="ghost">
-							<Link to="/discover">Browse Hackathons</Link>
+							<Link to="/explore/hackathons">Browse Hackathons</Link>
 						</Button>
 					</div>
 				</section>
@@ -80,7 +80,7 @@ export function LandingPage() {
 					</PointList>
 					<PointList title="For contributors" points={CONTRIBUTOR_POINTS}>
 						<Link
-							to="/discover"
+							to="/explore/hackathons"
 							className="text-sm underline underline-offset-4"
 						>
 							Find a Hackathon

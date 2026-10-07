@@ -12,10 +12,16 @@ export function PublicHeader() {
 			</Link>
 			<div className="flex shrink-0 items-center gap-2">
 				<Link
-					to="/discover"
+					to="/explore/startups"
 					className="whitespace-nowrap text-sm text-muted-foreground hover:text-foreground"
 				>
-					Discover
+					Explore
+				</Link>
+				<Link
+					to="/pricing"
+					className="whitespace-nowrap text-sm text-muted-foreground hover:text-foreground"
+				>
+					Pricing
 				</Link>
 				<Button
 					size="sm"

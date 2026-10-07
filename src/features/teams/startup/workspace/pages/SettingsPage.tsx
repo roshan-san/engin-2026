@@ -229,7 +229,7 @@ export function SettingsPage() {
 								Stealth mode
 							</Label>
 							<FieldDescription>
-								Hides the public Pitch and Discover listing. Stealth Startups
+								Hides the public Pitch and Explore listing. Stealth Startups
 								can't publish hackathons.
 								{plan?.tier === "free" ? (
 									<>

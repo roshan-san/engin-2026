@@ -12,7 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
-import { Route as ShellDiscoverIndexRouteImport } from './routes/_shell/discover/index'
+import { Route as ShellExploreRouteRouteImport } from './routes/_shell/explore/route'
+import { Route as ShellExploreIndexRouteImport } from './routes/_shell/explore/index'
+import { Route as ShellExploreHackathonsRouteImport } from './routes/_shell/explore/hackathons'
+import { Route as ShellExplorePeopleRouteImport } from './routes/_shell/explore/people'
+import { Route as ShellExploreStartupsRouteImport } from './routes/_shell/explore/startups'
 import { Route as ShellHackathonsHackathonIdRouteImport } from './routes/_shell/hackathons/$hackathonId'
 import { Route as ShellInviteTokenRouteImport } from './routes/_shell/invite/$token'
 import { Route as ShellPricingIndexRouteImport } from './routes/_shell/pricing/index'
@@ -52,10 +56,30 @@ const ShellAuthedRouteRoute = ShellAuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => ShellRouteRoute,
 } as any)
-const ShellDiscoverIndexRoute = ShellDiscoverIndexRouteImport.update({
-  id: '/discover/',
-  path: '/discover/',
+const ShellExploreRouteRoute = ShellExploreRouteRouteImport.update({
+  id: '/explore',
+  path: '/explore',
   getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellExploreIndexRoute = ShellExploreIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShellExploreRouteRoute,
+} as any)
+const ShellExploreHackathonsRoute = ShellExploreHackathonsRouteImport.update({
+  id: '/hackathons',
+  path: '/hackathons',
+  getParentRoute: () => ShellExploreRouteRoute,
+} as any)
+const ShellExplorePeopleRoute = ShellExplorePeopleRouteImport.update({
+  id: '/people',
+  path: '/people',
+  getParentRoute: () => ShellExploreRouteRoute,
+} as any)
+const ShellExploreStartupsRoute = ShellExploreStartupsRouteImport.update({
+  id: '/startups',
+  path: '/startups',
+  getParentRoute: () => ShellExploreRouteRoute,
 } as any)
 const ShellHackathonsHackathonIdRoute =
   ShellHackathonsHackathonIdRouteImport.update({
@@ -198,11 +222,15 @@ const ShellAuthedSSlugMemberHiringHackathonIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/explore': typeof ShellExploreRouteRouteWithChildren
+  '/explore/hackathons': typeof ShellExploreHackathonsRoute
+  '/explore/people': typeof ShellExplorePeopleRoute
+  '/explore/startups': typeof ShellExploreStartupsRoute
   '/hackathons/$hackathonId': typeof ShellHackathonsHackathonIdRoute
   '/invite/$token': typeof ShellInviteTokenRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
-  '/discover/': typeof ShellDiscoverIndexRoute
+  '/explore/': typeof ShellExploreIndexRoute
   '/pricing/': typeof ShellPricingIndexRoute
   '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/startups/new': typeof ShellAuthedStartupsNewRoute
@@ -226,11 +254,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/explore/hackathons': typeof ShellExploreHackathonsRoute
+  '/explore/people': typeof ShellExplorePeopleRoute
+  '/explore/startups': typeof ShellExploreStartupsRoute
   '/hackathons/$hackathonId': typeof ShellHackathonsHackathonIdRoute
   '/invite/$token': typeof ShellInviteTokenRoute
   '/startup/$slug': typeof ShellStartupSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
-  '/discover': typeof ShellDiscoverIndexRoute
+  '/explore': typeof ShellExploreIndexRoute
   '/pricing': typeof ShellPricingIndexRoute
   '/startups/new': typeof ShellAuthedStartupsNewRoute
   '/threads/$hackathonId': typeof ShellAuthedThreadsHackathonIdRoute
@@ -256,11 +287,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
+  '/_shell/explore': typeof ShellExploreRouteRouteWithChildren
+  '/_shell/explore/hackathons': typeof ShellExploreHackathonsRoute
+  '/_shell/explore/people': typeof ShellExplorePeopleRoute
+  '/_shell/explore/startups': typeof ShellExploreStartupsRoute
   '/_shell/hackathons/$hackathonId': typeof ShellHackathonsHackathonIdRoute
   '/_shell/invite/$token': typeof ShellInviteTokenRoute
   '/_shell/startup/$slug': typeof ShellStartupSlugRoute
   '/_shell/u/$username': typeof ShellUUsernameRoute
-  '/_shell/discover/': typeof ShellDiscoverIndexRoute
+  '/_shell/explore/': typeof ShellExploreIndexRoute
   '/_shell/pricing/': typeof ShellPricingIndexRoute
   '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/_shell/_authed/startups/new': typeof ShellAuthedStartupsNewRoute
@@ -287,11 +322,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/explore'
+    | '/explore/hackathons'
+    | '/explore/people'
+    | '/explore/startups'
     | '/hackathons/$hackathonId'
     | '/invite/$token'
     | '/startup/$slug'
     | '/u/$username'
-    | '/discover/'
+    | '/explore/'
     | '/pricing/'
     | '/s/$slug'
     | '/startups/new'
@@ -315,11 +354,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/explore/hackathons'
+    | '/explore/people'
+    | '/explore/startups'
     | '/hackathons/$hackathonId'
     | '/invite/$token'
     | '/startup/$slug'
     | '/u/$username'
-    | '/discover'
+    | '/explore'
     | '/pricing'
     | '/startups/new'
     | '/threads/$hackathonId'
@@ -344,11 +386,15 @@ export interface FileRouteTypes {
     | '/'
     | '/_shell'
     | '/_shell/_authed'
+    | '/_shell/explore'
+    | '/_shell/explore/hackathons'
+    | '/_shell/explore/people'
+    | '/_shell/explore/startups'
     | '/_shell/hackathons/$hackathonId'
     | '/_shell/invite/$token'
     | '/_shell/startup/$slug'
     | '/_shell/u/$username'
-    | '/_shell/discover/'
+    | '/_shell/explore/'
     | '/_shell/pricing/'
     | '/_shell/_authed/s/$slug'
     | '/_shell/_authed/startups/new'
@@ -400,12 +446,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedRouteRouteImport
       parentRoute: typeof ShellRouteRoute
     }
-    '/_shell/discover/': {
-      id: '/_shell/discover/'
-      path: '/discover'
-      fullPath: '/discover/'
-      preLoaderRoute: typeof ShellDiscoverIndexRouteImport
+    '/_shell/explore': {
+      id: '/_shell/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ShellExploreRouteRouteImport
       parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/explore/': {
+      id: '/_shell/explore/'
+      path: '/'
+      fullPath: '/explore/'
+      preLoaderRoute: typeof ShellExploreIndexRouteImport
+      parentRoute: typeof ShellExploreRouteRoute
+    }
+    '/_shell/explore/hackathons': {
+      id: '/_shell/explore/hackathons'
+      path: '/hackathons'
+      fullPath: '/explore/hackathons'
+      preLoaderRoute: typeof ShellExploreHackathonsRouteImport
+      parentRoute: typeof ShellExploreRouteRoute
+    }
+    '/_shell/explore/people': {
+      id: '/_shell/explore/people'
+      path: '/people'
+      fullPath: '/explore/people'
+      preLoaderRoute: typeof ShellExplorePeopleRouteImport
+      parentRoute: typeof ShellExploreRouteRoute
+    }
+    '/_shell/explore/startups': {
+      id: '/_shell/explore/startups'
+      path: '/startups'
+      fullPath: '/explore/startups'
+      preLoaderRoute: typeof ShellExploreStartupsRouteImport
+      parentRoute: typeof ShellExploreRouteRoute
     }
     '/_shell/hackathons/$hackathonId': {
       id: '/_shell/hackathons/$hackathonId'
@@ -666,23 +740,40 @@ const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
 const ShellAuthedRouteRouteWithChildren =
   ShellAuthedRouteRoute._addFileChildren(ShellAuthedRouteRouteChildren)
 
+interface ShellExploreRouteRouteChildren {
+  ShellExploreHackathonsRoute: typeof ShellExploreHackathonsRoute
+  ShellExplorePeopleRoute: typeof ShellExplorePeopleRoute
+  ShellExploreStartupsRoute: typeof ShellExploreStartupsRoute
+  ShellExploreIndexRoute: typeof ShellExploreIndexRoute
+}
+
+const ShellExploreRouteRouteChildren: ShellExploreRouteRouteChildren = {
+  ShellExploreHackathonsRoute: ShellExploreHackathonsRoute,
+  ShellExplorePeopleRoute: ShellExplorePeopleRoute,
+  ShellExploreStartupsRoute: ShellExploreStartupsRoute,
+  ShellExploreIndexRoute: ShellExploreIndexRoute,
+}
+
+const ShellExploreRouteRouteWithChildren =
+  ShellExploreRouteRoute._addFileChildren(ShellExploreRouteRouteChildren)
+
 interface ShellRouteRouteChildren {
   ShellAuthedRouteRoute: typeof ShellAuthedRouteRouteWithChildren
+  ShellExploreRouteRoute: typeof ShellExploreRouteRouteWithChildren
   ShellHackathonsHackathonIdRoute: typeof ShellHackathonsHackathonIdRoute
   ShellInviteTokenRoute: typeof ShellInviteTokenRoute
   ShellStartupSlugRoute: typeof ShellStartupSlugRoute
   ShellUUsernameRoute: typeof ShellUUsernameRoute
-  ShellDiscoverIndexRoute: typeof ShellDiscoverIndexRoute
   ShellPricingIndexRoute: typeof ShellPricingIndexRoute
 }
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellAuthedRouteRoute: ShellAuthedRouteRouteWithChildren,
+  ShellExploreRouteRoute: ShellExploreRouteRouteWithChildren,
   ShellHackathonsHackathonIdRoute: ShellHackathonsHackathonIdRoute,
   ShellInviteTokenRoute: ShellInviteTokenRoute,
   ShellStartupSlugRoute: ShellStartupSlugRoute,
   ShellUUsernameRoute: ShellUUsernameRoute,
-  ShellDiscoverIndexRoute: ShellDiscoverIndexRoute,
   ShellPricingIndexRoute: ShellPricingIndexRoute,
 }
 

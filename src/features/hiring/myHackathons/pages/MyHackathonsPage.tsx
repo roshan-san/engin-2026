@@ -25,7 +25,7 @@ export function MyHackathonsPage() {
 					body="Hackathons you apply to show up here, with where each one stands."
 					action={
 						<Button asChild size="sm">
-							<Link to="/discover">Find a Hackathon</Link>
+							<Link to="/explore/hackathons">Find a Hackathon</Link>
 						</Button>
 					}
 				/>

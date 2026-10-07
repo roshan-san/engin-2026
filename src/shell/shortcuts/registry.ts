@@ -85,11 +85,11 @@ export const SHORTCUTS: readonly ShortcutEntry[] = [
 		action: (ctx) => ctx.navigate({ to: "/threads" }),
 	},
 	{
-		id: "nav.discover",
+		id: "nav.explore",
 		key: null,
-		label: "Go to Discover",
+		label: "Go to Explore",
 		scope: "navigation",
-		action: (ctx) => ctx.navigate({ to: "/discover" }),
+		action: (ctx) => ctx.navigate({ to: "/explore/startups" }),
 	},
 	{
 		id: "nav.create-startup",

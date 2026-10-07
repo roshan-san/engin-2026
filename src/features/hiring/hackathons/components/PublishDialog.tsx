@@ -72,7 +72,7 @@ export function PublishDialog({
 				<DialogHeader>
 					<DialogTitle>Publish “{title}”</DialogTitle>
 					<DialogDescription>
-						It goes public on Discover and opens for applications. After
+						It goes public on Explore and opens for applications. After
 						publishing, only its Starter Tasks can change.
 					</DialogDescription>
 				</DialogHeader>

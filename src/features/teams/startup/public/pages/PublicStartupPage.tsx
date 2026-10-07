@@ -23,7 +23,7 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 			<div className="mx-auto max-w-lg px-4 py-20 text-center">
 				<h1 className="text-2xl font-bold">Startup not found</h1>
 				<Button asChild variant="outline" className="mt-6">
-					<Link to="/discover">Back to Discover</Link>
+					<Link to="/explore/startups">Back to Explore</Link>
 				</Button>
 			</div>
 		);
