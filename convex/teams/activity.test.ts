@@ -2,10 +2,10 @@ import { expect, test } from "vitest";
 import { api } from "../_generated/api";
 import { createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
-import { cyclePulseFor } from "../work/cycles.helpers";
+import { cycleTaskFor, submitWithProof } from "../work/cycles.helpers";
 import { joinAsMember, setUpStartup } from "./startups.helpers";
 
-test("posting a Role, an accepted Invite, and a verified Pulse each write one Activity row", async () => {
+test("posting a Role, an accepted Invite, and a verified Task each write one Activity row", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const bob = await signUp(t, "Bob");
@@ -28,12 +28,9 @@ test("posting a Role, an accepted Invite, and a verified Pulse each write one Ac
 		expect.arrayContaining(["role_posted", "member_joined"]),
 	);
 
-	const { pulseId } = await cyclePulseFor(setup, bob);
-	await bob.as.mutation(api.work.pulses.setStatus, {
-		pulseId,
-		status: "review",
-	});
-	await setup.founder.as.mutation(api.work.pulses.verify, { pulseId });
+	const { taskId } = await cycleTaskFor(setup, bob);
+	await submitWithProof(bob, taskId);
+	await setup.founder.as.mutation(api.work.tasks.verify, { taskId });
 
 	const afterVerify = await t.run(async (ctx) =>
 		(
@@ -41,37 +38,34 @@ test("posting a Role, an accepted Invite, and a verified Pulse each write one Ac
 				.query("activity")
 				.withIndex("by_startup", (q) => q.eq("startupId", setup.startupId))
 				.collect()
-		).filter((row) => row.kind === "pulse_verified"),
+		).filter((row) => row.kind === "task_verified"),
 	);
 	expect(afterVerify).toHaveLength(1);
 });
 
-test("a Member does not see Pulse events from Cycles they are not in", async () => {
+test("a Member does not see Task events from Cycles they are not in", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const inCycle = await joinAsMember(setup, "Alice");
 	const outsider = await joinAsMember(setup, "Bob");
 
-	const { pulseId } = await cyclePulseFor(setup, inCycle);
-	await inCycle.as.mutation(api.work.pulses.setStatus, {
-		pulseId,
-		status: "review",
-	});
-	await setup.founder.as.mutation(api.work.pulses.verify, { pulseId });
+	const { taskId } = await cycleTaskFor(setup, inCycle);
+	await submitWithProof(inCycle, taskId);
+	await setup.founder.as.mutation(api.work.tasks.verify, { taskId });
 
 	const dashboard = await outsider.as.query(api.teams.activity.dashboard, {
 		startupId: setup.startupId,
 	});
-	expect(
-		dashboard.activity.some((item) => item.kind === "pulse_verified"),
-	).toBe(false);
+	expect(dashboard.activity.some((item) => item.kind === "task_verified")).toBe(
+		false,
+	);
 
 	const founderDashboard = await setup.founder.as.query(
 		api.teams.activity.dashboard,
 		{ startupId: setup.startupId },
 	);
 	expect(
-		founderDashboard.activity.some((item) => item.kind === "pulse_verified"),
+		founderDashboard.activity.some((item) => item.kind === "task_verified"),
 	).toBe(true);
 });
 

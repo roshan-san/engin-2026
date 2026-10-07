@@ -11,7 +11,7 @@ test("a Founder creates a Role, then publishes a hackathon with the free credit"
 
 	await page.goto(`/s/${slug}/hiring`);
 	await expect(page.getByText("1 hackathon credit")).toBeVisible();
-	await page.getByRole("link", { name: "New hackathon" }).click();
+	await page.getByRole("link", { name: "New Hackathon" }).click();
 	await page.getByRole("button", { name: "New Role" }).click();
 	const newRole = page.getByRole("group", { name: "New Role" });
 	await newRole.getByLabel("Title").fill("Designer");
@@ -24,8 +24,9 @@ test("a Founder creates a Role, then publishes a hackathon with the free credit"
 	await page
 		.getByLabel("Description", { exact: true })
 		.fill("Ship the onboarding flow");
-	await page.getByLabel("New Starting Pulse title").fill("Design the flow");
-	await page.getByLabel("New Starting Pulse title").press("Enter");
+	await page.getByLabel("New Starter Task title").fill("Design the flow");
+	await page.getByLabel("New Starter Task title").press("Enter");
+	await page.getByLabel("Expected outcome").fill("A working onboarding flow");
 	await page.getByRole("button", { name: "Continue to publish" }).click();
 	await page.getByRole("checkbox").check();
 	await page
@@ -49,8 +50,9 @@ test("a Founder saves a hackathon draft for later", async ({ pageAs }) => {
 	await page.getByRole("option", { name: "Engineer" }).click();
 	await page.getByLabel("Title", { exact: true }).fill("Draft idea");
 	await page.getByLabel("Description", { exact: true }).fill("Not ready yet");
-	await page.getByLabel("New Starting Pulse title").fill("First task");
-	await page.getByLabel("New Starting Pulse title").press("Enter");
+	await page.getByLabel("New Starter Task title").fill("First task");
+	await page.getByLabel("New Starter Task title").press("Enter");
+	await page.getByLabel("Expected outcome").fill("A working onboarding flow");
 	await page.getByRole("button", { name: "Save for later" }).click();
 
 	await expect(page.getByRole("link", { name: "Draft idea" })).toBeVisible();

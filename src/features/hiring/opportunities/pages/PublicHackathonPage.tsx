@@ -2,23 +2,21 @@ import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { entryStatusLabel } from "~/features/hiring/entries/constants";
+import { applicationStatusLabel } from "~/features/hiring/myHackathons/constants";
 import { ApplyDialog } from "~/features/hiring/opportunities/components/ApplyDialog";
 import { usePublicHackathon } from "~/features/hiring/opportunities/hooks/usePublicHackathon";
 import {
 	CONTRIBUTOR_IP_TERMS,
-	PUBLIC_TRIAL_STATUS_LABELS,
-} from "~/features/hiring/trialCycles/constants";
+	PUBLIC_HACKATHON_STATUS_LABELS,
+} from "~/features/hiring/hackathons/constants";
 import { formatDate, formatDateRange } from "~/lib/dates";
 
 type PublicHackathonPageProps = {
-	readonly trialCycleId: string;
+	readonly hackathonId: string;
 };
 
-export function PublicHackathonPage({
-	trialCycleId,
-}: PublicHackathonPageProps) {
-	const hackathon = usePublicHackathon(trialCycleId);
+export function PublicHackathonPage({ hackathonId }: PublicHackathonPageProps) {
+	const hackathon = usePublicHackathon(hackathonId);
 
 	if (hackathon === undefined) {
 		return (
@@ -50,7 +48,7 @@ export function PublicHackathonPage({
 		},
 		{
 			label: "Participants",
-			value: `${hackathon.participantCount}/${hackathon.maxContributors}`,
+			value: `${hackathon.participantCount}/${hackathon.maxParticipants}`,
 		},
 		hackathon.prize ? { label: "Prize", value: hackathon.prize } : null,
 	].filter((fact): fact is { label: string; value: string } => fact !== null);
@@ -66,7 +64,7 @@ export function PublicHackathonPage({
 			<section className="space-y-4">
 				<div className="flex flex-wrap items-center gap-2">
 					<Badge variant={isOpen ? "default" : "secondary"}>
-						{PUBLIC_TRIAL_STATUS_LABELS[hackathon.status]}
+						{PUBLIC_HACKATHON_STATUS_LABELS[hackathon.status]}
 					</Badge>
 				</div>
 				<h1 className="text-3xl font-bold break-words sm:text-4xl">
@@ -85,26 +83,29 @@ export function PublicHackathonPage({
 					{hackathon.role.type ? ` (${hackathon.role.type})` : null}
 				</p>
 				<div className="flex flex-wrap items-center gap-2">
-					{isOpen && hackathon.myEntryStatus === null ? (
-						<ApplyDialog trialCycleId={hackathon._id} title={hackathon.title} />
+					{isOpen && hackathon.myApplicationStatus === null ? (
+						<ApplyDialog hackathonId={hackathon._id} title={hackathon.title} />
 					) : null}
-					{hackathon.myEntryStatus ? (
+					{hackathon.myApplicationStatus ? (
 						<>
 							<Badge variant="outline">
-								{entryStatusLabel(hackathon.myEntryStatus, hackathon.status)}
+								{applicationStatusLabel(
+									hackathon.myApplicationStatus,
+									hackathon.status,
+								)}
 							</Badge>
 							<Button asChild variant="outline" size="sm">
-								<Link to="/my-entries">My Entries</Link>
+								<Link to="/my-hackathons">My Hackathons</Link>
 							</Button>
 						</>
 					) : null}
 					{hackathon.isMember ? (
 						<Button asChild variant="outline" size="sm">
 							<Link
-								to="/s/$slug/trials/$trialCycleId"
+								to="/s/$slug/hackathons/$hackathonId"
 								params={{
 									slug: hackathon.startup.slug,
-									trialCycleId: hackathon._id,
+									hackathonId: hackathon._id,
 								}}
 							>
 								Manage
@@ -131,26 +132,26 @@ export function PublicHackathonPage({
 			</section>
 
 			<section className="space-y-3">
-				<h2 className="text-lg font-semibold">Challenges</h2>
-				{hackathon.challenges.length === 0 ? (
+				<h2 className="text-lg font-semibold">Starter Tasks</h2>
+				{hackathon.starterTasks.length === 0 ? (
 					<p className="text-sm text-muted-foreground">
-						Challenges are announced when the hackathon starts.
+						Starter Tasks are announced when the Hackathon starts.
 					</p>
 				) : (
 					<ol className="space-y-2">
-						{hackathon.challenges.map((challenge, index) => (
+						{hackathon.starterTasks.map((starterTask, index) => (
 							<li
-								key={challenge._id}
+								key={starterTask._id}
 								className="flex gap-3 rounded-lg border p-4"
 							>
 								<span className="text-sm text-muted-foreground">
 									{index + 1}.
 								</span>
 								<div className="min-w-0 space-y-1">
-									<p className="font-medium break-words">{challenge.title}</p>
-									{challenge.description ? (
+									<p className="font-medium break-words">{starterTask.title}</p>
+									{starterTask.description ? (
 										<p className="whitespace-pre-wrap text-sm text-muted-foreground">
-											{challenge.description}
+											{starterTask.description}
 										</p>
 									) : null}
 								</div>

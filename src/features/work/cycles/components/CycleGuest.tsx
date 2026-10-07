@@ -3,13 +3,13 @@ import { Button } from "~/components/ui/button";
 import { useMyWork } from "~/features/work/cycles/hooks/useMyWork";
 
 export function CycleGuest() {
-	const { pulses, applications, isLoading } = useMyWork();
-	const trials =
+	const { tasks, applications, isLoading } = useMyWork();
+	const hackathons =
 		applications?.filter(
-			(item) => item.trialCycleId !== null && item.status === "joined",
+			(item) => item.hackathonId !== null && item.status === "accepted",
 		) ?? [];
-	const activePulses =
-		pulses?.filter((pulse) => pulse.status === "in_progress") ?? [];
+	const activeTasks =
+		tasks?.filter((task) => task.status === "in_progress") ?? [];
 
 	return (
 		<div className="mx-auto w-full max-w-3xl space-y-8 py-10">
@@ -18,8 +18,8 @@ export function CycleGuest() {
 					You&apos;re not on a startup yet
 				</h1>
 				<p className="max-w-lg text-muted-foreground">
-					Join a Trial Cycle to prove work, or create a startup and run Build
-					from the inside.
+					Join a Hackathon to prove work, or create a Startup and run Build from
+					the inside.
 				</p>
 			</div>
 
@@ -27,25 +27,25 @@ export function CycleGuest() {
 				<p className="text-sm text-muted-foreground">Loading your work…</p>
 			) : null}
 
-			{trials.length > 0 ? (
+			{hackathons.length > 0 ? (
 				<section className="space-y-3">
 					<h2 className="text-sm font-medium text-muted-foreground">
-						Trial Cycles
+						Hackathons
 					</h2>
 					<ul className="space-y-2">
-						{trials.map((item) => {
-							const trialCycleId = item.trialCycleId;
-							if (!trialCycleId) {
+						{hackathons.map((item) => {
+							const hackathonId = item.hackathonId;
+							if (!hackathonId) {
 								return null;
 							}
 							return (
 								<li key={item._id}>
 									<Link
-										to="/s/$slug/trials/$trialCycleId"
-										params={{ slug: item.startupSlug, trialCycleId }}
+										to="/s/$slug/hackathons/$hackathonId"
+										params={{ slug: item.startupSlug, hackathonId }}
 										className="block rounded-xl border border-border p-4 hover:bg-muted/30"
 									>
-										<p className="font-medium">{item.trialTitle}</p>
+										<p className="font-medium">{item.hackathonTitle}</p>
 										<p className="mt-1 text-sm text-muted-foreground">
 											{item.startupName}
 										</p>
@@ -57,20 +57,20 @@ export function CycleGuest() {
 				</section>
 			) : null}
 
-			{activePulses.length > 0 ? (
+			{activeTasks.length > 0 ? (
 				<section className="space-y-3">
 					<h2 className="text-sm font-medium text-muted-foreground">
-						Your Pulses
+						Your Tasks
 					</h2>
 					<ul className="space-y-2">
-						{activePulses.map((pulse) => (
+						{activeTasks.map((task) => (
 							<li
-								key={pulse._id}
+								key={task._id}
 								className="rounded-xl border border-border p-4"
 							>
-								<p className="font-medium">{pulse.title}</p>
+								<p className="font-medium">{task.title}</p>
 								<p className="mt-1 text-sm text-muted-foreground">
-									{pulse.startupName}
+									{task.startupName}
 								</p>
 							</li>
 						))}
@@ -80,7 +80,7 @@ export function CycleGuest() {
 
 			<div className="flex flex-col gap-2 sm:flex-row">
 				<Button asChild className="h-11">
-					<Link to="/discover">Find a Trial Cycle</Link>
+					<Link to="/discover">Find a Hackathon</Link>
 				</Button>
 				<Button asChild variant="ghost" className="h-11">
 					<Link to="/startups/new">Create a Startup</Link>

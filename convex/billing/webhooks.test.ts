@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, internal } from "../_generated/api";
-import { createDraftTrial } from "../hiring/trialCycles.helpers";
+import { createDraftHackathon } from "../hiring/hackathons.helpers";
 import { createTest, DAY, type TestConvex } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { signUp } from "../people/users.helpers";
@@ -48,20 +48,18 @@ async function subscription(
 
 async function paid(
 	t: TestConvex,
-	payment: { paymentId?: string; userId: string; trialCycleId?: string },
+	payment: { paymentId?: string; userId: string; hackathonId?: string },
 ) {
 	await t.mutation(internal.billing.webhooks.applyPaymentSucceeded, {
 		paymentId: payment.paymentId ?? "pay_1",
 		kind: "hackathon",
-		trialCycleId: payment.trialCycleId,
+		hackathonId: payment.hackathonId,
 		metadataUserId: payment.userId,
 	});
 }
 
 async function creditRows(t: TestConvex) {
-	return await t.run(
-		async (ctx) => await ctx.db.query("hackathonCredits").collect(),
-	);
+	return await t.run(async (ctx) => await ctx.db.query("credits").collect());
 }
 
 describe("Pro subscription", () => {
@@ -215,19 +213,19 @@ describe("hackathon payments", () => {
 	test("paying for a hackathon publishes its draft", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 		await t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 			userId: setup.founder.userId,
-			trialCycleId,
+			hackathonId,
 		});
 
-		await paid(t, { userId: setup.founder.userId, trialCycleId });
+		await paid(t, { userId: setup.founder.userId, hackathonId });
 
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.status).toBe("open");
-		expect(trial?.creditSource).toBe("purchase");
+		expect(hackathon?.status).toBe("open");
+		expect(hackathon?.creditSource).toBe("purchase");
 		expect(await balanceOf(setup.founder.as)).toBe(0);
 		expect(await notificationTitles(setup.founder.as)).toContain(
 			"Payment received. Build a feature is live",
@@ -237,14 +235,14 @@ describe("hackathon payments", () => {
 	test("a repeated payment webhook grants one credit and publishes once", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 		await t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 			userId: setup.founder.userId,
-			trialCycleId,
+			hackathonId,
 		});
 
-		await paid(t, { userId: setup.founder.userId, trialCycleId });
-		await paid(t, { userId: setup.founder.userId, trialCycleId });
+		await paid(t, { userId: setup.founder.userId, hackathonId });
+		await paid(t, { userId: setup.founder.userId, hackathonId });
 
 		expect(await creditRows(t)).toHaveLength(1);
 		expect(await balanceOf(setup.founder.as)).toBe(0);
@@ -253,19 +251,19 @@ describe("hackathon payments", () => {
 	test("a payment after the dates passed keeps the credit and asks for new dates", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createDraftHackathon(setup, { startsInMs: DAY });
 		await t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 			userId: setup.founder.userId,
-			trialCycleId,
+			hackathonId,
 		});
 		vi.advanceTimersByTime(2 * DAY);
 
-		await paid(t, { userId: setup.founder.userId, trialCycleId });
+		await paid(t, { userId: setup.founder.userId, hackathonId });
 
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.status).toBe("draft");
+		expect(hackathon?.status).toBe("draft");
 		expect(await balanceOf(setup.founder.as)).toBe(1);
 		expect(await notificationTitles(setup.founder.as)).toContain(
 			"Payment received. Build a feature is still a draft",
@@ -275,80 +273,80 @@ describe("hackathon payments", () => {
 	test("a payment for a hackathon cancelled meanwhile stays as a credit", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 		await t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 			userId: setup.founder.userId,
-			trialCycleId,
+			hackathonId,
 		});
-		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-			trialCycleId,
+		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+			hackathonId,
 		});
 
-		await paid(t, { userId: setup.founder.userId, trialCycleId });
+		await paid(t, { userId: setup.founder.userId, hackathonId });
 
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.status).toBe("cancelled");
+		expect(hackathon?.status).toBe("cancelled");
 		expect(await balanceOf(setup.founder.as)).toBe(1);
 	});
 
 	test("preparing a checkout runs the publish checks and records the IP acknowledgment", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 
 		const payer = await t.mutation(
 			internal.billing.checkout.prepareHackathonCheckout,
-			{ userId: setup.founder.userId, trialCycleId },
+			{ userId: setup.founder.userId, hackathonId },
 		);
 
 		expect(payer.productId).toBe("pdt_hackathon");
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.ipAcknowledgedAt).toBeDefined();
+		expect(hackathon?.ipAcknowledgedAt).toBeDefined();
 
 		await goStealth(setup);
 		await expect(
 			t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 				userId: setup.founder.userId,
-				trialCycleId,
+				hackathonId,
 			}),
 		).rejects.toThrow("Turn off stealth mode");
 	});
 
-	test("a paid draft with no Starting Pulse stays a draft, and the credit waits", async () => {
+	test("a paid draft with no Starter Task stays a draft, and the credit waits", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 		await t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 			userId: setup.founder.userId,
-			trialCycleId,
+			hackathonId,
 		});
 		await t.run(async (ctx) => {
-			for (const challenge of await ctx.db.query("challenges").collect()) {
-				await ctx.db.delete(challenge._id);
+			for (const task of await ctx.db.query("tasks").collect()) {
+				await ctx.db.delete(task._id);
 			}
 		});
 
-		await paid(t, { userId: setup.founder.userId, trialCycleId });
+		await paid(t, { userId: setup.founder.userId, hackathonId });
 
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.status).toBe("draft");
+		expect(hackathon?.status).toBe("draft");
 		expect(await balanceOf(setup.founder.as)).toBe(1);
 	});
 	test("a Pro founder is charged the Pro price product", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 		await subscription(t, "active", setup.founder.userId);
 
 		const payer = await t.mutation(
 			internal.billing.checkout.prepareHackathonCheckout,
-			{ userId: setup.founder.userId, trialCycleId },
+			{ userId: setup.founder.userId, hackathonId },
 		);
 
 		expect(payer.productId).toBe("pdt_hackathon_pro");
@@ -357,38 +355,38 @@ describe("hackathon payments", () => {
 	test("a missing product setting stops checkout before anything is recorded", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 		vi.stubEnv("DODO_HACKATHON_PRODUCT_ID", "");
 
 		await expect(
 			t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 				userId: setup.founder.userId,
-				trialCycleId,
+				hackathonId,
 			}),
 		).rejects.toThrow("DODO_HACKATHON_PRODUCT_ID is not configured");
 
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.ipAcknowledgedAt).toBeUndefined();
+		expect(hackathon?.ipAcknowledgedAt).toBeUndefined();
 	});
 
 	test("a co-founder's payment publishes another founder's draft on the co-founder's credit", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const coFounder = await joinAsCoFounder(setup, "Cofounder");
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 		await t.mutation(internal.billing.checkout.prepareHackathonCheckout, {
 			userId: coFounder.userId,
-			trialCycleId,
+			hackathonId,
 		});
 
-		await paid(t, { userId: coFounder.userId, trialCycleId });
+		await paid(t, { userId: coFounder.userId, hackathonId });
 
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.status).toBe("open");
+		expect(hackathon?.status).toBe("open");
 		expect(await balanceOf(coFounder.as)).toBe(0);
 		const rows = await creditRows(t);
 		expect(rows).toHaveLength(1);

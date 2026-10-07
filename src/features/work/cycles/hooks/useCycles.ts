@@ -15,7 +15,12 @@ export function useCycles(startupId: Id<"startups"> | undefined) {
 	return { cycles };
 }
 
-export type NewCycle = { title: string; startAt: string; endAt: string };
+export type NewCycle = {
+	title: string;
+	goal: string;
+	startAt: string;
+	endAt: string;
+};
 
 /** Creates a planned Cycle from date-input values; resolves to its id or null. */
 export function useCreateCycle(startupId: Id<"startups"> | undefined) {
@@ -31,6 +36,7 @@ export function useCreateCycle(startupId: Id<"startups"> | undefined) {
 			return await createCycle({
 				startupId,
 				title: input.title,
+				goal: input.goal,
 				startAt: fromDateInput(input.startAt),
 				endAt: fromDateInput(input.endAt),
 			});

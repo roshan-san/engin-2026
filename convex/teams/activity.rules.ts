@@ -10,9 +10,9 @@ type LogActivityArgs = {
 	kind: ActivityKind;
 	summary: string;
 	cycleId?: Id<"cycles">;
-	pulseId?: Id<"pulses">;
+	taskId?: Id<"tasks">;
 	roleId?: Id<"roles">;
-	trialCycleId?: Id<"trialCycles">;
+	hackathonId?: Id<"hackathons">;
 };
 
 /** Append-only Activity record, alongside notify() at the same call sites. */

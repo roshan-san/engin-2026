@@ -2,17 +2,15 @@ import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
 
 export function useMyWork() {
-	const pulses = useQuery(api.work.pulses.listMine);
+	const tasks = useQuery(api.work.tasks.listMine);
 	const cycles = useQuery(api.work.cycles.listMine);
 	const applications = useQuery(api.hiring.applications.listMine);
 
 	return {
-		pulses,
+		tasks,
 		cycles,
 		applications,
 		isLoading:
-			pulses === undefined ||
-			cycles === undefined ||
-			applications === undefined,
+			tasks === undefined || cycles === undefined || applications === undefined,
 	};
 }

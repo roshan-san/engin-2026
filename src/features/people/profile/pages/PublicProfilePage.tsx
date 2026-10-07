@@ -12,9 +12,9 @@ import {
 	ScoreEvidenceCard,
 } from "~/features/people/profile/components/ScoreEvidence";
 import {
-	TrialHistory,
-	type TrialHistoryEntry,
-} from "~/features/people/profile/components/TrialHistory";
+	HackathonHistory,
+	type HackathonHistoryEntry,
+} from "~/features/people/profile/components/HackathonHistory";
 import { initials } from "~/lib/initials";
 
 type PublicProfile = {
@@ -29,7 +29,7 @@ type PublicProfile = {
 	portfolioUrl: string | null;
 	evidence: ScoreEvidence;
 	proofOfWork: ProofOfWorkData;
-	trialHistory: TrialHistoryEntry[];
+	hackathonHistory: HackathonHistoryEntry[];
 	startups: Array<{
 		_id: string;
 		name: string;
@@ -120,13 +120,13 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 
 			<ProofOfWork proofOfWork={profile.proofOfWork} />
 
-			<TrialHistory trialHistory={profile.trialHistory} />
+			<HackathonHistory hackathonHistory={profile.hackathonHistory} />
 
 			<section className="space-y-3">
 				<h2 className="text-lg font-semibold">Startups</h2>
 				{profile.startups.length === 0 ? (
 					<p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-						No public startups yet.
+						No public Startups yet.
 					</p>
 				) : (
 					<ul className="space-y-2">

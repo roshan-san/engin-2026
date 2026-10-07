@@ -12,7 +12,7 @@ type PublicOpeningsProps = {
 
 export function PublicOpenings({ startupId }: PublicOpeningsProps) {
 	const roles = useQuery(api.hiring.roles.listOpenByStartup, { startupId });
-	const trials = useQuery(api.hiring.trialCycles.listOpenByStartup, {
+	const hackathons = useQuery(api.hiring.hackathons.listOpenByStartup, {
 		startupId,
 	});
 
@@ -38,7 +38,7 @@ export function PublicOpenings({ startupId }: PublicOpeningsProps) {
 									<p className="text-sm text-muted-foreground">{role.type}</p>
 								</div>
 								<p className="text-sm text-muted-foreground">
-									Join through a hackathon
+									Join through a Hackathon
 								</p>
 							</li>
 						))}
@@ -48,37 +48,38 @@ export function PublicOpenings({ startupId }: PublicOpeningsProps) {
 
 			<section className="space-y-3">
 				<h2 className="text-lg font-semibold">Hackathons</h2>
-				{trials === undefined ? (
+				{hackathons === undefined ? (
 					<p className="text-sm text-muted-foreground">Loading…</p>
-				) : trials.length === 0 ? (
+				) : hackathons.length === 0 ? (
 					<p className="text-sm text-muted-foreground">
-						No hackathons open right now.
+						No Hackathons open right now.
 					</p>
 				) : (
 					<ul className="space-y-2">
-						{trials.map((trial) => (
+						{hackathons.map((hackathon) => (
 							<li
-								key={trial._id}
+								key={hackathon._id}
 								className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
 							>
 								<div className="min-w-0 flex-1">
 									<Link
-										to="/hackathons/$trialCycleId"
-										params={{ trialCycleId: trial._id }}
+										to="/hackathons/$hackathonId"
+										params={{ hackathonId: hackathon._id }}
 										className="font-medium hover:underline"
 									>
-										{trial.title}
+										{hackathon.title}
 									</Link>
 									<p className="text-sm text-muted-foreground">
-										{formatDate(trial.startsAt)} – {formatDate(trial.endsAt)}
+										{formatDate(hackathon.startsAt)} –{" "}
+										{formatDate(hackathon.endsAt)}
 									</p>
 									<Badge variant="outline" className="mt-2">
-										{trial.participantCount}/{trial.maxContributors}
+										{hackathon.participantCount}/{hackathon.maxParticipants}
 									</Badge>
 								</div>
 								<ApplyDialog
-									trialCycleId={trial._id}
-									title={trial.title}
+									hackathonId={hackathon._id}
+									title={hackathon.title}
 									size="sm"
 								/>
 							</li>

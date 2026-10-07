@@ -10,21 +10,21 @@ import { isConfirmingPayment } from "~/features/hiring/screen/checkoutStatus";
  * Inbox notification covers a founder who comes back later.
  */
 export function useCheckoutWatch(
-	trials: readonly HackathonListItem[] | undefined,
+	hackathons: readonly HackathonListItem[] | undefined,
 	creditCount: number | undefined,
 ) {
-	const watched = useRef(new Set<Id<"trialCycles">>());
+	const watched = useRef(new Set<Id<"hackathons">>());
 
 	useEffect(() => {
-		for (const trial of trials ?? []) {
-			if (isConfirmingPayment(trial, creditCount)) {
-				watched.current.add(trial._id);
-			} else if (watched.current.delete(trial._id)) {
+		for (const hackathon of hackathons ?? []) {
+			if (isConfirmingPayment(hackathon, creditCount)) {
+				watched.current.add(hackathon._id);
+			} else if (watched.current.delete(hackathon._id)) {
 				// A late payment leaves a draft with a credit: stop watching, no toast.
-				if (trial.status === "open") {
-					toast.success(`Payment received. ${trial.title} is live.`);
+				if (hackathon.status === "open") {
+					toast.success(`Payment received. ${hackathon.title} is live.`);
 				}
 			}
 		}
-	}, [trials, creditCount]);
+	}, [hackathons, creditCount]);
 }

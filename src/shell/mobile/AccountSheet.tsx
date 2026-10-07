@@ -77,11 +77,11 @@ export function AccountSheet({ open, onOpenChange }: AccountSheetProps) {
 
 					<div className="flex flex-col gap-1 border-t border-border pt-2">
 						<Link
-							to="/my-entries"
+							to="/my-hackathons"
 							onClick={close}
 							className="flex h-11 items-center"
 						>
-							My Entries
+							My Hackathons
 						</Link>
 						<Link
 							to="/profile"

@@ -30,51 +30,52 @@ export async function founderWithStartup(name = "Fay") {
 }
 
 /** A published hackathon, paid with the Founder's signup credit. Starts tomorrow. */
-export async function publishedTrial(
+export async function publishedHackathon(
 	startup: Startup,
 	title = `Hackathon ${startup.founder.username}`,
 ) {
 	const startsAt = Date.now() + DAY;
-	const trialCycleId = await startup.founder.api.mutation(
-		api.hiring.trialCycles.create,
+	const hackathonId = await startup.founder.api.mutation(
+		api.hiring.hackathons.create,
 		{
 			startupId: startup.startupId,
 			roleId: startup.roleId,
 			title,
 			description: "Ship the onboarding flow",
-			maxContributors: 5,
+			maxParticipants: 5,
 			startsAt,
 			endsAt: startsAt + 7 * DAY,
-			challenges: [{ title: "Design the flow" }],
+			expectedOutcome: "A working onboarding flow",
+			starterTasks: [{ title: "Design the flow" }],
 		},
 	);
-	await startup.founder.api.mutation(api.hiring.trialCycles.publish, {
-		trialCycleId,
+	await startup.founder.api.mutation(api.hiring.hackathons.publish, {
+		hackathonId,
 		acceptTerms: true,
 	});
-	return { trialCycleId, title };
+	return { hackathonId, title };
 }
 
 /** Applies as `person`; the Founder admits them. */
 export async function admit(
 	startup: Startup,
-	trialCycleId: Id<"trialCycles">,
+	hackathonId: Id<"hackathons">,
 	person: Person,
 ) {
 	const applicationId = await person.api.mutation(
-		api.hiring.applications.applyToTrial,
-		{ trialCycleId, acceptTerms: true },
+		api.hiring.applications.applyToHackathon,
+		{ hackathonId, acceptTerms: true },
 	);
 	await startup.founder.api.mutation(api.hiring.applications.decide, {
 		applicationId,
-		status: "joined",
+		status: "accepted",
 	});
 	return applicationId;
 }
 
 /** Starts the hackathon now rather than at its scheduled time. */
-export function startNow(trialCycleId: Id<"trialCycles">) {
-	seed("startTrial", { trialCycleId });
+export function startNow(hackathonId: Id<"hackathons">) {
+	seed("startHackathon", { hackathonId });
 }
 
 /** Invites `person` to the Startup and has them accept. */

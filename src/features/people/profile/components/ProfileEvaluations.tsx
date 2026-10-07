@@ -3,8 +3,8 @@ import { Button } from "~/components/ui/button";
 import {
 	type Verdict,
 	verdictLabel,
-} from "~/features/hiring/trialCycles/constants";
-import { useEvaluationVisibility } from "~/features/hiring/trialCycles/hooks/useEvaluationVisibility";
+} from "~/features/hiring/hackathons/constants";
+import { useEvaluationVisibility } from "~/features/hiring/hackathons/hooks/useEvaluationVisibility";
 import { useMyEvaluations } from "~/features/people/profile/hooks/useMyEvaluations";
 
 export function ProfileEvaluations() {
@@ -16,7 +16,7 @@ export function ProfileEvaluations() {
 			{evaluations === undefined ? null : evaluations.length === 0 ? (
 				<p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
 					No evaluations yet. Founders' written evaluations appear here after a
-					Trial Cycle closes.
+					Hackathon closes.
 				</p>
 			) : (
 				<ul className="space-y-2">
@@ -24,7 +24,7 @@ export function ProfileEvaluations() {
 						<EvaluationRow
 							key={item._id}
 							applicationId={item._id}
-							trialTitle={item.trialTitle ?? "Trial Cycle"}
+							hackathonTitle={item.hackathonTitle ?? "Hackathon"}
 							startupName={item.startupName}
 							verdict={item.verdict}
 							evaluation={item.evaluation}
@@ -39,7 +39,7 @@ export function ProfileEvaluations() {
 
 type EvaluationRowProps = {
 	readonly applicationId: Id<"applications">;
-	readonly trialTitle: string;
+	readonly hackathonTitle: string;
 	readonly startupName: string;
 	readonly verdict: Verdict | null;
 	readonly evaluation: string;
@@ -48,7 +48,7 @@ type EvaluationRowProps = {
 
 function EvaluationRow({
 	applicationId,
-	trialTitle,
+	hackathonTitle,
 	startupName,
 	verdict,
 	evaluation,
@@ -60,7 +60,7 @@ function EvaluationRow({
 		<li className="space-y-2 rounded-lg border p-4">
 			<div>
 				<p className="font-medium break-words">
-					{trialTitle} · {startupName}
+					{hackathonTitle} · {startupName}
 				</p>
 				{verdict ? (
 					<p className="text-sm text-muted-foreground">

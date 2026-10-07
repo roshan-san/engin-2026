@@ -1,18 +1,19 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_CYCLE_MEMBERS, MAX_CYCLE_PULSES } from "../lib/limits";
+import { GOAL_MAX, MAX_CYCLE_MEMBERS, MAX_CYCLE_TASKS } from "../lib/limits";
 import { cycleHref } from "../lib/links";
+import { limitText } from "../lib/text";
 import { notify, notifyFounders } from "../people/notifications.rules";
+import { getHackathonApplication } from "../hiring/hackathons.rules";
 import {
 	getMembership,
 	requireFounderMembership,
-	requireMembership,
 } from "../teams/membership.rules";
 
 type CycleCtx = QueryCtx | MutationCtx;
 
-/** Pulse statuses that are not finished and move with a carry-over. */
-const UNFINISHED_STATUSES: ReadonlySet<Doc<"pulses">["status"]> = new Set([
+/** Task statuses that are not finished and move with a carry-over. */
+const UNFINISHED_STATUSES: ReadonlySet<Doc<"tasks">["status"]> = new Set([
 	"todo",
 	"in_progress",
 	"review",
@@ -31,52 +32,64 @@ export async function getCycleMember(
 		.unique();
 }
 
+/** How the viewer belongs to a Cycle: Participants only ever reach a hackathon's. */
+export type CycleRole = "founder" | "member" | "participant";
+export type CycleAccess = { cycle: Doc<"cycles">; role: CycleRole };
+
 /**
- * The Cycle and the viewer's membership if they may open it, else `null`.
- * Founders implicitly belong to every Cycle; Members only to Cycles they were
- * added to.
+ * The Cycle and how the viewer belongs to it, or `null` if they may not open
+ * it. Founders implicitly belong to every Cycle. Members belong to the team
+ * Cycles they were added to; Participants (still in, or finished) to their
+ * hackathon's Cycle.
  */
 export async function getCycleAccess(
 	ctx: CycleCtx,
 	cycleId: Id<"cycles">,
 	userId: Id<"users">,
-): Promise<{ cycle: Doc<"cycles">; membership: Doc<"memberships"> } | null> {
+): Promise<CycleAccess | null> {
 	const cycle = await ctx.db.get(cycleId);
 	if (!cycle) {
 		return null;
 	}
 	const membership = await getMembership(ctx, cycle.startupId, userId);
-	if (!membership) {
+	if (membership?.role === "founder") {
+		return { cycle, role: "founder" };
+	}
+	if (cycle.kind === "hackathon") {
+		const application = cycle.hackathonId
+			? await getHackathonApplication(ctx, cycle.hackathonId, userId)
+			: null;
+		return application?.status === "accepted" ||
+			application?.status === "completed"
+			? { cycle, role: "participant" }
+			: null;
+	}
+	if (!membership || !(await getCycleMember(ctx, cycleId, userId))) {
 		return null;
 	}
-	if (
-		membership.role !== "founder" &&
-		!(await getCycleMember(ctx, cycleId, userId))
-	) {
-		return null;
-	}
-	return { cycle, membership };
+	return { cycle, role: "member" };
 }
 
-/** Every Cycle and internal-Pulse function goes through here. */
+/** Every Cycle and internal-Task function goes through here. */
 export async function requireCycleAccess(
 	ctx: CycleCtx,
 	cycleId: Id<"cycles">,
 	userId: Id<"users">,
-): Promise<{ cycle: Doc<"cycles">; membership: Doc<"memberships"> }> {
-	const cycle = await ctx.db.get(cycleId);
-	if (!cycle) {
-		throw new Error("Cycle not found");
-	}
-	await requireMembership(ctx, cycle.startupId, userId);
+): Promise<CycleAccess> {
 	const access = await getCycleAccess(ctx, cycleId, userId);
 	if (!access) {
+		if (!(await ctx.db.get(cycleId))) {
+			throw new Error("Cycle not found");
+		}
 		throw new Error("You are not part of this Cycle");
 	}
 	return access;
 }
 
-/** Loads a Cycle the user, as a Founder of its Startup, may manage. */
+/**
+ * Loads a team Cycle the user, as a Founder of its Startup, may manage. A
+ * hackathon's Cycle follows its hackathon instead.
+ */
 export async function requireFounderCycle(
 	ctx: CycleCtx,
 	cycleId: Id<"cycles">,
@@ -87,7 +100,19 @@ export async function requireFounderCycle(
 		throw new Error("Cycle not found");
 	}
 	await requireFounderMembership(ctx, cycle.startupId, userId);
+	if (cycle.kind !== "team") {
+		throw new Error("Manage this Cycle from its hackathon");
+	}
 	return cycle;
+}
+
+/** A Cycle's one-line goal: required, at most `GOAL_MAX` characters. */
+export function parseGoal(goal: string): string {
+	const text = limitText(goal, "Goal", GOAL_MAX);
+	if (!text) {
+		throw new Error("A Cycle needs a goal");
+	}
+	return text;
 }
 
 /** A closed Cycle is read-only. */
@@ -97,14 +122,14 @@ export function requireOpenCycle(cycle: Doc<"cycles">): void {
 	}
 }
 
-export async function loadCyclePulses(
+export async function loadCycleTasks(
 	ctx: CycleCtx,
 	cycleId: Id<"cycles">,
-): Promise<Doc<"pulses">[]> {
+): Promise<Doc<"tasks">[]> {
 	return await ctx.db
-		.query("pulses")
+		.query("tasks")
 		.withIndex("by_cycle", (q) => q.eq("cycleId", cycleId))
-		.take(MAX_CYCLE_PULSES);
+		.take(MAX_CYCLE_TASKS);
 }
 
 export async function loadCycleMembers(
@@ -149,13 +174,19 @@ export async function addCycleMember(
 	});
 }
 
-/** Tells a Cycle's Members and the other Founders about a lifecycle change. */
+/**
+ * Tells a team Cycle's Members and the other Founders about a lifecycle
+ * change. A hackathon's own news goes out from the hackathon.
+ */
 export async function notifyCycle(
 	ctx: MutationCtx,
 	cycle: Doc<"cycles">,
 	title: string,
 	actorUserId: Id<"users">,
 ): Promise<void> {
+	if (cycle.kind !== "team") {
+		return;
+	}
 	const href = await cycleHref(ctx, cycle);
 	for (const member of await loadCycleMembers(ctx, cycle._id)) {
 		if (member.userId !== actorUserId) {
@@ -180,35 +211,36 @@ export async function requireCarryOverTarget(
 	if (
 		!target ||
 		target.startupId !== from.startupId ||
+		target.kind !== "team" ||
 		target.status !== "planned"
 	) {
-		throw new Error("Unfinished Pulses can only carry over to a planned Cycle");
+		throw new Error("Unfinished Tasks can only carry over to a planned Cycle");
 	}
 	return target;
 }
 
 /**
- * Moves a closing Cycle's unfinished Pulses, as they are, to `target`. Their
+ * Moves a closing Cycle's unfinished Tasks, as they are, to `target`. Their
  * assignees join the target so they keep seeing their work.
  */
-export async function carryOverPulses(
+export async function carryOverTasks(
 	ctx: MutationCtx,
 	from: Doc<"cycles">,
 	target: Doc<"cycles">,
 ): Promise<number> {
-	const unfinished = (await loadCyclePulses(ctx, from._id)).filter((pulse) =>
-		UNFINISHED_STATUSES.has(pulse.status),
+	const unfinished = (await loadCycleTasks(ctx, from._id)).filter((task) =>
+		UNFINISHED_STATUSES.has(task.status),
 	);
-	const existing = await loadCyclePulses(ctx, target._id);
-	if (existing.length + unfinished.length > MAX_CYCLE_PULSES) {
-		throw new Error(`A Cycle can have at most ${MAX_CYCLE_PULSES} Pulses`);
+	const existing = await loadCycleTasks(ctx, target._id);
+	if (existing.length + unfinished.length > MAX_CYCLE_TASKS) {
+		throw new Error(`A Cycle can have at most ${MAX_CYCLE_TASKS} Tasks`);
 	}
 
 	const assignees = new Set<Id<"users">>();
-	for (const pulse of unfinished) {
-		await ctx.db.patch(pulse._id, { cycleId: target._id });
-		if (pulse.assigneeUserId) {
-			assignees.add(pulse.assigneeUserId);
+	for (const task of unfinished) {
+		await ctx.db.patch(task._id, { cycleId: target._id });
+		if (task.assigneeUserId) {
+			assignees.add(task.assigneeUserId);
 		}
 	}
 	for (const userId of assignees) {

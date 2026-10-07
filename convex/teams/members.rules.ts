@@ -21,7 +21,7 @@ export async function requireRemovableMembership(
 
 /**
  * Takes a Member off the team: their membership, their seats on the Startup's
- * Cycles, and their focus on it. Their Pulses stay where they are.
+ * Cycles, and their focus on it. Their Tasks stay where they are.
  */
 export async function removeMember(
 	ctx: MutationCtx,
@@ -56,7 +56,7 @@ export async function removeMember(
 		userId,
 		kind: "team",
 		title: `You were removed from ${startup?.name ?? "a startup"}`,
-		href: "/my-pulses",
+		href: "/my-tasks",
 	});
 	await logActivity(ctx, {
 		startupId,

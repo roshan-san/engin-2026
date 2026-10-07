@@ -4,10 +4,10 @@ import { useQuery } from "convex/react";
 
 /** The Startup's hackathons for the Hiring screen, newest first. */
 export function useHiringScreen(startupId: Id<"startups"> | undefined) {
-	const trials = useQuery(
-		api.hiring.trialCycles.list,
+	const hackathons = useQuery(
+		api.hiring.hackathons.list,
 		startupId ? { startupId } : "skip",
 	);
 
-	return { trials, isLoading: trials === undefined };
+	return { hackathons, isLoading: hackathons === undefined };
 }

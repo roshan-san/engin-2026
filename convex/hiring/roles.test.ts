@@ -11,10 +11,10 @@ import {
 import {
 	applicationIdOf,
 	closeWithVerdict,
-	createDraftTrial,
-	createTrial,
-	startedTrialWith,
-} from "./trialCycles.helpers";
+	createDraftHackathon,
+	createHackathon,
+	startedHackathonWith,
+} from "./hackathons.helpers";
 
 async function closeRole(setup: Setup) {
 	await setup.founder.as.mutation(api.hiring.roles.close, {
@@ -35,18 +35,24 @@ test("reaching the Headcount fills the Role and tidies up what depended on it", 
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
 	const carol = await signUp(t, "Carol");
-	const finishedTrial = await startedTrialWith(setup, [alice, bob]);
-	const runningTrial = await startedTrialWith(setup, [carol]);
-	const unstartedTrial = await createTrial(setup, { startsInMs: 5 * DAY });
-	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
-		trialCycleId: finishedTrial,
+	const finishedHackathon = await startedHackathonWith(setup, [alice, bob]);
+	const runningHackathon = await startedHackathonWith(setup, [carol]);
+	const unstartedHackathon = await createHackathon(setup, {
+		startsInMs: 5 * DAY,
+	});
+	await setup.founder.as.mutation(api.hiring.hackathons.close, {
+		hackathonId: finishedHackathon,
 		verdicts: [
 			{
-				applicationId: await applicationIdOf(t, finishedTrial, alice.userId),
+				applicationId: await applicationIdOf(
+					t,
+					finishedHackathon,
+					alice.userId,
+				),
 				verdict: "passed_with_offer",
 			},
 			{
-				applicationId: await applicationIdOf(t, finishedTrial, bob.userId),
+				applicationId: await applicationIdOf(t, finishedHackathon, bob.userId),
 				verdict: "passed_with_offer",
 			},
 		],
@@ -68,21 +74,25 @@ test("reaching the Headcount fills the Role and tidies up what depended on it", 
 		"Your Offer from Acme was withdrawn",
 	);
 
-	const unstarted = await setup.founder.as.query(api.hiring.trialCycles.get, {
-		trialCycleId: unstartedTrial,
+	const unstarted = await setup.founder.as.query(api.hiring.hackathons.get, {
+		hackathonId: unstartedHackathon,
 	});
 	expect(unstarted?.status).toBe("cancelled");
 
-	const running = await carol.as.query(api.hiring.trialCycles.get, {
-		trialCycleId: runningTrial,
+	const running = await carol.as.query(api.hiring.hackathons.get, {
+		hackathonId: runningHackathon,
 	});
 	expect(running?.status).toBe("active");
 	await expect(
-		setup.founder.as.mutation(api.hiring.trialCycles.close, {
-			trialCycleId: runningTrial,
+		setup.founder.as.mutation(api.hiring.hackathons.close, {
+			hackathonId: runningHackathon,
 			verdicts: [
 				{
-					applicationId: await applicationIdOf(t, runningTrial, carol.userId),
+					applicationId: await applicationIdOf(
+						t,
+						runningHackathon,
+						carol.userId,
+					),
 					verdict: "passed_with_offer",
 				},
 			],
@@ -94,12 +104,12 @@ test("a Role with Headcount 2 stays open after one accepted Offer", async () => 
 	const t = createTest();
 	const setup = await setUpStartup(t, 2);
 	const alice = await signUp(t, "Alice");
-	const trialCycleId = await startedTrialWith(setup, [alice]);
-	await setup.founder.as.mutation(api.hiring.trialCycles.close, {
-		trialCycleId,
+	const hackathonId = await startedHackathonWith(setup, [alice]);
+	await setup.founder.as.mutation(api.hiring.hackathons.close, {
+		hackathonId,
 		verdicts: [
 			{
-				applicationId: await applicationIdOf(t, trialCycleId, alice.userId),
+				applicationId: await applicationIdOf(t, hackathonId, alice.userId),
 				verdict: "passed_with_offer",
 			},
 		],
@@ -129,7 +139,7 @@ test("a filled Role cannot be reopened", async () => {
 
 test("a Role with an unpublished hackathon can't close", async () => {
 	const setup = await setUpStartup(createTest());
-	await createDraftTrial(setup);
+	await createDraftHackathon(setup);
 
 	await expect(closeRole(setup)).rejects.toThrow(
 		"Cancel this Role's hackathons first.",
@@ -141,16 +151,16 @@ test("a Role with an unpublished hackathon can't close", async () => {
 test("a Role with an open or running hackathon can't close", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const openTrial = await createTrial(setup, { startsInMs: 5 * DAY });
+	const openHackathon = await createHackathon(setup, { startsInMs: 5 * DAY });
 
 	await expect(closeRole(setup)).rejects.toThrow(
 		"Cancel this Role's hackathons first.",
 	);
 
-	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-		trialCycleId: openTrial,
+	await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+		hackathonId: openHackathon,
 	});
-	await startedTrialWith(setup, [await signUp(t, "Alice")]);
+	await startedHackathonWith(setup, [await signUp(t, "Alice")]);
 
 	await expect(closeRole(setup)).rejects.toThrow(
 		"Cancel this Role's hackathons first.",
@@ -161,11 +171,11 @@ test("a Role whose hackathons are all closed or cancelled closes", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
-	const finished = await startedTrialWith(setup, [alice]);
+	const finished = await startedHackathonWith(setup, [alice]);
 	await closeWithVerdict(setup, finished, alice, "passed");
-	const dropped = await createDraftTrial(setup);
-	await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-		trialCycleId: dropped,
+	const dropped = await createDraftHackathon(setup);
+	await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+		hackathonId: dropped,
 	});
 
 	await closeRole(setup);

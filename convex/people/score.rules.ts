@@ -1,24 +1,24 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { isPassed } from "../hiring/trialCycles.rules";
+import { isPassed } from "../hiring/hackathons.rules";
 import { MAX_USER_APPLICATIONS, MAX_USER_OFFERS } from "../lib/limits";
 import { SCORE_WEIGHTS } from "./scoreWeights.rules";
 
-/** Score and the Trial Cycle outcomes it is derived from (ADR 0002). */
+/** Score and the Hackathon outcomes it is derived from (ADR 0002). */
 export type ScoreEvidence = {
 	score: number;
-	trialCyclesPassed: number;
+	hackathonsPassed: number;
 	startups: number;
 	teamConversions: number;
-	trialCyclesLeft: number;
+	hackathonsLeft: number;
 };
 
 function computeEnginScore(evidence: Omit<ScoreEvidence, "score">): number {
 	return Math.max(
 		0,
-		evidence.trialCyclesPassed * SCORE_WEIGHTS.passedVerdict +
+		evidence.hackathonsPassed * SCORE_WEIGHTS.passedVerdict +
 			evidence.teamConversions * SCORE_WEIGHTS.acceptedOffer +
-			evidence.trialCyclesLeft * SCORE_WEIGHTS.leaving,
+			evidence.hackathonsLeft * SCORE_WEIGHTS.leaving,
 	);
 }
 
@@ -36,11 +36,11 @@ export async function loadScoreEvidence(
 		.withIndex("by_user", (q) => q.eq("userId", userId))
 		.take(MAX_USER_APPLICATIONS);
 
-	const trialCyclesLeft = applications.filter(
+	const hackathonsLeft = applications.filter(
 		(application) => application.status === "left",
 	).length;
 
-	const trialCyclesPassed = applications.filter(
+	const hackathonsPassed = applications.filter(
 		(application) =>
 			application.status === "completed" &&
 			isPassed(application.verdict) &&
@@ -62,10 +62,10 @@ export async function loadScoreEvidence(
 	}
 
 	const signals = {
-		trialCyclesPassed,
+		hackathonsPassed,
 		startups: memberships.length,
 		teamConversions,
-		trialCyclesLeft,
+		hackathonsLeft,
 	};
 
 	return {

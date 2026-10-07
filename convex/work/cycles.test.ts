@@ -1,13 +1,20 @@
 import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { advancePast, createTest, DAY } from "../lib/testing.helpers";
+import {
+	createHackathon,
+	cycleIdOf,
+	enterHackathon,
+	startedHackathonWith,
+} from "../hiring/hackathons.helpers";
+import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
 import { type Person, signUp } from "../people/users.helpers";
 import {
 	joinAsCoFounder,
 	joinAsMember,
 	setUpStartup,
 } from "../teams/startups.helpers";
+import { submitWithProof } from "./cycles.helpers";
 
 async function setUpTeam() {
 	const t = createTest();
@@ -19,6 +26,7 @@ async function setUpTeam() {
 		return await setup.founder.as.mutation(api.work.cycles.create, {
 			startupId: setup.startupId,
 			title,
+			goal: "Ship it",
 			startAt: Date.now(),
 			endAt: Date.now() + 7 * DAY,
 			memberUserIds: members.map((member) => member.userId),
@@ -39,12 +47,8 @@ async function setUpTeam() {
 		return view?.cycle.status;
 	}
 
-	async function addPulse(
-		person: Person,
-		cycleId: Id<"cycles">,
-		title: string,
-	) {
-		return await person.as.mutation(api.work.pulses.create, {
+	async function addTask(person: Person, cycleId: Id<"cycles">, title: string) {
+		return await person.as.mutation(api.work.tasks.create, {
 			startupId: setup.startupId,
 			title,
 			cycleId,
@@ -52,10 +56,10 @@ async function setUpTeam() {
 	}
 
 	async function boardOf(cycleId: Id<"cycles">) {
-		const pulses = await setup.founder.as.query(api.work.pulses.listForCycle, {
+		const tasks = await setup.founder.as.query(api.work.tasks.listForCycle, {
 			cycleId,
 		});
-		return pulses.map((pulse) => `${pulse.title}:${pulse.status}`).sort();
+		return tasks.map((task) => `${task.title}:${task.status}`).sort();
 	}
 
 	async function notificationTitles(person: Person) {
@@ -82,7 +86,7 @@ async function setUpTeam() {
 		createCycle,
 		visibleCycles,
 		statusOf,
-		addPulse,
+		addTask,
 		boardOf,
 		notificationTitles,
 		activitySummaries,
@@ -103,10 +107,10 @@ describe("seeing Cycles", () => {
 		]);
 	});
 
-	test("a Member outside a Cycle gets nothing for it and cannot touch its Pulses, even by id", async () => {
+	test("a Member outside a Cycle gets nothing for it and cannot touch its Tasks, even by id", async () => {
 		const { setup, bob, carol, createCycle } = await setUpTeam();
 		const cycleId = await createCycle("Landing page", [bob]);
-		const pulseId = await bob.as.mutation(api.work.pulses.create, {
+		const taskId = await bob.as.mutation(api.work.tasks.create, {
 			startupId: setup.startupId,
 			title: "Hero",
 			cycleId,
@@ -114,23 +118,23 @@ describe("seeing Cycles", () => {
 
 		expect(await carol.as.query(api.work.cycles.get, { cycleId })).toBeNull();
 		await expect(
-			carol.as.query(api.work.pulses.listForCycle, { cycleId }),
+			carol.as.query(api.work.tasks.listForCycle, { cycleId }),
 		).rejects.toThrow("You are not part of this Cycle");
 		await expect(
-			carol.as.mutation(api.work.pulses.create, {
+			carol.as.mutation(api.work.tasks.create, {
 				startupId: setup.startupId,
 				title: "Sneaky",
 				cycleId,
 			}),
 		).rejects.toThrow("You are not part of this Cycle");
 		await expect(
-			carol.as.mutation(api.work.pulses.setStatus, {
-				pulseId,
+			carol.as.mutation(api.work.tasks.setStatus, {
+				taskId,
 				status: "review",
 			}),
 		).rejects.toThrow("You are not part of this Cycle");
 		await expect(
-			carol.as.mutation(api.work.pulses.assignToMe, { pulseId }),
+			carol.as.mutation(api.work.tasks.assignToMe, { taskId }),
 		).rejects.toThrow("You are not part of this Cycle");
 	});
 
@@ -170,6 +174,31 @@ describe("creating", () => {
 		expect(await statusOf(cycleId)).toBe("planned");
 	});
 
+	test("a Cycle keeps its one-line goal", async () => {
+		const { setup, createCycle } = await setUpTeam();
+
+		const cycleId = await createCycle("Cycle 12");
+
+		const view = await setup.founder.as.query(api.work.cycles.get, {
+			cycleId,
+		});
+		expect(view?.cycle.goal).toBe("Ship it");
+	});
+
+	test("a Cycle needs a goal", async () => {
+		const { setup } = await setUpTeam();
+
+		await expect(
+			setup.founder.as.mutation(api.work.cycles.create, {
+				startupId: setup.startupId,
+				title: "Aimless",
+				goal: "   ",
+				startAt: Date.now(),
+				endAt: Date.now() + DAY,
+			}),
+		).rejects.toThrow("A Cycle needs a goal");
+	});
+
 	test("a Cycle must end after it starts", async () => {
 		const { setup } = await setUpTeam();
 
@@ -177,6 +206,7 @@ describe("creating", () => {
 			setup.founder.as.mutation(api.work.cycles.create, {
 				startupId: setup.startupId,
 				title: "Backwards",
+				goal: "Ship it",
 				startAt: Date.now(),
 				endAt: Date.now() - DAY,
 			}),
@@ -190,6 +220,7 @@ describe("creating", () => {
 			bob.as.mutation(api.work.cycles.create, {
 				startupId: setup.startupId,
 				title: "Mine",
+				goal: "Ship it",
 				startAt: Date.now(),
 				endAt: Date.now() + DAY,
 			}),
@@ -203,6 +234,7 @@ describe("starting", () => {
 		const cycleId = await setup.founder.as.mutation(api.work.cycles.create, {
 			startupId: setup.startupId,
 			title: "Sprint",
+			goal: "Ship it",
 			startAt: Date.now() + DAY,
 			endAt: Date.now() + 8 * DAY,
 		});
@@ -273,35 +305,29 @@ describe("starting", () => {
 describe("closing", () => {
 	async function setUpLaunch() {
 		const team = await setUpTeam();
-		const { setup, bob, createCycle, addPulse } = team;
+		const { setup, bob, createCycle, addTask } = team;
 		const launch = await createCycle("Launch", [bob]);
 		const billing = await createCycle("Billing");
 		await setup.founder.as.mutation(api.work.cycles.start, {
 			cycleId: launch,
 		});
 
-		const shipped = await addPulse(bob, launch, "Shipped");
-		await bob.as.mutation(api.work.pulses.assignToMe, { pulseId: shipped });
-		await bob.as.mutation(api.work.pulses.setStatus, {
-			pulseId: shipped,
-			status: "review",
+		const shipped = await addTask(bob, launch, "Shipped");
+		await bob.as.mutation(api.work.tasks.assignToMe, { taskId: shipped });
+		await submitWithProof(bob, shipped);
+		await setup.founder.as.mutation(api.work.tasks.verify, {
+			taskId: shipped,
 		});
-		await setup.founder.as.mutation(api.work.pulses.verify, {
-			pulseId: shipped,
-		});
-		const hero = await addPulse(bob, launch, "Hero");
-		await bob.as.mutation(api.work.pulses.assignToMe, { pulseId: hero });
-		await addPulse(bob, launch, "Footer");
-		const pricing = await addPulse(bob, launch, "Pricing");
-		await bob.as.mutation(api.work.pulses.setStatus, {
-			pulseId: pricing,
-			status: "review",
-		});
+		const hero = await addTask(bob, launch, "Hero");
+		await bob.as.mutation(api.work.tasks.assignToMe, { taskId: hero });
+		await addTask(bob, launch, "Footer");
+		const pricing = await addTask(bob, launch, "Pricing");
+		await submitWithProof(bob, pricing);
 
 		return { ...team, launch, billing };
 	}
 
-	test("closing with carry-over moves unfinished Pulses as they are and keeps Done ones", async () => {
+	test("closing with carry-over moves unfinished Tasks as they are and keeps Done ones", async () => {
 		const { setup, launch, billing, statusOf, boardOf } = await setUpLaunch();
 
 		await setup.founder.as.mutation(api.work.cycles.close, {
@@ -318,7 +344,7 @@ describe("closing", () => {
 		]);
 	});
 
-	test("an assignee follows their carried-over Pulse into the next Cycle", async () => {
+	test("an assignee follows their carried-over Task into the next Cycle", async () => {
 		const { setup, bob, launch, billing, visibleCycles } = await setUpLaunch();
 
 		await setup.founder.as.mutation(api.work.cycles.close, {
@@ -327,13 +353,13 @@ describe("closing", () => {
 		});
 
 		expect((await visibleCycles(bob)).sort()).toEqual(["Billing", "Launch"]);
-		const pulses = await bob.as.query(api.work.pulses.listForCycle, {
+		const tasks = await bob.as.query(api.work.tasks.listForCycle, {
 			cycleId: billing,
 		});
-		expect(pulses.map((pulse) => pulse.title)).toContain("Hero");
+		expect(tasks.map((task) => task.title)).toContain("Hero");
 	});
 
-	test("closing without carry-over leaves unfinished Pulses on the closed Cycle", async () => {
+	test("closing without carry-over leaves unfinished Tasks on the closed Cycle", async () => {
 		const { setup, launch, statusOf, boardOf } = await setUpLaunch();
 
 		await setup.founder.as.mutation(api.work.cycles.close, { cycleId: launch });
@@ -352,12 +378,13 @@ describe("closing", () => {
 		expect(await activitySummaries()).toContain('Cycle "Launch" closed');
 	});
 
-	test("unfinished Pulses carry over only to a planned Cycle", async () => {
+	test("unfinished Tasks carry over only to a planned Cycle", async () => {
 		const { setup, launch, createCycle } = await setUpLaunch();
 		const other = await setUpStartup(setup.t);
 		const elsewhere = await other.founder.as.mutation(api.work.cycles.create, {
 			startupId: other.startupId,
 			title: "Elsewhere",
+			goal: "Ship it",
 			startAt: Date.now(),
 			endAt: Date.now() + DAY,
 		});
@@ -373,7 +400,7 @@ describe("closing", () => {
 					carryOverToCycleId: target,
 				}),
 			).rejects.toThrow(
-				"Unfinished Pulses can only carry over to a planned Cycle",
+				"Unfinished Tasks can only carry over to a planned Cycle",
 			);
 		}
 	});
@@ -465,5 +492,100 @@ describe("Cycle Members", () => {
 				userId: bob.userId,
 			}),
 		).rejects.toThrow("This Cycle is closed");
+	});
+});
+
+describe("hackathon Cycles", () => {
+	test("a hackathon starts while a team Cycle is active, and both are active", async () => {
+		const { t, setup, createCycle, statusOf } = await setUpTeam();
+		const launch = await createCycle("Launch");
+		await setup.founder.as.mutation(api.work.cycles.start, { cycleId: launch });
+		const alice = await signUp(t, "Alice");
+
+		const hackathonId = await startedHackathonWith(setup, [alice]);
+
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
+		});
+		expect(hackathon?.status).toBe("active");
+		expect(await statusOf(launch)).toBe("active");
+		expect(await statusOf(await cycleIdOf(t, hackathonId))).toBe("active");
+	});
+
+	test("a running hackathon doesn't block starting a team Cycle", async () => {
+		const { t, setup, createCycle, statusOf } = await setUpTeam();
+		await startedHackathonWith(setup, [await signUp(t, "Alice")]);
+		const launch = await createCycle("Launch");
+
+		await setup.founder.as.mutation(api.work.cycles.start, { cycleId: launch });
+
+		expect(await statusOf(launch)).toBe("active");
+	});
+
+	test("hackathon Cycles stay out of the team's Cycle lists", async () => {
+		const { setup, createCycle, visibleCycles } = await setUpTeam();
+		await createCycle("Launch");
+		await createHackathon(setup);
+
+		expect(await visibleCycles(setup.founder)).toEqual(["Launch"]);
+		const mine = await setup.founder.as.query(api.work.cycles.listMine, {});
+		expect(mine.map((cycle) => cycle.title)).toEqual(["Launch"]);
+	});
+
+	test("a hackathon starting sends no team Cycle notification", async () => {
+		const { t, setup, bob, notificationTitles } = await setUpTeam();
+		const dana = await joinAsCoFounder(setup, "Dana");
+
+		await startedHackathonWith(setup, [await signUp(t, "Alice")]);
+
+		for (const person of [bob, dana]) {
+			expect(
+				(await notificationTitles(person)).filter((title) =>
+					title.startsWith("Cycle "),
+				),
+			).toEqual([]);
+		}
+	});
+
+	test("a hackathon's Cycle is managed from its hackathon", async () => {
+		const { t, setup, bob } = await setUpTeam();
+		const hackathonId = await createHackathon(setup);
+		const cycleId = await cycleIdOf(t, hackathonId);
+		const founder = setup.founder.as;
+
+		await expect(
+			founder.mutation(api.work.cycles.start, { cycleId }),
+		).rejects.toThrow("Manage this Cycle from its hackathon");
+		await expect(
+			founder.mutation(api.work.cycles.close, { cycleId }),
+		).rejects.toThrow("Manage this Cycle from its hackathon");
+		await expect(
+			founder.mutation(api.work.cycles.addMember, {
+				cycleId,
+				userId: bob.userId,
+			}),
+		).rejects.toThrow("Manage this Cycle from its hackathon");
+		await expect(
+			founder.mutation(api.work.cycles.removeMember, {
+				cycleId,
+				userId: bob.userId,
+			}),
+		).rejects.toThrow("Manage this Cycle from its hackathon");
+	});
+
+	test("a hackathon Participant is refused on a team Cycle", async () => {
+		const { t, setup, createCycle } = await setUpTeam();
+		const launch = await createCycle("Launch");
+		const dev = await signUp(t, "Dev");
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
+		await enterHackathon(setup, hackathonId, dev);
+		await advancePast(t, DAY + HOUR);
+
+		await expect(
+			dev.as.query(api.work.tasks.listForCycle, { cycleId: launch }),
+		).rejects.toThrow("You are not part of this Cycle");
+		expect(
+			await dev.as.query(api.work.cycles.get, { cycleId: launch }),
+		).toBeNull();
 	});
 });

@@ -7,19 +7,22 @@ import { requireFounderMembership } from "../teams/membership.rules";
 import type { QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import {
-	announceToTrial,
+	announceToHackathon,
 	buildThread,
 	loadLatestAnnouncements,
-	loadThreadTrials,
+	loadThreadHackathons,
 	requireAnnouncementReader,
 	requireAnnouncementsOpen,
-	requireTrial,
+	requireHackathon,
 	pickThreads,
 } from "./announcements.rules";
 
-async function toAnnouncements(ctx: QueryCtx, trial: Doc<"trialCycles">) {
+async function toAnnouncements(ctx: QueryCtx, hackathon: Doc<"hackathons">) {
 	const results = [];
-	for (const announcement of await loadLatestAnnouncements(ctx, trial._id)) {
+	for (const announcement of await loadLatestAnnouncements(
+		ctx,
+		hackathon._id,
+	)) {
 		results.push({
 			_id: announcement._id,
 			body: announcement.body,
@@ -30,68 +33,68 @@ async function toAnnouncements(ctx: QueryCtx, trial: Doc<"trialCycles">) {
 	return results;
 }
 
-/** A Trial Cycle's Announcements, newest first. */
+/** A Hackathon's Announcements, newest first. */
 export const list = query({
-	args: { trialCycleId: v.id("trialCycles") },
+	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const trial = await requireTrial(ctx, args.trialCycleId);
-		await requireAnnouncementReader(ctx, trial, userId);
+		const hackathon = await requireHackathon(ctx, args.hackathonId);
+		await requireAnnouncementReader(ctx, hackathon, userId);
 
-		return await toAnnouncements(ctx, trial);
+		return await toAnnouncements(ctx, hackathon);
 	},
 });
 
-/** One thread per Trial Cycle the user reads Announcements of, newest activity first. */
+/** One thread per Hackathon the user reads Announcements of, newest activity first. */
 export const listThreads = query({
 	args: {},
 	handler: async (ctx) => {
 		const userId = await requireUserId(ctx);
 
 		const threads = [];
-		for (const trial of await loadThreadTrials(ctx, userId)) {
-			threads.push(await buildThread(ctx, trial));
+		for (const hackathon of await loadThreadHackathons(ctx, userId)) {
+			threads.push(await buildThread(ctx, hackathon));
 		}
 		return pickThreads(threads);
 	},
 });
 
-/** A thread opened: the Trial Cycle's heading and its Announcements, read-only. */
+/** A thread opened: the Hackathon's heading and its Announcements, read-only. */
 export const getThread = query({
-	args: { trialCycleId: v.id("trialCycles") },
+	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const trial = await requireTrial(ctx, args.trialCycleId);
-		await requireAnnouncementReader(ctx, trial, userId);
+		const hackathon = await requireHackathon(ctx, args.hackathonId);
+		await requireAnnouncementReader(ctx, hackathon, userId);
 
-		const thread = await buildThread(ctx, trial);
+		const thread = await buildThread(ctx, hackathon);
 		return {
 			title: thread.title,
 			status: thread.status,
 			startupName: thread.startupName,
 			href: thread.href,
-			announcements: await toAnnouncements(ctx, trial),
+			announcements: await toAnnouncements(ctx, hackathon),
 		};
 	},
 });
 
 export const post = mutation({
 	args: {
-		trialCycleId: v.id("trialCycles"),
+		hackathonId: v.id("hackathons"),
 		body: v.string(),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const trial = await requireTrial(ctx, args.trialCycleId);
-		await requireFounderMembership(ctx, trial.startupId, userId);
-		requireAnnouncementsOpen(trial);
+		const hackathon = await requireHackathon(ctx, args.hackathonId);
+		await requireFounderMembership(ctx, hackathon.startupId, userId);
+		requireAnnouncementsOpen(hackathon);
 		const body = requireText(args.body, "Announcement");
 
-		await ctx.db.insert("trialAnnouncements", {
-			trialCycleId: trial._id,
+		await ctx.db.insert("hackathonAnnouncements", {
+			hackathonId: hackathon._id,
 			userId,
 			body,
 		});
-		await announceToTrial(ctx, trial, userId, body);
+		await announceToHackathon(ctx, hackathon, userId, body);
 	},
 });

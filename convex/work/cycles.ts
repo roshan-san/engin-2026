@@ -11,11 +11,12 @@ import {
 } from "../teams/membership.rules";
 import {
 	addCycleMember,
-	carryOverPulses,
+	carryOverTasks,
 	getCycleAccess,
 	getCycleMember,
 	loadCycleMembers,
 	notifyCycle,
+	parseGoal,
 	requireCarryOverTarget,
 	requireFounderCycle,
 	requireOpenCycle,
@@ -27,11 +28,13 @@ export const list = query({
 		const userId = await requireUserId(ctx);
 		const membership = await requireMembership(ctx, args.startupId, userId);
 
-		const cycles = await ctx.db
-			.query("cycles")
-			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
-			.order("desc")
-			.take(MAX_LISTED_CYCLES);
+		const cycles = (
+			await ctx.db
+				.query("cycles")
+				.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
+				.order("desc")
+				.take(MAX_LISTED_CYCLES)
+		).filter((cycle) => cycle.kind === "team");
 
 		if (membership.role === "founder") {
 			return cycles;
@@ -56,8 +59,8 @@ export const get = query({
 		if (!access) {
 			return null;
 		}
-		const { cycle, membership } = access;
-		const isFounder = membership.role === "founder";
+		const { cycle, role } = access;
+		const isFounder = role === "founder";
 
 		const members = [];
 		for (const member of await loadCycleMembers(ctx, cycle._id)) {
@@ -67,16 +70,21 @@ export const get = query({
 			}
 		}
 
-		const plannedCycles = isFounder
-			? (
-					await ctx.db
-						.query("cycles")
-						.withIndex("by_startup_and_status", (q) =>
-							q.eq("startupId", cycle.startupId).eq("status", "planned"),
-						)
-						.take(MAX_LISTED_CYCLES)
-				).map((item) => ({ _id: item._id, title: item.title }))
-			: [];
+		// Carry-over targets: only team Cycles take unfinished work.
+		const plannedCycles =
+			isFounder && cycle.kind === "team"
+				? (
+						await ctx.db
+							.query("cycles")
+							.withIndex("by_startup_and_kind_and_status", (q) =>
+								q
+									.eq("startupId", cycle.startupId)
+									.eq("kind", "team")
+									.eq("status", "planned"),
+							)
+							.take(MAX_LISTED_CYCLES)
+					).map((item) => ({ _id: item._id, title: item.title }))
+				: [];
 
 		return { cycle, isFounder, members, plannedCycles };
 	},
@@ -99,6 +107,9 @@ export const listMine = query({
 				.take(20);
 			const startup = await ctx.db.get(membership.startupId);
 			for (const cycle of items) {
+				if (cycle.kind !== "team") {
+					continue;
+				}
 				if (
 					membership.role !== "founder" &&
 					!(await getCycleMember(ctx, cycle._id, userId))
@@ -119,6 +130,7 @@ export const create = mutation({
 	args: {
 		startupId: v.id("startups"),
 		title: v.string(),
+		goal: v.string(),
 		startAt: v.number(),
 		endAt: v.number(),
 		memberUserIds: v.optional(v.array(v.id("users"))),
@@ -127,13 +139,17 @@ export const create = mutation({
 		const userId = await requireUserId(ctx);
 		await requireFounderMembership(ctx, args.startupId, userId);
 
+		const title = requireText(args.title, "Cycle title");
+		const goal = parseGoal(args.goal);
 		if (args.endAt <= args.startAt) {
 			throw new Error("Cycle end must be after start");
 		}
 
 		const cycleId = await ctx.db.insert("cycles", {
 			startupId: args.startupId,
-			title: requireText(args.title, "Cycle title"),
+			kind: "team",
+			title,
+			goal,
 			startAt: args.startAt,
 			endAt: args.endAt,
 			status: "planned",
@@ -157,10 +173,14 @@ export const start = mutation({
 		if (cycle.status !== "planned") {
 			throw new Error("Only a planned Cycle can be started");
 		}
+		// A running hackathon has its own Cycle and doesn't count.
 		const active = await ctx.db
 			.query("cycles")
-			.withIndex("by_startup_and_status", (q) =>
-				q.eq("startupId", cycle.startupId).eq("status", "active"),
+			.withIndex("by_startup_and_kind_and_status", (q) =>
+				q
+					.eq("startupId", cycle.startupId)
+					.eq("kind", "team")
+					.eq("status", "active"),
 			)
 			.first();
 		if (active) {
@@ -197,7 +217,7 @@ export const close = mutation({
 				cycle,
 				args.carryOverToCycleId,
 			);
-			carried = await carryOverPulses(ctx, cycle, target);
+			carried = await carryOverTasks(ctx, cycle, target);
 		}
 
 		await ctx.db.patch(cycle._id, { status: "closed" });
@@ -208,7 +228,7 @@ export const close = mutation({
 			cycleId: cycle._id,
 			summary:
 				carried > 0
-					? `Cycle "${cycle.title}" closed, ${carried} unfinished Pulse${carried === 1 ? "" : "s"} carried over`
+					? `Cycle "${cycle.title}" closed, ${carried} unfinished Task${carried === 1 ? "" : "s"} carried over`
 					: `Cycle "${cycle.title}" closed`,
 		});
 	},

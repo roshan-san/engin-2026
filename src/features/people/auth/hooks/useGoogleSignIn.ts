@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 /** Signs in with Google, then lands on `returnTo` (a path in this app). */
-export function useGoogleSignIn(returnTo = "/my-pulses") {
+export function useGoogleSignIn(returnTo = "/my-tasks") {
 	const { signIn } = useAuthActions();
 	const [isPending, setIsPending] = useState(false);
 

@@ -34,24 +34,24 @@ export const balance = query({
  * rejecting applicants can't produce one.
  */
 export const grantRerunCredit = internalMutation({
-	args: { trialCycleId: v.id("trialCycles") },
+	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
-		const trial = await ctx.db.get(args.trialCycleId);
-		if (!trial?.publishedByUserId) {
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (!hackathon?.publishedByUserId) {
 			throw new Error(
 				"Only a hackathon published through the paid gate can earn a re-run credit",
 			);
 		}
-		if (trial.creditSource === "rerun") {
+		if (hackathon.creditSource === "rerun") {
 			throw new Error("A re-run can't earn another re-run credit");
 		}
 		const now = Date.now();
-		if (now <= (trial.applicationDeadline ?? trial.startsAt)) {
+		if (now <= (hackathon.applicationDeadline ?? hackathon.startsAt)) {
 			throw new Error("Entry is still open for this hackathon");
 		}
 		const applications = await ctx.db
 			.query("applications")
-			.withIndex("by_trial", (q) => q.eq("trialCycleId", trial._id))
+			.withIndex("by_hackathon", (q) => q.eq("hackathonId", hackathon._id))
 			.take(RERUN_MIN_APPLICATIONS);
 		if (applications.length >= RERUN_MIN_APPLICATIONS) {
 			throw new Error(
@@ -60,9 +60,9 @@ export const grantRerunCredit = internalMutation({
 		}
 
 		const creditId = await grantCredit(ctx, {
-			ownerUserId: trial.publishedByUserId,
+			ownerUserId: hackathon.publishedByUserId,
 			source: "rerun",
-			grantKey: `rerun:${trial._id}`,
+			grantKey: `rerun:${hackathon._id}`,
 			expiresAt: now + RERUN_CREDIT_TTL_MS,
 		});
 		if (!creditId) {

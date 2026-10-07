@@ -22,7 +22,7 @@ type StartupSheetProps = {
 /**
  * Mobile twin of the desktop nav's Focused-Startup section (D-15): the
  * switcher row at the top, then Cycles/Hiring/Team/Pitch/Activity, or just
- * "Create Startup" when there is none. Built from the raw Sheet primitive —
+ * "Create a Startup" when there is none. Built from the raw Sheet primitive —
  * no shadcn desktop-nav mobile mode.
  */
 export function StartupSheet({ open, onOpenChange }: StartupSheetProps) {
@@ -62,7 +62,7 @@ export function StartupSheet({ open, onOpenChange }: StartupSheetProps) {
 							className="flex h-11 items-center gap-2 text-muted-foreground"
 						>
 							<Plus className="size-4" />
-							Create Startup
+							Create a Startup
 						</Link>
 					) : (
 						<>
@@ -109,7 +109,7 @@ export function StartupSheet({ open, onOpenChange }: StartupSheetProps) {
 										className="flex h-11 items-center gap-2 text-muted-foreground"
 									>
 										<Plus className="size-4" />
-										Create Startup
+										Create a Startup
 									</Link>
 								</div>
 							) : null}

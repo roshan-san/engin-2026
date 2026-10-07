@@ -34,8 +34,8 @@ export const dashboard = query({
 			)
 			.take(50);
 
-		const openTrialCycles = await ctx.db
-			.query("trialCycles")
+		const openHackathons = await ctx.db
+			.query("hackathons")
 			.withIndex("by_startup_and_status", (q) =>
 				q.eq("startupId", args.startupId).eq("status", "open"),
 			)
@@ -48,8 +48,8 @@ export const dashboard = query({
 			.take(FEED_SCAN_LIMIT);
 
 		const cutoff = Date.now() - THIRTY_DAYS_MS;
-		const verifiedPulsesLast30Days = rows.filter(
-			(row) => row.kind === "pulse_verified" && row._creationTime >= cutoff,
+		const verifiedTasksLast30Days = rows.filter(
+			(row) => row.kind === "task_verified" && row._creationTime >= cutoff,
 		).length;
 
 		const visible = [];
@@ -70,9 +70,9 @@ export const dashboard = query({
 			stats: {
 				teamSize: memberships.length,
 				activeCycles: activeCycles.length,
-				verifiedPulsesLast30Days,
+				verifiedTasksLast30Days,
 				openRoles: openRoles.length,
-				openTrialCycles: openTrialCycles.length,
+				openHackathons: openHackathons.length,
 			},
 			activity: visible.slice(0, FEED_SIZE).map((row) => ({
 				_id: row._id,

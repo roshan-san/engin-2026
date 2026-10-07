@@ -22,6 +22,9 @@ export function CycleRow({ slug, cycle }: CycleRowProps) {
 			>
 				<div className="min-w-0 flex-1">
 					<p className="truncate font-medium">{cycle.title}</p>
+					{cycle.goal ? (
+						<p className="text-sm break-words">{cycle.goal}</p>
+					) : null}
 					<p className="text-sm text-muted-foreground">
 						{formatDateRange(cycle.startAt, cycle.endAt)}
 					</p>

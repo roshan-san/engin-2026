@@ -4,7 +4,7 @@ import { useGoogleSignIn } from "~/features/people/auth/hooks/useGoogleSignIn";
 
 type GoogleButtonProps = {
 	readonly label?: string;
-	/** Where to land after signing in; defaults to My Pulses. */
+	/** Where to land after signing in; defaults to My Tasks. */
 	readonly returnTo?: string;
 };
 

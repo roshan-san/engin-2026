@@ -97,7 +97,7 @@ export function MemberList({ members, onRemove, removingId }: MemberListProps) {
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							They lose access to this Startup and its Cycles right away and are
-							told. Their past Pulses stay.
+							told. Their past Tasks stay.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

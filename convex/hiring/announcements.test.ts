@@ -18,144 +18,144 @@ import {
 import type { Person } from "../people/users.helpers";
 import {
 	closeWithVerdict,
-	createDraftTrial,
-	createTrial,
-	enterTrial,
-	startedTrialWith,
-} from "./trialCycles.helpers";
+	createDraftHackathon,
+	createHackathon,
+	enterHackathon,
+	startedHackathonWith,
+} from "./hackathons.helpers";
 
 const ANNOUNCED = "New announcement in Build a feature";
 
 /** A running hackathon with Alice alone, ready to close. */
-async function trialWithAlice() {
+async function hackathonWithAlice() {
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
-	const trialCycleId = await startedTrialWith(setup, [alice]);
-	return { t, setup, alice, trialCycleId };
+	const hackathonId = await startedHackathonWith(setup, [alice]);
+	return { t, setup, alice, hackathonId };
 }
 
-async function trialWithTwoParticipants() {
+async function hackathonWithTwoParticipants() {
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
 	const bob = await signUp(t, "Bob");
-	const trialCycleId = await startedTrialWith(setup, [alice, bob]);
-	return { t, setup, alice, bob, trialCycleId };
+	const hackathonId = await startedHackathonWith(setup, [alice, bob]);
+	return { t, setup, alice, bob, hackathonId };
 }
 
 /** A hackathon with a pending applicant, Amy, and a participant, Carol, who left once it started. */
-async function trialWithApplicantAndLeaver() {
+async function hackathonWithApplicantAndLeaver() {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+	const hackathonId = await createHackathon(setup, { startsInMs: DAY });
 	const amy = await signUp(t, "Amy");
-	await amy.as.mutation(api.hiring.applications.applyToTrial, {
-		trialCycleId,
+	await amy.as.mutation(api.hiring.applications.applyToHackathon, {
+		hackathonId,
 		acceptTerms: true,
 	});
 	const carol = await signUp(t, "Carol");
-	await enterTrial(setup, trialCycleId, carol);
+	await enterHackathon(setup, hackathonId, carol);
 	await advancePast(t, DAY + HOUR);
-	await carol.as.mutation(api.hiring.applications.leaveTrial, { trialCycleId });
-	return { t, setup, trialCycleId, amy, carol };
+	await carol.as.mutation(api.hiring.applications.leaveHackathon, {
+		hackathonId,
+	});
+	return { t, setup, hackathonId, amy, carol };
 }
 
 async function announce(
 	as: Client,
-	trialCycleId: Id<"trialCycles">,
+	hackathonId: Id<"hackathons">,
 	body: string,
 ) {
-	await as.mutation(api.hiring.announcements.post, { trialCycleId, body });
+	await as.mutation(api.hiring.announcements.post, { hackathonId, body });
 }
 
-async function bodiesFor(as: Client, trialCycleId: Id<"trialCycles">) {
+async function bodiesFor(as: Client, hackathonId: Id<"hackathons">) {
 	const announcements = await as.query(api.hiring.announcements.list, {
-		trialCycleId,
+		hackathonId,
 	});
 	return announcements.map((announcement) => announcement.body);
 }
 
 describe("posting", () => {
 	test("a founder's announcement is saved with them as its author", async () => {
-		const { setup, alice, trialCycleId } = await trialWithTwoParticipants();
+		const { setup, alice, hackathonId } = await hackathonWithTwoParticipants();
 
-		await announce(setup.founder.as, trialCycleId, "Demo day moved to Friday");
+		await announce(setup.founder.as, hackathonId, "Demo day moved to Friday");
 
 		const [announcement] = await alice.as.query(api.hiring.announcements.list, {
-			trialCycleId,
+			hackathonId,
 		});
 		expect(announcement?.body).toBe("Demo day moved to Friday");
 		expect(announcement?.user?.username).toBe("founder");
 	});
 
 	test("a member who is not a founder cannot post", async () => {
-		const { setup, trialCycleId } = await trialWithTwoParticipants();
+		const { setup, hackathonId } = await hackathonWithTwoParticipants();
 		const member = await joinAsMember(setup, "Mia");
 
 		await expect(
-			announce(member.as, trialCycleId, "Not allowed"),
+			announce(member.as, hackathonId, "Not allowed"),
 		).rejects.toThrow("Only founders can perform this action");
 	});
 
 	test("a participant cannot post", async () => {
-		const { alice, trialCycleId } = await trialWithTwoParticipants();
+		const { alice, hackathonId } = await hackathonWithTwoParticipants();
 
 		await expect(
-			announce(alice.as, trialCycleId, "Not allowed"),
+			announce(alice.as, hackathonId, "Not allowed"),
 		).rejects.toThrow("You are not a member of this startup");
 	});
 
 	test("blank text is refused", async () => {
-		const { setup, trialCycleId } = await trialWithTwoParticipants();
+		const { setup, hackathonId } = await hackathonWithTwoParticipants();
 
 		await expect(
-			announce(setup.founder.as, trialCycleId, "   "),
+			announce(setup.founder.as, hackathonId, "   "),
 		).rejects.toThrow("Announcement is required");
 	});
 
 	test("a founder can post before the start", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup);
+		const hackathonId = await createHackathon(setup);
 
-		await announce(setup.founder.as, trialCycleId, "Welcome");
+		await announce(setup.founder.as, hackathonId, "Welcome");
 
-		expect(await bodiesFor(setup.founder.as, trialCycleId)).toEqual([
-			"Welcome",
-		]);
+		expect(await bodiesFor(setup.founder.as, hackathonId)).toEqual(["Welcome"]);
 	});
 
 	test("posting after the close is refused", async () => {
-		const { t, setup, alice, trialCycleId } = await trialWithAlice();
+		const { t, setup, alice, hackathonId } = await hackathonWithAlice();
 		await advancePast(t, 8 * DAY);
-		await closeWithVerdict(setup, trialCycleId, alice, "passed");
+		await closeWithVerdict(setup, hackathonId, alice, "passed");
 
 		await expect(
-			announce(setup.founder.as, trialCycleId, "Goodbye"),
-		).rejects.toThrow("This Trial Cycle is closed, so it is read-only");
+			announce(setup.founder.as, hackathonId, "Goodbye"),
+		).rejects.toThrow("This Hackathon is closed, so it is read-only");
 	});
 
 	test("posting after a cancel is refused", async () => {
-		const { setup, trialCycleId } = await trialWithTwoParticipants();
-		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-			trialCycleId,
+		const { setup, hackathonId } = await hackathonWithTwoParticipants();
+		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+			hackathonId,
 		});
 
 		await expect(
-			announce(setup.founder.as, trialCycleId, "Goodbye"),
-		).rejects.toThrow("This Trial Cycle is closed, so it is read-only");
+			announce(setup.founder.as, hackathonId, "Goodbye"),
+		).rejects.toThrow("This Hackathon is closed, so it is read-only");
 	});
 });
 
 describe("notifications", () => {
-	test("every joined participant and every co-founder but the author is notified with the trial link", async () => {
-		const { setup, alice, bob, trialCycleId } =
-			await trialWithTwoParticipants();
+	test("every accepted participant and every co-founder but the author is notified with the hackathon link", async () => {
+		const { setup, alice, bob, hackathonId } =
+			await hackathonWithTwoParticipants();
 		const dana = await joinAsCoFounder(setup, "Dana");
 		const before = await notificationTitles(setup.founder.as);
 
-		await announce(setup.founder.as, trialCycleId, "Standup moved");
+		await announce(setup.founder.as, hackathonId, "Standup moved");
 
 		for (const person of [alice, bob, dana]) {
 			const { notifications } = await person.as.query(
@@ -165,17 +165,17 @@ describe("notifications", () => {
 			const notification = notifications.find(
 				(notification) => notification.title === ANNOUNCED,
 			);
-			expect(notification?.href).toMatch(`/trials/${trialCycleId}`);
+			expect(notification?.href).toMatch(`/hackathons/${hackathonId}`);
 			expect(notification?.body).toBe("Standup moved");
 		}
 		expect(await notificationTitles(setup.founder.as)).toEqual(before);
 	});
 
 	test("a participant who left and a pending applicant are not notified", async () => {
-		const { setup, trialCycleId, amy, carol } =
-			await trialWithApplicantAndLeaver();
+		const { setup, hackathonId, amy, carol } =
+			await hackathonWithApplicantAndLeaver();
 
-		await announce(setup.founder.as, trialCycleId, "Standup moved");
+		await announce(setup.founder.as, hackathonId, "Standup moved");
 
 		expect(await notificationTitles(carol.as)).not.toContain(ANNOUNCED);
 		expect(await notificationTitles(amy.as)).not.toContain(ANNOUNCED);
@@ -184,37 +184,35 @@ describe("notifications", () => {
 
 describe("reading", () => {
 	test("participants and members read newest first", async () => {
-		const { setup, alice, trialCycleId } = await trialWithTwoParticipants();
+		const { setup, alice, hackathonId } = await hackathonWithTwoParticipants();
 		const member = await joinAsMember(setup, "Mia");
-		await announce(setup.founder.as, trialCycleId, "first");
-		await announce(setup.founder.as, trialCycleId, "second");
+		await announce(setup.founder.as, hackathonId, "first");
+		await announce(setup.founder.as, hackathonId, "second");
 
-		expect(await bodiesFor(alice.as, trialCycleId)).toEqual([
-			"second",
-			"first",
-		]);
-		expect(await bodiesFor(member.as, trialCycleId)).toEqual([
+		expect(await bodiesFor(alice.as, hackathonId)).toEqual(["second", "first"]);
+		expect(await bodiesFor(member.as, hackathonId)).toEqual([
 			"second",
 			"first",
 		]);
 	});
 
 	test("a completed participant still reads after the close", async () => {
-		const { t, setup, alice, trialCycleId } = await trialWithAlice();
-		await announce(setup.founder.as, trialCycleId, "Before the end");
+		const { t, setup, alice, hackathonId } = await hackathonWithAlice();
+		await announce(setup.founder.as, hackathonId, "Before the end");
 		await advancePast(t, 8 * DAY);
-		await closeWithVerdict(setup, trialCycleId, alice, "passed");
+		await closeWithVerdict(setup, hackathonId, alice, "passed");
 
-		expect(await bodiesFor(alice.as, trialCycleId)).toEqual(["Before the end"]);
+		expect(await bodiesFor(alice.as, hackathonId)).toEqual(["Before the end"]);
 	});
 
 	test("a pending applicant, a participant who left and an outsider are refused", async () => {
-		const { t, trialCycleId, amy, carol } = await trialWithApplicantAndLeaver();
+		const { t, hackathonId, amy, carol } =
+			await hackathonWithApplicantAndLeaver();
 		const outsider = await signUp(t, "Olly");
 
 		for (const person of [amy, carol, outsider]) {
-			await expect(bodiesFor(person.as, trialCycleId)).rejects.toThrow(
-				"You do not have access to this Trial Cycle",
+			await expect(bodiesFor(person.as, hackathonId)).rejects.toThrow(
+				"You do not have access to this Hackathon",
 			);
 		}
 	});
@@ -245,9 +243,9 @@ async function threadsOf(as: Client) {
 
 describe("threads", () => {
 	test("a participant's and a founder's hackathons are both threads", async () => {
-		const { t, alice } = await trialWithAlice();
+		const { t, alice } = await hackathonWithAlice();
 		const beta = await betaFoundedBy(t, alice);
-		await createTrial(beta);
+		await createHackathon(beta);
 
 		const threads = await threadsOf(alice.as);
 
@@ -258,7 +256,7 @@ describe("threads", () => {
 	});
 
 	test("a member sees their startup's hackathons as threads", async () => {
-		const { setup } = await trialWithAlice();
+		const { setup } = await hackathonWithAlice();
 		const member = await joinAsMember(setup, "Mia");
 
 		const threads = await threadsOf(member.as);
@@ -267,8 +265,8 @@ describe("threads", () => {
 	});
 
 	test("pending applicants, leavers and drafts make no thread", async () => {
-		const { setup, amy, carol } = await trialWithApplicantAndLeaver();
-		await createDraftTrial(setup);
+		const { setup, amy, carol } = await hackathonWithApplicantAndLeaver();
+		await createDraftHackathon(setup);
 
 		expect(await threadsOf(amy.as)).toEqual([]);
 		expect(await threadsOf(carol.as)).toEqual([]);
@@ -278,29 +276,29 @@ describe("threads", () => {
 	test("a cancelled hackathon with nothing announced makes no thread, one with announcements stays", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const quiet = await createTrial(setup);
-		const announced = await createTrial(setup);
+		const quiet = await createHackathon(setup);
+		const announced = await createHackathon(setup);
 		await announce(setup.founder.as, announced, "Heads up");
-		for (const trialCycleId of [quiet, announced]) {
-			await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-				trialCycleId,
+		for (const hackathonId of [quiet, announced]) {
+			await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+				hackathonId,
 			});
 		}
 
 		const threads = await threadsOf(setup.founder.as);
 
-		expect(threads.map((thread) => thread.trialCycleId)).toEqual([announced]);
+		expect(threads.map((thread) => thread.hackathonId)).toEqual([announced]);
 	});
 
 	test("the thread with the latest announcement comes first, with its count and preview", async () => {
-		const { t, setup, alice, trialCycleId } = await trialWithAlice();
+		const { t, setup, alice, hackathonId } = await hackathonWithAlice();
 		const beta = await betaFoundedBy(t, await signUp(t, "Dana"));
-		const betaTrialId = await createTrial(beta, { startsInMs: DAY });
-		await enterTrial(beta, betaTrialId, alice);
-		await announce(beta.founder.as, betaTrialId, "Welcome to Beta");
+		const betaHackathonId = await createHackathon(beta, { startsInMs: DAY });
+		await enterHackathon(beta, betaHackathonId, alice);
+		await announce(beta.founder.as, betaHackathonId, "Welcome to Beta");
 		await advancePast(t, HOUR);
-		await announce(setup.founder.as, trialCycleId, "Old news");
-		await announce(setup.founder.as, trialCycleId, "Demo on Friday");
+		await announce(setup.founder.as, hackathonId, "Old news");
+		await announce(setup.founder.as, hackathonId, "Demo on Friday");
 
 		const threads = await threadsOf(alice.as);
 
@@ -316,20 +314,20 @@ describe("threads", () => {
 		]);
 	});
 
-	test("opening a thread shows its announcements newest first with the Trial Cycle link", async () => {
-		const { t, setup, alice, trialCycleId } = await trialWithAlice();
-		await announce(setup.founder.as, trialCycleId, "first");
-		await announce(setup.founder.as, trialCycleId, "second");
+	test("opening a thread shows its announcements newest first with the Hackathon link", async () => {
+		const { t, setup, alice, hackathonId } = await hackathonWithAlice();
+		await announce(setup.founder.as, hackathonId, "first");
+		await announce(setup.founder.as, hackathonId, "second");
 		const startup = await t.run(
 			async (ctx) => await ctx.db.get(setup.startupId),
 		);
 
 		const thread = await alice.as.query(api.hiring.announcements.getThread, {
-			trialCycleId,
+			hackathonId,
 		});
 
 		expect(thread.startupName).toBe("Acme");
-		expect(thread.href).toBe(`/s/${startup?.slug}/trials/${trialCycleId}`);
+		expect(thread.href).toBe(`/s/${startup?.slug}/hackathons/${hackathonId}`);
 		expect(thread.announcements.map((a) => a.body)).toEqual([
 			"second",
 			"first",
@@ -337,15 +335,15 @@ describe("threads", () => {
 	});
 
 	test("an outsider cannot open a thread", async () => {
-		const { t, trialCycleId } = await trialWithAlice();
+		const { t, hackathonId } = await hackathonWithAlice();
 		const outsider = await signUp(t, "Olly");
 
 		const attempt = outsider.as.query(api.hiring.announcements.getThread, {
-			trialCycleId,
+			hackathonId,
 		});
 
 		await expect(attempt).rejects.toThrow(
-			"You do not have access to this Trial Cycle",
+			"You do not have access to this Hackathon",
 		);
 	});
 });

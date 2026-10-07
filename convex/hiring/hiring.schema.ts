@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import { creditSource } from "../billing/billing.schema";
 
 export const openingStatus = v.union(v.literal("open"), v.literal("closed"));
-export const trialStatus = v.union(
+export const hackathonStatus = v.union(
 	/** Created but not paid for: hidden, not joinable, no start scheduled. */
 	v.literal("draft"),
 	v.literal("open"),
@@ -11,7 +11,7 @@ export const trialStatus = v.union(
 	v.literal("closed"),
 	v.literal("cancelled"),
 );
-export const trialVerdict = v.union(
+export const hackathonVerdict = v.union(
 	v.literal("passed_with_offer"),
 	v.literal("passed"),
 	v.literal("not_passed"),
@@ -24,7 +24,7 @@ export const offerStatus = v.union(
 );
 export const applicationStatus = v.union(
 	v.literal("applied"),
-	v.literal("joined"),
+	v.literal("accepted"),
 	v.literal("rejected"),
 	v.literal("withdrawn"),
 	v.literal("left"),
@@ -53,12 +53,14 @@ export const hiringTables = {
 			filterFields: ["status"],
 		}),
 
-	trialCycles: defineTable({
+	hackathons: defineTable({
 		startupId: v.id("startups"),
 		roleId: v.id("roles"),
+		/** The Cycle created with the draft; Starter Tasks and every lane live on it. */
+		cycleId: v.id("cycles"),
 		title: v.string(),
 		description: v.string(),
-		maxContributors: v.number(),
+		maxParticipants: v.number(),
 		applicationDeadline: v.optional(v.number()),
 		startsAt: v.number(),
 		endsAt: v.number(),
@@ -72,10 +74,10 @@ export const hiringTables = {
 		/** The credit that paid for publishing; a "rerun" can't earn another re-run credit. */
 		creditSource: v.optional(creditSource),
 		/** The credit that paid; cancelling before the start un-spends it. */
-		creditId: v.optional(v.id("hackathonCredits")),
+		creditId: v.optional(v.id("credits")),
 		/** When the publishing Founder acknowledged that contributors keep their IP. */
 		ipAcknowledgedAt: v.optional(v.number()),
-		status: trialStatus,
+		status: hackathonStatus,
 		participantCount: v.number(),
 		searchText: v.string(),
 	})
@@ -83,28 +85,19 @@ export const hiringTables = {
 		.index("by_startup_and_status", ["startupId", "status"])
 		.index("by_role", ["roleId"])
 		.index("by_status", ["status"])
-		.searchIndex("search_trials", {
+		.searchIndex("search_hackathons", {
 			searchField: "searchText",
 			filterFields: ["status"],
 		}),
-
-	/** Template Pulses a Founder defines; copied onto each Participant's Board. */
-	challenges: defineTable({
-		trialCycleId: v.id("trialCycles"),
-		startupId: v.id("startups"),
-		title: v.string(),
-		description: v.optional(v.string()),
-		createdByUserId: v.id("users"),
-	}).index("by_trial", ["trialCycleId"]),
 
 	applications: defineTable({
 		userId: v.id("users"),
 		startupId: v.id("startups"),
 		roleId: v.id("roles"),
-		trialCycleId: v.id("trialCycles"),
+		hackathonId: v.id("hackathons"),
 		status: applicationStatus,
 		message: v.optional(v.string()),
-		verdict: v.optional(trialVerdict),
+		verdict: v.optional(hackathonVerdict),
 		evaluation: v.optional(v.string()),
 		/** The Participant chose to show the Evaluation on their profile. */
 		evaluationPublic: v.optional(v.boolean()),
@@ -116,12 +109,12 @@ export const hiringTables = {
 		.index("by_user", ["userId"])
 		.index("by_startup", ["startupId"])
 		.index("by_role", ["roleId"])
-		.index("by_trial", ["trialCycleId"])
-		.index("by_trial_and_user", ["trialCycleId", "userId"]),
+		.index("by_hackathon", ["hackathonId"])
+		.index("by_hackathon_and_user", ["hackathonId", "userId"]),
 
 	offers: defineTable({
 		applicationId: v.id("applications"),
-		trialCycleId: v.id("trialCycles"),
+		hackathonId: v.id("hackathons"),
 		roleId: v.id("roles"),
 		startupId: v.id("startups"),
 		userId: v.id("users"),
@@ -131,13 +124,13 @@ export const hiringTables = {
 		.index("by_user_and_status", ["userId", "status"])
 		.index("by_startup", ["startupId"])
 		.index("by_startup_and_status", ["startupId", "status"])
-		.index("by_trial", ["trialCycleId"]),
+		.index("by_hackathon", ["hackathonId"]),
 
 	/** Founder-to-all-Participants news; there are no private Threads. */
-	trialAnnouncements: defineTable({
-		trialCycleId: v.id("trialCycles"),
+	hackathonAnnouncements: defineTable({
+		hackathonId: v.id("hackathons"),
 		/** The Founder who posted it. */
 		userId: v.id("users"),
 		body: v.string(),
-	}).index("by_trial", ["trialCycleId"]),
+	}).index("by_hackathon", ["hackathonId"]),
 };

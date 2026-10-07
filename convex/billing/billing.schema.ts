@@ -12,14 +12,14 @@ export const creditSource = v.union(
 export const billingTables = {
 	/**
 	 * One row per hackathon credit, whatever it came from (eng review D2).
-	 * A credit pays for publishing one Trial Cycle.
+	 * A credit pays for publishing one Hackathon.
 	 */
-	hackathonCredits: defineTable({
+	credits: defineTable({
 		ownerUserId: v.id("users"),
 		source: creditSource,
 		/**
 		 * One credit per key, because grants repeat:
-		 * `signup:{userId}`, `purchase:{paymentId}`, `rerun:{trialCycleId}`,
+		 * `signup:{userId}`, `purchase:{paymentId}`, `rerun:{hackathonId}`,
 		 * `pro_monthly:{userId}:{proStartedAt}:{month}:{1|2}`.
 		 */
 		grantKey: v.optional(v.string()),

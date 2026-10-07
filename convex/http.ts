@@ -45,7 +45,7 @@ http.route({
 			await ctx.runMutation(internal.billing.webhooks.applyPaymentSucceeded, {
 				paymentId: payload.data.payment_id,
 				kind: metadataString(metadata, "kind"),
-				trialCycleId: metadataString(metadata, "trialCycleId"),
+				hackathonId: metadataString(metadata, "hackathonId"),
 				metadataUserId: metadataString(metadata, "userId"),
 				email: payload.data.customer?.email,
 			});

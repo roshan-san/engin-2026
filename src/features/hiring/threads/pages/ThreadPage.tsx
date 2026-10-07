@@ -4,16 +4,16 @@ import { PageLoading } from "~/components/globals/PageLoading";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useThread } from "~/features/hiring/threads/hooks/useThread";
-import { AnnouncementList } from "~/features/hiring/trialCycles/components/AnnouncementList";
-import { TRIAL_STATUS_LABELS } from "~/features/hiring/trialCycles/constants";
+import { AnnouncementList } from "~/features/hiring/hackathons/components/AnnouncementList";
+import { HACKATHON_STATUS_LABELS } from "~/features/hiring/hackathons/constants";
 
 type ThreadPageProps = {
-	readonly trialCycleId: string;
+	readonly hackathonId: string;
 };
 
-/** A hackathon's Announcements, read-only; founders post on the Trial Cycle screen. */
-export function ThreadPage({ trialCycleId }: ThreadPageProps) {
-	const { thread } = useThread(trialCycleId);
+/** A hackathon's Announcements, read-only; founders post on the Hackathon screen. */
+export function ThreadPage({ hackathonId }: ThreadPageProps) {
+	const { thread } = useThread(hackathonId);
 
 	return (
 		<div className="mx-auto w-full max-w-3xl space-y-6">
@@ -36,16 +36,16 @@ export function ThreadPage({ trialCycleId }: ThreadPageProps) {
 							<p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
 								<span className="break-words">{thread.startupName}</span>
 								<Badge variant="secondary">
-									{TRIAL_STATUS_LABELS[thread.status]}
+									{HACKATHON_STATUS_LABELS[thread.status]}
 								</Badge>
 							</p>
 						</div>
 						<Button asChild size="sm" variant="outline" className="self-start">
-							<Link to={thread.href}>Open Trial Cycle</Link>
+							<Link to={thread.href}>Open Hackathon</Link>
 						</Button>
 					</div>
 					<p className="text-sm text-muted-foreground">
-						Announcements from the founders to every Participant.
+						Announcements from the Founders to every Participant.
 					</p>
 					<AnnouncementList announcements={thread.announcements} />
 				</>

@@ -2,9 +2,9 @@ import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
 import {
 	closeWithVerdict,
-	createTrial,
-	startedTrialWith,
-} from "../hiring/trialCycles.helpers";
+	createHackathon,
+	startedHackathonWith,
+} from "../hiring/hackathons.helpers";
 import { createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import { goStealth, joinAsMember, setUpStartup } from "./startups.helpers";
@@ -128,11 +128,11 @@ describe("focus and memberships", () => {
 		expect(me?.focusedStartupId).toBe(setup.startupId);
 	});
 
-	test("a Trial Cycle Participant who is not a Member gets role null and cannot focus", async () => {
+	test("a Hackathon Participant who is not a Member gets role null and cannot focus", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
-		await startedTrialWith(setup, [alice]);
+		await startedHackathonWith(setup, [alice]);
 		const slug = (await t.run(async (ctx) => await ctx.db.get(setup.startupId)))
 			?.slug as string;
 
@@ -261,7 +261,7 @@ describe("Plan usage", () => {
 	test("getBySlug's Plan block reports Free limits and correct usage", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		await createTrial(setup);
+		await createHackathon(setup);
 		await joinAsMember(setup, "Bob");
 		await signUp(t, "Carol");
 		await setup.founder.as.mutation(api.teams.invitations.create, {
@@ -296,8 +296,8 @@ describe("Plan usage", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
-		const trialCycleId = await startedTrialWith(setup, [alice]);
-		await closeWithVerdict(setup, trialCycleId, alice, "passed_with_offer");
+		const hackathonId = await startedHackathonWith(setup, [alice]);
+		await closeWithVerdict(setup, hackathonId, alice, "passed_with_offer");
 		const slug = (await t.run(async (ctx) => await ctx.db.get(setup.startupId)))
 			?.slug as string;
 

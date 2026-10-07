@@ -19,18 +19,18 @@ import { Label } from "~/components/ui/label";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { useApply } from "~/features/hiring/opportunities/hooks/useApply";
-import { CONTRIBUTOR_IP_TERMS } from "~/features/hiring/trialCycles/constants";
+import { CONTRIBUTOR_IP_TERMS } from "~/features/hiring/hackathons/constants";
 import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
 
 type ApplyDialogProps = {
-	readonly trialCycleId: Id<"trialCycles">;
+	readonly hackathonId: Id<"hackathons">;
 	readonly title: string;
 	readonly size?: "sm" | "default";
 };
 
 /** Every Apply button: sign in first when signed out, else the note and IP tick. */
 export function ApplyDialog({
-	trialCycleId,
+	hackathonId,
 	title,
 	size = "default",
 }: ApplyDialogProps) {
@@ -46,12 +46,12 @@ export function ApplyDialog({
 				<DialogContent className="max-h-[90vh] overflow-y-auto">
 					{isAuthenticated ? (
 						<ApplyForm
-							trialCycleId={trialCycleId}
+							hackathonId={hackathonId}
 							title={title}
 							onApplied={() => setOpen(false)}
 						/>
 					) : (
-						<SignInToApply trialCycleId={trialCycleId} title={title} />
+						<SignInToApply hackathonId={hackathonId} title={title} />
 					)}
 				</DialogContent>
 			</Dialog>
@@ -60,9 +60,9 @@ export function ApplyDialog({
 }
 
 function SignInToApply({
-	trialCycleId,
+	hackathonId,
 	title,
-}: Pick<ApplyDialogProps, "trialCycleId" | "title">) {
+}: Pick<ApplyDialogProps, "hackathonId" | "title">) {
 	return (
 		<>
 			<DialogHeader>
@@ -74,21 +74,21 @@ function SignInToApply({
 			<DialogFooter>
 				<GoogleButton
 					label="Continue with Google"
-					returnTo={`/hackathons/${trialCycleId}`}
+					returnTo={`/hackathons/${hackathonId}`}
 				/>
 			</DialogFooter>
 		</>
 	);
 }
 
-type ApplyFormProps = Pick<ApplyDialogProps, "trialCycleId" | "title"> & {
+type ApplyFormProps = Pick<ApplyDialogProps, "hackathonId" | "title"> & {
 	readonly onApplied: () => void;
 };
 
-function ApplyForm({ trialCycleId, title, onApplied }: ApplyFormProps) {
+function ApplyForm({ hackathonId, title, onApplied }: ApplyFormProps) {
 	const [message, setMessage] = useState("");
 	const [acceptTerms, setAcceptTerms] = useState(false);
-	const { apply, error, isPending } = useApply(trialCycleId);
+	const { apply, error, isPending } = useApply(hackathonId);
 
 	async function submit() {
 		if (await apply(message)) {
@@ -107,7 +107,7 @@ function ApplyForm({ trialCycleId, title, onApplied }: ApplyFormProps) {
 			</DialogHeader>
 
 			<div className="space-y-2">
-				<Label htmlFor="apply-message">Note to the founders (optional)</Label>
+				<Label htmlFor="apply-message">Note to the Founders (optional)</Label>
 				<Textarea
 					id="apply-message"
 					value={message}
@@ -138,7 +138,7 @@ function ApplyForm({ trialCycleId, title, onApplied }: ApplyFormProps) {
 					<FieldError>{error}</FieldError>
 					{error === LIVE_ENTRY_LIMIT_MESSAGE ? (
 						<Button asChild variant="outline">
-							<Link to="/my-entries">Go to My Entries</Link>
+							<Link to="/my-hackathons">Go to My Hackathons</Link>
 						</Button>
 					) : null}
 				</div>

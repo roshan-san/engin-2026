@@ -3,7 +3,7 @@ import { api } from "../_generated/api";
 import { createTest } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { signUp } from "../people/users.helpers";
-import { cyclePulseFor } from "../work/cycles.helpers";
+import { cycleTaskFor } from "../work/cycles.helpers";
 import {
 	joinAsCoFounder,
 	joinAsMember,
@@ -47,7 +47,7 @@ test("a removed Member loses the Startup and its Cycles, is notified, and the fe
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const bob = await joinAsMember(setup, "Bob");
-	const { cycleId } = await cyclePulseFor(setup, bob);
+	const { cycleId } = await cycleTaskFor(setup, bob);
 	await bob.as.mutation(api.teams.startups.focus, {
 		startupId: setup.startupId,
 	});
@@ -77,7 +77,7 @@ test("a Member who rejoins is not back on the Cycles they were removed from", as
 	const t = createTest();
 	const setup = await setUpStartup(t);
 	const bob = await joinAsMember(setup, "Bob");
-	await cyclePulseFor(setup, bob);
+	await cycleTaskFor(setup, bob);
 	await setup.founder.as.mutation(api.teams.members.remove, {
 		membershipId: await membershipOf(setup, "bob"),
 	});

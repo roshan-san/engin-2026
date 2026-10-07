@@ -11,7 +11,7 @@ import { useNotifications } from "~/shell/hooks/useNotifications";
 import { StartupSheet } from "~/shell/mobile/StartupSheet";
 
 /**
- * Mobile bottom tab bar (D-14): Inbox · My Pulses · Startup · Discover. The
+ * Mobile bottom tab bar (D-14): Inbox · My Tasks · Startup · Discover. The
  * Startup tab is a button that opens the Startup sheet (D-15) instead of
  * navigating — it never gets its own screen. Inbox is active on both /inbox
  * and /threads because Threads live inside Inbox on mobile (D-16).
@@ -25,7 +25,7 @@ export function BottomTabBar() {
 
 	const inboxActive =
 		pathname.startsWith("/inbox") || pathname.startsWith("/threads");
-	const myPulsesActive = pathname.startsWith("/my-pulses");
+	const myTasksActive = pathname.startsWith("/my-tasks");
 	const startupActive = pathname.startsWith("/s/");
 	const discoverActive = pathname.startsWith("/discover");
 	const showBadge = !isLoading && count > 0;
@@ -62,22 +62,22 @@ export function BottomTabBar() {
 						</span>
 					</Link>
 					<Link
-						to="/my-pulses"
-						aria-current={myPulsesActive ? "page" : undefined}
+						to="/my-tasks"
+						aria-current={myTasksActive ? "page" : undefined}
 						className="flex h-14 flex-col items-center justify-center gap-1 text-xs"
 					>
 						<ListChecks
 							className={cn(
 								"size-5",
-								myPulsesActive ? "text-primary" : "text-muted-foreground",
+								myTasksActive ? "text-primary" : "text-muted-foreground",
 							)}
 						/>
 						<span
 							className={
-								myPulsesActive ? "text-primary" : "text-muted-foreground"
+								myTasksActive ? "text-primary" : "text-muted-foreground"
 							}
 						>
-							My Pulses
+							My Tasks
 						</span>
 					</Link>
 					<button

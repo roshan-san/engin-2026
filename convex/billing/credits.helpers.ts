@@ -7,13 +7,13 @@ export async function giveCredit(
 	t: TestConvex,
 	userId: Id<"users">,
 	credit: {
-		source?: Doc<"hackathonCredits">["source"];
+		source?: Doc<"credits">["source"];
 		expiresAt?: number;
 	} = {},
 ) {
 	return await t.run(
 		async (ctx) =>
-			await ctx.db.insert("hackathonCredits", {
+			await ctx.db.insert("credits", {
 				ownerUserId: userId,
 				source: credit.source ?? "purchase",
 				expiresAt: credit.expiresAt,

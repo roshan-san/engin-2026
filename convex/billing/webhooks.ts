@@ -3,7 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx } from "../_generated/server";
 import { IP_TERMS_MESSAGE } from "../hiring/ipTerms.rules";
 import { publishDraft, publishProblem } from "../hiring/publish.rules";
-import { trialCycleHref } from "../lib/links";
+import { hackathonHref } from "../lib/links";
 import { notify } from "../people/notifications.rules";
 import { getMembership } from "../teams/membership.rules";
 import {
@@ -100,18 +100,18 @@ export const applySubscriptionEvent = internalMutation({
 /** Why a paid-for draft can't go live, or null (eng review R4). */
 async function paidPublishProblem(
 	ctx: MutationCtx,
-	trial: Doc<"trialCycles">,
+	hackathon: Doc<"hackathons">,
 	userId: Id<"users">,
 	now: number,
 ): Promise<string | null> {
-	const membership = await getMembership(ctx, trial.startupId, userId);
+	const membership = await getMembership(ctx, hackathon.startupId, userId);
 	if (membership?.role !== "founder") {
 		return "You're no longer a founder of this startup.";
 	}
-	if (trial.ipAcknowledgedAt === undefined) {
+	if (hackathon.ipAcknowledgedAt === undefined) {
 		return IP_TERMS_MESSAGE;
 	}
-	return await publishProblem(ctx, trial, now);
+	return await publishProblem(ctx, hackathon, now);
 }
 
 /**
@@ -123,7 +123,7 @@ export const applyPaymentSucceeded = internalMutation({
 	args: {
 		paymentId: v.string(),
 		kind: v.optional(v.string()),
-		trialCycleId: v.optional(v.string()),
+		hackathonId: v.optional(v.string()),
 		metadataUserId: v.optional(v.string()),
 		email: v.optional(v.string()),
 	},
@@ -151,33 +151,33 @@ export const applyPaymentSucceeded = internalMutation({
 			return;
 		}
 
-		const trialCycleId = args.trialCycleId
-			? ctx.db.normalizeId("trialCycles", args.trialCycleId)
+		const hackathonId = args.hackathonId
+			? ctx.db.normalizeId("hackathons", args.hackathonId)
 			: null;
-		const trial = trialCycleId ? await ctx.db.get(trialCycleId) : null;
-		if (!trial) {
+		const hackathon = hackathonId ? await ctx.db.get(hackathonId) : null;
+		if (!hackathon) {
 			return;
 		}
 
 		const now = Date.now();
-		const problem = await paidPublishProblem(ctx, trial, userId, now);
-		const href = await trialCycleHref(ctx, trial);
+		const problem = await paidPublishProblem(ctx, hackathon, userId, now);
+		const href = await hackathonHref(ctx, hackathon);
 		if (problem) {
 			await notify(ctx, {
 				userId,
 				kind: "billing",
-				title: `Payment received. ${trial.title} is still a draft`,
+				title: `Payment received. ${hackathon.title} is still a draft`,
 				body: `${problem} Your hackathon credit is in your balance.`,
 				href,
 			});
 			return;
 		}
 
-		await publishDraft(ctx, trial, userId, now);
+		await publishDraft(ctx, hackathon, userId, now);
 		await notify(ctx, {
 			userId,
 			kind: "billing",
-			title: `Payment received. ${trial.title} is live`,
+			title: `Payment received. ${hackathon.title} is live`,
 			href,
 		});
 	},

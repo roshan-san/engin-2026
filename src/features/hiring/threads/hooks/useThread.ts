@@ -2,10 +2,10 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 
-/** One thread: its Trial Cycle heading and Announcements, read-only. */
-export function useThread(trialCycleId: string) {
+/** One thread: its Hackathon heading and Announcements, read-only. */
+export function useThread(hackathonId: string) {
 	const thread = useQuery(api.hiring.announcements.getThread, {
-		trialCycleId: trialCycleId as Id<"trialCycles">,
+		hackathonId: hackathonId as Id<"hackathons">,
 	});
 	return { thread };
 }

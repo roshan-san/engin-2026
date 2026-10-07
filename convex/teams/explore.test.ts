@@ -1,8 +1,9 @@
 import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import { createTrial, enterTrial } from "../hiring/trialCycles.helpers";
+import { createHackathon, enterHackathon } from "../hiring/hackathons.helpers";
 import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
+import { submitWithProof } from "../work/cycles.helpers";
 import { joinAsMember, setUpStartup } from "./startups.helpers";
 
 test("only Users with a username and evidence appear as contributors", async () => {
@@ -10,7 +11,7 @@ test("only Users with a username and evidence appear as contributors", async () 
 	const setup = await setUpStartup(t);
 	await joinAsMember(setup, "Alice");
 
-	// A signed-up user with no membership, Verdict, or Verified Pulse: no evidence.
+	// A signed-up user with no membership, Verdict, or Verified Task: no evidence.
 	await signUp(t, "NoEvidence");
 
 	const contributors = await t.query(api.teams.explore.contributors, {});
@@ -90,28 +91,30 @@ test("contributors are sorted by Score, highest first", async () => {
 	expect(ranked).toEqual(["alice", "bob"]);
 });
 
-test("finishing a Board Pulse is not evidence: only a Verdict or membership is", async () => {
+test("a hackathon Task is evidence only once a Founder verifies it", async () => {
 	const t = createTest();
 	const setup = await setUpStartup(t);
-	await setup.founder.as.mutation(api.hiring.challenges.add, {
-		trialCycleId: await createTrial(setup, { startsInMs: DAY }),
+	await setup.founder.as.mutation(api.hiring.hackathons.addStarterTask, {
+		hackathonId: await createHackathon(setup, { startsInMs: DAY }),
 		title: "Build the API",
 	});
-	const [trial] = await setup.founder.as.query(api.hiring.trialCycles.list, {
+	const [hackathon] = await setup.founder.as.query(api.hiring.hackathons.list, {
 		startupId: setup.startupId,
 	});
 	const alice = await signUp(t, "Alice");
-	await enterTrial(setup, trial._id, alice);
+	await enterHackathon(setup, hackathon._id, alice);
 	await advancePast(t, DAY + HOUR);
 
-	const [pulse] = await alice.as.query(api.work.pulses.listBoard, {
-		trialCycleId: trial._id,
+	const [task] = await alice.as.query(api.work.tasks.listLane, {
+		cycleId: hackathon.cycleId,
 	});
-	await alice.as.mutation(api.work.pulses.setStatus, {
-		pulseId: pulse._id,
-		status: "done",
-	});
+	await submitWithProof(alice, task._id);
 
-	const contributors = await t.query(api.teams.explore.contributors, {});
-	expect(contributors.map((c) => c.username)).not.toContain("alice");
+	const before = await t.query(api.teams.explore.contributors, {});
+	expect(before.map((c) => c.username)).not.toContain("alice");
+
+	await setup.founder.as.mutation(api.work.tasks.verify, { taskId: task._id });
+
+	const after = await t.query(api.teams.explore.contributors, {});
+	expect(after.map((c) => c.username)).toContain("alice");
 });

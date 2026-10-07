@@ -13,12 +13,12 @@ function requireE2E() {
 	}
 }
 
-/** Starts a published Trial Cycle now instead of at its scheduled start. */
-export const startTrial = internalMutation({
-	args: { trialCycleId: v.id("trialCycles") },
+/** Starts a published Hackathon now instead of at its scheduled start. */
+export const startHackathon = internalMutation({
+	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
 		requireE2E();
-		await ctx.runMutation(internal.hiring.trialCycles.start, args);
+		await ctx.runMutation(internal.hiring.hackathons.start, args);
 	},
 });
 
@@ -34,7 +34,7 @@ export const giveCredit = internalMutation({
 		if (!user) {
 			throw new Error(`No user with email ${args.email}`);
 		}
-		await ctx.db.insert("hackathonCredits", {
+		await ctx.db.insert("credits", {
 			ownerUserId: user._id,
 			source: "purchase",
 		});

@@ -2,32 +2,32 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
 	MAX_ANNOUNCEMENTS,
-	MAX_LISTED_TRIALS,
+	MAX_LISTED_HACKATHONS,
 	MAX_THREADS,
 	MAX_USER_APPLICATIONS,
 	MAX_USER_MEMBERSHIPS,
 } from "../lib/limits";
-import { trialCycleHref } from "../lib/links";
+import { hackathonHref } from "../lib/links";
 import { notify, notifyFounders } from "../people/notifications.rules";
 import { logActivity } from "../teams/activity.rules";
 import { getMembership } from "../teams/membership.rules";
 import {
-	getTrialApplication,
-	isTrialLive,
-	listTrialApplications,
-} from "./trialCycles.rules";
+	getHackathonApplication,
+	isHackathonLive,
+	listHackathonApplications,
+} from "./hackathons.rules";
 
 type AnnouncementCtx = QueryCtx | MutationCtx;
 
-export async function requireTrial(
+export async function requireHackathon(
 	ctx: AnnouncementCtx,
-	trialCycleId: Id<"trialCycles">,
-): Promise<Doc<"trialCycles">> {
-	const trial = await ctx.db.get(trialCycleId);
-	if (!trial) {
-		throw new Error("Trial Cycle not found");
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"hackathons">> {
+	const hackathon = await ctx.db.get(hackathonId);
+	if (!hackathon) {
+		throw new Error("Hackathon not found");
 	}
-	return trial;
+	return hackathon;
 }
 
 /**
@@ -36,47 +36,53 @@ export async function requireTrial(
  */
 export async function requireAnnouncementReader(
 	ctx: AnnouncementCtx,
-	trial: Doc<"trialCycles">,
+	hackathon: Doc<"hackathons">,
 	userId: Id<"users">,
 ): Promise<void> {
-	if (await getMembership(ctx, trial.startupId, userId)) {
+	if (await getMembership(ctx, hackathon.startupId, userId)) {
 		return;
 	}
-	const application = await getTrialApplication(ctx, trial._id, userId);
-	if (application?.status !== "joined" && application?.status !== "completed") {
-		throw new Error("You do not have access to this Trial Cycle");
+	const application = await getHackathonApplication(ctx, hackathon._id, userId);
+	if (
+		application?.status !== "accepted" &&
+		application?.status !== "completed"
+	) {
+		throw new Error("You do not have access to this Hackathon");
 	}
 }
 
-/** Announcements are read-only once the Trial Cycle is over. */
-export function requireAnnouncementsOpen(trial: Doc<"trialCycles">): void {
-	if (!isTrialLive(trial)) {
-		throw new Error("This Trial Cycle is closed, so it is read-only");
+/** Announcements are read-only once the Hackathon is over. */
+export function requireAnnouncementsOpen(hackathon: Doc<"hackathons">): void {
+	if (!isHackathonLive(hackathon)) {
+		throw new Error("This Hackathon is closed, so it is read-only");
 	}
 }
 
 export async function loadLatestAnnouncements(
 	ctx: AnnouncementCtx,
-	trialCycleId: Id<"trialCycles">,
-): Promise<Doc<"trialAnnouncements">[]> {
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"hackathonAnnouncements">[]> {
 	return await ctx.db
-		.query("trialAnnouncements")
-		.withIndex("by_trial", (q) => q.eq("trialCycleId", trialCycleId))
+		.query("hackathonAnnouncements")
+		.withIndex("by_hackathon", (q) => q.eq("hackathonId", hackathonId))
 		.order("desc")
 		.take(MAX_ANNOUNCEMENTS);
 }
 
 /** Every current Participant and every other Founder hears about it. */
-export async function announceToTrial(
+export async function announceToHackathon(
 	ctx: MutationCtx,
-	trial: Doc<"trialCycles">,
+	hackathon: Doc<"hackathons">,
 	authorId: Id<"users">,
 	body: string,
 ): Promise<void> {
-	const title = `New announcement in ${trial.title}`;
-	const href = await trialCycleHref(ctx, trial);
-	for (const application of await listTrialApplications(ctx, trial._id)) {
-		if (application.status === "joined") {
+	const title = `New announcement in ${hackathon.title}`;
+	const href = await hackathonHref(ctx, hackathon);
+	for (const application of await listHackathonApplications(
+		ctx,
+		hackathon._id,
+	)) {
+		if (application.status === "accepted") {
 			await notify(ctx, {
 				userId: application.userId,
 				kind: "announcement",
@@ -88,27 +94,27 @@ export async function announceToTrial(
 	}
 	await notifyFounders(
 		ctx,
-		trial.startupId,
+		hackathon.startupId,
 		{ kind: "announcement", title, body, href },
 		{ except: authorId },
 	);
 	await logActivity(ctx, {
-		startupId: trial.startupId,
-		kind: "trial_announcement_posted",
-		trialCycleId: trial._id,
+		startupId: hackathon.startupId,
+		kind: "hackathon_announcement_posted",
+		hackathonId: hackathon._id,
 		summary: title,
 	});
 }
 
 /**
- * Every Trial Cycle whose Announcements the person may read: the ones they
- * joined or finished, and the published ones of Startups they are on.
+ * Every Hackathon whose Announcements the person may read: the ones they
+ * accepted or finished, and the published ones of Startups they are on.
  */
-export async function loadThreadTrials(
+export async function loadThreadHackathons(
 	ctx: QueryCtx,
 	userId: Id<"users">,
-): Promise<Doc<"trialCycles">[]> {
-	const trials = new Map<Id<"trialCycles">, Doc<"trialCycles">>();
+): Promise<Doc<"hackathons">[]> {
+	const hackathons = new Map<Id<"hackathons">, Doc<"hackathons">>();
 
 	const applications = await ctx.db
 		.query("applications")
@@ -116,12 +122,15 @@ export async function loadThreadTrials(
 		.order("desc")
 		.take(MAX_USER_APPLICATIONS);
 	for (const application of applications) {
-		if (application.status !== "joined" && application.status !== "completed") {
+		if (
+			application.status !== "accepted" &&
+			application.status !== "completed"
+		) {
 			continue;
 		}
-		const trial = await ctx.db.get(application.trialCycleId);
-		if (trial) {
-			trials.set(trial._id, trial);
+		const hackathon = await ctx.db.get(application.hackathonId);
+		if (hackathon) {
+			hackathons.set(hackathon._id, hackathon);
 		}
 	}
 
@@ -130,25 +139,25 @@ export async function loadThreadTrials(
 		.withIndex("by_user", (q) => q.eq("userId", userId))
 		.take(MAX_USER_MEMBERSHIPS);
 	for (const membership of memberships) {
-		const startupTrials = await ctx.db
-			.query("trialCycles")
+		const startupHackathons = await ctx.db
+			.query("hackathons")
 			.withIndex("by_startup", (q) => q.eq("startupId", membership.startupId))
 			.order("desc")
-			.take(MAX_LISTED_TRIALS);
-		for (const trial of startupTrials) {
-			if (trial.status !== "draft") {
-				trials.set(trial._id, trial);
+			.take(MAX_LISTED_HACKATHONS);
+		for (const hackathon of startupHackathons) {
+			if (hackathon.status !== "draft") {
+				hackathons.set(hackathon._id, hackathon);
 			}
 		}
 	}
 
-	return [...trials.values()];
+	return [...hackathons.values()];
 }
 
 export type Thread = {
-	trialCycleId: Id<"trialCycles">;
+	hackathonId: Id<"hackathons">;
 	title: string;
-	status: Doc<"trialCycles">["status"];
+	status: Doc<"hackathons">["status"];
 	startupName: string;
 	href: string;
 	announcementCount: number;
@@ -159,22 +168,22 @@ export type Thread = {
 
 export async function buildThread(
 	ctx: QueryCtx,
-	trial: Doc<"trialCycles">,
+	hackathon: Doc<"hackathons">,
 ): Promise<Thread> {
-	const announcements = await loadLatestAnnouncements(ctx, trial._id);
+	const announcements = await loadLatestAnnouncements(ctx, hackathon._id);
 	const latest = announcements[0];
-	const startup = await ctx.db.get(trial.startupId);
+	const startup = await ctx.db.get(hackathon.startupId);
 	return {
-		trialCycleId: trial._id,
-		title: trial.title,
-		status: trial.status,
+		hackathonId: hackathon._id,
+		title: hackathon.title,
+		status: hackathon.status,
 		startupName: startup?.name ?? "Startup",
-		href: await trialCycleHref(ctx, trial),
+		href: await hackathonHref(ctx, hackathon),
 		announcementCount: announcements.length,
 		latest: latest
 			? { body: latest.body, createdAt: latest._creationTime }
 			: null,
-		sortAt: latest?._creationTime ?? trial._creationTime,
+		sortAt: latest?._creationTime ?? hackathon._creationTime,
 	};
 }
 

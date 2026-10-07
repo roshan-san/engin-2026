@@ -2,24 +2,24 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
 	MAX_ROLE_OFFERS,
-	MAX_ROLE_TRIALS,
-	MAX_TRIAL_APPLICATIONS,
+	MAX_ROLE_HACKATHONS,
+	MAX_HACKATHON_APPLICATIONS,
 } from "../lib/limits";
-import { trialCycleHref } from "../lib/links";
+import { hackathonHref } from "../lib/links";
 import { notify } from "../people/notifications.rules";
-import { cancelTrial } from "./trialCycles.rules";
+import { cancelHackathon } from "./hackathons.rules";
 
 export type OfferSummary = Pick<Doc<"offers">, "_id" | "status">;
 
-/** A Trial Cycle's Offers keyed by the Application they were made on (at most one each). */
-export async function loadTrialOffers(
+/** A Hackathon's Offers keyed by the Application they were made on (at most one each). */
+export async function loadHackathonOffers(
 	ctx: QueryCtx,
-	trialCycleId: Id<"trialCycles">,
+	hackathonId: Id<"hackathons">,
 ): Promise<Map<Id<"applications">, OfferSummary>> {
 	const offers = await ctx.db
 		.query("offers")
-		.withIndex("by_trial", (q) => q.eq("trialCycleId", trialCycleId))
-		.take(MAX_TRIAL_APPLICATIONS);
+		.withIndex("by_hackathon", (q) => q.eq("hackathonId", hackathonId))
+		.take(MAX_HACKATHON_APPLICATIONS);
 	return new Map(
 		offers.map((offer) => [
 			offer.applicationId,
@@ -34,18 +34,18 @@ export async function withdrawOffer(
 ): Promise<void> {
 	await ctx.db.patch(offer._id, { status: "withdrawn" });
 	const startup = await ctx.db.get(offer.startupId);
-	const trial = await ctx.db.get(offer.trialCycleId);
+	const hackathon = await ctx.db.get(offer.hackathonId);
 	await notify(ctx, {
 		userId: offer.userId,
 		kind: "offer",
 		title: `Your Offer from ${startup?.name ?? "a Startup"} was withdrawn`,
-		href: trial ? await trialCycleHref(ctx, trial) : undefined,
+		href: hackathon ? await hackathonHref(ctx, hackathon) : undefined,
 	});
 }
 
 /**
  * Once accepted Offers reach the Headcount the Role closes: its pending Offers
- * are withdrawn and its unstarted Trial Cycles cancelled. Active Trial Cycles
+ * are withdrawn and its unstarted Hackathons cancelled. Active Hackathons
  * run to their Verdicts.
  */
 export async function fillRoleIfFull(
@@ -79,13 +79,13 @@ export async function fillRoleIfFull(
 		await withdrawOffer(ctx, offer);
 	}
 
-	const trials = await ctx.db
-		.query("trialCycles")
+	const hackathons = await ctx.db
+		.query("hackathons")
 		.withIndex("by_role", (q) => q.eq("roleId", roleId))
-		.take(MAX_ROLE_TRIALS);
-	for (const trial of trials) {
-		if (trial.status === "open" || trial.status === "draft") {
-			await cancelTrial(ctx, trial, `${role.title} has been filled`);
+		.take(MAX_ROLE_HACKATHONS);
+	for (const hackathon of hackathons) {
+		if (hackathon.status === "open" || hackathon.status === "draft") {
+			await cancelHackathon(ctx, hackathon, `${role.title} has been filled`);
 		}
 	}
 }

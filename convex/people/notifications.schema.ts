@@ -4,9 +4,9 @@ import { v } from "convex/values";
 export const notificationKind = v.union(
 	v.literal("invite"),
 	v.literal("team"),
-	v.literal("pulse"),
+	v.literal("task"),
 	v.literal("cycle"),
-	v.literal("trial_cycle"),
+	v.literal("hackathon"),
 	v.literal("application"),
 	v.literal("announcement"),
 	v.literal("billing"),

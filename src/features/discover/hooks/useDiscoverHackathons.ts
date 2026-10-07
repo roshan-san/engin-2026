@@ -4,5 +4,5 @@ import { useQuery } from "convex/react";
 /** Open hackathons of public startups; drafts and stealth never come back. */
 export function useDiscoverHackathons() {
 	const results = useQuery(api.hiring.opportunities.search, {});
-	return results?.trials;
+	return results?.hackathons;
 }

@@ -1,11 +1,11 @@
 import { expect, test } from "./support/fixtures";
 import { signUp } from "./support/people";
-import { founderWithStartup, publishedTrial } from "./support/world";
+import { founderWithStartup, publishedHackathon } from "./support/world";
 
-test("a contributor finds a hackathon on Discover, applies, and tracks it in My Entries", async ({
+test("a contributor finds a hackathon on Discover, applies, and tracks it in My Hackathons", async ({
 	pageAs,
 }) => {
-	const { trialCycleId, title } = await publishedTrial(
+	const { hackathonId, title } = await publishedHackathon(
 		await founderWithStartup(),
 	);
 	const cara = await signUp("Cara");
@@ -13,7 +13,7 @@ test("a contributor finds a hackathon on Discover, applies, and tracks it in My 
 
 	await page.goto("/discover");
 	await page.getByRole("link", { name: title }).click();
-	await expect(page).toHaveURL(new RegExp(`/hackathons/${trialCycleId}`));
+	await expect(page).toHaveURL(new RegExp(`/hackathons/${hackathonId}`));
 	await expect(page.getByText("Accepting applications")).toBeVisible();
 	await expect(page.getByText("Design the flow")).toBeVisible();
 	await page.getByRole("button", { name: "Apply" }).click();
@@ -26,7 +26,7 @@ test("a contributor finds a hackathon on Discover, applies, and tracks it in My 
 	await expect(page.getByText("Applied", { exact: true })).toBeVisible();
 	await page
 		.getByRole("main")
-		.getByRole("link", { name: "My Entries" })
+		.getByRole("link", { name: "My Hackathons" })
 		.click();
 
 	const entry = page.getByRole("listitem").filter({ hasText: title });

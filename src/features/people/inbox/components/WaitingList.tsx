@@ -68,7 +68,7 @@ export function WaitingList({
 											to={item.href}
 											className="text-sm text-muted-foreground underline underline-offset-4"
 										>
-											See the hackathon
+											See the Hackathon
 										</Link>
 									) : null}
 								</p>

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
-import { MAX_TRIAL_APPLICATIONS } from "../lib/limits";
+import { MAX_HACKATHON_APPLICATIONS } from "../lib/limits";
 import {
 	advancePast,
 	type Client,
@@ -16,16 +16,16 @@ import {
 	LIVE_ENTRY_LIMIT_MESSAGE,
 	ONE_ATTEMPT_MESSAGE,
 	TEAM_ENTRY_MESSAGE,
-	TRIAL_FULL_MESSAGE,
+	HACKATHON_FULL_MESSAGE,
 } from "./applications.rules";
 import { IP_TERMS_MESSAGE } from "./ipTerms.rules";
 import {
 	applicationIdOf,
 	closeWithVerdict,
-	createTrial,
-	enterTrial,
-	startedTrialWith,
-} from "./trialCycles.helpers";
+	createHackathon,
+	enterHackathon,
+	startedHackathonWith,
+} from "./hackathons.helpers";
 
 async function evidenceOf(t: TestConvex, username: string) {
 	const profile = await t.query(api.people.users.getByUsername, { username });
@@ -36,53 +36,53 @@ describe("withdrawing and leaving", () => {
 	test("an Applicant can withdraw before a decision", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup);
+		const hackathonId = await createHackathon(setup);
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.applyToTrial, {
+		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
 			acceptTerms: true,
-			trialCycleId,
+			hackathonId,
 		});
 
-		await alice.as.mutation(api.hiring.applications.leaveTrial, {
-			trialCycleId,
+		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
+			hackathonId,
 		});
 
-		const trial = await alice.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.myStatus).toBe("withdrawn");
+		expect(hackathon?.myStatus).toBe("withdrawn");
 	});
 
 	test("leaving before the start frees the spot and leaves no record", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { maxContributors: 1 });
+		const hackathonId = await createHackathon(setup, { maxParticipants: 1 });
 		const alice = await signUp(t, "Alice");
 		const bob = await signUp(t, "Bob");
-		await enterTrial(setup, trialCycleId, alice);
+		await enterHackathon(setup, hackathonId, alice);
 
-		await alice.as.mutation(api.hiring.applications.leaveTrial, {
-			trialCycleId,
+		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
+			hackathonId,
 		});
-		await enterTrial(setup, trialCycleId, bob);
+		await enterHackathon(setup, hackathonId, bob);
 
-		expect((await evidenceOf(t, "alice"))?.trialCyclesLeft).toBe(0);
+		expect((await evidenceOf(t, "alice"))?.hackathonsLeft).toBe(0);
 	});
 
-	test("Leaving a started Trial Cycle is recorded publicly and never takes Score below 0", async () => {
+	test("Leaving a started Hackathon is recorded publicly and never takes Score below 0", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
-		await enterTrial(setup, trialCycleId, alice);
+		await enterHackathon(setup, hackathonId, alice);
 		await advancePast(t, DAY + HOUR);
 
-		await alice.as.mutation(api.hiring.applications.leaveTrial, {
-			trialCycleId,
+		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
+			hackathonId,
 		});
 
 		const evidence = await evidenceOf(t, "alice");
-		expect(evidence?.trialCyclesLeft).toBe(1);
+		expect(evidence?.hackathonsLeft).toBe(1);
 		expect(evidence?.score).toBe(0);
 	});
 
@@ -90,17 +90,17 @@ describe("withdrawing and leaving", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
-		const trialCycleId = await startedTrialWith(setup, [alice]);
+		const hackathonId = await startedHackathonWith(setup, [alice]);
 
-		await alice.as.mutation(api.hiring.applications.leaveTrial, {
-			trialCycleId,
+		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
+			hackathonId,
 		});
 
-		const trial = await alice.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.myStatus).toBe("left");
-		expect(trial?.participantCount).toBe(0);
+		expect(hackathon?.myStatus).toBe("left");
+		expect(hackathon?.participantCount).toBe(0);
 		expect(await notificationTitles(setup.founder.as)).toContain(
 			"A Participant left Build a feature",
 		);
@@ -110,65 +110,67 @@ describe("withdrawing and leaving", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
-		const trialCycleId = await startedTrialWith(setup, [alice]);
+		const hackathonId = await startedHackathonWith(setup, [alice]);
 		await advancePast(t, 8 * DAY);
-		await closeWithVerdict(setup, trialCycleId, alice, "passed");
+		await closeWithVerdict(setup, hackathonId, alice, "passed");
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.leaveTrial, { trialCycleId }),
-		).rejects.toThrow("You are not in this Trial Cycle");
+			alice.as.mutation(api.hiring.applications.leaveHackathon, {
+				hackathonId,
+			}),
+		).rejects.toThrow("You are not in this Hackathon");
 	});
 });
 
 describe("entry rules", () => {
-	test("a person gets one attempt per Trial Cycle", async () => {
+	test("a person gets one attempt per Hackathon", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup);
+		const hackathonId = await createHackathon(setup);
 		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.applyToTrial, {
+		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
 			acceptTerms: true,
-			trialCycleId,
+			hackathonId,
 		});
-		await alice.as.mutation(api.hiring.applications.leaveTrial, {
-			trialCycleId,
+		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
+			hackathonId,
 		});
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.applyToTrial, {
+			alice.as.mutation(api.hiring.applications.applyToHackathon, {
 				acceptTerms: true,
-				trialCycleId,
+				hackathonId,
 			}),
 		).rejects.toThrow(ONE_ATTEMPT_MESSAGE);
 	});
 
-	test("a person can hold 5 live entries, and a cancelled Trial Cycle frees a slot", async () => {
+	test("a person can hold 5 live entries, and a cancelled Hackathon frees a slot", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trials = [];
+		const hackathons = [];
 		for (let index = 0; index < 6; index += 1) {
-			trials.push(await createTrial(setup));
+			hackathons.push(await createHackathon(setup));
 		}
 		const alice = await signUp(t, "Alice");
-		for (const trialCycleId of trials.slice(0, 5)) {
-			await alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+		for (const hackathonId of hackathons.slice(0, 5)) {
+			await alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: true,
 			});
 		}
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId: trials[5],
+			alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId: hackathons[5],
 				acceptTerms: true,
 			}),
 		).rejects.toThrow(LIVE_ENTRY_LIMIT_MESSAGE);
 
-		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-			trialCycleId: trials[0],
+		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+			hackathonId: hackathons[0],
 		});
-		await alice.as.mutation(api.hiring.applications.applyToTrial, {
-			trialCycleId: trials[5],
+		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
+			hackathonId: hackathons[5],
 			acceptTerms: true,
 		});
 	});
@@ -178,15 +180,15 @@ describe("entry rules", () => {
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice", "pro");
 		for (let index = 0; index < 5; index += 1) {
-			await alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId: await createTrial(setup),
+			await alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId: await createHackathon(setup),
 				acceptTerms: true,
 			});
 		}
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId: await createTrial(setup),
+			alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId: await createHackathon(setup),
 				acceptTerms: true,
 			}),
 		).rejects.toThrow(LIVE_ENTRY_LIMIT_MESSAGE);
@@ -195,18 +197,18 @@ describe("entry rules", () => {
 	test("a startup's own Founders and Members can't enter its hackathon", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup);
+		const hackathonId = await createHackathon(setup);
 		const member = await joinAsMember(setup, "Mia");
 
 		await expect(
-			setup.founder.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+			setup.founder.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: true,
 			}),
 		).rejects.toThrow(TEAM_ENTRY_MESSAGE);
 		await expect(
-			member.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+			member.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: true,
 			}),
 		).rejects.toThrow(TEAM_ENTRY_MESSAGE);
@@ -215,26 +217,26 @@ describe("entry rules", () => {
 	test("entering requires the IP acknowledgment, and records when it was given", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup);
+		const hackathonId = await createHackathon(setup);
 		const alice = await signUp(t, "Alice");
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+			alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: false,
 			}),
 		).rejects.toThrow(IP_TERMS_MESSAGE);
 
-		await alice.as.mutation(api.hiring.applications.applyToTrial, {
-			trialCycleId,
+		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
+			hackathonId,
 			acceptTerms: true,
 		});
 		const application = await t.run(
 			async (ctx) =>
 				await ctx.db
 					.query("applications")
-					.withIndex("by_trial_and_user", (q) =>
-						q.eq("trialCycleId", trialCycleId).eq("userId", alice.userId),
+					.withIndex("by_hackathon_and_user", (q) =>
+						q.eq("hackathonId", hackathonId).eq("userId", alice.userId),
 					)
 					.unique(),
 		);
@@ -244,36 +246,36 @@ describe("entry rules", () => {
 	test("applying to a hackathon with every Participant spot taken is refused as full", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { maxContributors: 1 });
-		await enterTrial(setup, trialCycleId, await signUp(t, "Bob"));
+		const hackathonId = await createHackathon(setup, { maxParticipants: 1 });
+		await enterHackathon(setup, hackathonId, await signUp(t, "Bob"));
 		const alice = await signUp(t, "Alice");
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+			alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: true,
 			}),
-		).rejects.toThrow(TRIAL_FULL_MESSAGE);
+		).rejects.toThrow(HACKATHON_FULL_MESSAGE);
 	});
 
 	test("applying to a hackathon with 50 applications is refused as full", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup);
+		const hackathonId = await createHackathon(setup);
 		await t.run(async (ctx) => {
-			const trial = await ctx.db.get(trialCycleId);
-			if (!trial) {
-				throw new Error("No trial");
+			const hackathon = await ctx.db.get(hackathonId);
+			if (!hackathon) {
+				throw new Error("No hackathon");
 			}
-			for (let index = 0; index < MAX_TRIAL_APPLICATIONS; index += 1) {
+			for (let index = 0; index < MAX_HACKATHON_APPLICATIONS; index += 1) {
 				const userId = await ctx.db.insert("users", {
 					name: `Applicant ${index}`,
 				});
 				await ctx.db.insert("applications", {
 					userId,
-					startupId: trial.startupId,
-					roleId: trial.roleId,
-					trialCycleId,
+					startupId: hackathon.startupId,
+					roleId: hackathon.roleId,
+					hackathonId,
 					status: index % 2 === 0 ? "applied" : "withdrawn",
 				});
 			}
@@ -281,17 +283,17 @@ describe("entry rules", () => {
 		const alice = await signUp(t, "Alice");
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+			alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: true,
 			}),
-		).rejects.toThrow(TRIAL_FULL_MESSAGE);
+		).rejects.toThrow(HACKATHON_FULL_MESSAGE);
 	});
 
 	test("applying after the application deadline is refused", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, {
+		const hackathonId = await createHackathon(setup, {
 			applicationDeadlineInMs: HOUR,
 			startsInMs: DAY,
 		});
@@ -299,11 +301,11 @@ describe("entry rules", () => {
 		await advancePast(t, 2 * HOUR);
 
 		await expect(
-			alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+			alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: true,
 			}),
-		).rejects.toThrow("This Trial Cycle is no longer accepting people");
+		).rejects.toThrow("This Hackathon is no longer accepting people");
 	});
 });
 
@@ -311,13 +313,13 @@ describe("admission", () => {
 	async function setUpApplicant() {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
 		const alice = await signUp(t, "Alice");
 		const applicationId = await alice.as.mutation(
-			api.hiring.applications.applyToTrial,
-			{ trialCycleId, acceptTerms: true },
+			api.hiring.applications.applyToHackathon,
+			{ hackathonId, acceptTerms: true },
 		);
-		return { t, setup, trialCycleId, alice, applicationId };
+		return { t, setup, hackathonId, alice, applicationId };
 	}
 
 	async function notificationTitlesOf(as: Client) {
@@ -326,20 +328,19 @@ describe("admission", () => {
 	}
 
 	test("accepting an Applicant makes them a Participant, takes a spot and notifies them", async () => {
-		const { setup, trialCycleId, alice, applicationId } =
-			await setUpApplicant();
+		const { setup, hackathonId, alice, applicationId } = await setUpApplicant();
 
 		await setup.founder.as.mutation(api.hiring.applications.decide, {
 			applicationId,
-			status: "joined",
+			status: "accepted",
 		});
 
-		const trial = await setup.founder.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
-		expect(trial?.participantCount).toBe(1);
-		expect(trial?.applicants.map((applicant) => applicant.status)).toEqual([
-			"joined",
+		expect(hackathon?.participantCount).toBe(1);
+		expect(hackathon?.applicants.map((applicant) => applicant.status)).toEqual([
+			"accepted",
 		]);
 		expect(await notificationTitlesOf(alice.as)).toContain(
 			"You were accepted to Build a feature",
@@ -365,21 +366,21 @@ describe("admission", () => {
 	test("accepting when every spot is taken is refused as full and the Applicant stays pending", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { maxContributors: 2 });
+		const hackathonId = await createHackathon(setup, { maxParticipants: 2 });
 		const alice = await signUp(t, "Alice");
 		const applicationId = await alice.as.mutation(
-			api.hiring.applications.applyToTrial,
-			{ trialCycleId, acceptTerms: true },
+			api.hiring.applications.applyToHackathon,
+			{ hackathonId, acceptTerms: true },
 		);
-		await enterTrial(setup, trialCycleId, await signUp(t, "Bob"));
-		await enterTrial(setup, trialCycleId, await signUp(t, "Cara"));
+		await enterHackathon(setup, hackathonId, await signUp(t, "Bob"));
+		await enterHackathon(setup, hackathonId, await signUp(t, "Cara"));
 
 		await expect(
 			setup.founder.as.mutation(api.hiring.applications.decide, {
 				applicationId,
-				status: "joined",
+				status: "accepted",
 			}),
-		).rejects.toThrow(TRIAL_FULL_MESSAGE);
+		).rejects.toThrow(HACKATHON_FULL_MESSAGE);
 
 		const [entry] = await alice.as.query(api.hiring.applications.listMine, {});
 		expect(entry?.status).toBe("applied");
@@ -395,23 +396,23 @@ describe("admission", () => {
 		await expect(
 			setup.founder.as.mutation(api.hiring.applications.decide, {
 				applicationId,
-				status: "joined",
+				status: "accepted",
 			}),
 		).rejects.toThrow("This application has already been decided");
 	});
 
 	test("no decisions once the hackathon is no longer open", async () => {
-		const { setup, trialCycleId, applicationId } = await setUpApplicant();
-		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-			trialCycleId,
+		const { setup, hackathonId, applicationId } = await setUpApplicant();
+		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+			hackathonId,
 		});
 
 		await expect(
 			setup.founder.as.mutation(api.hiring.applications.decide, {
 				applicationId,
-				status: "joined",
+				status: "accepted",
 			}),
-		).rejects.toThrow("This Trial Cycle is no longer accepting people");
+		).rejects.toThrow("This Hackathon is no longer accepting people");
 	});
 
 	test("Members who aren't Founders cannot decide applications", async () => {
@@ -421,24 +422,24 @@ describe("admission", () => {
 		await expect(
 			member.as.mutation(api.hiring.applications.decide, {
 				applicationId,
-				status: "joined",
+				status: "accepted",
 			}),
 		).rejects.toThrow();
 	});
 });
 
-describe("my entries", () => {
+describe("my hackathons", () => {
 	test("each entry carries its hackathon's status and dates, and only applied or accepted ones in a live hackathon are live", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const applied = await createTrial(setup);
-		const rejected = await createTrial(setup);
-		const withdrawn = await createTrial(setup);
-		const cancelled = await createTrial(setup);
+		const applied = await createHackathon(setup);
+		const rejected = await createHackathon(setup);
+		const withdrawn = await createHackathon(setup);
+		const cancelled = await createHackathon(setup);
 		const alice = await signUp(t, "Alice");
-		for (const trialCycleId of [applied, rejected, withdrawn, cancelled]) {
-			await alice.as.mutation(api.hiring.applications.applyToTrial, {
-				trialCycleId,
+		for (const hackathonId of [applied, rejected, withdrawn, cancelled]) {
+			await alice.as.mutation(api.hiring.applications.applyToHackathon, {
+				hackathonId,
 				acceptTerms: true,
 			});
 		}
@@ -446,36 +447,36 @@ describe("my entries", () => {
 			applicationId: await applicationIdOf(t, rejected, alice.userId),
 			status: "rejected",
 		});
-		await alice.as.mutation(api.hiring.applications.leaveTrial, {
-			trialCycleId: withdrawn,
+		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
+			hackathonId: withdrawn,
 		});
-		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-			trialCycleId: cancelled,
+		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+			hackathonId: cancelled,
 		});
 
 		const entries = await alice.as.query(api.hiring.applications.listMine, {});
 
-		const byTrial = new Map(
-			entries.map((entry) => [entry.trialCycleId, entry]),
+		const byHackathon = new Map(
+			entries.map((entry) => [entry.hackathonId, entry]),
 		);
-		expect(byTrial.get(applied)).toMatchObject({
+		expect(byHackathon.get(applied)).toMatchObject({
 			status: "applied",
-			trialStatus: "open",
+			hackathonStatus: "open",
 			isLive: true,
 		});
-		expect(byTrial.get(applied)?.startsAt).toBeTypeOf("number");
-		expect(byTrial.get(applied)?.endsAt).toBeTypeOf("number");
-		expect(byTrial.get(rejected)).toMatchObject({
+		expect(byHackathon.get(applied)?.startsAt).toBeTypeOf("number");
+		expect(byHackathon.get(applied)?.endsAt).toBeTypeOf("number");
+		expect(byHackathon.get(rejected)).toMatchObject({
 			status: "rejected",
 			isLive: false,
 		});
-		expect(byTrial.get(withdrawn)).toMatchObject({
+		expect(byHackathon.get(withdrawn)).toMatchObject({
 			status: "withdrawn",
 			isLive: false,
 		});
-		expect(byTrial.get(cancelled)).toMatchObject({
+		expect(byHackathon.get(cancelled)).toMatchObject({
 			status: "applied",
-			trialStatus: "cancelled",
+			hackathonStatus: "cancelled",
 			isLive: false,
 		});
 	});

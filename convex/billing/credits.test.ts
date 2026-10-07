@@ -2,10 +2,10 @@ import { describe, expect, test, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
-	createDraftTrial,
-	createTrial,
-	startedTrialWith,
-} from "../hiring/trialCycles.helpers";
+	createDraftHackathon,
+	createHackathon,
+	startedHackathonWith,
+} from "../hiring/hackathons.helpers";
 import { createTest, DAY, HOUR, type TestConvex } from "../lib/testing.helpers";
 import { signUp, signUpNew } from "../people/users.helpers";
 import { onUserSignedIn } from "../people/users.rules";
@@ -15,14 +15,14 @@ import { balanceOf, giveCredit } from "./credits.helpers";
 
 async function applyWith(
 	t: TestConvex,
-	trialCycleId: Id<"trialCycles">,
+	hackathonId: Id<"hackathons">,
 	names: string[],
 ) {
 	for (const name of names) {
 		const person = await signUp(t, name);
-		await person.as.mutation(api.hiring.applications.applyToTrial, {
+		await person.as.mutation(api.hiring.applications.applyToHackathon, {
 			acceptTerms: true,
-			trialCycleId,
+			hackathonId,
 		});
 	}
 }
@@ -78,12 +78,12 @@ describe("re-run credits", () => {
 	test("a hackathon with fewer than 3 applications earns its founder a re-run credit for 60 days", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
-		await applyWith(t, trialCycleId, ["Alice", "Bob"]);
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
+		await applyWith(t, hackathonId, ["Alice", "Bob"]);
 		vi.advanceTimersByTime(DAY + HOUR);
 
 		await t.mutation(internal.billing.credits.grantRerunCredit, {
-			trialCycleId,
+			hackathonId,
 		});
 
 		const { credits } = await setup.founder.as.query(
@@ -98,36 +98,36 @@ describe("re-run credits", () => {
 	test("a re-run credit waits until entry closes", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
 
 		await expect(
-			t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+			t.mutation(internal.billing.credits.grantRerunCredit, { hackathonId }),
 		).rejects.toThrow("Entry is still open");
 	});
 
 	test("3 applications earn no re-run credit", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
-		await applyWith(t, trialCycleId, ["Alice", "Bob", "Cara"]);
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
+		await applyWith(t, hackathonId, ["Alice", "Bob", "Cara"]);
 		vi.advanceTimersByTime(DAY + HOUR);
 
 		await expect(
-			t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+			t.mutation(internal.billing.credits.grantRerunCredit, { hackathonId }),
 		).rejects.toThrow("3 or more applications");
 	});
 
 	test("a hackathon earns at most one re-run credit", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
 		vi.advanceTimersByTime(DAY + HOUR);
 		await t.mutation(internal.billing.credits.grantRerunCredit, {
-			trialCycleId,
+			hackathonId,
 		});
 
 		await expect(
-			t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+			t.mutation(internal.billing.credits.grantRerunCredit, { hackathonId }),
 		).rejects.toThrow("already got a re-run credit");
 		expect(await balanceOf(setup.founder.as)).toBe(1);
 	});
@@ -135,35 +135,35 @@ describe("re-run credits", () => {
 	test("a re-run can't earn another re-run credit", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createDraftHackathon(setup, { startsInMs: DAY });
 		await giveCredit(t, setup.founder.userId, { source: "rerun" });
-		await setup.founder.as.mutation(api.hiring.trialCycles.publish, {
-			trialCycleId,
+		await setup.founder.as.mutation(api.hiring.hackathons.publish, {
+			hackathonId,
 			acceptTerms: true,
 		});
 		vi.advanceTimersByTime(DAY + HOUR);
 
 		await expect(
-			t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+			t.mutation(internal.billing.credits.grantRerunCredit, { hackathonId }),
 		).rejects.toThrow("can't earn another");
 	});
 
 	test("a draft or an ungated hackathon earns no re-run credit", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
-		const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createDraftHackathon(setup, { startsInMs: DAY });
 		vi.advanceTimersByTime(DAY + HOUR);
 
 		await expect(
-			t.mutation(internal.billing.credits.grantRerunCredit, { trialCycleId }),
+			t.mutation(internal.billing.credits.grantRerunCredit, { hackathonId }),
 		).rejects.toThrow("published through the paid gate");
 	});
 });
 
 describe("cancel refund", () => {
-	async function cancel(setup: Setup, trialCycleId: Id<"trialCycles">) {
-		await setup.founder.as.mutation(api.hiring.trialCycles.cancel, {
-			trialCycleId,
+	async function cancel(setup: Setup, hackathonId: Id<"hackathons">) {
+		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+			hackathonId,
 		});
 	}
 
@@ -173,10 +173,10 @@ describe("cancel refund", () => {
 		const creditId = await giveCredit(t, setup.founder.userId, {
 			source: "signup",
 		});
-		// createTrial adds a purchase credit, but the signup credit is spent first.
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+		// createHackathon adds a purchase credit, but the signup credit is spent first.
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
 
-		await cancel(setup, trialCycleId);
+		await cancel(setup, hackathonId);
 
 		const { credits } = await setup.founder.as.query(
 			api.billing.credits.balance,
@@ -197,10 +197,10 @@ describe("cancel refund", () => {
 				role: "founder",
 			});
 		});
-		const trialCycleId = await createTrial(setup, { startsInMs: DAY });
+		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
 
-		await cofounder.as.mutation(api.hiring.trialCycles.cancel, {
-			trialCycleId,
+		await cofounder.as.mutation(api.hiring.hackathons.cancel, {
+			hackathonId,
 		});
 
 		expect(await balanceOf(setup.founder.as)).toBe(1);
@@ -211,9 +211,9 @@ describe("cancel refund", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const alice = await signUp(t, "Alice");
-		const trialCycleId = await startedTrialWith(setup, [alice]);
+		const hackathonId = await startedHackathonWith(setup, [alice]);
 
-		await cancel(setup, trialCycleId);
+		await cancel(setup, hackathonId);
 
 		expect(await balanceOf(setup.founder.as)).toBe(0);
 	});
@@ -222,9 +222,9 @@ describe("cancel refund", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		await giveCredit(t, setup.founder.userId);
-		const trialCycleId = await createDraftTrial(setup);
+		const hackathonId = await createDraftHackathon(setup);
 
-		await cancel(setup, trialCycleId);
+		await cancel(setup, hackathonId);
 
 		expect(await balanceOf(setup.founder.as)).toBe(1);
 	});
@@ -234,13 +234,13 @@ describe("cancel refund", () => {
 		const setup = await setUpStartup(t);
 		const expiresAt = Date.now() + 10 * DAY;
 		await giveCredit(t, setup.founder.userId, { source: "rerun", expiresAt });
-		const trialCycleId = await createDraftTrial(setup, { startsInMs: DAY });
-		await setup.founder.as.mutation(api.hiring.trialCycles.publish, {
-			trialCycleId,
+		const hackathonId = await createDraftHackathon(setup, { startsInMs: DAY });
+		await setup.founder.as.mutation(api.hiring.hackathons.publish, {
+			hackathonId,
 			acceptTerms: true,
 		});
 
-		await cancel(setup, trialCycleId);
+		await cancel(setup, hackathonId);
 
 		const { credits } = await setup.founder.as.query(
 			api.billing.credits.balance,

@@ -31,7 +31,7 @@ const FREE_ROWS: readonly PlanRow[] = [
 		label: "Hackathons",
 		value: `${HACKATHON_PRICE_LABELS.free} each`,
 	},
-	{ label: "First hackathon", value: "Free" },
+	{ label: "First Hackathon", value: "Free" },
 ];
 
 const PRO_ROWS: readonly PlanRow[] = [
@@ -41,7 +41,7 @@ const PRO_ROWS: readonly PlanRow[] = [
 		label: "Hackathons",
 		value: `${PRO_MONTHLY_CREDITS} a month included, then ${HACKATHON_PRICE_LABELS.pro} each`,
 	},
-	{ label: "First hackathon", value: "Free" },
+	{ label: "First Hackathon", value: "Free" },
 ];
 
 const INTERVALS: readonly { value: BillingInterval; label: string }[] = [
@@ -108,7 +108,7 @@ export function PricingPage() {
 				<div>
 					<h1 className="text-2xl font-bold sm:text-3xl">Pricing</h1>
 					<p className="mt-2 max-w-2xl text-muted-foreground">
-						Founders pay to hire through hackathons. Contributors are always
+						Founders pay to hire through Hackathons. Contributors are always
 						free.
 					</p>
 				</div>
@@ -157,7 +157,7 @@ export function PricingPage() {
 			</div>
 
 			<ul className="space-y-1 text-sm text-muted-foreground">
-				<li>Every new account's first hackathon is free.</li>
+				<li>Every new account's first Hackathon is free.</li>
 				<li>
 					Pro's {PRO_MONTHLY_CREDITS} included hackathons reset each Pro month;
 					unused ones don't carry over.

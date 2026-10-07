@@ -22,9 +22,9 @@ export function HiringEmptyState({ slug, isFounder }: HiringEmptyStateProps) {
 		return (
 			<Empty className="border border-dashed">
 				<EmptyHeader>
-					<EmptyTitle>No hackathons yet</EmptyTitle>
+					<EmptyTitle>No Hackathons yet</EmptyTitle>
 					<EmptyDescription>
-						Your founders' hiring hackathons will show up here.
+						Your Founders' hiring Hackathons will show up here.
 					</EmptyDescription>
 				</EmptyHeader>
 			</Empty>
@@ -34,9 +34,9 @@ export function HiringEmptyState({ slug, isFounder }: HiringEmptyStateProps) {
 	return (
 		<Empty className="border border-dashed">
 			<EmptyHeader>
-				<EmptyTitle>Run your first hiring hackathon</EmptyTitle>
+				<EmptyTitle>Run your first hiring Hackathon</EmptyTitle>
 				<EmptyDescription>
-					Pick a Role, set the dates and the Starting Pulses, and see how people
+					Pick a Role, set the dates and the Starter Tasks, and see how people
 					actually work before you hire.
 					{hasSignupCredit ? " Your first hackathon is on us." : null}
 				</EmptyDescription>
@@ -44,7 +44,7 @@ export function HiringEmptyState({ slug, isFounder }: HiringEmptyStateProps) {
 			<EmptyContent>
 				<Button asChild>
 					<Link to="/s/$slug/hiring/new" params={{ slug }}>
-						Set up a hackathon
+						Set up a Hackathon
 					</Link>
 				</Button>
 			</EmptyContent>

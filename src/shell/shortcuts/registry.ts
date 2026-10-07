@@ -71,11 +71,11 @@ export const SHORTCUTS: readonly ShortcutEntry[] = [
 		action: (ctx) => ctx.navigate({ to: "/inbox" }),
 	},
 	{
-		id: "nav.my-pulses",
+		id: "nav.my-tasks",
 		key: null,
-		label: "Go to My Pulses",
+		label: "Go to My Tasks",
 		scope: "navigation",
-		action: (ctx) => ctx.navigate({ to: "/my-pulses" }),
+		action: (ctx) => ctx.navigate({ to: "/my-tasks" }),
 	},
 	{
 		id: "nav.threads",
@@ -94,7 +94,7 @@ export const SHORTCUTS: readonly ShortcutEntry[] = [
 	{
 		id: "nav.create-startup",
 		key: null,
-		label: "Create Startup",
+		label: "Create a Startup",
 		scope: "navigation",
 		action: (ctx) => ctx.navigate({ to: "/startups/new" }),
 	},

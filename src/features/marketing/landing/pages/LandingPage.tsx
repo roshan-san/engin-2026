@@ -1,4 +1,4 @@
-import { MAX_TRIAL_PARTICIPANTS } from "@convex/lib/limits";
+import { MAX_HACKATHON_PARTICIPANTS } from "@convex/lib/limits";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { Link, Navigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -7,8 +7,8 @@ import { Button } from "~/components/ui/button";
 import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
 
 const FOUNDER_POINTS = [
-	"Post a hackathon with a few scoped challenges from your real work.",
-	`Admit the applicants you want, up to ${MAX_TRIAL_PARTICIPANTS} per hackathon.`,
+	"Post a hackathon with a few scoped Starter Tasks from your real work.",
+	`Admit the applicants you want, up to ${MAX_HACKATHON_PARTICIPANTS} per hackathon.`,
 	"Judge what they build, give each one a verdict, and make offers.",
 ];
 
@@ -21,7 +21,7 @@ const CONTRIBUTOR_POINTS = [
 const STEPS = [
 	{ title: "Apply", body: "Pick an open hackathon and apply." },
 	{ title: "Join", body: "The founders admit you before it starts." },
-	{ title: "Build", body: "Work the challenges on your own private board." },
+	{ title: "Build", body: "Work the Starter Tasks on your own private board." },
 	{ title: "Verdict", body: "The founders judge your work when it closes." },
 ];
 
@@ -33,7 +33,7 @@ export function LandingPage() {
 	}
 
 	if (isAuthenticated) {
-		return <Navigate to="/my-pulses" />;
+		return <Navigate to="/my-tasks" />;
 	}
 
 	return (
@@ -59,18 +59,18 @@ export function LandingPage() {
 					</h1>
 					<p className="max-w-2xl text-lg text-muted-foreground">
 						Engin is the online hiring hackathon for early-stage startups.
-						Founders set real challenges, see real work, and hire from it.
+						Founders set real Starter Tasks, see real work, and hire from it.
 					</p>
 					<div className="flex flex-wrap gap-3">
 						<GoogleButton />
 						<Button asChild variant="ghost">
-							<Link to="/discover">Browse hackathons</Link>
+							<Link to="/discover">Browse Hackathons</Link>
 						</Button>
 					</div>
 				</section>
 
 				<section className="grid gap-10 sm:grid-cols-2">
-					<PointList title="For founders" points={FOUNDER_POINTS}>
+					<PointList title="For Founders" points={FOUNDER_POINTS}>
 						<Link
 							to="/pricing"
 							className="text-sm underline underline-offset-4"
@@ -83,13 +83,13 @@ export function LandingPage() {
 							to="/discover"
 							className="text-sm underline underline-offset-4"
 						>
-							Find a hackathon
+							Find a Hackathon
 						</Link>
 					</PointList>
 				</section>
 
 				<section className="space-y-6">
-					<h2 className="text-xl font-semibold">How a hackathon runs</h2>
+					<h2 className="text-xl font-semibold">How a Hackathon runs</h2>
 					<ol className="grid gap-6 sm:grid-cols-4">
 						{STEPS.map((step, index) => (
 							<li key={step.title} className="space-y-1">

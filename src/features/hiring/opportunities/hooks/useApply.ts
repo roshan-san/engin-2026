@@ -8,8 +8,10 @@ import { toErrorMessage } from "~/lib/validation";
  * Sends one application. A refusal comes back as the backend's own words,
  * shown where the contributor applied; the UI never decides who may enter.
  */
-export function useApply(trialCycleId: Id<"trialCycles">) {
-	const applyToTrial = useMutation(api.hiring.applications.applyToTrial);
+export function useApply(hackathonId: Id<"hackathons">) {
+	const applyToHackathon = useMutation(
+		api.hiring.applications.applyToHackathon,
+	);
 	const [error, setError] = useState<string | null>(null);
 	const [isPending, setIsPending] = useState(false);
 	// State lands a render late; the ref stops a double click sending twice.
@@ -23,8 +25,8 @@ export function useApply(trialCycleId: Id<"trialCycles">) {
 		setIsPending(true);
 		setError(null);
 		try {
-			await applyToTrial({
-				trialCycleId,
+			await applyToHackathon({
+				hackathonId,
 				message: message.trim() || undefined,
 				acceptTerms: true,
 			});

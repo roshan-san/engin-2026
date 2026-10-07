@@ -15,7 +15,7 @@ import { useFocusedStartup } from "~/shell/hooks/useFocusedStartup";
 import { StartupAvatar } from "~/shell/sidebar/StartupAvatar";
 
 /**
- * The Startup switcher (UI E1): loading skeleton, "Create Startup" when the
+ * The Startup switcher (UI E1): loading skeleton, "Create a Startup" when the
  * caller has no Startups, or a dropdown listing every membership. Selecting a
  * Startup only navigates — the /s/$slug layout's effect (01-04) writes focus.
  */
@@ -37,7 +37,7 @@ export function StartupSwitcher() {
 			>
 				<Link to="/startups/new">
 					<Plus className="size-3.5" />
-					Create Startup
+					Create a Startup
 				</Link>
 			</Button>
 		);
@@ -95,7 +95,7 @@ export function StartupSwitcher() {
 				<DropdownMenuItem asChild>
 					<Link to="/startups/new" className="cursor-pointer">
 						<Plus className="size-4" />
-						Create Startup
+						Create a Startup
 					</Link>
 				</DropdownMenuItem>
 			</DropdownMenuContent>

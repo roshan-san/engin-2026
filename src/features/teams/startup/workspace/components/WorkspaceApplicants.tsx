@@ -22,7 +22,7 @@ export function WorkspaceApplicants({ startupId }: WorkspaceApplicantsProps) {
 
 	async function setDecision(
 		applicationId: Id<"applications">,
-		status: "joined" | "rejected",
+		status: "accepted" | "rejected",
 	) {
 		setPendingId(applicationId);
 		try {
@@ -42,7 +42,7 @@ export function WorkspaceApplicants({ startupId }: WorkspaceApplicantsProps) {
 			) : applications.length === 0 ? (
 				<EmptyState
 					title="No applications"
-					description="When people apply to Trial Cycles, they show up here."
+					description="When people apply to Hackathons, they show up here."
 				/>
 			) : (
 				<ul className="space-y-2">
@@ -64,7 +64,9 @@ export function WorkspaceApplicants({ startupId }: WorkspaceApplicantsProps) {
 									<p className="font-medium">{application.userName}</p>
 								)}
 								<p className="text-sm text-muted-foreground">
-									{application.trialTitle ?? application.roleTitle ?? "Role"}
+									{application.hackathonTitle ??
+										application.roleTitle ??
+										"Role"}
 								</p>
 							</div>
 							<div className="flex flex-wrap items-center gap-2">
@@ -76,7 +78,7 @@ export function WorkspaceApplicants({ startupId }: WorkspaceApplicantsProps) {
 											size="sm"
 											disabled={pendingId === application._id}
 											onClick={() =>
-												void setDecision(application._id, "joined")
+												void setDecision(application._id, "accepted")
 											}
 										>
 											Accept

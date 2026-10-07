@@ -4,7 +4,7 @@ import { signUp } from "./support/people";
 import {
 	admit,
 	founderWithStartup,
-	publishedTrial,
+	publishedHackathon,
 	startNow,
 } from "./support/world";
 
@@ -42,12 +42,12 @@ test("an announcement reaches a Participant's Inbox and Threads", async ({
 	pageAs,
 }) => {
 	const startup = await founderWithStartup();
-	const { trialCycleId, title } = await publishedTrial(startup);
+	const { hackathonId, title } = await publishedHackathon(startup);
 	const cara = await signUp("Cara");
-	await admit(startup, trialCycleId, cara);
-	startNow(trialCycleId);
+	await admit(startup, hackathonId, cara);
+	startNow(hackathonId);
 	await startup.founder.api.mutation(api.hiring.announcements.post, {
-		trialCycleId,
+		hackathonId,
 		body: "Kickoff call at 5pm",
 	});
 	const page = await pageAs(cara);
@@ -66,6 +66,6 @@ test("an announcement reaches a Participant's Inbox and Threads", async ({
 	await expect(page.getByRole("heading", { name: title })).toBeVisible();
 	await expect(page.getByText("Kickoff call at 5pm")).toBeVisible();
 	await expect(
-		page.getByRole("link", { name: "Open Trial Cycle" }),
+		page.getByRole("link", { name: "Open Hackathon" }),
 	).toBeVisible();
 });

@@ -7,7 +7,7 @@ import { MAX_BIO, MAX_LOCATION, SKILL_LIMITS } from "../lib/limits";
 import { assertUrl, limitText, normalizeTags, optionalText } from "../lib/text";
 import { loadProofOfWork } from "./proofOfWork.rules";
 import { loadScoreEvidence } from "./score.rules";
-import { loadTrialHistory } from "./trialHistory.rules";
+import { loadHackathonHistory } from "./hackathonHistory.rules";
 import { requireUsername } from "./username.rules";
 import { toPublicUser } from "./users.rules";
 
@@ -97,7 +97,7 @@ export const getByUsername = query({
 
 		return {
 			...toPublicUser(user),
-			trialHistory: await loadTrialHistory(ctx, user._id),
+			hackathonHistory: await loadHackathonHistory(ctx, user._id),
 			bio: user.bio ?? null,
 			skills: user.skills ?? [],
 			location: user.location ?? null,

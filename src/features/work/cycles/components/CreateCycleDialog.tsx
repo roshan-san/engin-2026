@@ -13,6 +13,7 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { GOAL_MAX } from "@convex/lib/limits";
 import { useCreateCycle } from "~/features/work/cycles/hooks/useCycles";
 
 type CreateCycleDialogProps = {
@@ -26,14 +27,16 @@ export function CreateCycleDialog({ slug, startupId }: CreateCycleDialogProps) {
 	const navigate = useNavigate();
 	const [open, setOpen] = useState(false);
 	const [title, setTitle] = useState("");
+	const [goal, setGoal] = useState("");
 	const [startAt, setStartAt] = useState("");
 	const [endAt, setEndAt] = useState("");
 
 	async function submit() {
-		const cycleId = await create({ title, startAt, endAt });
+		const cycleId = await create({ title, goal, startAt, endAt });
 		if (cycleId) {
 			setOpen(false);
 			setTitle("");
+			setGoal("");
 			setStartAt("");
 			setEndAt("");
 			void navigate({
@@ -72,6 +75,20 @@ export function CreateCycleDialog({ slug, startupId }: CreateCycleDialogProps) {
 							placeholder="Cycle 12"
 							className="h-11"
 						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="cycle-goal">Goal</Label>
+						<Input
+							id="cycle-goal"
+							maxLength={GOAL_MAX}
+							value={goal}
+							onChange={(event) => setGoal(event.target.value)}
+							placeholder="Ship self-serve billing"
+							className="h-11"
+						/>
+						<p className="text-xs text-muted-foreground">
+							One line: what this Cycle ships.
+						</p>
 					</div>
 					<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 						<div className="space-y-2">

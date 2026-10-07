@@ -31,7 +31,7 @@ export function DiscoverPage() {
 					Discover
 				</h1>
 				<p className="max-w-xl text-muted-foreground">
-					Open hiring hackathons, startups and proven contributors on Engin.
+					Open hiring Hackathons, Startups and proven contributors on Engin.
 				</p>
 			</div>
 
@@ -58,15 +58,15 @@ export function DiscoverPage() {
 					<PageLoading rows={4} />
 				) : hackathons.length === 0 ? (
 					<p className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
-						No hackathons are open right now.
+						No Hackathons are open right now.
 					</p>
 				) : (
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{hackathons.map((hackathon) => (
 							<Link
 								key={hackathon._id}
-								to="/hackathons/$trialCycleId"
-								params={{ trialCycleId: hackathon._id }}
+								to="/hackathons/$hackathonId"
+								params={{ hackathonId: hackathon._id }}
 								className="group flex flex-col gap-2 rounded-xl border border-border p-6 hover:bg-muted/20"
 							>
 								<h2 className="text-lg font-semibold tracking-tight break-words group-hover:text-primary">
@@ -83,7 +83,7 @@ export function DiscoverPage() {
 										{formatDateRange(hackathon.startsAt, hackathon.endsAt)}
 									</span>
 									<Badge variant="outline">
-										{hackathon.participantCount}/{hackathon.maxContributors}
+										{hackathon.participantCount}/{hackathon.maxParticipants}
 									</Badge>
 									{hackathon.prize ? (
 										<Badge variant="secondary">{hackathon.prize}</Badge>
@@ -101,7 +101,7 @@ export function DiscoverPage() {
 							ref={registerSearch}
 							value={term}
 							onChange={(event) => setTerm(event.target.value)}
-							placeholder="Search startups"
+							placeholder="Search Startups"
 							className="h-12 rounded-full pl-10"
 						/>
 					</div>

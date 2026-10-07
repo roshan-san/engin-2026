@@ -4,7 +4,7 @@ import type { MutationCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { MAX_USER_OFFERS } from "../lib/limits";
-import { trialCycleHref } from "../lib/links";
+import { hackathonHref } from "../lib/links";
 import { notifyFounders } from "../people/notifications.rules";
 import { refreshUserScore } from "../people/score.rules";
 import { loadPublicUser } from "../people/users.rules";
@@ -47,11 +47,11 @@ async function tellFounder(
 	outcome: "accepted" | "declined",
 ) {
 	const person = await ctx.db.get(offer.userId);
-	const trial = await ctx.db.get(offer.trialCycleId);
+	const hackathon = await ctx.db.get(offer.hackathonId);
 	await notifyFounders(ctx, offer.startupId, {
 		kind: "offer",
 		title: `${person?.name ?? "Someone"} ${outcome} your Offer`,
-		href: trial ? await trialCycleHref(ctx, trial) : undefined,
+		href: hackathon ? await hackathonHref(ctx, hackathon) : undefined,
 	});
 }
 
@@ -69,12 +69,12 @@ export const listMine = query({
 		for (const offer of offers) {
 			const startup = await ctx.db.get(offer.startupId);
 			const role = await ctx.db.get(offer.roleId);
-			const trial = await ctx.db.get(offer.trialCycleId);
+			const hackathon = await ctx.db.get(offer.hackathonId);
 			results.push({
 				_id: offer._id,
 				status: offer.status,
 				createdAt: offer._creationTime,
-				href: trial ? await trialCycleHref(ctx, trial) : null,
+				href: hackathon ? await hackathonHref(ctx, hackathon) : null,
 				startupName: startup?.name ?? "Startup",
 				startupSlug: startup?.slug ?? "",
 				roleTitle: role?.title ?? "Role",

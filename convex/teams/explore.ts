@@ -43,7 +43,7 @@ async function findStartups(
 		.slice(0, PAGE_SIZE);
 }
 
-/** A Verdict, a Verified Pulse, or a membership: the evidence Explore requires. */
+/** A Verdict, a Verified Task, or a membership: the evidence Explore requires. */
 async function hasEvidence(
 	ctx: QueryCtx,
 	userId: Id<"users">,
@@ -56,18 +56,13 @@ async function hasEvidence(
 		return true;
 	}
 
-	const verifiedPulse = await ctx.db
-		.query("pulses")
+	const verifiedTask = await ctx.db
+		.query("tasks")
 		.withIndex("by_assignee", (q) => q.eq("assigneeUserId", userId))
-		.filter((q) =>
-			q.and(
-				q.eq(q.field("status"), "done"),
-				// Board Pulses are self-moved to done, so they prove nothing.
-				q.eq(q.field("trialCycleId"), undefined),
-			),
-		)
+		// Only a Founder's verify reaches done, on team Cycles and hackathons alike.
+		.filter((q) => q.eq(q.field("status"), "done"))
 		.first();
-	if (verifiedPulse) {
+	if (verifiedTask) {
 		return true;
 	}
 

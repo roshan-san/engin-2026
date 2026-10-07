@@ -71,6 +71,9 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 								{cycleStatusLabel(cycle.status)}
 							</Badge>
 						</div>
+						{cycle.goal ? (
+							<p className="text-sm break-words">{cycle.goal}</p>
+						) : null}
 						<p className="text-sm text-muted-foreground">
 							{formatDateRange(cycle.startAt, cycle.endAt)}
 						</p>
@@ -112,6 +115,7 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 				cycleId={cycle._id}
 				isFounder={isFounder}
 				isReadOnly={isClosed}
+				lane={{ mode: "team" }}
 			/>
 		</div>
 	);

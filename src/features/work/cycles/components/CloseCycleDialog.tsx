@@ -28,7 +28,7 @@ type CloseCycleDialogProps = {
 	readonly onClose: (carryOverTo: Id<"cycles"> | null) => Promise<boolean>;
 };
 
-/** Closing asks where the unfinished Pulses go: a planned Cycle, or nowhere. */
+/** Closing asks where the unfinished Tasks go: a planned Cycle, or nowhere. */
 export function CloseCycleDialog({
 	title,
 	plannedCycles,
@@ -67,13 +67,13 @@ export function CloseCycleDialog({
 				<DialogHeader>
 					<DialogTitle>Close “{title}”?</DialogTitle>
 					<DialogDescription>
-						Done Pulses stay here. Unfinished ones (Todo, In progress, Review)
+						Done Tasks stay here. Unfinished ones (Todo, In progress, Review)
 						can move to a planned Cycle as they are. A closed Cycle is
 						read-only.
 					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-2">
-					<Label htmlFor="carry-over">Carry unfinished Pulses to</Label>
+					<Label htmlFor="carry-over">Carry unfinished Tasks to</Label>
 					<Select value={target} onValueChange={setTarget}>
 						<SelectTrigger id="carry-over" className="w-full">
 							<SelectValue />

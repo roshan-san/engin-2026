@@ -46,7 +46,7 @@ export function CreateStartupPage() {
 						size="sm"
 						className="-ml-2 text-muted-foreground"
 					>
-						<Link to="/my-pulses">Cancel</Link>
+						<Link to="/my-tasks">Cancel</Link>
 					</Button>
 				)}
 

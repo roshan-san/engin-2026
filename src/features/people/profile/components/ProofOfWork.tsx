@@ -5,12 +5,12 @@ export type ProofOfWorkData = {
 		startupId: string;
 		name: string;
 		slug: string;
-		verifiedPulses: number;
+		verifiedTasks: number;
 		cyclesCompleted: number;
 	}>;
 	private: {
 		startups: number;
-		verifiedPulses: number;
+		verifiedTasks: number;
 		cyclesCompleted: number;
 	};
 };
@@ -19,10 +19,10 @@ type ProofOfWorkProps = {
 	readonly proofOfWork: ProofOfWorkData;
 };
 
-function workSummary(verifiedPulses: number, cyclesCompleted: number) {
-	const pulses = `${verifiedPulses} verified Pulse${verifiedPulses === 1 ? "" : "s"}`;
+function workSummary(verifiedTasks: number, cyclesCompleted: number) {
+	const tasks = `${verifiedTasks} verified Task${verifiedTasks === 1 ? "" : "s"}`;
 	const cycles = `${cyclesCompleted} Cycle${cyclesCompleted === 1 ? "" : "s"} completed`;
-	return `${pulses} · ${cycles}`;
+	return `${tasks} · ${cycles}`;
 }
 
 export function ProofOfWork({ proofOfWork }: ProofOfWorkProps) {
@@ -50,7 +50,7 @@ export function ProofOfWork({ proofOfWork }: ProofOfWorkProps) {
 						>
 							<p className="font-medium">{startup.name}</p>
 							<p className="text-sm text-muted-foreground">
-								{workSummary(startup.verifiedPulses, startup.cyclesCompleted)}
+								{workSummary(startup.verifiedTasks, startup.cyclesCompleted)}
 							</p>
 						</Link>
 					</li>
@@ -63,7 +63,7 @@ export function ProofOfWork({ proofOfWork }: ProofOfWorkProps) {
 						</p>
 						<p className="text-sm text-muted-foreground">
 							{workSummary(
-								proofOfWork.private.verifiedPulses,
+								proofOfWork.private.verifiedTasks,
 								proofOfWork.private.cyclesCompleted,
 							)}
 						</p>

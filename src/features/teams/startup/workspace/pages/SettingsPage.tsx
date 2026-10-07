@@ -38,7 +38,7 @@ export function SettingsPage() {
 			<div className="mx-auto w-full max-w-2xl space-y-6">
 				<h1 className="text-xl font-semibold">Settings</h1>
 				<EmptyState
-					title="Only founders can change settings"
+					title="Only Founders can change settings"
 					description="Ask a founder if something about the Startup needs changing."
 				/>
 			</div>

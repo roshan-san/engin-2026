@@ -49,7 +49,7 @@ export function AppSidebar() {
 		>
 			<SidebarHeader>
 				<Link
-					to="/my-pulses"
+					to="/my-tasks"
 					className="flex h-8 items-center px-2 text-sm font-semibold text-sidebar-foreground"
 				>
 					Engin

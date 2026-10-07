@@ -23,16 +23,16 @@ async function findRoles(ctx: QueryCtx, term: string) {
 		.take(PAGE_SIZE);
 }
 
-async function findTrials(ctx: QueryCtx, term: string) {
+async function findHackathons(ctx: QueryCtx, term: string) {
 	const open = term
 		? await ctx.db
-				.query("trialCycles")
-				.withSearchIndex("search_trials", (q) =>
+				.query("hackathons")
+				.withSearchIndex("search_hackathons", (q) =>
 					q.search("searchText", term).eq("status", "open"),
 				)
 				.take(PAGE_SIZE)
 		: await ctx.db
-				.query("trialCycles")
+				.query("hackathons")
 				.withIndex("by_status", (q) => q.eq("status", "open"))
 				.order("desc")
 				.take(PAGE_SIZE);
@@ -45,7 +45,7 @@ export const search = query({
 	handler: async (ctx, args) => {
 		const term = buildSearchText(args.term);
 		const roles = await findRoles(ctx, term);
-		const trials = await findTrials(ctx, term);
+		const hackathons = await findHackathons(ctx, term);
 
 		const roleCards = [];
 		for (const role of roles) {
@@ -66,29 +66,29 @@ export const search = query({
 			});
 		}
 
-		const trialCards = [];
-		for (const trial of trials) {
-			const startup = await ctx.db.get(trial.startupId);
+		const hackathonCards = [];
+		for (const hackathon of hackathons) {
+			const startup = await ctx.db.get(hackathon.startupId);
 			if (!startup?.isPublic) {
 				continue;
 			}
-			const role = await ctx.db.get(trial.roleId);
-			trialCards.push({
-				_id: trial._id,
-				title: trial.title,
-				description: trial.description,
+			const role = await ctx.db.get(hackathon.roleId);
+			hackathonCards.push({
+				_id: hackathon._id,
+				title: hackathon.title,
+				description: hackathon.description,
 				roleTitle: role?.title ?? "Role",
-				participantCount: trial.participantCount,
-				maxContributors: trial.maxContributors,
-				deadline: trial.applicationDeadline ?? trial.startsAt,
-				startsAt: trial.startsAt,
-				endsAt: trial.endsAt,
-				prize: trial.prize ?? null,
+				participantCount: hackathon.participantCount,
+				maxParticipants: hackathon.maxParticipants,
+				deadline: hackathon.applicationDeadline ?? hackathon.startsAt,
+				startsAt: hackathon.startsAt,
+				endsAt: hackathon.endsAt,
+				prize: hackathon.prize ?? null,
 				startupName: startup.name,
 				startupSlug: startup.slug,
 			});
 		}
 
-		return { roles: roleCards, trials: trialCards };
+		return { roles: roleCards, hackathons: hackathonCards };
 	},
 });

@@ -14,7 +14,7 @@ import { RoleRow } from "~/features/hiring/screen/components/RoleRow";
 import { useCheckoutWatch } from "~/features/hiring/screen/hooks/useCheckoutWatch";
 import { useCredits } from "~/features/hiring/screen/hooks/useCredits";
 import { useHiringScreen } from "~/features/hiring/screen/hooks/useHiringScreen";
-import { TRIAL_STATUS_GROUPS } from "~/features/hiring/trialCycles/constants";
+import { HACKATHON_STATUS_GROUPS } from "~/features/hiring/hackathons/constants";
 import { useStartupRoute } from "~/shell/startup/StartupRoute";
 
 /** The founders' hiring home: hackathons and Roles; members see it read-only. */
@@ -32,7 +32,7 @@ export function HiringPage() {
 					{isFounder ? (
 						<Button asChild size="sm">
 							<Link to="/s/$slug/hiring/new" params={{ slug }}>
-								New hackathon
+								New Hackathon
 							</Link>
 						</Button>
 					) : null}
@@ -69,22 +69,22 @@ function HackathonsTab({
 	startupId,
 	isFounder,
 }: TabProps & { readonly slug: string }) {
-	const { trials } = useHiringScreen(startupId);
+	const { hackathons } = useHiringScreen(startupId);
 	const { count: creditCount } = useCredits(isFounder);
-	useCheckoutWatch(trials, creditCount);
+	useCheckoutWatch(hackathons, creditCount);
 
-	if (trials === undefined) {
+	if (hackathons === undefined) {
 		return <PageLoading rows={3} />;
 	}
-	if (trials.length === 0) {
+	if (hackathons.length === 0) {
 		return <HiringEmptyState slug={slug} isFounder={isFounder} />;
 	}
 
 	return (
 		<div className="space-y-6">
-			{TRIAL_STATUS_GROUPS.map((group) => {
-				const items = trials.filter((trial: HackathonListItem) =>
-					group.statuses.includes(trial.status),
+			{HACKATHON_STATUS_GROUPS.map((group) => {
+				const items = hackathons.filter((hackathon: HackathonListItem) =>
+					group.statuses.includes(hackathon.status),
 				);
 				if (items.length === 0) {
 					return null;
@@ -95,11 +95,11 @@ function HackathonsTab({
 							{group.label}
 						</h2>
 						<ul className="space-y-2">
-							{items.map((trial) => (
+							{items.map((hackathon) => (
 								<HackathonRow
-									key={trial._id}
+									key={hackathon._id}
 									slug={slug}
-									trial={trial}
+									hackathon={hackathon}
 									isFounder={isFounder}
 									creditCount={isFounder ? creditCount : undefined}
 								/>

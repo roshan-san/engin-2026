@@ -1,8 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_TRIAL_APPLICATIONS, MAX_USER_APPLICATIONS } from "../lib/limits";
-import { trialCycleHref } from "../lib/links";
+import {
+	MAX_HACKATHON_APPLICATIONS,
+	MAX_USER_APPLICATIONS,
+} from "../lib/limits";
+import { hackathonHref } from "../lib/links";
 import { optionalText } from "../lib/text";
 import { notify, notifyFounders } from "../people/notifications.rules";
 import { refreshUserScore } from "../people/score.rules";
@@ -19,10 +22,10 @@ import {
 } from "./applications.rules";
 import { requireIpTerms } from "./ipTerms.rules";
 import {
-	getTrialApplication,
-	isTrialLive,
+	getHackathonApplication,
+	isHackathonLive,
 	requireAcceptingEntries,
-} from "./trialCycles.rules";
+} from "./hackathons.rules";
 
 export const listMine = query({
 	args: {},
@@ -38,7 +41,7 @@ export const listMine = query({
 		for (const application of applications) {
 			const startup = await ctx.db.get(application.startupId);
 			const role = await ctx.db.get(application.roleId);
-			const trial = await ctx.db.get(application.trialCycleId);
+			const hackathon = await ctx.db.get(application.hackathonId);
 			results.push({
 				_id: application._id,
 				status: application.status,
@@ -49,12 +52,12 @@ export const listMine = query({
 				startupName: startup?.name ?? "Startup",
 				startupSlug: startup?.slug ?? "",
 				roleTitle: role?.title ?? null,
-				trialTitle: trial?.title ?? null,
-				trialStatus: trial?.status ?? null,
-				startsAt: trial?.startsAt ?? null,
-				endsAt: trial?.endsAt ?? null,
-				isLive: holdsLiveEntry(application, trial),
-				trialCycleId: application.trialCycleId,
+				hackathonTitle: hackathon?.title ?? null,
+				hackathonStatus: hackathon?.status ?? null,
+				startsAt: hackathon?.startsAt ?? null,
+				endsAt: hackathon?.endsAt ?? null,
+				isLive: holdsLiveEntry(application, hackathon),
+				hackathonId: application.hackathonId,
 				roleId: application.roleId,
 			});
 		}
@@ -72,13 +75,13 @@ export const listForStartup = query({
 			.query("applications")
 			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
 			.order("desc")
-			.take(MAX_TRIAL_APPLICATIONS);
+			.take(MAX_HACKATHON_APPLICATIONS);
 
 		const results = [];
 		for (const application of applications) {
 			const user = await ctx.db.get(application.userId);
 			const role = await ctx.db.get(application.roleId);
-			const trial = await ctx.db.get(application.trialCycleId);
+			const hackathon = await ctx.db.get(application.hackathonId);
 			results.push({
 				_id: application._id,
 				status: application.status,
@@ -86,45 +89,45 @@ export const listForStartup = query({
 				userName: user?.name ?? user?.username ?? user?.email ?? "Applicant",
 				userUsername: user?.username ?? null,
 				roleTitle: role?.title ?? null,
-				trialTitle: trial?.title ?? null,
-				trialCycleId: application.trialCycleId,
+				hackathonTitle: hackathon?.title ?? null,
+				hackathonId: application.hackathonId,
 			});
 		}
 		return results;
 	},
 });
 
-export const applyToTrial = mutation({
+export const applyToHackathon = mutation({
 	args: {
-		trialCycleId: v.id("trialCycles"),
+		hackathonId: v.id("hackathons"),
 		message: v.optional(v.string()),
 		acceptTerms: v.boolean(),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const trial = await ctx.db.get(args.trialCycleId);
-		if (!trial) {
-			throw new Error("Trial Cycle not found");
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (!hackathon) {
+			throw new Error("Hackathon not found");
 		}
-		requireAcceptingEntries(trial);
-		await requireRoomToApply(ctx, trial);
+		requireAcceptingEntries(hackathon);
+		await requireRoomToApply(ctx, hackathon);
 		requireIpTerms(args.acceptTerms);
-		await requireCanEnter(ctx, trial, userId);
+		await requireCanEnter(ctx, hackathon, userId);
 
 		const applicationId = await ctx.db.insert("applications", {
 			userId,
-			startupId: trial.startupId,
-			roleId: trial.roleId,
-			trialCycleId: trial._id,
+			startupId: hackathon.startupId,
+			roleId: hackathon.roleId,
+			hackathonId: hackathon._id,
 			status: "applied",
 			message: optionalText(args.message),
 			ipAcknowledgedAt: Date.now(),
 		});
 
-		await notifyFounders(ctx, trial.startupId, {
+		await notifyFounders(ctx, hackathon.startupId, {
 			kind: "application",
-			title: `New application for ${trial.title}`,
-			href: await trialCycleHref(ctx, trial),
+			title: `New application for ${hackathon.title}`,
+			href: await hackathonHref(ctx, hackathon),
 		});
 
 		return applicationId;
@@ -134,7 +137,7 @@ export const applyToTrial = mutation({
 export const decide = mutation({
 	args: {
 		applicationId: v.id("applications"),
-		status: v.union(v.literal("joined"), v.literal("rejected")),
+		status: v.union(v.literal("accepted"), v.literal("rejected")),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -148,9 +151,9 @@ export const decide = mutation({
 			throw new Error("This application has already been decided");
 		}
 
-		const trial = await ctx.db.get(application.trialCycleId);
-		if (trial?.status !== "open") {
-			throw new Error("This Trial Cycle is no longer accepting people");
+		const hackathon = await ctx.db.get(application.hackathonId);
+		if (hackathon?.status !== "open") {
+			throw new Error("This Hackathon is no longer accepting people");
 		}
 
 		if (args.status === "rejected") {
@@ -158,63 +161,63 @@ export const decide = mutation({
 			await notify(ctx, {
 				userId: application.userId,
 				kind: "application",
-				title: `Your application to ${trial.title} was not accepted`,
-				href: await trialCycleHref(ctx, trial),
+				title: `Your application to ${hackathon.title} was not accepted`,
+				href: await hackathonHref(ctx, hackathon),
 			});
 			return;
 		}
 
-		await takeParticipantSpot(ctx, trial);
-		await ctx.db.patch(application._id, { status: "joined" });
+		await takeParticipantSpot(ctx, hackathon);
+		await ctx.db.patch(application._id, { status: "accepted" });
 		await notify(ctx, {
 			userId: application.userId,
 			kind: "application",
-			title: `You were accepted to ${trial.title}`,
-			href: await trialCycleHref(ctx, trial),
+			title: `You were accepted to ${hackathon.title}`,
+			href: await hackathonHref(ctx, hackathon),
 		});
 	},
 });
 
 /**
- * Exiting before the Trial Cycle starts is a free withdrawal; exiting a
+ * Exiting before the Hackathon starts is a free withdrawal; exiting a
  * started one is Leaving, which is public and costs Score.
  */
-export const leaveTrial = mutation({
-	args: { trialCycleId: v.id("trialCycles") },
+export const leaveHackathon = mutation({
+	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const trial = await ctx.db.get(args.trialCycleId);
-		const application = await getTrialApplication(
+		const hackathon = await ctx.db.get(args.hackathonId);
+		const application = await getHackathonApplication(
 			ctx,
-			args.trialCycleId,
+			args.hackathonId,
 			userId,
 		);
 		const isIn =
-			application?.status === "applied" || application?.status === "joined";
-		if (!trial || !isTrialLive(trial) || !application || !isIn) {
-			throw new Error("You are not in this Trial Cycle");
+			application?.status === "applied" || application?.status === "accepted";
+		if (!hackathon || !isHackathonLive(hackathon) || !application || !isIn) {
+			throw new Error("You are not in this Hackathon");
 		}
 
-		const wasParticipant = application.status === "joined";
-		const isLeaving = wasParticipant && trial.status === "active";
+		const wasParticipant = application.status === "accepted";
+		const isLeaving = wasParticipant && hackathon.status === "active";
 		await ctx.db.patch(
 			application._id,
 			isLeaving ? { status: "left" } : { status: "withdrawn" },
 		);
 
 		if (wasParticipant) {
-			await releaseParticipantSpot(ctx, trial);
+			await releaseParticipantSpot(ctx, hackathon);
 		}
 		if (isLeaving) {
 			await refreshUserScore(ctx, userId);
 		}
 
-		await notifyFounders(ctx, trial.startupId, {
+		await notifyFounders(ctx, hackathon.startupId, {
 			kind: "application",
 			title: isLeaving
-				? `A Participant left ${trial.title}`
-				: `An application to ${trial.title} was withdrawn`,
-			href: await trialCycleHref(ctx, trial),
+				? `A Participant left ${hackathon.title}`
+				: `An application to ${hackathon.title} was withdrawn`,
+			href: await hackathonHref(ctx, hackathon),
 		});
 	},
 });

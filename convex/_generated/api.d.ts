@@ -17,11 +17,10 @@ import type * as crons from "../crons.js";
 import type * as e2e_seed from "../e2e/seed.js";
 import type * as hiring_announcements from "../hiring/announcements.js";
 import type * as hiring_applications from "../hiring/applications.js";
-import type * as hiring_challenges from "../hiring/challenges.js";
+import type * as hiring_hackathons from "../hiring/hackathons.js";
 import type * as hiring_offers from "../hiring/offers.js";
 import type * as hiring_opportunities from "../hiring/opportunities.js";
 import type * as hiring_roles from "../hiring/roles.js";
-import type * as hiring_trialCycles from "../hiring/trialCycles.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_limits from "../lib/limits.js";
@@ -35,7 +34,7 @@ import type * as teams_invitations from "../teams/invitations.js";
 import type * as teams_members from "../teams/members.js";
 import type * as teams_startups from "../teams/startups.js";
 import type * as work_cycles from "../work/cycles.js";
-import type * as work_pulses from "../work/pulses.js";
+import type * as work_tasks from "../work/tasks.js";
 
 import type {
   ApiFromModules,
@@ -53,11 +52,10 @@ declare const fullApi: ApiFromModules<{
   "e2e/seed": typeof e2e_seed;
   "hiring/announcements": typeof hiring_announcements;
   "hiring/applications": typeof hiring_applications;
-  "hiring/challenges": typeof hiring_challenges;
+  "hiring/hackathons": typeof hiring_hackathons;
   "hiring/offers": typeof hiring_offers;
   "hiring/opportunities": typeof hiring_opportunities;
   "hiring/roles": typeof hiring_roles;
-  "hiring/trialCycles": typeof hiring_trialCycles;
   http: typeof http;
   "lib/auth": typeof lib_auth;
   "lib/limits": typeof lib_limits;
@@ -71,7 +69,7 @@ declare const fullApi: ApiFromModules<{
   "teams/members": typeof teams_members;
   "teams/startups": typeof teams_startups;
   "work/cycles": typeof work_cycles;
-  "work/pulses": typeof work_pulses;
+  "work/tasks": typeof work_tasks;
 }>;
 
 /**

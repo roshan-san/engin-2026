@@ -8,7 +8,7 @@ type CreditCtx = QueryCtx | MutationCtx;
 
 type CreditSource = Infer<typeof creditSource>;
 
-function isSpendable(credit: Doc<"hackathonCredits">, now: number): boolean {
+function isSpendable(credit: Doc<"credits">, now: number): boolean {
 	return (
 		credit.spentAt === undefined &&
 		(credit.expiresAt === undefined || credit.expiresAt > now)
@@ -19,9 +19,9 @@ export async function listSpendableCredits(
 	ctx: CreditCtx,
 	ownerUserId: Id<"users">,
 	now: number,
-): Promise<Doc<"hackathonCredits">[]> {
+): Promise<Doc<"credits">[]> {
 	const unspent = await ctx.db
-		.query("hackathonCredits")
+		.query("credits")
 		.withIndex("by_owner_and_spent", (q) =>
 			q.eq("ownerUserId", ownerUserId).eq("spentAt", undefined),
 		)
@@ -45,10 +45,7 @@ export const NO_CREDIT_MESSAGE =
 	"You have no hackathon credits. Pay for this hackathon to publish it.";
 
 /** Spend order first, then the soonest expiry, then the oldest. */
-function compareForSpending(
-	a: Doc<"hackathonCredits">,
-	b: Doc<"hackathonCredits">,
-): number {
+function compareForSpending(a: Doc<"credits">, b: Doc<"credits">): number {
 	const bySource =
 		CREDIT_SPEND_ORDER.indexOf(a.source) - CREDIT_SPEND_ORDER.indexOf(b.source);
 	if (bySource !== 0) {
@@ -65,9 +62,9 @@ function compareForSpending(
 export async function spendCredit(
 	ctx: MutationCtx,
 	ownerUserId: Id<"users">,
-	_trialCycleId: Id<"trialCycles">,
+	_hackathonId: Id<"hackathons">,
 	now: number,
-): Promise<Doc<"hackathonCredits">> {
+): Promise<Doc<"credits">> {
 	const credits = await listSpendableCredits(ctx, ownerUserId, now);
 	const credit = credits.sort(compareForSpending)[0];
 	if (!credit) {
@@ -93,15 +90,15 @@ type CreditGrant = {
 export async function grantCredit(
 	ctx: MutationCtx,
 	grant: CreditGrant,
-): Promise<Id<"hackathonCredits"> | null> {
+): Promise<Id<"credits"> | null> {
 	const existing = await ctx.db
-		.query("hackathonCredits")
+		.query("credits")
 		.withIndex("by_grant_key", (q) => q.eq("grantKey", grant.grantKey))
 		.first();
 	if (existing) {
 		return null;
 	}
-	return await ctx.db.insert("hackathonCredits", grant);
+	return await ctx.db.insert("credits", grant);
 }
 
 /** Marks a one-time Dodo payment as a hackathon purchase (checkout metadata `kind`). */
@@ -111,7 +108,7 @@ export const HACKATHON_PAYMENT_KIND = "hackathon";
 export async function grantSignupCredit(
 	ctx: MutationCtx,
 	userId: Id<"users">,
-): Promise<Id<"hackathonCredits"> | null> {
+): Promise<Id<"credits"> | null> {
 	return await grantCredit(ctx, {
 		ownerUserId: userId,
 		source: "signup",
@@ -122,17 +119,17 @@ export async function grantSignupCredit(
 /**
  * Cancelling an open hackathon (published, not started) un-spends the exact
  * credit that paid for it, so it returns to the Founder who published it
- * with its original expiry. Cancel refuses a cancelled trial, so this runs
+ * with its original expiry. Cancel refuses a cancelled hackathon, so this runs
  * at most once per hackathon.
  */
 export async function refundPublishCredit(
 	ctx: MutationCtx,
-	trial: Doc<"trialCycles">,
+	hackathon: Doc<"hackathons">,
 ): Promise<void> {
-	if (trial.status !== "open" || trial.creditId === undefined) {
+	if (hackathon.status !== "open" || hackathon.creditId === undefined) {
 		return;
 	}
-	await ctx.db.patch(trial.creditId, { spentAt: undefined });
+	await ctx.db.patch(hackathon.creditId, { spentAt: undefined });
 }
 
 /** `at` plus `months` calendar months in UTC, clamping the day (Jan 31 → Feb 28). */
@@ -180,7 +177,7 @@ export async function grantProMonthCredits(
 		return;
 	}
 	const unspent = await ctx.db
-		.query("hackathonCredits")
+		.query("credits")
 		.withIndex("by_owner_and_spent", (q) =>
 			q.eq("ownerUserId", user._id).eq("spentAt", undefined),
 		)

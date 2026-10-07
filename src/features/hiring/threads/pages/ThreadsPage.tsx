@@ -3,10 +3,10 @@ import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { Badge } from "~/components/ui/badge";
 import { useThreads } from "~/features/hiring/threads/hooks/useThreads";
-import { TRIAL_STATUS_LABELS } from "~/features/hiring/trialCycles/constants";
+import { HACKATHON_STATUS_LABELS } from "~/features/hiring/hackathons/constants";
 import { formatDate, formatRelativeTime } from "~/lib/dates";
 
-/** One thread per Trial Cycle the user reads Announcements of. */
+/** One thread per Hackathon the user reads Announcements of. */
 export function ThreadsPage() {
 	const { threads } = useThreads();
 
@@ -15,7 +15,7 @@ export function ThreadsPage() {
 			<div>
 				<h1 className="text-xl font-semibold">Threads</h1>
 				<p className="text-sm text-muted-foreground">
-					Announcements from the founders of every hackathon you're in.
+					Announcements from the Founders of every Hackathon you're in.
 				</p>
 			</div>
 			{threads === undefined ? (
@@ -28,10 +28,10 @@ export function ThreadsPage() {
 			) : (
 				<ul className="divide-y rounded-lg border">
 					{threads.map((thread) => (
-						<li key={thread.trialCycleId}>
+						<li key={thread.hackathonId}>
 							<Link
-								to="/threads/$trialCycleId"
-								params={{ trialCycleId: thread.trialCycleId }}
+								to="/threads/$hackathonId"
+								params={{ hackathonId: thread.hackathonId }}
 								className="block space-y-1 p-3 hover:bg-muted/40"
 							>
 								<div className="flex items-start justify-between gap-2">
@@ -39,7 +39,7 @@ export function ThreadsPage() {
 										{thread.title}
 									</p>
 									<Badge variant="secondary" className="shrink-0">
-										{TRIAL_STATUS_LABELS[thread.status]}
+										{HACKATHON_STATUS_LABELS[thread.status]}
 									</Badge>
 								</div>
 								<p className="text-sm break-words text-muted-foreground">

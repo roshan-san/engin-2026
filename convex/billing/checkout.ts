@@ -14,24 +14,24 @@ import { checkout, getHackathonProductId } from "./dodo.client";
  * the draft untouched rather than looking like a checkout in progress.
  */
 export const prepareHackathonCheckout = internalMutation({
-	args: { userId: v.id("users"), trialCycleId: v.id("trialCycles") },
+	args: { userId: v.id("users"), hackathonId: v.id("hackathons") },
 	handler: async (
 		ctx,
 		args,
 	): Promise<{ email: string; name: string; productId: string }> => {
-		const trial = await ctx.db.get(args.trialCycleId);
-		if (!trial) {
-			throw new Error("Trial Cycle not found");
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (!hackathon) {
+			throw new Error("Hackathon not found");
 		}
 		const now = Date.now();
-		await requirePublishable(ctx, trial, args.userId, now);
+		await requirePublishable(ctx, hackathon, args.userId, now);
 
 		const user = await ctx.db.get(args.userId);
 		if (!user?.email) {
 			throw new Error("Add an email to your account before paying");
 		}
 		const productId = getHackathonProductId(user.planTier ?? "free");
-		await ctx.db.patch(trial._id, { ipAcknowledgedAt: now });
+		await ctx.db.patch(hackathon._id, { ipAcknowledgedAt: now });
 
 		return {
 			email: user.email,
@@ -43,7 +43,7 @@ export const prepareHackathonCheckout = internalMutation({
 
 export const createHackathonCheckout = action({
 	args: {
-		trialCycleId: v.id("trialCycles"),
+		hackathonId: v.id("hackathons"),
 		returnUrl: v.string(),
 		acceptTerms: v.boolean(),
 	},
@@ -56,7 +56,7 @@ export const createHackathonCheckout = action({
 
 		const payer = await ctx.runMutation(
 			internal.billing.checkout.prepareHackathonCheckout,
-			{ userId, trialCycleId: args.trialCycleId },
+			{ userId, hackathonId: args.hackathonId },
 		);
 		const session = await checkout(ctx, {
 			payload: {
@@ -67,7 +67,7 @@ export const createHackathonCheckout = action({
 				metadata: {
 					userId,
 					kind: HACKATHON_PAYMENT_KIND,
-					trialCycleId: args.trialCycleId,
+					hackathonId: args.hackathonId,
 				},
 			},
 		});

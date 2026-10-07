@@ -3,10 +3,10 @@ import { Badge } from "~/components/ui/badge";
 
 export type ScoreEvidence = {
 	score: number;
-	trialCyclesPassed: number;
+	hackathonsPassed: number;
 	startups: number;
 	teamConversions: number;
-	trialCyclesLeft: number;
+	hackathonsLeft: number;
 };
 
 type ScoreEvidenceCardProps = {
@@ -15,16 +15,16 @@ type ScoreEvidenceCardProps = {
 
 export function ScoreEvidenceCard({ evidence }: ScoreEvidenceCardProps) {
 	const stats = [
-		{ label: "Trial Cycles passed", value: evidence.trialCyclesPassed },
+		{ label: "Hackathons passed", value: evidence.hackathonsPassed },
 		{ label: "Offers accepted", value: evidence.teamConversions },
 		{ label: "Startups", value: evidence.startups },
-		{ label: "Trial Cycles left", value: evidence.trialCyclesLeft },
+		{ label: "Hackathons left", value: evidence.hackathonsLeft },
 	];
 
 	return (
 		<div className="space-y-4 rounded-lg border p-6">
 			<div>
-				<p className="text-sm text-muted-foreground">Engin Score</p>
+				<p className="text-sm text-muted-foreground">Score</p>
 				<p className="text-4xl font-bold tabular-nums">{evidence.score}</p>
 			</div>
 			<ul className="flex flex-wrap gap-2">
@@ -38,8 +38,8 @@ export function ScoreEvidenceCard({ evidence }: ScoreEvidenceCardProps) {
 			</ul>
 			<p className="text-sm text-muted-foreground">
 				Earned only from Founder Verdicts: +{SCORE_WEIGHTS.passedVerdict} per
-				passed Trial Cycle, +{SCORE_WEIGHTS.acceptedOffer} per accepted Offer,{" "}
-				{SCORE_WEIGHTS.leaving} for leaving a started Trial Cycle. It cannot be
+				passed Hackathon, +{SCORE_WEIGHTS.acceptedOffer} per accepted Offer,{" "}
+				{SCORE_WEIGHTS.leaving} for leaving a started Hackathon. It cannot be
 				claimed or bought.
 			</p>
 		</div>

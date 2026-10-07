@@ -7,7 +7,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
  */
 
 export const INBOX_HREF = "/inbox";
-const MY_PULSES_HREF = "/my-pulses";
+const MY_TASKS_HREF = "/my-tasks";
 
 type StartupSection =
 	| "cycles"
@@ -26,22 +26,22 @@ async function slugOf(
 	return (await ctx.db.get(startupId))?.slug ?? null;
 }
 
-/** Falls back to `MY_PULSES_HREF` if the Startup no longer exists. */
+/** Falls back to `MY_TASKS_HREF` if the Startup no longer exists. */
 export async function startupHref(
 	ctx: LinkCtx,
 	startupId: Id<"startups">,
 	section: StartupSection,
 ): Promise<string> {
 	const slug = await slugOf(ctx, startupId);
-	return slug ? `/s/${slug}/${section}` : MY_PULSES_HREF;
+	return slug ? `/s/${slug}/${section}` : MY_TASKS_HREF;
 }
 
-export async function trialCycleHref(
+export async function hackathonHref(
 	ctx: LinkCtx,
-	trial: Doc<"trialCycles">,
+	hackathon: Doc<"hackathons">,
 ): Promise<string> {
-	const slug = await slugOf(ctx, trial.startupId);
-	return slug ? `/s/${slug}/trials/${trial._id}` : MY_PULSES_HREF;
+	const slug = await slugOf(ctx, hackathon.startupId);
+	return slug ? `/s/${slug}/hackathons/${hackathon._id}` : MY_TASKS_HREF;
 }
 
 export async function cycleHref(
@@ -49,22 +49,21 @@ export async function cycleHref(
 	cycle: Doc<"cycles">,
 ): Promise<string> {
 	const slug = await slugOf(ctx, cycle.startupId);
-	return slug ? `/s/${slug}/cycles/${cycle._id}` : MY_PULSES_HREF;
+	return slug ? `/s/${slug}/cycles/${cycle._id}` : MY_TASKS_HREF;
 }
 
-export async function pulseHref(
+export async function taskHref(
 	ctx: LinkCtx,
-	pulse: Doc<"pulses">,
+	task: Doc<"tasks">,
 ): Promise<string> {
-	const slug = await slugOf(ctx, pulse.startupId);
+	const slug = await slugOf(ctx, task.startupId);
 	if (!slug) {
-		return MY_PULSES_HREF;
+		return MY_TASKS_HREF;
 	}
-	if (pulse.trialCycleId) {
-		return `/s/${slug}/trials/${pulse.trialCycleId}`;
+	// A hackathon's Cycle is opened from its hackathon.
+	const cycle = await ctx.db.get(task.cycleId);
+	if (cycle?.hackathonId) {
+		return `/s/${slug}/hackathons/${cycle.hackathonId}`;
 	}
-	if (pulse.cycleId) {
-		return `/s/${slug}/cycles/${pulse.cycleId}`;
-	}
-	return MY_PULSES_HREF;
+	return `/s/${slug}/cycles/${task.cycleId}`;
 }

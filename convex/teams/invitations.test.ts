@@ -2,12 +2,12 @@ import { describe, expect, test } from "vitest";
 import { api } from "../_generated/api";
 import {
 	closeWithVerdict,
-	startedTrialWith,
-} from "../hiring/trialCycles.helpers";
+	startedHackathonWith,
+} from "../hiring/hackathons.helpers";
 import { advancePast, createTest, DAY } from "../lib/testing.helpers";
 import { notificationTitles } from "../people/notifications.helpers";
 import { type Person, signUp } from "../people/users.helpers";
-import { cyclePulseFor } from "../work/cycles.helpers";
+import { cycleTaskFor, submitWithProof } from "../work/cycles.helpers";
 import { joinAsMember, type Setup, setUpStartup } from "./startups.helpers";
 
 async function myInvites(person: Person) {
@@ -180,16 +180,13 @@ test("someone invited as a Founder has full Founder powers", async () => {
 	await cofounder.as.mutation(api.teams.invitations.acceptById, { inviteId });
 
 	const bob = await joinAsMember(setup, "Bob");
-	const { pulseId } = await cyclePulseFor(setup, bob);
-	await bob.as.mutation(api.work.pulses.setStatus, {
-		pulseId,
-		status: "review",
-	});
+	const { taskId } = await cycleTaskFor(setup, bob);
+	await submitWithProof(bob, taskId);
 
 	expect(await notificationTitles(cofounder.as)).toContain(
 		"Hero section is ready for review",
 	);
-	await cofounder.as.mutation(api.work.pulses.verify, { pulseId });
+	await cofounder.as.mutation(api.work.tasks.verify, { taskId });
 });
 
 function invite(setup: Setup, invitee: string, role: "member" | "founder") {
@@ -212,8 +209,8 @@ async function freeStartupAtCap() {
 	}
 	const pending = await invite(setup, "dan@example.com", "member");
 	const alice = await signUp(t, "Alice");
-	const trialCycleId = await startedTrialWith(setup, [alice]);
-	await closeWithVerdict(setup, trialCycleId, alice, "passed_with_offer");
+	const hackathonId = await startedHackathonWith(setup, [alice]);
+	await closeWithVerdict(setup, hackathonId, alice, "passed_with_offer");
 	return { t, setup, pending };
 }
 

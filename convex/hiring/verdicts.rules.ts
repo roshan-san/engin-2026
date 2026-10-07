@@ -1,40 +1,53 @@
 import type { Infer } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import { trialCycleHref } from "../lib/links";
+import { hackathonHref } from "../lib/links";
 import { optionalText } from "../lib/text";
 import { notify } from "../people/notifications.rules";
 import { refreshUserScore } from "../people/score.rules";
-import type { trialVerdict } from "../schema";
+import type { hackathonVerdict } from "../schema";
 import { getMembership } from "../teams/membership.rules";
-import { listTrialApplications } from "./trialCycles.rules";
+import {
+	listHackathonApplications,
+	setHackathonStatus,
+} from "./hackathons.rules";
 
-type TrialVerdict = Infer<typeof trialVerdict>;
+type HackathonVerdict = Infer<typeof hackathonVerdict>;
 
 type CloseInput = {
 	verdicts: {
 		applicationId: Id<"applications">;
-		verdict: TrialVerdict;
+		verdict: HackathonVerdict;
 		evaluation?: string;
 	}[];
 };
 
 /**
  * Closing is all-or-nothing: every Participant gets a Verdict, or nothing is
- * written. Pulses are not reviewed here; the Verdict judges the whole work.
+ * written. Every Task in Review is resolved first, so the lanes show only
+ * verified work; unfinished Tasks stay, read-only.
  */
 export async function closeWithVerdicts(
 	ctx: MutationCtx,
-	trial: Doc<"trialCycles">,
+	hackathon: Doc<"hackathons">,
 	input: CloseInput,
 ): Promise<void> {
-	if (trial.status !== "active") {
-		throw new Error("Only an active Trial Cycle can be closed");
+	if (hackathon.status !== "active") {
+		throw new Error("Only an active Hackathon can be closed");
+	}
+	const inReview = await ctx.db
+		.query("tasks")
+		.withIndex("by_cycle_and_status", (q) =>
+			q.eq("cycleId", hackathon.cycleId).eq("status", "review"),
+		)
+		.first();
+	if (inReview) {
+		throw new Error("Verify or send back every Task in Review before closing");
 	}
 
-	const participants = (await listTrialApplications(ctx, trial._id)).filter(
-		(application) => application.status === "joined",
-	);
+	const participants = (
+		await listHackathonApplications(ctx, hackathon._id)
+	).filter((application) => application.status === "accepted");
 	const verdictsByApplication = new Map(
 		input.verdicts.map((entry) => [entry.applicationId, entry]),
 	);
@@ -50,23 +63,24 @@ export async function closeWithVerdicts(
 	const makesOffers = input.verdicts.some(
 		(entry) => entry.verdict === "passed_with_offer",
 	);
-	const role = await ctx.db.get(trial.roleId);
+	const role = await ctx.db.get(hackathon.roleId);
 	if (makesOffers && role?.status !== "open") {
 		throw new Error("This Role is filled, so it can't make Offers");
 	}
 
-	await ctx.db.patch(trial._id, { status: "closed" });
+	await setHackathonStatus(ctx, hackathon, "closed");
 
-	const href = await trialCycleHref(ctx, trial);
+	const href = await hackathonHref(ctx, hackathon);
 	for (const participant of participants) {
 		const entry = verdictsByApplication.get(participant._id);
 		if (!entry) {
 			continue;
 		}
-		// Score integrity: someone who joined the team mid-trial keeps the
+		// Score integrity: someone who joined the team mid-hackathon keeps the
 		// Verdict but earns no Score from it (eng review R3).
 		const isOnTeam =
-			(await getMembership(ctx, trial.startupId, participant.userId)) !== null;
+			(await getMembership(ctx, hackathon.startupId, participant.userId)) !==
+			null;
 		await ctx.db.patch(participant._id, {
 			status: "completed",
 			verdict: entry.verdict,
@@ -76,9 +90,9 @@ export async function closeWithVerdicts(
 		if (entry.verdict === "passed_with_offer") {
 			await ctx.db.insert("offers", {
 				applicationId: participant._id,
-				trialCycleId: trial._id,
-				roleId: trial.roleId,
-				startupId: trial.startupId,
+				hackathonId: hackathon._id,
+				roleId: hackathon.roleId,
+				startupId: hackathon.startupId,
 				userId: participant.userId,
 				status: "pending",
 			});
@@ -86,8 +100,8 @@ export async function closeWithVerdicts(
 		await refreshUserScore(ctx, participant.userId);
 		await notify(ctx, {
 			userId: participant.userId,
-			kind: "trial_cycle",
-			title: `Your Verdict for ${trial.title} is in`,
+			kind: "hackathon",
+			title: `Your Verdict for ${hackathon.title} is in`,
 			href,
 		});
 	}

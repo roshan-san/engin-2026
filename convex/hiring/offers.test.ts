@@ -9,23 +9,25 @@ import {
 import { notificationTitles } from "../people/notifications.helpers";
 import { scoreOf, signUp } from "../people/users.helpers";
 import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
-import { closeWithVerdict, startedTrialWith } from "./trialCycles.helpers";
+import { closeWithVerdict, startedHackathonWith } from "./hackathons.helpers";
 
 async function setUpOffer(t: TestConvex) {
 	const setup = await setUpStartup(t);
 	const alice = await signUp(t, "Alice");
-	const trialCycleId = await startedTrialWith(setup, [alice]);
-	await closeWithVerdict(setup, trialCycleId, alice, "passed_with_offer");
+	const hackathonId = await startedHackathonWith(setup, [alice]);
+	await closeWithVerdict(setup, hackathonId, alice, "passed_with_offer");
 	const [offer] = await alice.as.query(api.hiring.offers.listMine, {});
 	if (!offer) {
 		throw new Error("No Offer");
 	}
-	return { setup, alice, offer, trialCycleId };
+	return { setup, alice, offer, hackathonId };
 }
 
-async function offerSeenBy(as: Client, trialCycleId: Id<"trialCycles">) {
-	const trial = await as.query(api.hiring.trialCycles.get, { trialCycleId });
-	return trial?.applicants.map((applicant) => applicant.offer?.status ?? null);
+async function offerSeenBy(as: Client, hackathonId: Id<"hackathons">) {
+	const hackathon = await as.query(api.hiring.hackathons.get, { hackathonId });
+	return hackathon?.applicants.map(
+		(applicant) => applicant.offer?.status ?? null,
+	);
 }
 
 async function isMemberOf(as: Client, startupName: string) {
@@ -99,35 +101,35 @@ test("joining by Invite earns no Score", async () => {
 	expect(await scoreOf(t, alice.userId)).toBe(0);
 });
 
-describe("offers on the Trial Cycle screen", () => {
+describe("offers on the Hackathon screen", () => {
 	test("founders and members see each Participant's Offer status", async () => {
 		const t = createTest();
-		const { setup, alice, offer, trialCycleId } = await setUpOffer(t);
+		const { setup, alice, offer, hackathonId } = await setUpOffer(t);
 		const member = await joinAsMember(setup, "Mo");
-		expect(await offerSeenBy(setup.founder.as, trialCycleId)).toEqual([
+		expect(await offerSeenBy(setup.founder.as, hackathonId)).toEqual([
 			"pending",
 		]);
 
 		await alice.as.mutation(api.hiring.offers.accept, { offerId: offer._id });
 
-		expect(await offerSeenBy(setup.founder.as, trialCycleId)).toEqual([
+		expect(await offerSeenBy(setup.founder.as, hackathonId)).toEqual([
 			"accepted",
 		]);
-		expect(await offerSeenBy(member.as, trialCycleId)).toEqual(["accepted"]);
+		expect(await offerSeenBy(member.as, hackathonId)).toEqual(["accepted"]);
 	});
 
 	test("the Participant sees their own Offer before and after joining the team", async () => {
 		const t = createTest();
-		const { alice, offer, trialCycleId } = await setUpOffer(t);
-		const before = await alice.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const { alice, offer, hackathonId } = await setUpOffer(t);
+		const before = await alice.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
 		expect(before?.myOffer?.status).toBe("pending");
 
 		await alice.as.mutation(api.hiring.offers.accept, { offerId: offer._id });
 
-		const after = await alice.as.query(api.hiring.trialCycles.get, {
-			trialCycleId,
+		const after = await alice.as.query(api.hiring.hackathons.get, {
+			hackathonId,
 		});
 		expect(after?.isMember).toBe(true);
 		expect(after?.myVerdict).toBe("passed_with_offer");
@@ -147,10 +149,10 @@ describe("offers on the Trial Cycle screen", () => {
 		});
 
 		expect(
-			await offerSeenBy(declined.setup.founder.as, declined.trialCycleId),
+			await offerSeenBy(declined.setup.founder.as, declined.hackathonId),
 		).toEqual(["declined"]);
 		expect(
-			await offerSeenBy(withdrawn.setup.founder.as, withdrawn.trialCycleId),
+			await offerSeenBy(withdrawn.setup.founder.as, withdrawn.hackathonId),
 		).toEqual(["withdrawn"]);
 	});
 });
@@ -179,12 +181,12 @@ describe("withdrawing an Offer", () => {
 	});
 });
 
-test("a pending Offer links to the Trial Cycle that earned it", async () => {
+test("a pending Offer links to the Hackathon that earned it", async () => {
 	const t = createTest();
-	const { setup, offer, trialCycleId } = await setUpOffer(t);
+	const { setup, offer, hackathonId } = await setUpOffer(t);
 
 	const startup = await t.run(async (ctx) => await ctx.db.get(setup.startupId));
 
-	expect(offer.href).toBe(`/s/${startup?.slug}/trials/${trialCycleId}`);
+	expect(offer.href).toBe(`/s/${startup?.slug}/hackathons/${hackathonId}`);
 	expect(offer.createdAt).toBeTypeOf("number");
 });

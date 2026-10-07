@@ -11,9 +11,9 @@ type ActivityDashboardProps = {
 const STAT_LABELS = [
 	{ key: "teamSize", label: "Team size" },
 	{ key: "activeCycles", label: "Active Cycles" },
-	{ key: "verifiedPulsesLast30Days", label: "Verified Pulses (30d)" },
+	{ key: "verifiedTasksLast30Days", label: "Verified Tasks (30d)" },
 	{ key: "openRoles", label: "Open Roles" },
-	{ key: "openTrialCycles", label: "Open hackathons" },
+	{ key: "openHackathons", label: "Open Hackathons" },
 ] as const;
 
 /** Headline stats and the most recent events the viewer may see. */
@@ -40,7 +40,7 @@ export function ActivityDashboard({ startupId }: ActivityDashboardProps) {
 				{dashboard.activity.length === 0 ? (
 					<EmptyState
 						title="No activity yet"
-						description="Joins, Cycles, verified Pulses and hackathons will show up here."
+						description="Joins, Cycles, verified Tasks and hackathons will show up here."
 					/>
 				) : (
 					<ul className="space-y-1">

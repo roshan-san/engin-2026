@@ -18,7 +18,7 @@ export function convexClient() {
 }
 
 /** Runs an internal `convex/e2e/seed.ts` mutation; the deployment needs E2E=1. */
-export function seed(name: "startTrial" | "giveCredit", args: object) {
+export function seed(name: "startHackathon" | "giveCredit", args: object) {
 	// The CLI's own entry point, so no shell mangles the JSON argument.
 	execFileSync(
 		process.execPath,
