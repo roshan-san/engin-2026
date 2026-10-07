@@ -1,5 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import {
 	type Verdict,
@@ -12,15 +14,15 @@ export function ProfileEvaluations() {
 	const { evaluations } = useMyEvaluations();
 
 	return (
-		<section className="space-y-3">
-			<h2 className="text-lg font-semibold">Evaluations</h2>
+		<section className="space-y-1">
+			<SectionLabel>Evaluations</SectionLabel>
 			{evaluations === undefined ? null : evaluations.length === 0 ? (
 				<EmptyState
 					title="No evaluations yet."
 					body="Founders' written evaluations appear here after a Hackathon closes."
 				/>
 			) : (
-				<ul className="space-y-2">
+				<RowList>
 					{evaluations.map((item) => (
 						<EvaluationRow
 							key={item._id}
@@ -32,7 +34,7 @@ export function ProfileEvaluations() {
 							isPublic={item.evaluationPublic}
 						/>
 					))}
-				</ul>
+				</RowList>
 			)}
 		</section>
 	);
@@ -58,13 +60,13 @@ function EvaluationRow({
 	const { setPublic, isPending } = useEvaluationVisibility(applicationId);
 
 	return (
-		<li className="space-y-2 rounded-lg border p-4">
+		<li className="space-y-2 px-2 py-4">
 			<div>
-				<p className="font-medium break-words">
+				<p className="text-sm font-medium break-words">
 					{hackathonTitle} · {startupName}
 				</p>
 				{verdict ? (
-					<p className="text-sm text-muted-foreground">
+					<p className="text-xs text-muted-foreground">
 						{verdictLabel(verdict)}
 					</p>
 				) : null}

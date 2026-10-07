@@ -1,12 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { FormFooter } from "~/components/shared/FormFooter";
+import { PageHeader } from "~/components/shared/PageHeader";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import {
 	createStartupSteps,
 	useCreateStartupWizard,
 } from "~/features/teams/startup/public/hooks/useCreateStartupWizard";
 import { cn } from "~/lib/utils";
 
+/** A short, one-question-at-a-time form that ends in a new Startup. */
 export function CreateStartupPage() {
 	const {
 		inputRef,
@@ -25,8 +30,8 @@ export function CreateStartupPage() {
 	} = useCreateStartupWizard();
 
 	return (
-		<div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-2 py-6 sm:py-10">
-			<div className="mb-10 flex items-center justify-between gap-4">
+		<div className="mx-auto w-full max-w-3xl space-y-8">
+			<div className="flex items-center justify-between gap-4">
 				{stepIndex > 0 ? (
 					<Button
 						type="button"
@@ -50,102 +55,96 @@ export function CreateStartupPage() {
 					</Button>
 				)}
 
-				<div className="flex gap-1.5" aria-hidden>
-					{createStartupSteps.map((wizardStep, index) => (
-						<span
-							key={wizardStep.id}
-							className={cn(
-								"h-1 w-6 rounded-full",
-								index <= stepIndex ? "bg-primary" : "bg-muted",
-							)}
-						/>
-					))}
+				<div className="flex items-center gap-3">
+					<div className="flex gap-1.5" aria-hidden>
+						{createStartupSteps.map((wizardStep, index) => (
+							<span
+								key={wizardStep.id}
+								className={cn(
+									"h-1 w-6 rounded-full",
+									index <= stepIndex ? "bg-primary" : "bg-border",
+								)}
+							/>
+						))}
+					</div>
+					<span className="text-xs tabular-nums text-muted-foreground">
+						{stepIndex + 1}/{createStartupSteps.length}
+					</span>
 				</div>
-
-				<span className="w-14 text-right text-xs tabular-nums text-muted-foreground">
-					{stepIndex + 1}/{createStartupSteps.length}
-				</span>
 			</div>
 
-			<div className="flex flex-1 flex-col justify-center pb-16">
-				<h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-					{step.question}
-				</h1>
-				{step.hint ? (
-					<p className="mt-3 text-base text-muted-foreground sm:text-lg">
-						{step.hint}
-					</p>
-				) : null}
+			<PageHeader
+				title={step.question}
+				meta={step.hint ?? "Create a Startup"}
+			/>
 
-				<div className="mt-10 sm:mt-12">
-					{step.kind === "chips" && step.options ? (
-						<div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-							{step.options.map((option) => (
-								<Button
-									key={option.value}
-									type="button"
-									variant={value === option.value ? "default" : "outline"}
-									className="h-11 justify-start"
-									onClick={() => updateValue(option.value)}
-								>
-									{option.label}
-								</Button>
-							))}
-						</div>
-					) : step.multiline ? (
-						<textarea
-							ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-							value={value}
-							onChange={(event) => updateValue(event.target.value)}
-							placeholder={step.placeholder}
-							rows={4}
-							className="w-full resize-none border-0 border-b border-border bg-transparent pb-3 text-xl font-medium placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none sm:text-2xl"
-						/>
-					) : (
-						<input
-							ref={inputRef as React.RefObject<HTMLInputElement>}
-							type={step.id === "website" ? "url" : "text"}
-							value={value}
-							onChange={(event) => updateValue(event.target.value)}
-							onKeyDown={handleKeyDown}
-							placeholder={step.placeholder}
-							className="w-full border-0 border-b border-border bg-transparent pb-3 text-xl font-medium placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none sm:text-2xl"
-						/>
-					)}
-				</div>
+			<div>
+				{step.kind === "chips" && step.options ? (
+					<div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+						{step.options.map((option) => (
+							<Button
+								key={option.value}
+								type="button"
+								variant={value === option.value ? "default" : "outline"}
+								className="h-11 justify-start"
+								onClick={() => updateValue(option.value)}
+							>
+								{option.label}
+							</Button>
+						))}
+					</div>
+				) : step.multiline ? (
+					<Textarea
+						ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+						aria-label={step.question}
+						value={value}
+						onChange={(event) => updateValue(event.target.value)}
+						placeholder={step.placeholder}
+						rows={5}
+					/>
+				) : (
+					<Input
+						ref={inputRef as React.RefObject<HTMLInputElement>}
+						aria-label={step.question}
+						type={step.id === "website" ? "url" : "text"}
+						value={value}
+						onChange={(event) => updateValue(event.target.value)}
+						onKeyDown={handleKeyDown}
+						placeholder={step.placeholder}
+						className="h-11"
+					/>
+				)}
+			</div>
 
-				<div className="mt-12 flex flex-wrap items-center gap-3">
+			{isLast && data.name.trim() ? (
+				<p className="text-sm text-muted-foreground">
+					Launching{" "}
+					<span className="font-medium text-foreground">
+						{data.name.trim()}
+					</span>
+				</p>
+			) : null}
+
+			<FormFooter>
+				{step.skippable ? (
 					<Button
-						size="lg"
-						className="rounded-full px-8"
-						disabled={!canContinue || isPending}
-						onClick={continueStep}
+						type="button"
+						variant="ghost"
+						className="h-11 text-muted-foreground"
+						disabled={isPending}
+						onClick={skipStep}
 					>
-						{isPending ? "Creating…" : isLast ? "Launch" : "Continue"}
+						Skip
 					</Button>
-					{step.skippable ? (
-						<Button
-							type="button"
-							variant="ghost"
-							size="lg"
-							className="text-muted-foreground"
-							disabled={isPending}
-							onClick={skipStep}
-						>
-							Skip
-						</Button>
-					) : null}
-				</div>
-
-				{isLast && data.name.trim() ? (
-					<p className="mt-8 text-sm text-muted-foreground">
-						Launching{" "}
-						<span className="font-medium text-foreground">
-							{data.name.trim()}
-						</span>
-					</p>
 				) : null}
-			</div>
+				<Button
+					className="h-11 max-md:flex-1"
+					disabled={!canContinue || isPending}
+					onClick={continueStep}
+				>
+					{isPending ? "Creating…" : isLast ? "Launch" : "Continue"}
+				</Button>
+			</FormFooter>
 		</div>
 	);
 }

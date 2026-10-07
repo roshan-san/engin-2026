@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { FormFooter } from "~/components/shared/FormFooter";
+import { PageHeader } from "~/components/shared/PageHeader";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import {
 	Field,
@@ -55,8 +58,8 @@ export function PitchPage() {
 
 	if (!pitch.isFounder) {
 		return (
-			<div className="mx-auto w-full max-w-2xl space-y-6">
-				<h1 className="text-xl font-semibold">Pitch</h1>
+			<div className="mx-auto w-full max-w-3xl space-y-6">
+				<PageHeader hidden title="Pitch" />
 				<EmptyState
 					title="Only Founders edit the Pitch"
 					body={
@@ -71,11 +74,8 @@ export function PitchPage() {
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-2xl space-y-8">
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<h1 className="text-xl font-semibold">Pitch</h1>
-				{publicLink}
-			</div>
+		<div className="mx-auto w-full max-w-3xl space-y-6">
+			<PageHeader hidden title="Pitch" actions={publicLink} />
 			{pitch.isStealth ? (
 				<p className="text-sm text-muted-foreground">
 					This Startup is in stealth, so nobody sees the public Pitch until you
@@ -90,46 +90,60 @@ export function PitchPage() {
 					void pitch.save();
 				}}
 			>
-				<FieldGroup>
-					{SECTIONS.map((section) => (
-						<Field key={section.key}>
-							<FieldLabel htmlFor={`pitch-${section.key}`}>
-								{section.label}
-							</FieldLabel>
-							<Textarea
-								id={`pitch-${section.key}`}
-								value={pitch.values[section.key]}
+				<div className="space-y-8">
+					<section className="space-y-4">
+						<SectionLabel>Story</SectionLabel>
+						<FieldGroup className="gap-4">
+							{SECTIONS.map((section) => (
+								<Field key={section.key}>
+									<FieldLabel htmlFor={`pitch-${section.key}`}>
+										{section.label}
+									</FieldLabel>
+									<Textarea
+										id={`pitch-${section.key}`}
+										value={pitch.values[section.key]}
+										disabled={pitch.isPending}
+										onChange={(event) =>
+											pitch.set(section.key, event.target.value)
+										}
+										placeholder={section.placeholder}
+										rows={4}
+									/>
+								</Field>
+							))}
+						</FieldGroup>
+					</section>
+
+					<section className="space-y-4">
+						<SectionLabel>Stack</SectionLabel>
+						<Field>
+							<FieldLabel htmlFor="pitch-techStack">Tech stack</FieldLabel>
+							<Input
+								id="pitch-techStack"
+								value={pitch.values.techStack}
 								disabled={pitch.isPending}
-								onChange={(event) => pitch.set(section.key, event.target.value)}
-								placeholder={section.placeholder}
-								rows={4}
+								onChange={(event) => pitch.set("techStack", event.target.value)}
+								placeholder="react, convex, go"
+								className="h-11"
 							/>
+							<FieldDescription>
+								Separate with commas. Empty sections don't show on the public
+								Pitch.
+							</FieldDescription>
 						</Field>
-					))}
-					<Field>
-						<FieldLabel htmlFor="pitch-techStack">Tech stack</FieldLabel>
-						<Input
-							id="pitch-techStack"
-							value={pitch.values.techStack}
+					</section>
+
+					<FormFooter>
+						<Button
+							type="submit"
 							disabled={pitch.isPending}
-							onChange={(event) => pitch.set("techStack", event.target.value)}
-							placeholder="react, convex, go"
-							className="h-11"
-						/>
-						<FieldDescription>
-							Separate with commas. Empty sections don't show on the public
-							Pitch.
-						</FieldDescription>
-					</Field>
-					<Button
-						type="submit"
-						disabled={pitch.isPending}
-						className="h-11 sm:w-fit"
-					>
-						{pitch.isPending ? <Spinner /> : null}
-						Save Pitch
-					</Button>
-				</FieldGroup>
+							className="h-11 max-md:flex-1"
+						>
+							{pitch.isPending ? <Spinner /> : null}
+							Save Pitch
+						</Button>
+					</FormFooter>
+				</div>
 			</form>
 		</div>
 	);

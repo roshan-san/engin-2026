@@ -1,8 +1,10 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { useActivityDashboard } from "~/features/teams/startup/workspace/hooks/useActivityDashboard";
-import { formatDate } from "~/lib/dates";
+import { formatDate, formatRelativeTime } from "~/lib/dates";
 
 type ActivityDashboardProps = {
 	readonly startupId: Id<"startups"> | undefined;
@@ -25,37 +27,43 @@ export function ActivityDashboard({ startupId }: ActivityDashboardProps) {
 	}
 
 	return (
-		<div className="space-y-6">
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+		<div className="space-y-8">
+			<dl className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
 				{STAT_LABELS.map(({ key, label }) => (
-					<div key={key} className="rounded-xl border border-border p-4">
-						<p className="text-2xl font-bold">{dashboard.stats[key]}</p>
-						<p className="mt-1 text-sm text-muted-foreground">{label}</p>
+					<div key={key}>
+						<dd className="text-xl font-semibold tabular-nums tracking-[-0.01em]">
+							{dashboard.stats[key]}
+						</dd>
+						<dt className="mt-0.5 text-xs text-muted-foreground">{label}</dt>
 					</div>
 				))}
-			</div>
+			</dl>
 
-			<section className="space-y-2">
-				<h2 className="text-sm font-medium text-muted-foreground">Recent</h2>
+			<section className="space-y-1">
+				<SectionLabel>Recent</SectionLabel>
 				{dashboard.activity.length === 0 ? (
 					<EmptyState
 						title="No activity yet"
 						body="Joins, Cycles, verified Tasks and hackathons will show up here."
 					/>
 				) : (
-					<ul className="space-y-1">
+					<RowList>
 						{dashboard.activity.map((item) => (
 							<li
 								key={item._id}
-								className="flex items-start justify-between gap-3 rounded-lg border border-border/60 px-4 py-2 text-sm"
+								className="flex items-start justify-between gap-3 px-2 py-3 text-sm"
 							>
 								<span className="min-w-0 break-words">{item.summary}</span>
-								<span className="shrink-0 text-muted-foreground">
-									{formatDate(item.createdAt)}
-								</span>
+								<time
+									dateTime={new Date(item.createdAt).toISOString()}
+									title={formatDate(item.createdAt)}
+									className="shrink-0 text-xs text-muted-foreground"
+								>
+									{formatRelativeTime(item.createdAt)}
+								</time>
 							</li>
 						))}
-					</ul>
+					</RowList>
 				)}
 			</section>
 		</div>

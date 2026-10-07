@@ -1,3 +1,4 @@
+import { PageHeader } from "~/components/shared/PageHeader";
 import { ActivityDashboard } from "~/features/teams/startup/workspace/components/ActivityDashboard";
 import { useStartupRoute } from "~/shell/startup/StartupRoute";
 
@@ -7,7 +8,7 @@ export function ActivityPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-3xl space-y-6">
-			<h1 className="text-xl font-semibold">Activity</h1>
+			<PageHeader hidden title="Activity" />
 			<ActivityDashboard startupId={member?.startup._id} />
 		</div>
 	);
