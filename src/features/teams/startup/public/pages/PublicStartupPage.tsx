@@ -61,7 +61,7 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 					{hasChips ? (
 						<div className="flex flex-wrap gap-2">
 							{category ? (
-								<Badge variant="secondary" className={CHIP_CLASS}>
+								<Badge variant="outline" className={CHIP_CLASS}>
 									<span className="truncate">{category}</span>
 								</Badge>
 							) : null}

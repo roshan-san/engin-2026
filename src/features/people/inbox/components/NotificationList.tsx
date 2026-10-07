@@ -35,6 +35,7 @@ export function NotificationList({
 							notification.isRead ? "bg-transparent" : "bg-primary",
 						)}
 					/>
+					{notification.isRead ? null : <span className="sr-only">Unread</span>}
 					<div className="min-w-0 flex-1">
 						{notification.href ? (
 							<Link

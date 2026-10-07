@@ -47,17 +47,8 @@ export function MyVerdict({
 		}
 	}
 
-	return (
-		<GlowHero
-			titleAs="h2"
-			eyebrow={<SectionLabel as="p">Your Verdict</SectionLabel>}
-			title={verdictLabel(verdict)}
-			subtitle={
-				<span className="break-words">
-					{startupName} · {roleTitle}
-				</span>
-			}
-		>
+	const body = (
+		<>
 			<div className="space-y-5">
 				{evaluation ? (
 					<div className="space-y-3">
@@ -126,6 +117,36 @@ export function MyVerdict({
 				onCancel={() => setIsDeclining(false)}
 				onConfirm={() => void decline()}
 			/>
+		</>
+	);
+
+	const subtitle = (
+		<>
+			{startupName} · {roleTitle}
+		</>
+	);
+
+	if (verdict === "not_passed") {
+		return (
+			<section className="space-y-3">
+				<SectionLabel as="p">Your Verdict</SectionLabel>
+				<h2 className="text-xl font-semibold tracking-[-0.01em]">
+					{verdictLabel(verdict)}
+				</h2>
+				<p className="break-words text-sm text-muted-foreground">{subtitle}</p>
+				{body}
+			</section>
+		);
+	}
+
+	return (
+		<GlowHero
+			titleAs="h2"
+			eyebrow={<SectionLabel as="p">Your Verdict</SectionLabel>}
+			title={verdictLabel(verdict)}
+			subtitle={subtitle}
+		>
+			{body}
 		</GlowHero>
 	);
 }

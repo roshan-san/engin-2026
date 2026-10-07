@@ -26,7 +26,7 @@ export function ScoreEvidenceChips({ evidence }: ScoreEvidenceProps) {
 		<ul className="flex flex-wrap gap-2">
 			{stats.map((stat) => (
 				<li key={stat.label}>
-					<Badge variant="secondary" className="tabular-nums">
+					<Badge variant="outline" className="tabular-nums">
 						{stat.value} {stat.label}
 					</Badge>
 				</li>

@@ -59,8 +59,8 @@ export function HackathonHeader({
 		<GlowHero
 			size="compact"
 			eyebrow={<LiveBadge status={hackathon.status} />}
-			title={<span className="break-words">{hackathon.title}</span>}
-			subtitle={<span className="break-words">{hackathon.roleTitle}</span>}
+			title={hackathon.title}
+			subtitle={hackathon.roleTitle}
 		>
 			<div className="space-y-5">
 				{hackathon.goal && !isDraft ? (

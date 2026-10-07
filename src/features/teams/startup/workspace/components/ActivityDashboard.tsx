@@ -30,11 +30,11 @@ export function ActivityDashboard({ startupId }: ActivityDashboardProps) {
 		<div className="space-y-8">
 			<dl className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
 				{STAT_LABELS.map(({ key, label }) => (
-					<div key={key}>
+					<div key={key} className="flex flex-col-reverse">
+						<dt className="mt-0.5 text-xs text-muted-foreground">{label}</dt>
 						<dd className="text-xl font-semibold tabular-nums tracking-[-0.01em]">
 							{dashboard.stats[key]}
 						</dd>
-						<dt className="mt-0.5 text-xs text-muted-foreground">{label}</dt>
 					</div>
 				))}
 			</dl>

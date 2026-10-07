@@ -77,7 +77,7 @@ export function PublicHackathonPage({ hackathonId }: PublicHackathonPageProps) {
 		<div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
 			<GlowHero
 				eyebrow={<LiveBadge status={hackathon.status} />}
-				title={<span className="break-words">{hackathon.title}</span>}
+				title={hackathon.title}
 				subtitle={
 					<Link
 						to="/startup/$slug"

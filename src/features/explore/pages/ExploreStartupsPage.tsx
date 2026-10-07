@@ -5,6 +5,7 @@ import { PageHeader } from "~/components/shared/PageHeader";
 import { Row, RowList } from "~/components/shared/RowList";
 import { Input } from "~/components/ui/input";
 import { useExploreStartups } from "~/features/explore/hooks/useExploreStartups";
+import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
 import { useRegisterSearch } from "~/shell/command/CommandProvider";
 import { StartupAvatar } from "~/shell/topbar/StartupAvatar";
 
@@ -13,7 +14,7 @@ export function ExploreStartupsPage() {
 	const registerSearch = useRegisterSearch();
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-6 py-6">
+		<div className="mx-auto w-full max-w-5xl space-y-6">
 			<PageHeader
 				title="Startups"
 				hidden
@@ -46,7 +47,10 @@ export function ExploreStartupsPage() {
 			) : (
 				<RowList>
 					{results.startups.map((startup) => {
-						const meta = [startup.stage, startup.category]
+						const meta = [
+							stageLabel(startup.stage),
+							categoryLabel(startup.category),
+						]
 							.filter(Boolean)
 							.join(" · ");
 						return (

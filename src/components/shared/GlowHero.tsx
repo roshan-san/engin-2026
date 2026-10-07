@@ -28,11 +28,13 @@ export function GlowHero({
 			)}
 		>
 			{eyebrow ? <div className="mb-3">{eyebrow}</div> : null}
-			<Title className="text-[22px] font-[650] tracking-[-0.02em] md:text-[28px]">
+			<Title className="min-w-0 break-words text-[22px] font-[650] tracking-[-0.02em] md:text-[28px]">
 				{title}
 			</Title>
 			{subtitle ? (
-				<p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+				<p className="mt-2 break-words text-sm text-muted-foreground">
+					{subtitle}
+				</p>
 			) : null}
 			{children ? <div className="mt-5">{children}</div> : null}
 		</section>

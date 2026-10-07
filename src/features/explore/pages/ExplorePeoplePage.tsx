@@ -12,7 +12,7 @@ export function ExplorePeoplePage() {
 	const registerSearch = useRegisterSearch();
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-6 py-6">
+		<div className="mx-auto w-full max-w-5xl space-y-6">
 			<PageHeader
 				title="People"
 				hidden

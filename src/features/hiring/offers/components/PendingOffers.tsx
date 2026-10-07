@@ -34,14 +34,14 @@ export function PendingOffers() {
 					size="compact"
 					titleAs="h2"
 					eyebrow={<SectionLabel as="p">New offer</SectionLabel>}
-					title={<span className="break-words">{offer.roleTitle} Role</span>}
+					title={`${offer.roleTitle} Role`}
 					subtitle={
-						<span className="break-words">
+						<>
 							<span className="font-medium text-foreground">
 								{offer.startupName}
 							</span>{" "}
 							offered you the {offer.roleTitle} Role.
-						</span>
+						</>
 					}
 				>
 					<div className="flex gap-2">

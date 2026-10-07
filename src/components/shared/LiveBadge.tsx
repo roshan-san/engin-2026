@@ -42,7 +42,7 @@ export function LiveBadge({ status }: { readonly status: LiveStatus }) {
 				className={cn(
 					"size-1.5 rounded-full",
 					dot,
-					status === "active" && "animate-pulse",
+					status === "active" && "motion-safe:animate-pulse",
 				)}
 			/>
 			{label}
