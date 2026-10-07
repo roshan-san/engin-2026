@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { splitCountdown } from "./countdown";
+import { splitCountdown } from "./countdownParts";
 
 const REFRESH_MS = 30_000;
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { compactCountdown, splitCountdown } from "./countdown";
+import { compactCountdown, splitCountdown } from "./countdownParts";
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;

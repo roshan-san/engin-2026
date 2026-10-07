@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PageLoading } from "~/components/globals/PageLoading";
-import { Countdown } from "~/components/shared/Countdown.tsx";
+import { Countdown } from "~/components/shared/Countdown";
 import { GlowHero } from "~/components/shared/GlowHero";
 import { LiveBadge } from "~/components/shared/LiveBadge";
 import { Row, RowList } from "~/components/shared/RowList";
