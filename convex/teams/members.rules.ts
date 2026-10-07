@@ -3,6 +3,7 @@ import type { MutationCtx } from "../_generated/server";
 import { MAX_LISTED_CYCLES } from "../lib/limits";
 import { notify } from "../people/notifications.rules";
 import { logActivity } from "./activity.rules";
+import { removeUserFromStartupTeams } from "./teams.rules";
 
 /** Loads a membership a Founder may remove: Members only, never co-Founders. */
 export async function requireRemovableMembership(
@@ -20,8 +21,8 @@ export async function requireRemovableMembership(
 }
 
 /**
- * Takes a Member off the team: their membership, their seats on the Startup's
- * Cycles, and their focus on it. Their Tasks stay where they are.
+ * Takes a Member off the team: their membership, their Teams, their seats on
+ * the Startup's Cycles, and their focus on it. Their Tasks stay where they are.
  */
 export async function removeMember(
 	ctx: MutationCtx,
@@ -29,6 +30,7 @@ export async function removeMember(
 ) {
 	const { startupId, userId } = membership;
 	await ctx.db.delete(membership._id);
+	await removeUserFromStartupTeams(ctx, startupId, userId);
 
 	const cycles = await ctx.db
 		.query("cycles")

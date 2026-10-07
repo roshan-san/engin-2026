@@ -13,6 +13,7 @@ import {
 	requireFounderMembership,
 	requireMembership,
 } from "../teams/membership.rules";
+import { addToTeam } from "../teams/teams.rules";
 import { fillRoleIfFull, withdrawOffer } from "./offers.rules";
 
 async function requirePendingOffer(
@@ -134,6 +135,13 @@ export const accept = mutation({
 				kind: "member_joined",
 				summary: `${person?.name ?? "Someone"} joined the team`,
 			});
+		}
+
+		// A hire from a Team's Role joins that Team.
+		const role = await ctx.db.get(offer.roleId);
+		const team = role?.teamId ? await ctx.db.get(role.teamId) : null;
+		if (team) {
+			await addToTeam(ctx, team, offer.userId);
 		}
 
 		const acceptedBy = await ctx.db.get(offer.userId);

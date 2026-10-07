@@ -122,3 +122,28 @@ test("a Member can't remove anyone", async () => {
 		}),
 	).rejects.toThrow("Only founders can perform this action");
 });
+
+test("a removed Member leaves every Team", async () => {
+	const t = createTest();
+	const setup = await setUpStartup(t);
+	const bob = await joinAsMember(setup, "Bob");
+	for (const name of ["Payments", "Growth"]) {
+		const teamId = await setup.founder.as.mutation(api.teams.teams.create, {
+			startupId: setup.startupId,
+			name,
+		});
+		await setup.founder.as.mutation(api.teams.teams.addMember, {
+			teamId,
+			userId: bob.userId,
+		});
+	}
+
+	await setup.founder.as.mutation(api.teams.members.remove, {
+		membershipId: await membershipOf(setup, "bob"),
+	});
+
+	const teams = await setup.founder.as.query(api.teams.teams.list, {
+		startupId: setup.startupId,
+	});
+	expect(teams.flatMap((team) => team.members)).toEqual([]);
+});

@@ -190,3 +190,51 @@ test("a pending Offer links to the Hackathon that earned it", async () => {
 	expect(offer.href).toBe(`/s/${startup?.slug}/hackathons/${hackathonId}`);
 	expect(offer.createdAt).toBeTypeOf("number");
 });
+
+describe("Teams", () => {
+	async function teamMembers(
+		setup: Awaited<ReturnType<typeof setUpOffer>>["setup"],
+	) {
+		const teams = await setup.founder.as.query(api.teams.teams.list, {
+			startupId: setup.startupId,
+		});
+		return teams.map((team) => [
+			team.name,
+			team.members.map((member) => member.username),
+		]);
+	}
+
+	test("accepting an Offer on a Team's Role adds the hire to that Team", async () => {
+		const { setup, alice, offer } = await setUpOffer(createTest());
+		const teamId = await setup.founder.as.mutation(api.teams.teams.create, {
+			startupId: setup.startupId,
+			name: "Payments",
+		});
+		await setup.founder.as.mutation(api.hiring.roles.setTeam, {
+			roleId: setup.roleId,
+			teamId,
+		});
+
+		await alice.as.mutation(api.hiring.offers.accept, { offerId: offer._id });
+
+		expect(await teamMembers(setup)).toEqual([["Payments", ["alice"]]]);
+	});
+
+	test("accepting an Offer whose Role's Team was deleted still makes a Member", async () => {
+		const { setup, alice, offer } = await setUpOffer(createTest());
+		const teamId = await setup.founder.as.mutation(api.teams.teams.create, {
+			startupId: setup.startupId,
+			name: "Payments",
+		});
+		await setup.founder.as.mutation(api.hiring.roles.setTeam, {
+			roleId: setup.roleId,
+			teamId,
+		});
+		await setup.founder.as.mutation(api.teams.teams.remove, { teamId });
+
+		await alice.as.mutation(api.hiring.offers.accept, { offerId: offer._id });
+
+		expect(await isMemberOf(alice.as, "Acme")).toBe(true);
+		expect(await teamMembers(setup)).toEqual([]);
+	});
+});
