@@ -98,3 +98,10 @@ export const ROLE_TEXT_LIMITS = {
 };
 /** Roles read for one Startup's Hiring screen. */
 export const MAX_LISTED_ROLES = 50;
+/** Teams inside one Startup, and the bounds on reading them. */
+export const MAX_TEAMS_PER_STARTUP = 20;
+export const MAX_TEAM_MEMBERS = 50;
+/** Teams one person belongs to inside one Startup. */
+export const MAX_USER_TEAMS = 20;
+export const MAX_TEAM_NAME = 40;
+export const MAX_TEAM_DESCRIPTION = 280;

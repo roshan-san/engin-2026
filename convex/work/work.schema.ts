@@ -58,8 +58,11 @@ export const workTables = {
 		startAt: v.number(),
 		endAt: v.number(),
 		status: cycleStatus,
+		/** A label; a hackathon's Cycle copies its Role's. */
+		teamId: v.optional(v.id("teams")),
 	})
 		.index("by_startup", ["startupId"])
+		.index("by_team", ["teamId"])
 		.index("by_startup_and_status", ["startupId", "status"])
 		.index("by_startup_and_kind_and_status", ["startupId", "kind", "status"]),
 

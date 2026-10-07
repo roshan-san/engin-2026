@@ -29,6 +29,7 @@ export const activityKind = v.union(
 	v.literal("hackathon_starter_task_removed"),
 	v.literal("hackathon_announcement_posted"),
 	v.literal("offer_accepted"),
+	v.literal("team_created"),
 );
 
 export const teamsTables = {
@@ -70,6 +71,23 @@ export const teamsTables = {
 		.index("by_user", ["userId"])
 		.index("by_startup", ["startupId"])
 		.index("by_startup_and_role", ["startupId", "role"]),
+
+	/** A grouping inside a Startup. It labels and filters; it never gates access. */
+	teams: defineTable({
+		startupId: v.id("startups"),
+		name: v.string(),
+		description: v.optional(v.string()),
+	}).index("by_startup", ["startupId"]),
+
+	/** One person in one Team; a person can be in several Teams. */
+	teamMembers: defineTable({
+		startupId: v.id("startups"),
+		teamId: v.id("teams"),
+		userId: v.id("users"),
+	})
+		.index("by_team", ["teamId"])
+		.index("by_team_and_user", ["teamId", "userId"])
+		.index("by_startup_and_user", ["startupId", "userId"]),
 
 	invites: defineTable({
 		startupId: v.id("startups"),

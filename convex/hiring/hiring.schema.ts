@@ -43,9 +43,12 @@ export const hiringTables = {
 		/** Accepted Offers after which the Role is filled and closes. */
 		headcount: v.number(),
 		status: openingStatus,
+		/** The Team a hire joins; a label, not an access rule. */
+		teamId: v.optional(v.id("teams")),
 		searchText: v.string(),
 	})
 		.index("by_startup", ["startupId"])
+		.index("by_team", ["teamId"])
 		.index("by_startup_and_status", ["startupId", "status"])
 		.index("by_status", ["status"])
 		.searchIndex("search_roles", {
