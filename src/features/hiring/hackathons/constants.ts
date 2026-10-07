@@ -49,15 +49,6 @@ export const HACKATHON_STATUS_LABELS: Record<HackathonStatus, string> = {
 	cancelled: "Cancelled",
 };
 
-/** What the public reads on a hackathon page; drafts never reach it. */
-export const PUBLIC_HACKATHON_STATUS_LABELS: Record<HackathonStatus, string> = {
-	draft: "Unpublished",
-	open: "Accepting applications",
-	active: "Running",
-	closed: "Closed",
-	cancelled: "Cancelled",
-};
-
 /** The Hiring screen's hackathon groups, in display order. */
 export const HACKATHON_STATUS_GROUPS: readonly {
 	readonly label: string;
