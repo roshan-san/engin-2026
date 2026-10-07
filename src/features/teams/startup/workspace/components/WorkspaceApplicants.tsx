@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { Row, RowList } from "~/components/shared/RowList";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { toErrorMessage } from "~/lib/validation";
@@ -45,61 +46,59 @@ export function WorkspaceApplicants({ startupId }: WorkspaceApplicantsProps) {
 					body="When people apply to Hackathons, they show up here."
 				/>
 			) : (
-				<ul className="space-y-2">
+				<RowList>
 					{applications.map((application) => (
-						<li
+						<Row
 							key={application._id}
-							className="flex flex-col gap-3 rounded-xl border border-border p-4 sm:flex-row sm:items-center"
-						>
-							<div className="min-w-0 flex-1">
-								{application.userUsername ? (
+							title={
+								application.userUsername ? (
 									<Link
 										to="/u/$username"
 										params={{ username: application.userUsername }}
-										className="font-medium hover:underline"
+										className="hover:underline"
 									>
 										{application.userName}
 									</Link>
 								) : (
-									<p className="font-medium">{application.userName}</p>
-								)}
-								<p className="text-sm text-muted-foreground">
-									{application.hackathonTitle ??
-										application.roleTitle ??
-										"Role"}
-								</p>
-							</div>
-							<div className="flex flex-wrap items-center gap-2">
-								<Badge variant="secondary">{application.status}</Badge>
-								{application.status === "applied" ? (
-									<>
-										<Button
-											type="button"
-											size="sm"
-											disabled={pendingId === application._id}
-											onClick={() =>
-												void setDecision(application._id, "accepted")
-											}
-										>
-											Accept
-										</Button>
-										<Button
-											type="button"
-											size="sm"
-											variant="outline"
-											disabled={pendingId === application._id}
-											onClick={() =>
-												void setDecision(application._id, "rejected")
-											}
-										>
-											Reject
-										</Button>
-									</>
-								) : null}
-							</div>
-						</li>
+									application.userName
+								)
+							}
+							meta={
+								application.hackathonTitle ?? application.roleTitle ?? "Role"
+							}
+							trailing={
+								<div className="flex flex-wrap items-center gap-2">
+									<Badge variant="secondary">{application.status}</Badge>
+									{application.status === "applied" ? (
+										<>
+											<Button
+												type="button"
+												size="sm"
+												disabled={pendingId === application._id}
+												onClick={() =>
+													void setDecision(application._id, "accepted")
+												}
+											>
+												Accept
+											</Button>
+											<Button
+												type="button"
+												size="sm"
+												variant="outline"
+												disabled={pendingId === application._id}
+												onClick={() =>
+													void setDecision(application._id, "rejected")
+												}
+											>
+												Reject
+											</Button>
+										</>
+									) : null}
+								</div>
+							}
+						/>
 					))}
-				</ul>
+				</RowList>
 			)}
 		</section>
 	);
