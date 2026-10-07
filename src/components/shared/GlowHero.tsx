@@ -7,6 +7,8 @@ type GlowHeroProps = {
 	readonly subtitle?: ReactNode;
 	readonly children?: ReactNode;
 	readonly size?: "page" | "compact";
+	/** A hero below the page's own `h1` (a verdict panel, an offer) is an `h2`. */
+	readonly titleAs?: "h1" | "h2";
 };
 
 /** The energy panel: a bordered card with a soft `--glow` in the top-right corner. */
@@ -16,6 +18,7 @@ export function GlowHero({
 	subtitle,
 	children,
 	size = "page",
+	titleAs: Title = "h1",
 }: GlowHeroProps) {
 	return (
 		<section
@@ -25,9 +28,9 @@ export function GlowHero({
 			)}
 		>
 			{eyebrow ? <div className="mb-3">{eyebrow}</div> : null}
-			<h1 className="text-[22px] font-[650] tracking-[-0.02em] md:text-[28px]">
+			<Title className="text-[22px] font-[650] tracking-[-0.02em] md:text-[28px]">
 				{title}
-			</h1>
+			</Title>
 			{subtitle ? (
 				<p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
 			) : null}

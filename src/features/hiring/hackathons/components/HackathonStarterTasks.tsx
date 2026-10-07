@@ -10,6 +10,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
@@ -43,9 +45,9 @@ export function HackathonStarterTasks({
 	}
 
 	return (
-		<section className="space-y-4">
-			<div>
-				<h2 className="text-lg font-semibold">Starter Tasks</h2>
+		<section className="space-y-3">
+			<div className="space-y-1">
+				<SectionLabel>Starter Tasks</SectionLabel>
 				<p className="text-sm text-muted-foreground">
 					{isRunning
 						? "A Starter Task you add now goes straight onto every Participant's Board."
@@ -57,17 +59,19 @@ export function HackathonStarterTasks({
 			) : starterTasks.length === 0 ? (
 				<p className="text-sm text-muted-foreground">No Starter Tasks yet.</p>
 			) : (
-				<ol className="space-y-2">
+				<RowList>
 					{starterTasks.map((starterTask, index) => (
 						<li
 							key={starterTask._id}
-							className="flex items-start gap-3 rounded-lg border p-4"
+							className="flex items-start gap-3 px-2 py-3"
 						>
-							<span className="text-sm text-muted-foreground">
+							<span className="w-5 text-sm tabular-nums text-muted-foreground">
 								{index + 1}.
 							</span>
 							<div className="min-w-0 flex-1">
-								<p className="font-medium break-words">{starterTask.title}</p>
+								<p className="text-sm font-medium break-words">
+									{starterTask.title}
+								</p>
 								{starterTask.description ? (
 									<p className="whitespace-pre-wrap text-sm break-words text-muted-foreground">
 										{starterTask.description}
@@ -91,7 +95,7 @@ export function HackathonStarterTasks({
 							) : null}
 						</li>
 					))}
-				</ol>
+				</RowList>
 			)}
 			{canEdit ? (
 				<form

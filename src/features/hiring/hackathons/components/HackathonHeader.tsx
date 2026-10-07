@@ -1,10 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "~/components/ui/badge";
+import { Countdown } from "~/components/shared/Countdown";
+import { GlowHero } from "~/components/shared/GlowHero";
+import { LiveBadge } from "~/components/shared/LiveBadge";
 import { Button } from "~/components/ui/button";
-import {
-	HACKATHON_STATUS_LABELS,
-	type HackathonStatus,
-} from "~/features/hiring/hackathons/constants";
+import type { HackathonStatus } from "~/features/hiring/hackathons/constants";
 import { formatDate, formatDateRange } from "~/lib/dates";
 
 type HackathonHeaderProps = {
@@ -53,79 +52,94 @@ export function HackathonHeader({
 		},
 	];
 
+	const showsCountdown =
+		hackathon.status === "active" && hackathon.endsAt > Date.now();
+
 	return (
-		<header className="space-y-4">
-			<div className="space-y-2">
-				<Badge variant={hackathon.status === "open" ? "default" : "secondary"}>
-					{HACKATHON_STATUS_LABELS[hackathon.status]}
-				</Badge>
-				<h1 className="text-xl font-semibold break-words">{hackathon.title}</h1>
+		<GlowHero
+			size="compact"
+			eyebrow={<LiveBadge status={hackathon.status} />}
+			title={<span className="break-words">{hackathon.title}</span>}
+			subtitle={<span className="break-words">{hackathon.roleTitle}</span>}
+		>
+			<div className="space-y-5">
 				{hackathon.goal && !isDraft ? (
 					<p className="break-words">{hackathon.goal}</p>
 				) : null}
-				<p className="text-sm text-muted-foreground">{hackathon.roleTitle}</p>
-			</div>
-			<dl className="grid grid-cols-2 gap-4 rounded-xl border p-4 sm:grid-cols-3">
-				{facts.map((fact) => (
-					<div key={fact.label} className="min-w-0 space-y-1">
-						<dt className="text-xs text-muted-foreground">{fact.label}</dt>
-						<dd className="text-sm font-medium break-words">{fact.value}</dd>
+				<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+					{facts.map((fact) => (
+						<div key={fact.label} className="min-w-0 space-y-1">
+							<dt className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
+								{fact.label}
+							</dt>
+							<dd className="text-sm font-medium tabular-nums break-words">
+								{fact.value}
+							</dd>
+						</div>
+					))}
+				</dl>
+				{hackathon.status === "active" ? (
+					<div className="space-y-2">
+						<p className="text-xs text-muted-foreground">
+							Running until {formatDate(hackathon.endsAt)}
+						</p>
+						{showsCountdown ? <Countdown to={hackathon.endsAt} /> : null}
 					</div>
-				))}
-			</dl>
-			<div className="flex flex-wrap gap-2">
-				{hackathon.isFounder && hackathon.status === "active" && onClose ? (
-					<>
-						<Button
-							type="button"
-							size="sm"
-							disabled={reviewCount > 0}
-							aria-describedby={
-								reviewCount > 0 ? "close-blocked-by-review" : undefined
-							}
-							onClick={onClose}
-						>
-							Close with Verdicts
-						</Button>
-						{reviewCount > 0 ? (
+				) : null}
+				<div className="flex flex-wrap items-center gap-2">
+					{hackathon.isFounder && hackathon.status === "active" && onClose ? (
+						<>
 							<Button
-								id="close-blocked-by-review"
 								type="button"
 								size="sm"
-								variant="link"
-								className="px-0"
-								onClick={onShowReview}
+								disabled={reviewCount > 0}
+								aria-describedby={
+									reviewCount > 0 ? "close-blocked-by-review" : undefined
+								}
+								onClick={onClose}
 							>
-								{reviewCount} {reviewCount === 1 ? "Task" : "Tasks"} still in
-								Review
+								Close with Verdicts
 							</Button>
-						) : null}
-					</>
-				) : null}
-				{isDraft ? null : (
-					<Button asChild variant="outline" size="sm">
-						<Link
-							to="/hackathons/$hackathonId"
-							params={{ hackathonId: hackathon._id }}
-						>
-							Public page
-						</Link>
-					</Button>
-				)}
-				{isDraft && hackathon.isFounder ? (
-					<Button asChild variant="outline" size="sm">
-						<Link
-							to="/s/$slug/hiring/$hackathonId/edit"
-							params={{
-								slug: hackathon.startupSlug,
-								hackathonId: hackathon._id,
-							}}
-						>
-							Edit
-						</Link>
-					</Button>
-				) : null}
+							{reviewCount > 0 ? (
+								<Button
+									id="close-blocked-by-review"
+									type="button"
+									size="sm"
+									variant="link"
+									className="px-0"
+									onClick={onShowReview}
+								>
+									{reviewCount} {reviewCount === 1 ? "Task" : "Tasks"} still in
+									Review
+								</Button>
+							) : null}
+						</>
+					) : null}
+					{isDraft ? null : (
+						<Button asChild variant="outline" size="sm">
+							<Link
+								to="/hackathons/$hackathonId"
+								params={{ hackathonId: hackathon._id }}
+							>
+								Public page
+							</Link>
+						</Button>
+					)}
+					{isDraft && hackathon.isFounder ? (
+						<Button asChild variant="outline" size="sm">
+							<Link
+								to="/s/$slug/hiring/$hackathonId/edit"
+								params={{
+									slug: hackathon.startupSlug,
+									hackathonId: hackathon._id,
+								}}
+							>
+								Edit
+							</Link>
+						</Button>
+					) : null}
+				</div>
 			</div>
-		</header>
+		</GlowHero>
 	);
 }

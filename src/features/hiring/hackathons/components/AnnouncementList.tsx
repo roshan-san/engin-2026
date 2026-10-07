@@ -1,5 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { RowList } from "~/components/shared/RowList";
 import { formatDate, formatRelativeTime } from "~/lib/dates";
 
 export type Announcement = {
@@ -22,9 +23,9 @@ export function AnnouncementList({ announcements }: AnnouncementListProps) {
 		return <EmptyState title="No announcements yet." />;
 	}
 	return (
-		<ul className="space-y-2">
+		<RowList>
 			{announcements.map((announcement) => (
-				<li key={announcement._id} className="rounded-lg border p-3">
+				<li key={announcement._id} className="px-2 py-3">
 					<p className="flex flex-wrap items-baseline gap-x-2 text-sm">
 						<span className="font-medium">
 							{announcement.user?.name ??
@@ -44,6 +45,6 @@ export function AnnouncementList({ announcements }: AnnouncementListProps) {
 					</p>
 				</li>
 			))}
-		</ul>
+		</RowList>
 	);
 }

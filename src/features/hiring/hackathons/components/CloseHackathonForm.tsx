@@ -10,6 +10,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import {
 	Select,
@@ -82,9 +84,9 @@ export function CloseHackathonForm({
 	}
 
 	return (
-		<section className="space-y-4">
+		<section className="space-y-3">
 			<div className="space-y-1">
-				<h2 className="text-lg font-semibold">Close with Verdicts</h2>
+				<SectionLabel>Close with Verdicts</SectionLabel>
 				<p className="text-sm text-muted-foreground">
 					Give every Participant a Verdict. Evaluations are private unless the
 					Participant shows theirs on their profile.
@@ -107,7 +109,7 @@ export function CloseHackathonForm({
 						Nobody is taking part, so there are no Verdicts to give.
 					</p>
 				) : null}
-				<ul className="space-y-3">
+				<RowList>
 					{participants.map((participant) => {
 						const draft = drafts[participant.applicationId] ?? {
 							evaluation: "",
@@ -120,10 +122,10 @@ export function CloseHackathonForm({
 						return (
 							<li
 								key={participant.applicationId}
-								className="space-y-3 rounded-lg border p-4"
+								className="space-y-3 px-2 py-4"
 							>
 								<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-									<p className="min-w-0 flex-1 font-medium break-words">
+									<p className="min-w-0 flex-1 text-sm font-medium break-words">
 										{participant.name}
 									</p>
 									<Button
@@ -166,7 +168,7 @@ export function CloseHackathonForm({
 							</li>
 						);
 					})}
-				</ul>
+				</RowList>
 
 				<div className="flex flex-wrap gap-2">
 					<Button type="submit" disabled={!isComplete || isPending}>

@@ -2,6 +2,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Navigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { PageLoading } from "~/components/globals/PageLoading";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { CloseHackathonForm } from "~/features/hiring/hackathons/components/CloseHackathonForm";
 import { HackathonAnnouncements } from "~/features/hiring/hackathons/components/HackathonAnnouncements";
@@ -101,9 +102,9 @@ export function HackathonPage({ slug, hackathonId }: HackathonPageProps) {
 	const board =
 		showsFounderBoard || showsOwnBoard ? (
 			<div ref={boardRef} className="scroll-mt-4 space-y-3">
-				<h2 className="text-lg font-semibold">
+				<SectionLabel>
 					{hackathon.isFounder ? "Board" : "Your lane"}
-				</h2>
+				</SectionLabel>
 				<CycleBoard
 					startupId={hackathon.startupId}
 					cycleId={hackathon.cycleId}
@@ -127,36 +128,32 @@ export function HackathonPage({ slug, hackathonId }: HackathonPageProps) {
 		) : null;
 
 	return (
-		<div className="mx-auto w-full max-w-6xl space-y-8">
-			<div className="max-w-3xl">
-				<HackathonHeader
-					hackathon={hackathon}
-					onClose={showsCloseForm ? undefined : () => setIsClosing(true)}
-					reviewCount={review?.tasks.length ?? 0}
-					onShowReview={() => {
-						setScope("all");
-						showBoard();
-					}}
-				/>
-			</div>
+		<div className="mx-auto w-full max-w-5xl space-y-8">
+			<HackathonHeader
+				hackathon={hackathon}
+				onClose={showsCloseForm ? undefined : () => setIsClosing(true)}
+				reviewCount={review?.tasks.length ?? 0}
+				onShowReview={() => {
+					setScope("all");
+					showBoard();
+				}}
+			/>
 			{hackathon.status === "closed" &&
 			hackathon.myVerdict &&
 			hackathon.myApplicationId ? (
-				<div className="max-w-3xl">
-					<MyVerdict
-						applicationId={hackathon.myApplicationId}
-						verdict={hackathon.myVerdict}
-						evaluation={hackathon.myEvaluation}
-						isEvaluationPublic={hackathon.myEvaluationPublic}
-						offer={hackathon.myOffer}
-						startupName={hackathon.startupName}
-						startupSlug={hackathon.startupSlug}
-						roleTitle={hackathon.roleTitle}
-					/>
-				</div>
+				<MyVerdict
+					applicationId={hackathon.myApplicationId}
+					verdict={hackathon.myVerdict}
+					evaluation={hackathon.myEvaluation}
+					isEvaluationPublic={hackathon.myEvaluationPublic}
+					offer={hackathon.myOffer}
+					startupName={hackathon.startupName}
+					startupSlug={hackathon.startupSlug}
+					roleTitle={hackathon.roleTitle}
+				/>
 			) : null}
 			{hasStarted ? board : null}
-			<div className="max-w-3xl space-y-8">
+			<div className="space-y-8">
 				{showsCloseForm ? (
 					<CloseHackathonForm
 						hackathonId={hackathon._id}
@@ -195,7 +192,7 @@ export function HackathonPage({ slug, hackathonId }: HackathonPageProps) {
 				) : hackathon.myStatus ? (
 					<>
 						<section className="space-y-2">
-							<h2 className="text-lg font-semibold">Your status</h2>
+							<SectionLabel>Your status</SectionLabel>
 							<div className="flex flex-wrap items-center gap-2">
 								<Badge variant="outline">
 									{applicationStatusLabel(hackathon.myStatus, hackathon.status)}

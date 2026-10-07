@@ -1,6 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useState } from "react";
-import { RowList } from "~/components/shared/RowList";
+import { GlowHero } from "~/components/shared/GlowHero";
 import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { DeclineOfferDialog } from "~/features/hiring/offers/components/DeclineOfferDialog";
@@ -26,40 +26,43 @@ export function PendingOffers() {
 	}
 
 	return (
-		<section className="space-y-2">
+		<section className="space-y-3">
 			<SectionLabel>Offers</SectionLabel>
-			<RowList>
-				{pending.map((offer) => (
-					<li
-						key={offer._id}
-						className="flex flex-col gap-3 px-2 py-3 sm:flex-row sm:items-center"
-					>
-						<p className="min-w-0 flex-1 break-words">
-							<span className="font-medium">{offer.startupName}</span> offered
-							you the {offer.roleTitle} Role.
-						</p>
-						<div className="flex gap-2">
-							<Button
-								type="button"
-								size="sm"
-								disabled={pendingId !== null}
-								onClick={() => void accept(offer._id)}
-							>
-								Accept
-							</Button>
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								disabled={pendingId !== null}
-								onClick={() => setDeclining(offer)}
-							>
-								Decline
-							</Button>
-						</div>
-					</li>
-				))}
-			</RowList>
+			{pending.map((offer) => (
+				<GlowHero
+					key={offer._id}
+					size="compact"
+					titleAs="h2"
+					eyebrow={<SectionLabel as="p">New offer</SectionLabel>}
+					title={<span className="break-words">{offer.roleTitle} Role</span>}
+					subtitle={
+						<span className="break-words">
+							<span className="font-medium text-foreground">
+								{offer.startupName}
+							</span>{" "}
+							offered you the {offer.roleTitle} Role.
+						</span>
+					}
+				>
+					<div className="flex gap-2">
+						<Button
+							type="button"
+							disabled={pendingId !== null}
+							onClick={() => void accept(offer._id)}
+						>
+							Accept
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							disabled={pendingId !== null}
+							onClick={() => setDeclining(offer)}
+						>
+							Decline
+						</Button>
+					</div>
+				</GlowHero>
+			))}
 
 			<DeclineOfferDialog
 				startupName={declining?.startupName ?? null}

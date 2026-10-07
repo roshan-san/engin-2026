@@ -2,6 +2,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -75,36 +77,36 @@ export function HackathonApplicants({
 	}
 
 	return (
-		<section className="space-y-4">
-			<h2 className="text-lg font-semibold">Applicants</h2>
+		<section className="space-y-2">
+			<SectionLabel>Applicants</SectionLabel>
 			{applicants.length === 0 ? (
 				<EmptyState
 					title="No applicants yet"
 					body="People who apply to this hackathon will appear here."
 				/>
 			) : (
-				<ul className="space-y-2">
+				<RowList>
 					{applicants.map((applicant) => (
 						<li
 							key={applicant._id}
-							className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
+							className="flex flex-col gap-3 px-2 py-3 sm:flex-row sm:items-center"
 						>
 							<div className="min-w-0 flex-1">
 								{applicant.user?.username ? (
 									<Link
 										to="/u/$username"
 										params={{ username: applicant.user.username }}
-										className="font-medium break-words hover:underline"
+										className="text-sm font-medium break-words hover:underline"
 									>
 										{applicantName(applicant)}
 									</Link>
 								) : (
-									<p className="font-medium break-words">
+									<p className="text-sm font-medium break-words">
 										{applicantName(applicant)}
 									</p>
 								)}
 								{applicant.message ? (
-									<p className="mt-1 whitespace-pre-wrap text-sm break-words text-muted-foreground">
+									<p className="mt-0.5 whitespace-pre-wrap text-sm break-words text-muted-foreground">
 										{applicant.message}
 									</p>
 								) : null}
@@ -171,7 +173,7 @@ export function HackathonApplicants({
 							</div>
 						</li>
 					))}
-				</ul>
+				</RowList>
 			)}
 
 			<AlertDialog

@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import { useAnnouncements } from "~/features/hiring/hackathons/hooks/useAnnouncements";
 import { AnnouncementList } from "./AnnouncementList";
 import { MessageComposer } from "./MessageComposer";
@@ -17,9 +18,9 @@ export function HackathonAnnouncements({
 	const { announcements, post } = useAnnouncements(hackathonId, true);
 
 	return (
-		<section className="space-y-4">
-			<div>
-				<h2 className="text-lg font-semibold">Announcements</h2>
+		<section className="space-y-3">
+			<div className="space-y-1">
+				<SectionLabel>Announcements</SectionLabel>
 				<p className="text-sm text-muted-foreground">
 					From the Founders to every Participant.
 				</p>
