@@ -11,9 +11,11 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { Badge } from "~/components/ui/badge";
+import { Row, RowList } from "~/components/shared/RowList";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import { initials } from "~/lib/initials";
 
 type Member = {
 	_id: Id<"memberships">;
@@ -21,6 +23,7 @@ type Member = {
 	user: {
 		name: string | null;
 		username: string | null;
+		image: string | null;
 		email: string | null;
 	};
 };
@@ -43,46 +46,56 @@ export function MemberList({ members, onRemove, removingId }: MemberListProps) {
 
 	return (
 		<>
-			<ul className="space-y-2">
+			<RowList>
 				{members.map((member) => (
-					<li
+					<Row
 						key={member._id}
-						className="flex items-center justify-between gap-3 rounded-xl border border-border p-4"
-					>
-						<div className="min-w-0">
-							<p className="truncate font-medium">{displayName(member)}</p>
-							<p className="truncate text-sm text-muted-foreground">
-								{member.user.username ? (
-									<Link
-										to="/u/$username"
-										params={{ username: member.user.username }}
-										className="hover:text-foreground"
-									>
-										@{member.user.username}
-									</Link>
-								) : (
-									member.user.email
-								)}
-							</p>
-						</div>
-						<div className="flex shrink-0 items-center gap-2">
-							<Badge variant="secondary">
-								{member.role === "founder" ? "Founder" : "Member"}
-							</Badge>
-							{onRemove && member.role === "member" ? (
-								<Button
-									type="button"
-									size="sm"
-									variant="ghost"
-									onClick={() => setConfirming(member)}
+						leading={
+							<Avatar className="size-8 rounded-full">
+								{member.user.image ? (
+									<AvatarImage src={member.user.image} alt="" />
+								) : null}
+								<AvatarFallback className="text-xs">
+									{initials(member.user.name, member.user.email)}
+								</AvatarFallback>
+							</Avatar>
+						}
+						title={
+							member.user.username ? (
+								<Link
+									to="/u/$username"
+									params={{ username: member.user.username }}
+									className="hover:text-primary"
 								>
-									Remove
-								</Button>
-							) : null}
-						</div>
-					</li>
+									@{member.user.username}
+								</Link>
+							) : (
+								displayName(member)
+							)
+						}
+						meta={
+							member.user.username
+								? (member.user.name ?? member.user.email)
+								: member.user.email
+						}
+						trailing={
+							<div className="flex items-center gap-2">
+								<span>{member.role === "founder" ? "Founder" : "Member"}</span>
+								{onRemove && member.role === "member" ? (
+									<Button
+										type="button"
+										size="sm"
+										variant="ghost"
+										onClick={() => setConfirming(member)}
+									>
+										Remove
+									</Button>
+								) : null}
+							</div>
+						}
+					/>
 				))}
-			</ul>
+			</RowList>
 
 			<AlertDialog
 				open={confirming !== null}

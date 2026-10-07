@@ -1,5 +1,9 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { Link } from "@tanstack/react-router";
+import { MailQuestion } from "lucide-react";
+import { PageLoading } from "~/components/globals/PageLoading";
+import { EmptyState } from "~/components/shared/EmptyState";
+import { PageHeader } from "~/components/shared/PageHeader";
 import { Button } from "~/components/ui/button";
 import { useAcceptInvite } from "~/features/teams/team/hooks/useAcceptInvite";
 
@@ -13,31 +17,35 @@ export function InviteAcceptPage({ token }: InviteAcceptPageProps) {
 
 	if (isLoading || invite === undefined) {
 		return (
-			<div className="flex items-center justify-center py-10">
-				<p className="text-muted-foreground">Loading invite...</p>
+			<div className="mx-auto w-full max-w-3xl py-6">
+				<PageLoading rows={3} />
 			</div>
 		);
 	}
 
 	if (!invite) {
 		return (
-			<div className="mx-auto flex max-w-lg flex-col items-center justify-center gap-4 py-10 text-center">
-				<h1 className="text-2xl font-bold">Invite not found</h1>
-				<Button asChild>
-					<Link to="/">Go home</Link>
-				</Button>
+			<div className="mx-auto w-full max-w-3xl py-6">
+				<EmptyState
+					icon={MailQuestion}
+					title="Invite not found"
+					body="The link may be mistyped or the invite was revoked."
+					action={
+						<Button asChild>
+							<Link to="/">Go home</Link>
+						</Button>
+					}
+				/>
 			</div>
 		);
 	}
 
 	return (
-		<div className="mx-auto flex max-w-lg flex-col items-center justify-center gap-6 py-10 text-center">
-			<div className="space-y-2">
-				<h1 className="text-3xl font-bold">Join {invite.startupName}</h1>
-				<p className="text-muted-foreground">
-					You were invited to join as {invite.role}.
-				</p>
-			</div>
+		<div className="mx-auto w-full max-w-3xl space-y-6 py-6">
+			<PageHeader
+				title={`Join ${invite.startupName}`}
+				meta={`You were invited to join as ${invite.role}.`}
+			/>
 
 			{invite.isExpired || invite.status !== "pending" ? (
 				<p className="text-sm text-muted-foreground">
