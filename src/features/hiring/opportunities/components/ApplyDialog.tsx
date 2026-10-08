@@ -18,8 +18,8 @@ import { FieldError } from "~/components/ui/field";
 import { Label } from "~/components/ui/label";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { useApply } from "~/features/hiring/opportunities/hooks/useApply";
 import { CONTRIBUTOR_IP_TERMS } from "~/features/hiring/hackathons/constants";
+import { useApply } from "~/features/hiring/opportunities/hooks/useApply";
 import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
 
 type ApplyDialogProps = {

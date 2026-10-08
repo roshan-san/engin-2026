@@ -12,12 +12,12 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import {
+	type HackathonStatus,
+	LEAVING_SCORE_PENALTY,
+} from "~/features/hiring/hackathons/constants";
 import type { ApplicationStatus } from "~/features/hiring/myHackathons/constants";
 import { useLeaveHackathon } from "~/features/hiring/myHackathons/hooks/useLeaveHackathon";
-import {
-	LEAVING_SCORE_PENALTY,
-	type HackathonStatus,
-} from "~/features/hiring/hackathons/constants";
 
 type ParticipantHackathonActionsProps = {
 	readonly hackathonId: Id<"hackathons">;

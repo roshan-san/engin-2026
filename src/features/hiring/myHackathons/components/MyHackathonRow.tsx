@@ -2,6 +2,8 @@ import type { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { useState } from "react";
+import { LiveBadge } from "~/components/shared/LiveBadge";
+import { Row } from "~/components/shared/RowList";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -12,14 +14,12 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { LiveBadge } from "~/components/shared/LiveBadge";
-import { Row } from "~/components/shared/RowList";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import { verdictLabel } from "~/features/hiring/hackathons/constants";
 import { applicationStatusLabel } from "~/features/hiring/myHackathons/constants";
 import { useLeaveHackathon } from "~/features/hiring/myHackathons/hooks/useLeaveHackathon";
-import { verdictLabel } from "~/features/hiring/hackathons/constants";
 import { formatDateRange } from "~/lib/dates";
 
 export type Entry = FunctionReturnType<

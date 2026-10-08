@@ -5,8 +5,6 @@ import { GlowHero } from "~/components/shared/GlowHero";
 import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { DeclineOfferDialog } from "~/features/hiring/offers/components/DeclineOfferDialog";
-import { useRespondToOffer } from "~/features/hiring/offers/hooks/useRespondToOffer";
 import {
 	OFFER_STATUS_LABELS,
 	type OfferStatus,
@@ -14,6 +12,8 @@ import {
 	verdictLabel,
 } from "~/features/hiring/hackathons/constants";
 import { useEvaluationVisibility } from "~/features/hiring/hackathons/hooks/useEvaluationVisibility";
+import { DeclineOfferDialog } from "~/features/hiring/offers/components/DeclineOfferDialog";
+import { useRespondToOffer } from "~/features/hiring/offers/hooks/useRespondToOffer";
 
 type MyVerdictProps = {
 	readonly applicationId: Id<"applications">;

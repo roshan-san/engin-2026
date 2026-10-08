@@ -1,5 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useState } from "react";
+import { RowList } from "~/components/shared/RowList";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -10,8 +12,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { RowList } from "~/components/shared/RowList";
-import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
 import {
 	Select,

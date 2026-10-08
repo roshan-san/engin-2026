@@ -19,10 +19,10 @@ import {
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { HackathonScheduleFields } from "~/features/hiring/hackathons/components/HackathonScheduleFields";
 import { PublishDialog } from "~/features/hiring/hackathons/components/PublishDialog";
 import { RolePicker } from "~/features/hiring/hackathons/components/RolePicker";
 import { StarterTasksField } from "~/features/hiring/hackathons/components/StarterTasksField";
-import { HackathonScheduleFields } from "~/features/hiring/hackathons/components/HackathonScheduleFields";
 import {
 	type HackathonFormValues,
 	useHackathonForm,

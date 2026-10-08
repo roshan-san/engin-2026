@@ -14,13 +14,13 @@ import {
 import { FieldError } from "~/components/ui/field";
 import { Label } from "~/components/ui/label";
 import { Spinner } from "~/components/ui/spinner";
-import { useCredits } from "~/features/hiring/screen/hooks/useCredits";
 import {
-	type HackathonScheduleValue,
 	HackathonScheduleFields,
+	type HackathonScheduleValue,
 } from "~/features/hiring/hackathons/components/HackathonScheduleFields";
 import { FOUNDER_IP_TERMS } from "~/features/hiring/hackathons/constants";
 import { usePublishHackathon } from "~/features/hiring/hackathons/hooks/usePublishHackathon";
+import { useCredits } from "~/features/hiring/screen/hooks/useCredits";
 import {
 	HACKATHON_PRICE_LABELS,
 	PRO_PRICE_LABELS,

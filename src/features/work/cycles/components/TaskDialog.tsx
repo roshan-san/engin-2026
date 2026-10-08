@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SectionLabel } from "~/components/shared/SectionLabel";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -9,7 +10,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -23,10 +23,10 @@ import {
 } from "~/components/ui/sheet";
 import { Textarea } from "~/components/ui/textarea";
 import type { CycleTask } from "~/features/work/cycles/hooks/useCycleTasks";
-import { cn } from "~/lib/utils";
 import { TaskProofLinks } from "~/features/work/tasks/components/TaskProofLinks";
 import { TASK_STATUSES } from "~/features/work/tasks/constants";
 import { useIsMobile } from "~/hooks/use-mobile";
+import { cn } from "~/lib/utils";
 
 type TaskDialogProps = {
 	/** The open Task, read live from the board; null closes the dialog. */

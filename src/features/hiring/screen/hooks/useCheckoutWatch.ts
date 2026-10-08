@@ -1,8 +1,8 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import type { HackathonListItem } from "~/features/hiring/screen/components/HackathonRow";
 import { isConfirmingPayment } from "~/features/hiring/screen/checkoutStatus";
+import type { HackathonListItem } from "~/features/hiring/screen/components/HackathonRow";
 
 /**
  * Announces a paid hackathon going live while the founder watches. Only

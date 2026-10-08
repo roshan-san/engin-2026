@@ -1,10 +1,10 @@
 import type { Id } from "@convex/_generated/dataModel";
 import {
-	STARTER_TASK_TEXT_LIMITS,
-	MAX_STARTER_TASKS,
-	MAX_HACKATHON_PARTICIPANTS,
-	HACKATHON_TEXT_LIMITS,
 	GOAL_MAX,
+	HACKATHON_TEXT_LIMITS,
+	MAX_HACKATHON_PARTICIPANTS,
+	MAX_STARTER_TASKS,
+	STARTER_TASK_TEXT_LIMITS,
 } from "@convex/lib/limits";
 import { z } from "zod";
 import { fromDateTimeInput } from "~/lib/dates";
