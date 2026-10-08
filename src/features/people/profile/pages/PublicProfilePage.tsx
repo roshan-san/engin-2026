@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
@@ -82,83 +83,85 @@ export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 	);
 
 	return (
-		<div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
-			<GlowHero
-				eyebrow={
-					<Avatar className="size-14">
-						{profile.image ? (
-							<AvatarImage src={profile.image} alt={displayName} />
-						) : null}
-						<AvatarFallback>{initials(profile.name, null)}</AvatarFallback>
-					</Avatar>
-				}
-				title={displayName}
-				subtitle={handle || undefined}
-			>
-				<div className="space-y-4">
-					<div className="flex flex-wrap items-center gap-2">
-						<ScoreBadge score={profile.evidence.score} />
-						<ScoreEvidenceChips evidence={profile.evidence} />
-					</div>
-					{links.length > 0 ? (
-						<div className="flex flex-wrap gap-2">
-							{links.map((link) => (
-								<Button key={link.label} asChild variant="outline" size="sm">
-									<a href={link.href} target="_blank" rel="noreferrer">
-										{link.label}
-									</a>
-								</Button>
-							))}
+		<>
+			<Page className="space-y-8">
+				<GlowHero
+					eyebrow={
+						<Avatar className="size-14">
+							{profile.image ? (
+								<AvatarImage src={profile.image} alt={displayName} />
+							) : null}
+							<AvatarFallback>{initials(profile.name, null)}</AvatarFallback>
+						</Avatar>
+					}
+					title={displayName}
+					subtitle={handle || undefined}
+				>
+					<div className="space-y-4">
+						<div className="flex flex-wrap items-center gap-2">
+							<ScoreBadge score={profile.evidence.score} />
+							<ScoreEvidenceChips evidence={profile.evidence} />
 						</div>
-					) : null}
-				</div>
-			</GlowHero>
+						{links.length > 0 ? (
+							<div className="flex flex-wrap gap-2">
+								{links.map((link) => (
+									<Button key={link.label} asChild variant="outline" size="sm">
+										<a href={link.href} target="_blank" rel="noreferrer">
+											{link.label}
+										</a>
+									</Button>
+								))}
+							</div>
+						) : null}
+					</div>
+				</GlowHero>
 
-			{profile.bio || profile.skills.length > 0 ? (
-				<section className="max-w-3xl space-y-4">
-					{profile.bio ? (
-						<p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-							{profile.bio}
-						</p>
-					) : null}
-					{profile.skills.length > 0 ? (
-						<ul className="flex flex-wrap gap-2">
-							{profile.skills.map((skill) => (
-								<li key={skill}>
-									<Badge variant="secondary">{skill}</Badge>
-								</li>
+				{profile.bio || profile.skills.length > 0 ? (
+					<section className="max-w-3xl space-y-4">
+						{profile.bio ? (
+							<p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+								{profile.bio}
+							</p>
+						) : null}
+						{profile.skills.length > 0 ? (
+							<ul className="flex flex-wrap gap-2">
+								{profile.skills.map((skill) => (
+									<li key={skill}>
+										<Badge variant="secondary">{skill}</Badge>
+									</li>
+								))}
+							</ul>
+						) : null}
+					</section>
+				) : null}
+
+				<ProofOfWork proofOfWork={profile.proofOfWork} />
+
+				<HackathonHistory hackathonHistory={profile.hackathonHistory} />
+
+				<section className="space-y-1">
+					<SectionLabel>Startups</SectionLabel>
+					{profile.startups.length === 0 ? (
+						<EmptyState title="No public Startups yet." />
+					) : (
+						<RowList>
+							{profile.startups.map((startup) => (
+								<Row
+									key={startup._id}
+									leading={<StartupAvatar name={startup.name} />}
+									title={startup.name}
+									meta={startup.tagline}
+									trailing={<span className="capitalize">{startup.role}</span>}
+									to="/startup/$slug"
+									params={{ slug: startup.slug }}
+								/>
 							))}
-						</ul>
-					) : null}
+						</RowList>
+					)}
 				</section>
-			) : null}
 
-			<ProofOfWork proofOfWork={profile.proofOfWork} />
-
-			<HackathonHistory hackathonHistory={profile.hackathonHistory} />
-
-			<section className="space-y-1">
-				<SectionLabel>Startups</SectionLabel>
-				{profile.startups.length === 0 ? (
-					<EmptyState title="No public Startups yet." />
-				) : (
-					<RowList>
-						{profile.startups.map((startup) => (
-							<Row
-								key={startup._id}
-								leading={<StartupAvatar name={startup.name} />}
-								title={startup.name}
-								meta={startup.tagline}
-								trailing={<span className="capitalize">{startup.role}</span>}
-								to="/startup/$slug"
-								params={{ slug: startup.slug }}
-							/>
-						))}
-					</RowList>
-				)}
-			</section>
-
-			<ScoreEvidenceNote />
-		</div>
+				<ScoreEvidenceNote />
+			</Page>
+		</>
 	);
 }

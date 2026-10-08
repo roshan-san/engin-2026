@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import type { Id } from "@convex/_generated/dataModel";
 import { Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -26,20 +27,23 @@ export function HackathonFormPage(props: HackathonFormPageProps) {
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-6">
+		<>
 			<PageHeader
+				width="narrow"
 				title={props.mode === "create" ? "New Hackathon" : "Edit Hackathon"}
 			/>
-			{props.mode === "create" ? (
-				<CreateHackathon slug={slug} startupId={member.startup._id} />
-			) : (
-				<EditHackathon
-					slug={slug}
-					startupId={member.startup._id}
-					hackathonId={props.hackathonId}
-				/>
-			)}
-		</div>
+			<Page width="narrow" className="space-y-6">
+				{props.mode === "create" ? (
+					<CreateHackathon slug={slug} startupId={member.startup._id} />
+				) : (
+					<EditHackathon
+						slug={slug}
+						startupId={member.startup._id}
+						hackathonId={props.hackathonId}
+					/>
+				)}
+			</Page>
+		</>
 	);
 }
 

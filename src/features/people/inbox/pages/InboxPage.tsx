@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { PageHeader } from "~/components/shared/PageHeader";
@@ -17,10 +18,12 @@ export function InboxPage() {
 		inbox.notifications === undefined
 	) {
 		return (
-			<div className="mx-auto w-full max-w-5xl space-y-6">
-				<PageHeader hidden title="Inbox" />
-				<PageLoading rows={4} />
-			</div>
+			<>
+				<PageHeader title="Inbox" />
+				<Page className="space-y-6">
+					<PageLoading rows={4} />
+				</Page>
+			</>
 		);
 	}
 
@@ -28,9 +31,9 @@ export function InboxPage() {
 		inbox.waiting.length === 0 && inbox.notifications.length === 0;
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-6">
+		<>
 			<PageHeader
-				hidden
+				width="wide"
 				title="Inbox"
 				actions={
 					inbox.unreadCount > 0 ? (
@@ -45,31 +48,33 @@ export function InboxPage() {
 					) : null
 				}
 			/>
-			{isEmpty ? (
-				<EmptyState
-					title="Nothing here yet"
-					body="Invites, Offers and notifications show up here."
-				/>
-			) : null}
-			{inbox.waiting.length > 0 ? (
-				<WaitingList
-					items={inbox.waiting}
-					isBusy={inbox.isBusy}
-					onAcceptInvite={(id) => void inbox.acceptInvite(id)}
-					onDeclineInvite={(id) => void inbox.declineInvite(id)}
-					onAcceptOffer={(id) => void inbox.acceptOffer(id)}
-					onDeclineOffer={inbox.declineOffer}
-				/>
-			) : null}
-			{inbox.notifications.length > 0 ? (
-				<section className="space-y-2">
-					<SectionLabel>Notifications</SectionLabel>
-					<NotificationList
-						notifications={inbox.notifications}
-						onRead={(id) => void inbox.read(id)}
+			<Page className="space-y-6">
+				{isEmpty ? (
+					<EmptyState
+						title="Nothing here yet"
+						body="Invites, Offers and notifications show up here."
 					/>
-				</section>
-			) : null}
-		</div>
+				) : null}
+				{inbox.waiting.length > 0 ? (
+					<WaitingList
+						items={inbox.waiting}
+						isBusy={inbox.isBusy}
+						onAcceptInvite={(id) => void inbox.acceptInvite(id)}
+						onDeclineInvite={(id) => void inbox.declineInvite(id)}
+						onAcceptOffer={(id) => void inbox.acceptOffer(id)}
+						onDeclineOffer={inbox.declineOffer}
+					/>
+				) : null}
+				{inbox.notifications.length > 0 ? (
+					<section className="space-y-2">
+						<SectionLabel>Notifications</SectionLabel>
+						<NotificationList
+							notifications={inbox.notifications}
+							onRead={(id) => void inbox.read(id)}
+						/>
+					</section>
+				) : null}
+			</Page>
+		</>
 	);
 }

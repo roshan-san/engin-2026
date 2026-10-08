@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { Navigate, Outlet } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { useStartupRoute } from "~/shell/startup/StartupRoute";
@@ -14,7 +15,11 @@ export function MemberGate() {
 	const { slug, isLoading, member } = useStartupRoute();
 
 	if (isLoading) {
-		return <PageLoading rows={3} />;
+		return (
+			<Page>
+				<PageLoading rows={3} />
+			</Page>
+		);
 	}
 
 	if (member === null) {

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { FormFooter } from "~/components/shared/FormFooter";
+import { Page } from "~/components/shared/Page";
 import { PageHeader } from "~/components/shared/PageHeader";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -36,18 +37,18 @@ export function CreateStartupPage() {
 
 	if (created) {
 		return (
-			<div className="mx-auto w-full max-w-3xl">
+			<Page width="narrow">
 				<InviteTeamStep
 					startupId={created.startupId}
 					startupName={created.name}
 					onDone={finish}
 				/>
-			</div>
+			</Page>
 		);
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-8">
+		<Page width="narrow" className="space-y-8">
 			<div className="flex items-center justify-between gap-4">
 				{stepIndex > 0 ? (
 					<Button
@@ -103,6 +104,7 @@ export function CreateStartupPage() {
 			</div>
 
 			<PageHeader
+				embedded
 				title={step.question}
 				meta={step.hint ?? "Create a Startup"}
 			/>
@@ -174,6 +176,6 @@ export function CreateStartupPage() {
 					{isPending ? "Creating…" : isLast ? "Launch" : "Continue"}
 				</Button>
 			</FormFooter>
-		</div>
+		</Page>
 	);
 }

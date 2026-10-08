@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { Search } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
@@ -14,10 +15,10 @@ export function ExploreStartupsPage() {
 	const registerSearch = useRegisterSearch();
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-6">
+		<>
 			<PageHeader
+				width="wide"
 				title="Startups"
-				hidden
 				actions={
 					<div className="relative w-full sm:w-72">
 						<Search
@@ -35,48 +36,53 @@ export function ExploreStartupsPage() {
 					</div>
 				}
 			/>
-
-			{results === undefined ? (
-				<PageLoading rows={4} />
-			) : results.startups.length === 0 ? (
-				<EmptyState
-					title={
-						term ? "No startups match that search." : "No public startups yet."
-					}
-				/>
-			) : (
-				<RowList>
-					{results.startups.map((startup) => {
-						const meta = [
-							stageLabel(startup.stage),
-							categoryLabel(startup.category),
-						]
-							.filter(Boolean)
-							.join(" · ");
-						return (
-							<Row
-								key={startup._id}
-								to="/startup/$slug"
-								params={{ slug: startup.slug }}
-								leading={
-									<StartupAvatar name={startup.name} className="size-8" />
-								}
-								title={startup.name}
-								meta={
-									<>
-										{startup.tagline ? (
-											<span className="block truncate">{startup.tagline}</span>
-										) : null}
-										{meta ? (
-											<span className="block truncate">{meta}</span>
-										) : null}
-									</>
-								}
-							/>
-						);
-					})}
-				</RowList>
-			)}
-		</div>
+			<Page className="space-y-6">
+				{results === undefined ? (
+					<PageLoading rows={4} />
+				) : results.startups.length === 0 ? (
+					<EmptyState
+						title={
+							term
+								? "No startups match that search."
+								: "No public startups yet."
+						}
+					/>
+				) : (
+					<RowList>
+						{results.startups.map((startup) => {
+							const meta = [
+								stageLabel(startup.stage),
+								categoryLabel(startup.category),
+							]
+								.filter(Boolean)
+								.join(" · ");
+							return (
+								<Row
+									key={startup._id}
+									to="/startup/$slug"
+									params={{ slug: startup.slug }}
+									leading={
+										<StartupAvatar name={startup.name} className="size-8" />
+									}
+									title={startup.name}
+									meta={
+										<>
+											{startup.tagline ? (
+												<span className="block truncate">
+													{startup.tagline}
+												</span>
+											) : null}
+											{meta ? (
+												<span className="block truncate">{meta}</span>
+											) : null}
+										</>
+									}
+								/>
+							);
+						})}
+					</RowList>
+				)}
+			</Page>
+		</>
 	);
 }

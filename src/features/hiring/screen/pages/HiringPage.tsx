@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -41,9 +42,9 @@ export function HiringPage() {
 	const [teamFilter, setTeamFilter] = useState<TeamFilterValue>("all");
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-6">
+		<>
 			<PageHeader
-				hidden
+				width="wide"
 				title="Hiring"
 				actions={
 					isFounder ? (
@@ -59,38 +60,39 @@ export function HiringPage() {
 					) : null
 				}
 			/>
-
-			<Tabs defaultValue="hackathons" className="gap-4">
-				<div className="flex flex-wrap items-center justify-between gap-2">
-					<TabsList>
-						<TabsTrigger value="hackathons">Hackathons</TabsTrigger>
-						<TabsTrigger value="roles">Roles</TabsTrigger>
-					</TabsList>
-					<TeamFilter
-						teams={teams}
-						value={teamFilter}
-						onChange={setTeamFilter}
-					/>
-				</div>
-				<TabsContent value="hackathons">
-					<HackathonsTab
-						slug={slug}
-						startupId={startupId}
-						isFounder={isFounder}
-						teams={teams}
-						teamFilter={teamFilter}
-					/>
-				</TabsContent>
-				<TabsContent value="roles">
-					<RolesTab
-						startupId={startupId}
-						isFounder={isFounder}
-						teams={teams}
-						teamFilter={teamFilter}
-					/>
-				</TabsContent>
-			</Tabs>
-		</div>
+			<Page className="space-y-6">
+				<Tabs defaultValue="hackathons" className="gap-4">
+					<div className="flex flex-wrap items-center justify-between gap-2">
+						<TabsList>
+							<TabsTrigger value="hackathons">Hackathons</TabsTrigger>
+							<TabsTrigger value="roles">Roles</TabsTrigger>
+						</TabsList>
+						<TeamFilter
+							teams={teams}
+							value={teamFilter}
+							onChange={setTeamFilter}
+						/>
+					</div>
+					<TabsContent value="hackathons">
+						<HackathonsTab
+							slug={slug}
+							startupId={startupId}
+							isFounder={isFounder}
+							teams={teams}
+							teamFilter={teamFilter}
+						/>
+					</TabsContent>
+					<TabsContent value="roles">
+						<RolesTab
+							startupId={startupId}
+							isFounder={isFounder}
+							teams={teams}
+							teamFilter={teamFilter}
+						/>
+					</TabsContent>
+				</Tabs>
+			</Page>
+		</>
 	);
 }
 

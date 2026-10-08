@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import type { Id } from "@convex/_generated/dataModel";
 import { Navigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
@@ -130,93 +131,98 @@ export function HackathonPage({ slug, hackathonId }: HackathonPageProps) {
 		) : null;
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-8">
-			<HackathonHeader
-				hackathon={hackathon}
-				onClose={showsCloseForm ? undefined : () => setIsClosing(true)}
-				reviewCount={review?.tasks.length ?? 0}
-				onShowReview={() => {
-					setScope("all");
-					showBoard();
-				}}
-			/>
-			{hackathon.status === "closed" &&
-			hackathon.myVerdict &&
-			hackathon.myApplicationId ? (
-				<MyVerdict
-					applicationId={hackathon.myApplicationId}
-					verdict={hackathon.myVerdict}
-					evaluation={hackathon.myEvaluation}
-					isEvaluationPublic={hackathon.myEvaluationPublic}
-					offer={hackathon.myOffer}
-					startupName={hackathon.startupName}
-					startupSlug={hackathon.startupSlug}
-					roleTitle={hackathon.roleTitle}
+		<>
+			<Page className="space-y-8">
+				<HackathonHeader
+					hackathon={hackathon}
+					onClose={showsCloseForm ? undefined : () => setIsClosing(true)}
+					reviewCount={review?.tasks.length ?? 0}
+					onShowReview={() => {
+						setScope("all");
+						showBoard();
+					}}
 				/>
-			) : null}
-			{hasStarted ? board : null}
-			<div className="space-y-8">
-				{showsCloseForm ? (
-					<CloseHackathonForm
-						hackathonId={hackathon._id}
-						hackathonTitle={hackathon.title}
-						participants={hackathon.applicants
-							.filter((applicant) => applicant.status === "accepted")
-							.map((applicant) => ({
-								applicationId: applicant._id,
-								userId: applicant.userId,
-								name: applicantName(applicant),
-							}))}
-						canOffer={hackathon.roleIsOpen}
-						onDone={() => setIsClosing(false)}
-						onOpenLane={openLane}
+				{hackathon.status === "closed" &&
+				hackathon.myVerdict &&
+				hackathon.myApplicationId ? (
+					<MyVerdict
+						applicationId={hackathon.myApplicationId}
+						verdict={hackathon.myVerdict}
+						evaluation={hackathon.myEvaluation}
+						isEvaluationPublic={hackathon.myEvaluationPublic}
+						offer={hackathon.myOffer}
+						startupName={hackathon.startupName}
+						startupSlug={hackathon.startupSlug}
+						roleTitle={hackathon.roleTitle}
 					/>
-				) : hackathon.isMember ? (
-					<>
-						<HackathonApplicants
-							applicants={hackathon.applicants}
-							hackathonStatus={hackathon.status}
-							isFounder={hackathon.isFounder}
+				) : null}
+				{hasStarted ? board : null}
+				<div className="space-y-8">
+					{showsCloseForm ? (
+						<CloseHackathonForm
+							hackathonId={hackathon._id}
+							hackathonTitle={hackathon.title}
+							participants={hackathon.applicants
+								.filter((applicant) => applicant.status === "accepted")
+								.map((applicant) => ({
+									applicationId: applicant._id,
+									userId: applicant.userId,
+									name: applicantName(applicant),
+								}))}
+							canOffer={hackathon.roleIsOpen}
+							onDone={() => setIsClosing(false)}
 							onOpenLane={openLane}
 						/>
-						<HackathonStarterTasks
-							hackathonId={hackathon._id}
-							status={hackathon.status}
-							canEdit={hackathon.isFounder && isLive}
-						/>
-						{hackathon.status !== "draft" ? (
-							<HackathonAnnouncements
-								hackathonId={hackathon._id}
-								canPost={hackathon.isFounder && isPublishedLive}
+					) : hackathon.isMember ? (
+						<>
+							<HackathonApplicants
+								applicants={hackathon.applicants}
+								hackathonStatus={hackathon.status}
+								isFounder={hackathon.isFounder}
+								onOpenLane={openLane}
 							/>
-						) : null}
-					</>
-				) : hackathon.myStatus ? (
-					<>
-						<section className="space-y-2">
-							<SectionLabel>Your status</SectionLabel>
-							<div className="flex flex-wrap items-center gap-2">
-								<Badge variant="outline">
-									{applicationStatusLabel(hackathon.myStatus, hackathon.status)}
-								</Badge>
-								<ParticipantHackathonActions
+							<HackathonStarterTasks
+								hackathonId={hackathon._id}
+								status={hackathon.status}
+								canEdit={hackathon.isFounder && isLive}
+							/>
+							{hackathon.status !== "draft" ? (
+								<HackathonAnnouncements
 									hackathonId={hackathon._id}
-									hackathonTitle={hackathon.title}
-									hackathonStatus={hackathon.status}
-									myStatus={hackathon.myStatus}
+									canPost={hackathon.isFounder && isPublishedLive}
 								/>
-							</div>
-						</section>
-						{hasOwnLane ? (
-							<HackathonAnnouncements
-								hackathonId={hackathon._id}
-								canPost={false}
-							/>
-						) : null}
-					</>
-				) : null}
-			</div>
-			{hasStarted ? null : board}
-		</div>
+							) : null}
+						</>
+					) : hackathon.myStatus ? (
+						<>
+							<section className="space-y-2">
+								<SectionLabel>Your status</SectionLabel>
+								<div className="flex flex-wrap items-center gap-2">
+									<Badge variant="outline">
+										{applicationStatusLabel(
+											hackathon.myStatus,
+											hackathon.status,
+										)}
+									</Badge>
+									<ParticipantHackathonActions
+										hackathonId={hackathon._id}
+										hackathonTitle={hackathon.title}
+										hackathonStatus={hackathon.status}
+										myStatus={hackathon.myStatus}
+									/>
+								</div>
+							</section>
+							{hasOwnLane ? (
+								<HackathonAnnouncements
+									hackathonId={hackathon._id}
+									canPost={false}
+								/>
+							) : null}
+						</>
+					) : null}
+				</div>
+				{hasStarted ? null : board}
+			</Page>
+		</>
 	);
 }

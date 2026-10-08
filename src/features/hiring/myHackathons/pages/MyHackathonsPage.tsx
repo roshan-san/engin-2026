@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
@@ -17,34 +18,36 @@ export function MyHackathonsPage() {
 	const { entries, live, past } = useMyHackathons();
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-8">
-			<PageHeader hidden title="My Hackathons" />
-			<PendingOffers />
-			{entries === undefined ? (
-				<PageLoading rows={3} />
-			) : entries.length === 0 ? (
-				<EmptyState
-					title="No Hackathons yet"
-					body="Hackathons you apply to show up here, with where each one stands."
-					action={
-						<Button asChild size="sm">
-							<Link to="/explore/hackathons">Find a Hackathon</Link>
-						</Button>
-					}
-				/>
-			) : (
-				<>
-					<MyHackathonGroup
-						heading="Live"
-						entries={live}
-						empty="No live hackathons. Hackathons you're applying to or taking part in show up here."
+		<>
+			<PageHeader title="My Hackathons" />
+			<Page className="space-y-8">
+				<PendingOffers />
+				{entries === undefined ? (
+					<PageLoading rows={3} />
+				) : entries.length === 0 ? (
+					<EmptyState
+						title="No Hackathons yet"
+						body="Hackathons you apply to show up here, with where each one stands."
+						action={
+							<Button asChild size="sm">
+								<Link to="/explore/hackathons">Find a Hackathon</Link>
+							</Button>
+						}
 					/>
-					{past.length > 0 ? (
-						<MyHackathonGroup heading="Past" entries={past} />
-					) : null}
-				</>
-			)}
-		</div>
+				) : (
+					<>
+						<MyHackathonGroup
+							heading="Live"
+							entries={live}
+							empty="No live hackathons. Hackathons you're applying to or taking part in show up here."
+						/>
+						{past.length > 0 ? (
+							<MyHackathonGroup heading="Past" entries={past} />
+						) : null}
+					</>
+				)}
+			</Page>
+		</>
 	);
 }
 

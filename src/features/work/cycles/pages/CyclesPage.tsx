@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { useState } from "react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
@@ -34,9 +35,9 @@ export function CyclesPage() {
 		: undefined;
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-4">
+		<>
 			<PageHeader
-				hidden
+				width="wide"
 				title="Cycles"
 				actions={
 					<>
@@ -51,30 +52,33 @@ export function CyclesPage() {
 					</>
 				}
 			/>
-
-			{ordered === undefined ? (
-				<PageLoading rows={3} />
-			) : ordered.length === 0 ? (
-				<EmptyState
-					title="No Cycles yet"
-					body={
-						isFounder
-							? "Plan a Cycle to give the team a board to work on."
-							: "You'll see Cycles here once a Founder adds you to one."
-					}
-				/>
-			) : (
-				<RowList>
-					{ordered.map((cycle) => (
-						<CycleRow
-							key={cycle._id}
-							slug={slug}
-							cycle={cycle}
-							teamName={cycle.teamId ? teamNames.get(cycle.teamId) : undefined}
-						/>
-					))}
-				</RowList>
-			)}
-		</div>
+			<Page className="space-y-4">
+				{ordered === undefined ? (
+					<PageLoading rows={3} />
+				) : ordered.length === 0 ? (
+					<EmptyState
+						title="No Cycles yet"
+						body={
+							isFounder
+								? "Plan a Cycle to give the team a board to work on."
+								: "You'll see Cycles here once a Founder adds you to one."
+						}
+					/>
+				) : (
+					<RowList>
+						{ordered.map((cycle) => (
+							<CycleRow
+								key={cycle._id}
+								slug={slug}
+								cycle={cycle}
+								teamName={
+									cycle.teamId ? teamNames.get(cycle.teamId) : undefined
+								}
+							/>
+						))}
+					</RowList>
+				)}
+			</Page>
+		</>
 	);
 }

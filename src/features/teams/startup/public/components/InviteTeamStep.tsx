@@ -32,6 +32,7 @@ export function InviteTeamStep({
 			}}
 		>
 			<PageHeader
+				embedded
 				title="Invite your team"
 				meta={`${startupName} is live. Add people by email or @username; they join as Members.`}
 			/>

@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { PLAN_LIMITS, PRO_MONTHLY_CREDITS } from "@convex/lib/limits";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
@@ -105,8 +106,9 @@ export function PricingPage() {
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-8">
+		<>
 			<PageHeader
+				width="wide"
 				title="Pricing"
 				meta="Founders pay to hire through Hackathons. Contributors are always free."
 				actions={
@@ -130,43 +132,46 @@ export function PricingPage() {
 					</div>
 				}
 			/>
+			<Page className="space-y-8">
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+					<PlanCard
+						title="Free"
+						price="₹0"
+						priceNote="Free forever"
+						rows={FREE_ROWS}
+						isCurrent={isFreeFounder}
+					/>
+					<PlanCard
+						title="Pro"
+						price={
+							isYearly ? PRO_PRICE_LABELS.yearly : PRO_PRICE_LABELS.monthly
+						}
+						period={isYearly ? "/year" : "/month"}
+						priceNote={
+							isYearly
+								? `Save ${PRO_YEARLY_SAVING_LABEL} against paying monthly`
+								: "Billed monthly"
+						}
+						rows={PRO_ROWS}
+						isCurrent={isPro}
+						highlighted
+						action={proAction()}
+					/>
+				</div>
 
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<PlanCard
-					title="Free"
-					price="₹0"
-					priceNote="Free forever"
-					rows={FREE_ROWS}
-					isCurrent={isFreeFounder}
-				/>
-				<PlanCard
-					title="Pro"
-					price={isYearly ? PRO_PRICE_LABELS.yearly : PRO_PRICE_LABELS.monthly}
-					period={isYearly ? "/year" : "/month"}
-					priceNote={
-						isYearly
-							? `Save ${PRO_YEARLY_SAVING_LABEL} against paying monthly`
-							: "Billed monthly"
-					}
-					rows={PRO_ROWS}
-					isCurrent={isPro}
-					highlighted
-					action={proAction()}
-				/>
-			</div>
-
-			<ul className="space-y-1 text-sm text-muted-foreground">
-				<li>Every new account's first Hackathon is free.</li>
-				<li>
-					Pro's {PRO_MONTHLY_CREDITS} included hackathons reset each Pro month;
-					unused ones don't carry over.
-				</li>
-				<li>
-					Contributors are always free: entering a hackathon never costs
-					anything.
-				</li>
-			</ul>
-		</div>
+				<ul className="space-y-1 text-sm text-muted-foreground">
+					<li>Every new account's first Hackathon is free.</li>
+					<li>
+						Pro's {PRO_MONTHLY_CREDITS} included hackathons reset each Pro
+						month; unused ones don't carry over.
+					</li>
+					<li>
+						Contributors are always free: entering a hackathon never costs
+						anything.
+					</li>
+				</ul>
+			</Page>
+		</>
 	);
 }
 

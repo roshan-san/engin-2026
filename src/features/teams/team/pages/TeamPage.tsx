@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { PageHeader } from "~/components/shared/PageHeader";
@@ -17,72 +18,73 @@ export function TeamPage() {
 	const { teams, teamsOf } = useTeams(startupId);
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-6">
-			<PageHeader hidden title="Team" />
+		<>
+			<PageHeader width="narrow" title="Team" />
+			<Page width="narrow" className="space-y-6">
+				{team.isFounder ? (
+					<div className="space-y-3">
+						<InviteForm
+							invitee={team.invitee}
+							onInviteeChange={team.setInvitee}
+							role={team.role}
+							onRoleChange={team.setRole}
+							isPending={team.isPending}
+							onSubmit={team.submitInvite}
+						/>
+						{plan ? (
+							<p className="text-xs text-muted-foreground">
+								{plan.usage.members} of {plan.limits.members} member slots used
+								on {plan.tier === "pro" ? "Pro" : "Free"}, counting pending
+								invites and offers. Co-founders don't count.
+								{plan.tier === "free" ? (
+									<>
+										{" "}
+										<Link
+											to="/pricing"
+											className="font-medium text-foreground underline"
+										>
+											See Pro
+										</Link>
+									</>
+								) : null}
+							</p>
+						) : null}
+					</div>
+				) : null}
 
-			{team.isFounder ? (
-				<div className="space-y-3">
-					<InviteForm
-						invitee={team.invitee}
-						onInviteeChange={team.setInvitee}
-						role={team.role}
-						onRoleChange={team.setRole}
-						isPending={team.isPending}
-						onSubmit={team.submitInvite}
+				{team.isFounder ? (
+					<PendingInvites
+						invites={team.invites ?? []}
+						onRevoke={team.revoke}
+						onCopyLink={team.copyLink}
 					/>
-					{plan ? (
-						<p className="text-xs text-muted-foreground">
-							{plan.usage.members} of {plan.limits.members} member slots used on{" "}
-							{plan.tier === "pro" ? "Pro" : "Free"}, counting pending invites
-							and offers. Co-founders don't count.
-							{plan.tier === "free" ? (
-								<>
-									{" "}
-									<Link
-										to="/pricing"
-										className="font-medium text-foreground underline"
-									>
-										See Pro
-									</Link>
-								</>
-							) : null}
-						</p>
-					) : null}
-				</div>
-			) : null}
+				) : null}
 
-			{team.isFounder ? (
-				<PendingInvites
-					invites={team.invites ?? []}
-					onRevoke={team.revoke}
-					onCopyLink={team.copyLink}
-				/>
-			) : null}
-
-			{teams === undefined ? (
-				<PageLoading rows={2} />
-			) : (
-				<TeamsSection
-					startupId={startupId}
-					teams={teams}
-					people={(team.members ?? []).map((member) => member.user)}
-					isFounder={team.isFounder}
-				/>
-			)}
-
-			<section className="space-y-1">
-				<SectionLabel>Members</SectionLabel>
-				{team.members === undefined ? (
-					<PageLoading rows={3} />
+				{teams === undefined ? (
+					<PageLoading rows={2} />
 				) : (
-					<MemberList
-						members={team.members}
-						onRemove={team.isFounder ? team.remove : undefined}
-						removingId={team.removingId}
-						teamsOf={teamsOf}
+					<TeamsSection
+						startupId={startupId}
+						teams={teams}
+						people={(team.members ?? []).map((member) => member.user)}
+						isFounder={team.isFounder}
 					/>
 				)}
-			</section>
-		</div>
+
+				<section className="space-y-1">
+					<SectionLabel>Members</SectionLabel>
+					{team.members === undefined ? (
+						<PageLoading rows={3} />
+					) : (
+						<MemberList
+							members={team.members}
+							onRemove={team.isFounder ? team.remove : undefined}
+							removingId={team.removingId}
+							teamsOf={teamsOf}
+						/>
+					)}
+				</section>
+			</Page>
+		</>
 	);
 }

@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { Link } from "@tanstack/react-router";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
@@ -17,47 +18,51 @@ export function MyTasksPage() {
 	const { tasks, toReview, byStatus } = useMyTasks();
 
 	return (
-		<div className="mx-auto w-full max-w-5xl space-y-8">
-			<PageHeader hidden title="My Tasks" />
-			{toReview && toReview.length > 0 ? (
-				<section className="space-y-2">
-					<SectionLabel>Awaiting your review · {toReview.length}</SectionLabel>
-					<RowList>
-						{toReview.map((task) => (
-							<ReviewRow key={task._id} task={task} />
-						))}
-					</RowList>
-				</section>
-			) : null}
-			{tasks === undefined ? (
-				<PageLoading rows={3} />
-			) : tasks.length === 0 ? (
-				<EmptyState
-					title="No Tasks yet"
-					body="Tasks you take on a Cycle or work on in a hackathon show up here."
-					action={
-						<Button asChild size="sm">
-							<Link to="/explore/hackathons">Find a Hackathon</Link>
-						</Button>
-					}
-				/>
-			) : (
-				TASK_STATUSES.map(({ value, label }) => {
-					const group = byStatus(value);
-					return group.length > 0 ? (
-						<section key={value} className="space-y-2">
-							<SectionLabel>
-								{label} · {group.length}
-							</SectionLabel>
-							<RowList>
-								{group.map((task) => (
-									<MyTaskRow key={task._id} task={task} />
-								))}
-							</RowList>
-						</section>
-					) : null;
-				})
-			)}
-		</div>
+		<>
+			<PageHeader title="My Tasks" />
+			<Page className="space-y-8">
+				{toReview && toReview.length > 0 ? (
+					<section className="space-y-2">
+						<SectionLabel>
+							Awaiting your review · {toReview.length}
+						</SectionLabel>
+						<RowList>
+							{toReview.map((task) => (
+								<ReviewRow key={task._id} task={task} />
+							))}
+						</RowList>
+					</section>
+				) : null}
+				{tasks === undefined ? (
+					<PageLoading rows={3} />
+				) : tasks.length === 0 ? (
+					<EmptyState
+						title="No Tasks yet"
+						body="Tasks you take on a Cycle or work on in a hackathon show up here."
+						action={
+							<Button asChild size="sm">
+								<Link to="/explore/hackathons">Find a Hackathon</Link>
+							</Button>
+						}
+					/>
+				) : (
+					TASK_STATUSES.map(({ value, label }) => {
+						const group = byStatus(value);
+						return group.length > 0 ? (
+							<section key={value} className="space-y-2">
+								<SectionLabel>
+									{label} · {group.length}
+								</SectionLabel>
+								<RowList>
+									{group.map((task) => (
+										<MyTaskRow key={task._id} task={task} />
+									))}
+								</RowList>
+							</section>
+						) : null;
+					})
+				)}
+			</Page>
+		</>
 	);
 }

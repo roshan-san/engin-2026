@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
+import { Page } from "~/components/shared/Page";
 import { PageHeader } from "~/components/shared/PageHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -41,21 +42,21 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 
 	if (view === undefined) {
 		return (
-			<div className="w-full space-y-4">
+			<Page width="full" className="space-y-4">
 				{back}
 				<PageLoading rows={4} />
-			</div>
+			</Page>
 		);
 	}
 	if (view === null) {
 		return (
-			<div className="mx-auto w-full max-w-3xl space-y-4">
+			<Page width="narrow" className="space-y-4">
 				{back}
 				<EmptyState
 					title="You are not part of this Cycle"
 					body="Ask a Founder to add you to it."
 				/>
-			</div>
+			</Page>
 		);
 	}
 
@@ -63,78 +64,81 @@ export function CyclePage({ slug, cycleId }: CyclePageProps) {
 	const isClosed = cycle.status === "closed";
 
 	return (
-		<div className="w-full space-y-6">
-			<div className="space-y-3">
-				{back}
-				<PageHeader
-					title={cycle.title}
-					meta={
-						<div className="space-y-1">
-							{cycle.goal ? (
-								<p className="text-foreground break-words">{cycle.goal}</p>
-							) : null}
-							<p className="flex flex-wrap items-center gap-2">
-								<Badge
-									variant={cycle.status === "active" ? "default" : "outline"}
-								>
-									{cycleStatusLabel(cycle.status)}
-								</Badge>
-								<span>{formatDateRange(cycle.startAt, cycle.endAt)}</span>
-								{isFounder && cycle.kind === "team" ? (
-									<TeamPicker
-										aria-label="Cycle Team"
-										teams={teams}
-										value={cycle.teamId ?? null}
-										disabled={pending === "team"}
-										onChange={(teamId) => void setTeam(teamId)}
-										className="h-8 w-36"
-									/>
-								) : cycle.teamId && teamNames.get(cycle.teamId) ? (
-									<TeamChip name={teamNames.get(cycle.teamId) ?? ""} />
-								) : null}
-							</p>
-						</div>
-					}
-					actions={
-						isFounder && cycle.status === "planned" ? (
-							<Button
-								size="sm"
-								disabled={pending === "start"}
-								onClick={() => void start()}
+		<>
+			<PageHeader
+				width="full"
+				eyebrow={back}
+				title={cycle.title}
+				meta={
+					<div className="space-y-1">
+						{cycle.goal ? (
+							<p className="text-foreground break-words">{cycle.goal}</p>
+						) : null}
+						<p className="flex flex-wrap items-center gap-2">
+							<Badge
+								variant={cycle.status === "active" ? "default" : "outline"}
 							>
-								Start Cycle
-							</Button>
-						) : isFounder && cycle.status === "active" ? (
-							<CloseCycleDialog
-								title={cycle.title}
-								plannedCycles={plannedCycles}
-								isPending={pending === "close"}
-								onClose={close}
-							/>
-						) : null
-					}
-				/>
-				<CycleMembers
-					startupId={cycle.startupId}
-					members={members}
-					canManage={isFounder && !isClosed}
-					isPending={pending === "members"}
-					onChange={(userId, isMember) => void setMember(userId, isMember)}
-				/>
-				{isClosed ? (
-					<p className="text-sm text-muted-foreground">
-						This Cycle is closed, so its board is read-only.
-					</p>
-				) : null}
-			</div>
-
-			<CycleBoard
-				startupId={cycle.startupId}
-				cycleId={cycle._id}
-				isFounder={isFounder}
-				isReadOnly={isClosed}
-				lane={{ mode: "team" }}
+								{cycleStatusLabel(cycle.status)}
+							</Badge>
+							<span>{formatDateRange(cycle.startAt, cycle.endAt)}</span>
+							{isFounder && cycle.kind === "team" ? (
+								<TeamPicker
+									aria-label="Cycle Team"
+									teams={teams}
+									value={cycle.teamId ?? null}
+									disabled={pending === "team"}
+									onChange={(teamId) => void setTeam(teamId)}
+									className="h-8 w-36"
+								/>
+							) : cycle.teamId && teamNames.get(cycle.teamId) ? (
+								<TeamChip name={teamNames.get(cycle.teamId) ?? ""} />
+							) : null}
+						</p>
+					</div>
+				}
+				actions={
+					isFounder && cycle.status === "planned" ? (
+						<Button
+							size="sm"
+							disabled={pending === "start"}
+							onClick={() => void start()}
+						>
+							Start Cycle
+						</Button>
+					) : isFounder && cycle.status === "active" ? (
+						<CloseCycleDialog
+							title={cycle.title}
+							plannedCycles={plannedCycles}
+							isPending={pending === "close"}
+							onClose={close}
+						/>
+					) : null
+				}
 			/>
-		</div>
+			<Page width="full" className="space-y-6">
+				<div className="space-y-3">
+					<CycleMembers
+						startupId={cycle.startupId}
+						members={members}
+						canManage={isFounder && !isClosed}
+						isPending={pending === "members"}
+						onChange={(userId, isMember) => void setMember(userId, isMember)}
+					/>
+					{isClosed ? (
+						<p className="text-sm text-muted-foreground">
+							This Cycle is closed, so its board is read-only.
+						</p>
+					) : null}
+				</div>
+
+				<CycleBoard
+					startupId={cycle.startupId}
+					cycleId={cycle._id}
+					isFounder={isFounder}
+					isReadOnly={isClosed}
+					lane={{ mode: "team" }}
+				/>
+			</Page>
+		</>
 	);
 }

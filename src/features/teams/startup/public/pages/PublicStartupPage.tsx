@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
@@ -51,117 +52,121 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 	);
 
 	return (
-		<div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
-			<GlowHero
-				eyebrow={<StartupAvatar name={startup.name} className="size-14" />}
-				title={startup.name}
-				subtitle={startup.tagline || undefined}
-			>
-				<div className="space-y-4">
-					{hasChips ? (
-						<div className="flex flex-wrap gap-2">
-							{category ? (
-								<Badge variant="outline" className={CHIP_CLASS}>
-									<span className="truncate">{category}</span>
-								</Badge>
-							) : null}
-							{stage ? (
-								<Badge variant="outline" className={CHIP_CLASS}>
-									<span className="truncate">{stage}</span>
-								</Badge>
-							) : null}
-							{startup.location ? (
-								<Badge variant="outline" className={CHIP_CLASS}>
-									<span className="truncate">{startup.location}</span>
-								</Badge>
-							) : null}
-							{startup.remote ? (
-								<Badge variant="outline" className={CHIP_CLASS}>
-									<span className="truncate">Remote-friendly</span>
-								</Badge>
-							) : null}
-						</div>
-					) : null}
-					{links.length > 0 ? (
-						<div className="flex flex-wrap gap-2">
-							{links.map((link) => (
-								<Button key={link.label} asChild variant="outline" size="sm">
-									<a href={link.href} target="_blank" rel="noreferrer">
-										{link.label}
-									</a>
-								</Button>
-							))}
-						</div>
-					) : null}
-				</div>
-			</GlowHero>
-
-			<div className="max-w-3xl space-y-8">
-				{[
-					{ heading: "About", body: startup.description },
-					{ heading: "Problem", body: startup.problem },
-					{ heading: "Solution", body: startup.solution },
-					{ heading: "Product", body: startup.product },
-					{ heading: "Traction", body: startup.traction },
-					{ heading: "Team", body: startup.teamBlurb },
-				].map(({ heading, body }) =>
-					body ? (
-						<section key={heading} className="space-y-2">
-							<SectionLabel>{heading}</SectionLabel>
-							<p className="whitespace-pre-wrap leading-relaxed">{body}</p>
-						</section>
-					) : null,
-				)}
-
-				{startup.techStack.length > 0 ? (
-					<section className="space-y-2">
-						<SectionLabel>Tech stack</SectionLabel>
-						<ul className="flex flex-wrap gap-2">
-							{startup.techStack.map((tech) => (
-								<li key={tech}>
+		<>
+			<Page className="space-y-8">
+				<GlowHero
+					eyebrow={<StartupAvatar name={startup.name} className="size-14" />}
+					title={startup.name}
+					subtitle={startup.tagline || undefined}
+				>
+					<div className="space-y-4">
+						{hasChips ? (
+							<div className="flex flex-wrap gap-2">
+								{category ? (
 									<Badge variant="outline" className={CHIP_CLASS}>
-										<span className="truncate">{tech}</span>
+										<span className="truncate">{category}</span>
 									</Badge>
-								</li>
-							))}
-						</ul>
-					</section>
-				) : null}
+								) : null}
+								{stage ? (
+									<Badge variant="outline" className={CHIP_CLASS}>
+										<span className="truncate">{stage}</span>
+									</Badge>
+								) : null}
+								{startup.location ? (
+									<Badge variant="outline" className={CHIP_CLASS}>
+										<span className="truncate">{startup.location}</span>
+									</Badge>
+								) : null}
+								{startup.remote ? (
+									<Badge variant="outline" className={CHIP_CLASS}>
+										<span className="truncate">Remote-friendly</span>
+									</Badge>
+								) : null}
+							</div>
+						) : null}
+						{links.length > 0 ? (
+							<div className="flex flex-wrap gap-2">
+								{links.map((link) => (
+									<Button key={link.label} asChild variant="outline" size="sm">
+										<a href={link.href} target="_blank" rel="noreferrer">
+											{link.label}
+										</a>
+									</Button>
+								))}
+							</div>
+						) : null}
+					</div>
+				</GlowHero>
 
-				<section className="space-y-1">
-					<SectionLabel>Meet the team</SectionLabel>
-					{startup.isAuthenticated ? (
-						<RowList>
-							{startup.team.map((member) => {
-								const name =
-									member.user.name ?? member.user.username ?? "Member";
-								return (
-									<Row
-										key={member.user._id}
-										title={name}
-										meta={
-											member.user.username ? `@${member.user.username}` : null
-										}
-										trailing={<span className="capitalize">{member.role}</span>}
-										to={member.user.username ? "/u/$username" : undefined}
-										params={
-											member.user.username
-												? { username: member.user.username }
-												: undefined
-										}
-									/>
-								);
-							})}
-						</RowList>
-					) : (
-						<Button asChild variant="outline" className="mt-2">
-							<Link to="/">Sign in to see the team</Link>
-						</Button>
+				<div className="max-w-3xl space-y-8">
+					{[
+						{ heading: "About", body: startup.description },
+						{ heading: "Problem", body: startup.problem },
+						{ heading: "Solution", body: startup.solution },
+						{ heading: "Product", body: startup.product },
+						{ heading: "Traction", body: startup.traction },
+						{ heading: "Team", body: startup.teamBlurb },
+					].map(({ heading, body }) =>
+						body ? (
+							<section key={heading} className="space-y-2">
+								<SectionLabel>{heading}</SectionLabel>
+								<p className="whitespace-pre-wrap leading-relaxed">{body}</p>
+							</section>
+						) : null,
 					)}
-				</section>
 
-				<PublicOpenings startupId={startup._id} />
-			</div>
-		</div>
+					{startup.techStack.length > 0 ? (
+						<section className="space-y-2">
+							<SectionLabel>Tech stack</SectionLabel>
+							<ul className="flex flex-wrap gap-2">
+								{startup.techStack.map((tech) => (
+									<li key={tech}>
+										<Badge variant="outline" className={CHIP_CLASS}>
+											<span className="truncate">{tech}</span>
+										</Badge>
+									</li>
+								))}
+							</ul>
+						</section>
+					) : null}
+
+					<section className="space-y-1">
+						<SectionLabel>Meet the team</SectionLabel>
+						{startup.isAuthenticated ? (
+							<RowList>
+								{startup.team.map((member) => {
+									const name =
+										member.user.name ?? member.user.username ?? "Member";
+									return (
+										<Row
+											key={member.user._id}
+											title={name}
+											meta={
+												member.user.username ? `@${member.user.username}` : null
+											}
+											trailing={
+												<span className="capitalize">{member.role}</span>
+											}
+											to={member.user.username ? "/u/$username" : undefined}
+											params={
+												member.user.username
+													? { username: member.user.username }
+													: undefined
+											}
+										/>
+									);
+								})}
+							</RowList>
+						) : (
+							<Button asChild variant="outline" className="mt-2">
+								<Link to="/">Sign in to see the team</Link>
+							</Button>
+						)}
+					</section>
+
+					<PublicOpenings startupId={startup._id} />
+				</div>
+			</Page>
+		</>
 	);
 }

@@ -17,7 +17,7 @@ export function AppShell({ children }: { readonly children: React.ReactNode }) {
 			<CrumbProvider>
 				<div className="flex min-h-dvh flex-col bg-background text-foreground">
 					<TopBar />
-					<main className="flex-1 px-4 py-6 md:px-6">{children}</main>
+					<main className="flex-1">{children}</main>
 				</div>
 			</CrumbProvider>
 			<ShellKeyboard />

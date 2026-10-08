@@ -1,3 +1,4 @@
+import { Page } from "~/components/shared/Page";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { Link } from "@tanstack/react-router";
 import { MailQuestion } from "lucide-react";
@@ -17,54 +18,60 @@ export function InviteAcceptPage({ token }: InviteAcceptPageProps) {
 
 	if (isLoading || invite === undefined) {
 		return (
-			<div className="mx-auto w-full max-w-3xl py-6">
-				<PageLoading rows={3} />
-			</div>
+			<>
+				<Page width="narrow">
+					<PageLoading rows={3} />
+				</Page>
+			</>
 		);
 	}
 
 	if (!invite) {
 		return (
-			<div className="mx-auto w-full max-w-3xl py-6">
-				<EmptyState
-					icon={MailQuestion}
-					title="Invite not found"
-					body="The link may be mistyped or the invite was revoked."
-					action={
-						<Button asChild>
-							<Link to="/">Go home</Link>
-						</Button>
-					}
-				/>
-			</div>
+			<>
+				<Page width="narrow">
+					<EmptyState
+						icon={MailQuestion}
+						title="Invite not found"
+						body="The link may be mistyped or the invite was revoked."
+						action={
+							<Button asChild>
+								<Link to="/">Go home</Link>
+							</Button>
+						}
+					/>
+				</Page>
+			</>
 		);
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-3xl space-y-6 py-6">
+		<>
 			<PageHeader
+				width="narrow"
 				title={`Join ${invite.startupName}`}
 				meta={`You were invited to join as ${invite.role}.`}
 			/>
-
-			{invite.isExpired || invite.status !== "pending" ? (
-				<p className="text-sm text-muted-foreground">
-					This invite is no longer valid.
-				</p>
-			) : isAuthenticated ? (
-				<Button onClick={accept} disabled={isPending}>
-					{isPending ? "Joining..." : "Accept invite"}
-				</Button>
-			) : (
-				<div className="space-y-3">
+			<Page width="narrow" className="space-y-6">
+				{invite.isExpired || invite.status !== "pending" ? (
 					<p className="text-sm text-muted-foreground">
-						Sign in with Google to accept this invite.
+						This invite is no longer valid.
 					</p>
-					<Button asChild>
-						<Link to="/">Sign in</Link>
+				) : isAuthenticated ? (
+					<Button onClick={accept} disabled={isPending}>
+						{isPending ? "Joining..." : "Accept invite"}
 					</Button>
-				</div>
-			)}
-		</div>
+				) : (
+					<div className="space-y-3">
+						<p className="text-sm text-muted-foreground">
+							Sign in with Google to accept this invite.
+						</p>
+						<Button asChild>
+							<Link to="/">Sign in</Link>
+						</Button>
+					</div>
+				)}
+			</Page>
+		</>
 	);
 }
