@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { SWATCH_TOKENS } from "~/features/design/sample";
-import type { DesignSystem } from "~/features/design/systems";
 
-/** One tile per colour token, with the value the current system resolves to. */
-export function TokenSwatches({ system }: { readonly system: DesignSystem }) {
+/** One tile per colour token, with the value it resolves to. */
+export function TokenSwatches() {
 	const [values, setValues] = useState<Record<string, string>>({});
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: re-read the tokens whenever the system on <html> changes
 	useEffect(() => {
 		const style = getComputedStyle(document.documentElement);
 		setValues(
@@ -17,7 +15,7 @@ export function TokenSwatches({ system }: { readonly system: DesignSystem }) {
 				]),
 			),
 		);
-	}, [system]);
+	}, []);
 
 	return (
 		<ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
