@@ -2,10 +2,10 @@
 @import "tw-animate-css";
 
 @theme inline {
-	--radius-sm: calc(var(--radius) - 4px);
-	--radius-md: calc(var(--radius) - 2px);
+	--radius-sm: calc(var(--radius-control) - 2px);
+	--radius-md: var(--radius-control);
 	--radius-lg: var(--radius);
-	--radius-xl: calc(var(--radius) + 4px);
+	--radius-xl: var(--radius);
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
@@ -29,7 +29,11 @@
 	--color-chart-3: var(--chart-3);
 	--color-chart-4: var(--chart-4);
 	--color-chart-5: var(--chart-5);
-	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: var(--font-sans);
+	--font-mono: var(--font-mono);
+	--radius-control: var(--radius-control);
+	--color-link: var(--link);
+	--color-subtle-foreground: var(--subtle-foreground);
 	--color-success: var(--success);
 	--color-success-foreground: var(--success-foreground);
 	--color-destructive-foreground: var(--destructive-foreground);
@@ -38,47 +42,133 @@
 	--color-glow: var(--glow);
 }
 
-/* Dark-only by design: :root is the single palette, no light variant or toggle. */
+/* Dark-only by design: :root is the single palette, no light variant or toggle.
+   Until a design system is picked, :root carries Geist and the three
+   [data-system] blocks below let /design switch between candidates. */
 :root {
-	--radius: 0.375rem;
+	--radius: 0.75rem;
+	--radius-control: 0.375rem;
+	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "Geist Mono Variable", ui-monospace, monospace;
+	--text-base: 0.875rem;
 
-	--background: #090c10;
-	--foreground: #e9eef4;
+	--background: #000000;
+	--foreground: #ededed;
 
-	--card: #0f141b;
-	--card-foreground: #e9eef4;
-	--popover: #0f141b;
-	--popover-foreground: #e9eef4;
-	--secondary: #0f141b;
-	--secondary-foreground: #e9eef4;
-	--muted: #0f141b;
-	--muted-foreground: #7a8796;
+	--card: #0a0a0a;
+	--card-foreground: #ededed;
+	--popover: #0a0a0a;
+	--popover-foreground: #ededed;
+	--secondary: #1a1a1a;
+	--secondary-foreground: #ededed;
+	--muted: #1a1a1a;
+	--muted-foreground: #a1a1a1;
+	--subtle-foreground: #707070;
 
-	--border: #1f2834;
-	--input: #1f2834;
+	--border: #1f1f1f;
+	--input: #2e2e2e;
 
-	--primary: #1fa3ff;
-	--primary-foreground: #04121f;
-	--accent: #141b25;
-	--accent-foreground: #e9eef4;
-	--ring: #1fa3ff;
+	--primary: #ededed;
+	--primary-foreground: #0a0a0a;
+	--accent: #1a1a1a;
+	--accent-foreground: #ededed;
+	--link: #52a8ff;
+	--ring: #52a8ff;
 
-	--destructive: #f2555a;
+	--destructive: #e5484d;
 	--destructive-foreground: #ffffff;
 
-	--success: #2fbf71;
+	--success: #3fb87a;
 	--success-foreground: #04140b;
 
-	--warning: #e5b84c;
+	--warning: #e0b65a;
 	--warning-foreground: #1a1203;
 
 	--glow: #0b5c99;
 
-	--chart-1: #1fa3ff;
-	--chart-2: #2fbf71;
-	--chart-3: #e5b84c;
+	--chart-1: #52a8ff;
+	--chart-2: #3fb87a;
+	--chart-3: #e0b65a;
 	--chart-4: #9d8cff;
 	--chart-5: #f27ba8;
+}
+
+[data-system="geist"] {
+	--radius: 0.75rem;
+	--radius-control: 0.375rem;
+	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--text-base: 0.875rem;
+	--background: #000000;
+	--foreground: #ededed;
+	--card: #0a0a0a;
+	--card-foreground: #ededed;
+	--popover: #0a0a0a;
+	--popover-foreground: #ededed;
+	--secondary: #1a1a1a;
+	--secondary-foreground: #ededed;
+	--muted: #1a1a1a;
+	--muted-foreground: #a1a1a1;
+	--subtle-foreground: #707070;
+	--border: #1f1f1f;
+	--input: #2e2e2e;
+	--primary: #ededed;
+	--primary-foreground: #0a0a0a;
+	--accent: #1a1a1a;
+	--accent-foreground: #ededed;
+	--link: #52a8ff;
+	--ring: #52a8ff;
+}
+
+[data-system="linear"] {
+	--radius: 0.5rem;
+	--radius-control: 0.375rem;
+	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	--text-base: 0.8125rem;
+	--background: #08090a;
+	--foreground: #e6e6e8;
+	--card: #101113;
+	--card-foreground: #e6e6e8;
+	--popover: #101113;
+	--popover-foreground: #e6e6e8;
+	--secondary: #1c1d21;
+	--secondary-foreground: #e6e6e8;
+	--muted: #1c1d21;
+	--muted-foreground: #8a8f98;
+	--subtle-foreground: #62666d;
+	--border: #1f2023;
+	--input: #2a2b30;
+	--primary: #5e6ad2;
+	--primary-foreground: #ffffff;
+	--accent: #1c1d21;
+	--accent-foreground: #e6e6e8;
+	--link: #7c87f0;
+	--ring: #7c87f0;
+}
+
+[data-system="zinc"] {
+	--radius: 0.75rem;
+	--radius-control: 0.5rem;
+	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--text-base: 0.9375rem;
+	--background: #09090b;
+	--foreground: #fafafa;
+	--card: #18181b;
+	--card-foreground: #fafafa;
+	--popover: #18181b;
+	--popover-foreground: #fafafa;
+	--secondary: #27272a;
+	--secondary-foreground: #fafafa;
+	--muted: #27272a;
+	--muted-foreground: #a1a1aa;
+	--subtle-foreground: #71717a;
+	--border: #27272a;
+	--input: #3f3f46;
+	--primary: #fafafa;
+	--primary-foreground: #18181b;
+	--accent: #27272a;
+	--accent-foreground: #fafafa;
+	--link: #60a5fa;
+	--ring: #60a5fa;
 }
 
 @layer base {
@@ -92,7 +182,8 @@
 	body {
 		background-color: var(--background);
 		color: var(--foreground);
-		font-size: 0.875rem;
+		font-family: var(--font-sans);
+		font-size: var(--text-base);
 		line-height: 1.5;
 		font-feature-settings:
 			"rlig" 1,

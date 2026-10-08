@@ -4,7 +4,7 @@ import { cn } from "~/lib/utils";
 const DOT_COLOR: Record<TaskStatus, string> = {
 	todo: "bg-muted-foreground",
 	in_progress: "bg-warning",
-	review: "bg-primary",
+	review: "bg-link",
 	done: "bg-success",
 };
 

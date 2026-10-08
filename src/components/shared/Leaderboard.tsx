@@ -30,7 +30,7 @@ export function Leaderboard({
 							<span
 								className={cn(
 									"w-6 text-right text-sm font-semibold tabular-nums",
-									entry.rank === 1 ? "text-primary" : "text-muted-foreground",
+									entry.rank === 1 ? "text-link" : "text-muted-foreground",
 								)}
 							>
 								{entry.rank}

@@ -37,7 +37,7 @@ export function EmptyState({
 			) : null}
 			<p className="font-medium">{title}</p>
 			{body ? (
-				<div className="mt-1 max-w-sm text-sm text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary">
+				<div className="mt-1 max-w-sm text-sm text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-link">
 					{body}
 				</div>
 			) : null}

@@ -10,16 +10,30 @@ const css = readFileSync(
 	"utf8",
 );
 
+function parseBlock(body) {
+	const out = {};
+	for (const [, name, value] of body.matchAll(/--([\w-]+):\s*([^;]+);/g)) {
+		out[name] = value.trim();
+	}
+	return out;
+}
+
 const rootBlock = css.match(/:root\s*\{([^}]*)\}/)?.[1];
 if (!rootBlock) {
 	console.error("No :root block found in globals.css");
 	process.exit(1);
 }
 
-const tokens = {};
-for (const [, name, value] of rootBlock.matchAll(/--([\w-]+):\s*([^;]+);/g)) {
-	tokens[name] = value.trim();
+// :root first, then each [data-system] block layered over :root.
+const rootTokens = parseBlock(rootBlock);
+const blocks = [[":root", rootTokens]];
+for (const [, name, body] of css.matchAll(
+	/\[data-system="([\w-]+)"\]\s*\{([^}]*)\}/g,
+)) {
+	blocks.push([name, { ...rootTokens, ...parseBlock(body) }]);
 }
+
+let tokens = rootTokens;
 
 function toRgb(name) {
 	const hex = tokens[name]?.match(/^#([0-9a-f]{6})$/i)?.[1];
@@ -46,7 +60,7 @@ function ratio(a, b) {
 const textTokens = [
 	"foreground",
 	"muted-foreground",
-	"primary",
+	"link",
 	"warning",
 	"success",
 	"destructive",
@@ -60,13 +74,18 @@ const pairs = [
 ];
 
 let failed = false;
-for (const [fg, bg] of pairs) {
-	const value = ratio(fg, bg);
-	const ok = value >= MIN_RATIO;
-	if (!ok) failed = true;
-	console.log(
-		`${ok ? "PASS" : "FAIL"}  ${fg.padEnd(18)} on ${bg.padEnd(11)} ${value.toFixed(2)}:1`,
-	);
+for (const [name, blockTokens] of blocks) {
+	tokens = blockTokens;
+	console.log(`
+${name}`);
+	for (const [fg, bg] of pairs) {
+		const value = ratio(fg, bg);
+		const ok = value >= MIN_RATIO;
+		if (!ok) failed = true;
+		console.log(
+			`${ok ? "PASS" : "FAIL"}  ${fg.padEnd(18)} on ${bg.padEnd(11)} ${value.toFixed(2)}:1`,
+		);
+	}
 }
 
 if (failed) {

@@ -32,7 +32,7 @@ export function NotificationList({
 						aria-hidden
 						className={cn(
 							"mt-1.5 size-2 shrink-0 rounded-full",
-							notification.isRead ? "bg-transparent" : "bg-primary",
+							notification.isRead ? "bg-transparent" : "bg-link",
 						)}
 					/>
 					{notification.isRead ? null : <span className="sr-only">Unread</span>}

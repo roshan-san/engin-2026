@@ -75,7 +75,7 @@ export function MemberList({
 								<Link
 									to="/u/$username"
 									params={{ username: member.user.username }}
-									className="hover:text-primary"
+									className="hover:text-link"
 								>
 									@{member.user.username}
 								</Link>
