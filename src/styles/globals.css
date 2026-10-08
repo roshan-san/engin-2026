@@ -32,7 +32,7 @@
 	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
 	--radius-control: var(--radius-control);
-	--text-sm: var(--text-base);
+	--text-sm: var(--font-size-body);
 	--color-link: var(--link);
 	--color-subtle-foreground: var(--subtle-foreground);
 	--color-success: var(--success);
@@ -49,7 +49,7 @@
 	--radius-control: 0.5rem;
 	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
 	--font-mono: "Geist Mono Variable", ui-monospace, monospace;
-	--text-base: 0.9375rem;
+	--font-size-body: 0.9375rem;
 
 	--background: #09090b;
 	--foreground: #fafafa;
@@ -104,7 +104,7 @@
 		background-color: var(--background);
 		color: var(--foreground);
 		font-family: var(--font-sans);
-		font-size: var(--text-base);
+		font-size: var(--font-size-body);
 		line-height: 1.5;
 		font-feature-settings:
 			"rlig" 1,

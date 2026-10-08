@@ -24,7 +24,7 @@ export function LandingPage() {
 
 	return (
 		<PublicShell>
-			<div className="mx-auto w-full max-w-5xl space-y-16 md:space-y-24">
+			<div className="mx-auto w-full max-w-5xl space-y-16 px-4 py-6 md:space-y-24 md:px-6">
 				<GlowHero
 					eyebrow={
 						<SectionLabel as="p">

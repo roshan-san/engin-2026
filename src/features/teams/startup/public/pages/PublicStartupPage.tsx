@@ -23,7 +23,11 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 	const startup = useQuery(api.teams.startups.getPublic, { slug });
 
 	if (startup === undefined) {
-		return <PageLoading />;
+		return (
+			<Page>
+				<PageLoading />
+			</Page>
+		);
 	}
 
 	if (!startup) {

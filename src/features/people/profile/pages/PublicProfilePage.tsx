@@ -53,7 +53,11 @@ type PublicProfilePageProps = {
 
 export function PublicProfilePage({ profile }: PublicProfilePageProps) {
 	if (profile === undefined) {
-		return <PageLoading />;
+		return (
+			<Page>
+				<PageLoading />
+			</Page>
+		);
 	}
 
 	if (!profile) {

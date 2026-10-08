@@ -20,7 +20,11 @@ export function HackathonFormPage(props: HackathonFormPageProps) {
 	const { slug, member } = useStartupRoute();
 
 	if (!member) {
-		return <PageLoading rows={4} />;
+		return (
+			<Page>
+				<PageLoading rows={4} />
+			</Page>
+		);
 	}
 	if (member.role !== "founder") {
 		return <Navigate to="/s/$slug/hiring" params={{ slug }} replace />;

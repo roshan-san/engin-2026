@@ -45,7 +45,11 @@ export function PitchPage() {
 	const pitch = usePitchEditor();
 
 	if (pitch.isLoading) {
-		return <PageLoading rows={6} />;
+		return (
+			<Page>
+				<PageLoading rows={6} />
+			</Page>
+		);
 	}
 
 	const publicLink =

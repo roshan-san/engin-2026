@@ -52,7 +52,11 @@ export function HackathonPage({ slug, hackathonId }: HackathonPageProps) {
 	);
 
 	if (hackathon === undefined) {
-		return <PageLoading rows={3} />;
+		return (
+			<Page>
+				<PageLoading rows={3} />
+			</Page>
+		);
 	}
 
 	if (

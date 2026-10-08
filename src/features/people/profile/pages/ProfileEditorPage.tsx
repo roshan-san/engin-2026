@@ -27,7 +27,11 @@ export function ProfileEditorPage() {
 	const { available } = useUsernameAvailability(values.username, savedUsername);
 
 	if (editor.isLoading) {
-		return <PageLoading rows={6} />;
+		return (
+			<Page>
+				<PageLoading rows={6} />
+			</Page>
+		);
 	}
 
 	const links = [

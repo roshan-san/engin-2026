@@ -33,7 +33,11 @@ export function SettingsPage() {
 	const { values, set, plan } = settings;
 
 	if (settings.isLoading) {
-		return <PageLoading rows={6} />;
+		return (
+			<Page>
+				<PageLoading rows={6} />
+			</Page>
+		);
 	}
 
 	if (!settings.isFounder) {
