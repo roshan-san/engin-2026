@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
+import { Route as ShellDesignRouteImport } from './routes/_shell/design'
 import { Route as ShellExploreRouteRouteImport } from './routes/_shell/explore/route'
 import { Route as ShellExploreIndexRouteImport } from './routes/_shell/explore/index'
 import { Route as ShellExploreHackathonsRouteImport } from './routes/_shell/explore/hackathons'
@@ -54,6 +55,11 @@ const ShellRouteRoute = ShellRouteRouteImport.update({
 } as any)
 const ShellAuthedRouteRoute = ShellAuthedRouteRouteImport.update({
   id: '/_authed',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellDesignRoute = ShellDesignRouteImport.update({
+  id: '/design',
+  path: '/design',
   getParentRoute: () => ShellRouteRoute,
 } as any)
 const ShellExploreRouteRoute = ShellExploreRouteRouteImport.update({
@@ -223,6 +229,7 @@ const ShellAuthedSSlugMemberHiringHackathonIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/explore': typeof ShellExploreRouteRouteWithChildren
+  '/design': typeof ShellDesignRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/explore/people': typeof ShellExplorePeopleRoute
   '/explore/startups': typeof ShellExploreStartupsRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/design': typeof ShellDesignRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/explore/people': typeof ShellExplorePeopleRoute
   '/explore/startups': typeof ShellExploreStartupsRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
   '/_shell/explore': typeof ShellExploreRouteRouteWithChildren
+  '/_shell/design': typeof ShellDesignRoute
   '/_shell/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/_shell/explore/people': typeof ShellExplorePeopleRoute
   '/_shell/explore/startups': typeof ShellExploreStartupsRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/explore'
+    | '/design'
     | '/explore/hackathons'
     | '/explore/people'
     | '/explore/startups'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/design'
     | '/explore/hackathons'
     | '/explore/people'
     | '/explore/startups'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/_shell'
     | '/_shell/_authed'
     | '/_shell/explore'
+    | '/_shell/design'
     | '/_shell/explore/hackathons'
     | '/_shell/explore/people'
     | '/_shell/explore/startups'
@@ -444,6 +456,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ShellAuthedRouteRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/design': {
+      id: '/_shell/design'
+      path: '/design'
+      fullPath: '/design'
+      preLoaderRoute: typeof ShellDesignRouteImport
       parentRoute: typeof ShellRouteRoute
     }
     '/_shell/explore': {
@@ -760,6 +779,7 @@ const ShellExploreRouteRouteWithChildren =
 interface ShellRouteRouteChildren {
   ShellAuthedRouteRoute: typeof ShellAuthedRouteRouteWithChildren
   ShellExploreRouteRoute: typeof ShellExploreRouteRouteWithChildren
+  ShellDesignRoute: typeof ShellDesignRoute
   ShellHackathonsHackathonIdRoute: typeof ShellHackathonsHackathonIdRoute
   ShellInviteTokenRoute: typeof ShellInviteTokenRoute
   ShellStartupSlugRoute: typeof ShellStartupSlugRoute
@@ -770,6 +790,7 @@ interface ShellRouteRouteChildren {
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellAuthedRouteRoute: ShellAuthedRouteRouteWithChildren,
   ShellExploreRouteRoute: ShellExploreRouteRouteWithChildren,
+  ShellDesignRoute: ShellDesignRoute,
   ShellHackathonsHackathonIdRoute: ShellHackathonsHackathonIdRoute,
   ShellInviteTokenRoute: ShellInviteTokenRoute,
   ShellStartupSlugRoute: ShellStartupSlugRoute,
