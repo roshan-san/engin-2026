@@ -13,9 +13,11 @@ import { cn } from "~/lib/utils";
 import type { ShellContext, Tab } from "~/shell/context";
 
 const TAB_CLASS =
-	"relative flex h-full shrink-0 items-center whitespace-nowrap px-2.5 text-sm text-muted-foreground transition-colors hover:text-foreground";
+	"group/tab relative flex h-full shrink-0 items-center whitespace-nowrap px-0.5 text-sm text-muted-foreground outline-none transition-colors hover:text-foreground";
+const PILL_CLASS =
+	"rounded-md px-2.5 py-1.5 transition-colors group-hover/tab:bg-accent group-focus-visible/tab:ring-2 group-focus-visible/tab:ring-ring/60";
 const ACTIVE_CLASS =
-	"text-foreground after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary";
+	"text-foreground after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary";
 
 /**
  * The current context's sections. Desktop shows overflow tabs (Settings)
@@ -44,7 +46,7 @@ export function ContextTabs({
 	if (context.kind === "loading") {
 		return (
 			<div
-				className={cn("flex h-11 items-center gap-3 md:h-14", className)}
+				className={cn("flex h-full items-center gap-3 px-2", className)}
 				aria-hidden
 			>
 				<Skeleton className="h-4 w-14 rounded-md" />
@@ -68,7 +70,7 @@ export function ContextTabs({
 				aria-current={active ? "page" : undefined}
 				className={cn(TAB_CLASS, active && ACTIVE_CLASS, extraClass)}
 			>
-				{tab.label}
+				<span className={PILL_CLASS}>{tab.label}</span>
 			</Link>
 		);
 	}
@@ -77,7 +79,7 @@ export function ContextTabs({
 		<nav
 			aria-label="Sections"
 			className={cn(
-				"flex h-11 min-w-0 items-stretch overflow-x-auto [scrollbar-width:none] md:h-14 [&::-webkit-scrollbar]:hidden",
+				"flex h-full min-w-0 items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
 				className,
 			)}
 		>
@@ -94,7 +96,9 @@ export function ContextTabs({
 							overflowActive && ACTIVE_CLASS,
 						)}
 					>
-						<MoreHorizontal className="size-4" />
+						<span className={PILL_CLASS}>
+							<MoreHorizontal className="size-4" />
+						</span>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="w-44">
 						{overflow.map((tab) => (

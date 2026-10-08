@@ -19,8 +19,8 @@ export function PublicShell({
 		<div className="flex min-h-dvh flex-col bg-background text-foreground">
 			<PublicHeader />
 			{context.kind === "explore" ? (
-				<div className="border-b border-border px-4 sm:px-6">
-					<ContextTabs context={context} className="md:h-11" />
+				<div className="sticky top-14 z-30 h-12 border-b border-border bg-background/80 px-4 backdrop-blur md:px-6">
+					<ContextTabs context={context} />
 				</div>
 			) : null}
 			<main className="flex-1 px-4 py-6 md:px-6">{children}</main>

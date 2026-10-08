@@ -77,11 +77,11 @@ export function AccountMenu() {
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				aria-label="Account"
-				className="hidden size-8 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
+				className="hidden size-8 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/60 md:ml-1 md:flex"
 			>
-				<Avatar className="size-8">
+				<Avatar className="size-8 rounded-full">
 					{user.image ? <AvatarImage src={user.image} alt="" /> : null}
-					<AvatarFallback className="text-xs">
+					<AvatarFallback className="rounded-full text-xs">
 						{initials(user.name, user.email)}
 					</AvatarFallback>
 				</Avatar>

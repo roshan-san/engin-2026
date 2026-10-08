@@ -96,7 +96,7 @@ export function ContextSwitcher({
 		<button
 			type="button"
 			aria-label={`Switch context, current: ${label}`}
-			className="flex h-9 min-w-0 max-w-full items-center gap-2 rounded-md px-2 text-sm font-medium outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring md:max-w-60"
+			className="flex h-8 min-w-0 max-w-full items-center gap-2 rounded-md px-1.5 text-sm font-medium outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60"
 		>
 			{currentStartup ? (
 				<StartupAvatar
@@ -105,7 +105,7 @@ export function ContextSwitcher({
 				/>
 			) : null}
 			<span className="min-w-0 truncate">{label}</span>
-			<ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
+			<ChevronsUpDown className="size-3.5 shrink-0 text-subtle-foreground" />
 		</button>
 	);
 
