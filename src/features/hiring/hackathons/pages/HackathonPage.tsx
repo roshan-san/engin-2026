@@ -21,6 +21,7 @@ import {
 	CycleBoard,
 	type LaneOption,
 } from "~/features/work/cycles/components/CycleBoard";
+import { useCrumb } from "~/shell/crumbs/CrumbProvider";
 import {
 	type ReviewScope,
 	useReviewQueue,
@@ -38,6 +39,7 @@ type HackathonPageProps = {
  */
 export function HackathonPage({ slug, hackathonId }: HackathonPageProps) {
 	const { hackathon } = useHackathon(hackathonId);
+	useCrumb(hackathon?.title, `/s/${slug}/hackathons/${hackathonId}`);
 	const [isClosing, setIsClosing] = useState(false);
 	const [pickedLane, setPickedLane] = useState<Id<"users"> | null>(null);
 	const [scope, setScope] = useState<ReviewScope>("all");

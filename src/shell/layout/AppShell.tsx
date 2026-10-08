@@ -4,6 +4,7 @@ import {
 	ShellKeyboard,
 } from "~/shell/command/CommandProvider";
 import { ShortcutSheet } from "~/shell/command/ShortcutSheet";
+import { CrumbProvider } from "~/shell/crumbs/CrumbProvider";
 import { TopBar } from "~/shell/topbar/TopBar";
 
 /**
@@ -13,10 +14,12 @@ import { TopBar } from "~/shell/topbar/TopBar";
 export function AppShell({ children }: { readonly children: React.ReactNode }) {
 	return (
 		<CommandProvider>
-			<div className="flex min-h-dvh flex-col bg-background text-foreground">
-				<TopBar />
-				<main className="flex-1 px-4 py-6 md:px-6">{children}</main>
-			</div>
+			<CrumbProvider>
+				<div className="flex min-h-dvh flex-col bg-background text-foreground">
+					<TopBar />
+					<main className="flex-1 px-4 py-6 md:px-6">{children}</main>
+				</div>
+			</CrumbProvider>
 			<ShellKeyboard />
 			<CommandPalette />
 			<ShortcutSheet />

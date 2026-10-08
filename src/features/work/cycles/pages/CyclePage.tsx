@@ -15,6 +15,7 @@ import { CycleMembers } from "~/features/work/cycles/components/CycleMembers";
 import { cycleStatusLabel } from "~/features/work/cycles/constants";
 import { useCycle } from "~/features/work/cycles/hooks/useCycle";
 import { formatDateRange } from "~/lib/dates";
+import { useCrumb } from "~/shell/crumbs/CrumbProvider";
 
 type CyclePageProps = {
 	readonly slug: string;
@@ -25,6 +26,7 @@ type CyclePageProps = {
 export function CyclePage({ slug, cycleId }: CyclePageProps) {
 	const { view, pending, start, close, setMember, setTeam } = useCycle(cycleId);
 	const { teams, teamNames } = useTeams(view?.cycle.startupId);
+	useCrumb(view?.cycle.title, `/s/${slug}/cycles/${cycleId}`);
 
 	const back = (
 		<Link
