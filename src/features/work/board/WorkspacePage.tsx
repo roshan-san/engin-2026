@@ -8,14 +8,17 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
+import { ShipDialog } from "../cards/ShipDialog";
 import { Board } from "./Board";
 import { CycleHeader } from "./CycleHeader";
+import type { CardView } from "./types";
 
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 
 /** The Startup's workspace: the Cycle header, the Board and the Threads panel. */
 export function WorkspacePage() {
 	const [isPanelOpen, setIsPanelOpen] = useState(false);
+	const [shipping, setShipping] = useState<CardView | null>(null);
 	const navigate = boardRoute.useNavigate();
 
 	return (
@@ -37,8 +40,7 @@ export function WorkspacePage() {
 					className="flex min-h-0 min-w-0 flex-1 flex-col"
 				>
 					<Board
-						// Task 8 wires the What shipped dialog here.
-						onShip={() => {}}
+						onShip={setShipping}
 						onOpen={(cardId) => void navigate({ search: { card: cardId } })}
 					/>
 				</div>
@@ -47,6 +49,9 @@ export function WorkspacePage() {
 					className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex"
 				/>
 			</div>
+			{shipping ? (
+				<ShipDialog card={shipping} onClose={() => setShipping(null)} />
+			) : null}
 			<Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
 				<SheetContent side="bottom" className="h-[85dvh]">
 					<SheetHeader>
