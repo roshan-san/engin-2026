@@ -30,6 +30,37 @@ export async function loadPublicUser(
 	return user ? toPublicUser(user) : null;
 }
 
+/** A Rating stays provisional until four rated weeks have counted. */
+export function isProvisional(user: Doc<"users">): boolean {
+	return (user.ratedWeeks ?? 0) < 4;
+}
+
+/** What anyone may see on a profile page. Never includes email. */
+export function toPublicProfile(user: Doc<"users">) {
+	return {
+		...toPublicUser(user),
+		bio: user.bio ?? null,
+		discipline: user.discipline ?? null,
+		links: {
+			linkedinUrl: user.linkedinUrl ?? null,
+			portfolioUrl: user.portfolioUrl ?? null,
+			githubUrl: user.githubUrl ?? null,
+		},
+		rating: user.rating ?? STARTING_RATING,
+		ratingChange: user.ratingChange ?? 0,
+		isProvisional: isProvisional(user),
+	};
+}
+
+/** The signed-in person's own account: the public profile plus email and Investor Pro. */
+export function toOwnProfile(user: Doc<"users">) {
+	return {
+		...toPublicProfile(user),
+		email: user.email ?? null,
+		isInvestorPro: user.investorVerifiedAt !== undefined,
+	};
+}
+
 /**
  * Runs after every sign-in (`convex/auth.ts`). `existingUserId` is null only
  * when the account was just created, which starts its Rating.

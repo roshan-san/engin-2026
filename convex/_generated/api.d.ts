@@ -13,6 +13,7 @@ import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_limits from "../lib/limits.js";
 import type * as lib_text from "../lib/text.js";
+import type * as people_users from "../people/users.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/limits": typeof lib_limits;
   "lib/text": typeof lib_text;
+  "people/users": typeof people_users;
 }>;
 
 /**
