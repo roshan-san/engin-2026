@@ -22,12 +22,13 @@ export function PresenceList() {
 		<TooltipProvider>
 			<ul
 				data-testid="presence-list"
-				className="flex items-center -space-x-2 px-4 pt-3"
+				aria-label="Online"
+				className="flex items-center -space-x-1.5"
 			>
 				{orderPresence(online, userId).map((entry) => {
 					const { user, workingOn } = entry;
 					const face = (
-						<Avatar className="size-7 ring-2 ring-background">
+						<Avatar className="size-6 ring-2 ring-background">
 							{user.image ? <AvatarImage src={user.image} alt="" /> : null}
 							<AvatarFallback className="text-[10px]">
 								{initials(user.name, user.username)}

@@ -14,6 +14,10 @@ import { useTeam } from "./hooks/useTeam";
 
 type Person = NonNullable<CardView["owner"]>;
 
+/** A ghost select: no frame until hovered, so the Card panel reads as text. */
+export const GHOST_TRIGGER =
+	"h-8 w-full border-transparent bg-transparent px-2 hover:border-transparent hover:bg-accent";
+
 function PersonLabel({ person }: { readonly person: Person }) {
 	return (
 		<span className="flex items-center gap-2">
@@ -43,11 +47,13 @@ export function OwnerPicker({
 
 	if (isLocked) {
 		return card.owner ? (
-			<div className="text-sm">
+			<div className="flex h-8 items-center px-2 text-sm">
 				<PersonLabel person={card.owner} />
 			</div>
 		) : (
-			<p className="text-sm text-muted-foreground">No owner</p>
+			<p className="flex h-8 items-center px-2 text-sm text-muted-foreground">
+				No owner
+			</p>
 		);
 	}
 
@@ -57,7 +63,7 @@ export function OwnerPicker({
 			onValueChange={(ownerId) => onPick(ownerId as Id<"users">)}
 			disabled={!team}
 		>
-			<SelectTrigger aria-label="Owner" size="sm" className="w-full">
+			<SelectTrigger aria-label="Owner" size="sm" className={GHOST_TRIGGER}>
 				<SelectValue placeholder="Pick an owner" />
 			</SelectTrigger>
 			<SelectContent>

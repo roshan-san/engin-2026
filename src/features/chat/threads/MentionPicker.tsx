@@ -18,7 +18,7 @@ export function MentionPicker({
 	return (
 		<div
 			id="mention-picker"
-			className="absolute inset-x-0 bottom-full z-10 mb-1 overflow-hidden rounded-md border border-border bg-popover shadow-md"
+			className="absolute inset-x-3 bottom-full z-10 mb-1 overflow-hidden rounded-md border border-border bg-popover shadow-md"
 		>
 			<Command
 				shouldFilter={false}

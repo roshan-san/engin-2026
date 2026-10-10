@@ -1,64 +1,66 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { ReactNode } from "react";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 import { CardTile } from "./CardTile";
+import { ColumnIcon } from "./ColumnIcon";
 import type { Column } from "./dropRules";
 import type { CardView } from "./types";
 
-/** One Board column: a label with its count, an optional header slot, then its Cards. */
+/**
+ * While a Card is dragged, what this column would do with it: `"accept"` it,
+ * `"refuse"` it, or nothing (`"idle"`: no drag, or the Card's own column).
+ */
+export type DropState = "idle" | "accept" | "refuse";
+
+/** One Board column: its glyph, label and count, an optional header slot, then its Cards. */
 export function BoardColumn({
 	id,
 	label,
 	cards,
-	isDragging,
+	dropState,
+	openCardId,
 	onOpen,
 	children,
 }: {
 	readonly id: Column;
 	readonly label: string;
 	readonly cards: readonly CardView[];
-	readonly isDragging: boolean;
+	readonly dropState: DropState;
+	readonly openCardId: string | undefined;
 	readonly onOpen: (cardId: string) => void;
 	readonly children?: ReactNode;
 }) {
 	const { setNodeRef, isOver } = useDroppable({ id });
-	const isVerifyOnly = id === "done";
 
-	const zone = (
+	return (
 		<section
 			ref={setNodeRef}
 			data-column={id}
 			aria-label={label}
 			className={cn(
-				"flex min-h-40 w-72 shrink-0 flex-col gap-2 self-start rounded-xl border border-border bg-muted/30 p-2 md:w-auto md:min-w-52 md:flex-1",
-				isVerifyOnly && isDragging && "border-dashed opacity-60",
-				!isVerifyOnly && isDragging && isOver && "border-ring bg-accent/30",
+				"flex w-72 shrink-0 snap-start flex-col rounded-lg bg-muted/25 transition-[opacity,background-color,box-shadow] duration-150 md:w-auto md:min-w-52 md:flex-1",
+				dropState === "refuse" && "opacity-40",
+				dropState === "accept" && isOver && "bg-accent/50 ring-1 ring-ring/50",
 			)}
 		>
-			<h2 className="flex items-center gap-2 px-1 text-sm font-medium">
+			<h2 className="flex h-10 shrink-0 items-center gap-2 px-3 text-sm font-medium">
+				<ColumnIcon column={id} />
 				{label}
-				<span className="text-xs font-normal text-muted-foreground">
+				<span className="text-xs font-normal text-subtle-foreground tabular-nums">
 					{cards.length}
 				</span>
 			</h2>
-			{children}
-			{cards.map((card) => (
-				<CardTile key={card._id} card={card} onOpen={onOpen} />
-			))}
+			<div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1.5 pt-0.5 pb-1.5">
+				{children}
+				{cards.map((card) => (
+					<CardTile
+						key={card._id}
+						card={card}
+						isOpen={card._id === openCardId}
+						onOpen={onOpen}
+					/>
+				))}
+			</div>
 		</section>
-	);
-
-	if (!isVerifyOnly) return zone;
-
-	return (
-		<Tooltip open={isDragging}>
-			<TooltipTrigger asChild>{zone}</TooltipTrigger>
-			<TooltipContent>Only Verify moves here</TooltipContent>
-		</Tooltip>
 	);
 }

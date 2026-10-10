@@ -13,6 +13,15 @@ import { MessageBody } from "./MessageBody";
 /** How close to the bottom still counts as reading the latest. */
 const STICK_DISTANCE = 80;
 
+/** A message group's exact time, on hover: "Sun, Oct 11, 4:05 PM". */
+const FULL_TIME = new Intl.DateTimeFormat("en-US", {
+	weekday: "short",
+	month: "short",
+	day: "numeric",
+	hour: "numeric",
+	minute: "2-digit",
+});
+
 /** A clock that ticks every minute, for "2m ago". */
 function useNow() {
 	const [now, setNow] = useState(() => Date.now());
@@ -60,7 +69,7 @@ export function MessageList({
 	}
 	if (messages.length === 0) {
 		return (
-			<div className="flex-1 p-4">
+			<div className="flex flex-1 items-center justify-center p-6 text-center">
 				<MentorNote>Talk here. Mention a Card with #.</MentorNote>
 			</div>
 		);
@@ -70,7 +79,7 @@ export function MessageList({
 		<>
 			<div
 				ref={scroller}
-				className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4"
+				className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-5"
 				onScroll={(e) => {
 					const el = e.currentTarget;
 					isNearBottom.current =
@@ -83,7 +92,7 @@ export function MessageList({
 			>
 				{groupMessages(messages).map((group) => (
 					<div key={group.messages[0]._id} className="flex gap-2.5">
-						<Avatar className="size-7">
+						<Avatar className="mt-0.5 size-7">
 							{group.author.image ? (
 								<AvatarImage src={group.author.image} alt="" />
 							) : null}
@@ -96,9 +105,13 @@ export function MessageList({
 								<span className="truncate text-sm font-medium">
 									{displayName(group.author)}
 								</span>
-								<span className="shrink-0 text-xs text-muted-foreground">
+								<time
+									dateTime={new Date(group.at).toISOString()}
+									title={FULL_TIME.format(group.at)}
+									className="shrink-0 text-xs text-subtle-foreground"
+								>
 									{relativeTime(group.at, now)}
-								</span>
+								</time>
 							</div>
 							{group.messages.map((message) => (
 								<div key={message._id} className="flex flex-col gap-1.5">

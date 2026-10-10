@@ -7,7 +7,7 @@ import { useCycle } from "./hooks/useCycle";
 import { useSetGoal } from "./hooks/useSetGoal";
 import { useWorkspace } from "./StartupContext";
 
-/** "Cycle 3 · Oct 12 – 18 ·" and the week's goal; the Founder edits it in place. */
+/** "Cycle 3 · Oct 12 – 18", then the week's goal; the Founder edits it in place. */
 export function CycleHeader() {
 	const { startup, isFounder } = useWorkspace();
 	const cycle = useCycle(startup._id);
@@ -17,11 +17,20 @@ export function CycleHeader() {
 	const isReverting = useRef(false);
 
 	if (!cycle) {
-		return <div className="h-9" />;
+		return <div className="min-w-0 flex-1" />;
 	}
 
 	const goal = cycle.goal ?? "";
-	const when = `Cycle ${cycle.number} · ${cycleDates(cycle.startsAt, cycle.endsAt)}`;
+	const when = (
+		<span className="shrink-0 text-sm text-muted-foreground">
+			Cycle {cycle.number}
+			<span className="hidden sm:inline">
+				{" · "}
+				{cycleDates(cycle.startsAt, cycle.endsAt)}
+			</span>
+		</span>
+	);
+	const divider = <span aria-hidden className="h-4 w-px shrink-0 bg-border" />;
 
 	async function save() {
 		setIsFocused(false);
@@ -33,31 +42,30 @@ export function CycleHeader() {
 
 	if (!isFounder) {
 		return (
-			<p className="flex h-9 min-w-0 items-center text-sm text-muted-foreground">
-				<span className="truncate">
-					{when}
-					{goal ? (
-						<>
-							{" · "}
-							<span className="text-foreground">{goal}</span>
-						</>
-					) : null}
-				</span>
-			</p>
+			<div className="flex min-w-0 flex-1 items-center gap-3">
+				{when}
+				{goal ? (
+					<>
+						{divider}
+						<p className="truncate text-sm">{goal}</p>
+					</>
+				) : null}
+			</div>
 		);
 	}
 
 	return (
-		<div className="min-w-0 flex-1">
-			<div className="flex items-center gap-2 text-sm text-muted-foreground">
-				<span className="shrink-0">{when} ·</span>
+		<div className="flex min-w-0 flex-1 items-center gap-3">
+			{when}
+			{divider}
+			<div className="relative -ml-2 min-w-0 max-w-xl flex-1">
 				<Input
 					aria-label="Cycle goal"
 					placeholder="Set this week's goal"
 					value={draft ?? goal}
 					maxLength={TEXT.goal}
 					autoComplete="off"
-					className="max-w-md flex-1"
+					className="h-8 truncate border-transparent bg-transparent px-2 hover:border-transparent hover:bg-accent/50 focus-visible:border-input focus-visible:bg-background"
 					onFocus={() => {
 						setIsFocused(true);
 						setDraft(goal);
@@ -81,12 +89,13 @@ export function CycleHeader() {
 						void save();
 					}}
 				/>
+				{isFocused ? (
+					// Below the bar, over the Board's top edge, so the bar keeps its height.
+					<div className="absolute top-full left-2 z-10 mt-2 rounded-md bg-background px-1">
+						<MentorNote>One line. What makes this week count?</MentorNote>
+					</div>
+				) : null}
 			</div>
-			{isFocused ? (
-				<div className="mt-1">
-					<MentorNote>One line. What makes this week count?</MentorNote>
-				</div>
-			) : null}
 		</div>
 	);
 }

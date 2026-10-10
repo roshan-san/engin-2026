@@ -12,9 +12,9 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
-import { TooltipProvider } from "~/components/ui/tooltip";
-import { BoardColumn } from "./BoardColumn";
-import { CardFace } from "./CardTile";
+import { cn } from "~/lib/utils";
+import { BoardColumn, type DropState } from "./BoardColumn";
+import { CardFace, TILE_CLASS } from "./CardTile";
 import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
 import { useBoard } from "./hooks/useBoard";
 import { useBoardKeys } from "./hooks/useBoardKeys";
@@ -24,6 +24,10 @@ import type { CardView } from "./types";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((column) => column.id));
 
+/** The row of columns; on a phone it scrolls sideways a column at a time. */
+const ROW_CLASS =
+	"flex min-h-0 flex-1 snap-x snap-proximity gap-2 overflow-x-auto p-3 md:snap-none md:p-4";
+
 /** Prefer the column under the pointer; keyboard drags fall back to overlap. */
 const collisionDetection: CollisionDetection = (args) => {
 	const underPointer = pointerWithin(args);
@@ -32,9 +36,12 @@ const collisionDetection: CollisionDetection = (args) => {
 
 /** The four columns of Cards. Drag, or use the keyboard, to move them. */
 export function Board({
+	openCardId,
 	onShip,
 	onOpen,
 }: {
+	/** The Card open in the side panel, marked on the Board. */
+	readonly openCardId: string | undefined;
 	/** Called when the owner drops a Card on Review; opens What shipped. */
 	readonly onShip: (card: CardView) => void;
 	readonly onOpen: (cardId: string) => void;
@@ -43,7 +50,7 @@ export function Board({
 	const { cards, create, move, verify } = useBoard(startup._id);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
-	const newCardRef = useRef<HTMLInputElement>(null);
+	const newCardRef = useRef<HTMLTextAreaElement>(null);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -76,14 +83,20 @@ export function Board({
 		isPaused: draggedId !== null,
 	});
 
+	const viewer = { userId, isFounder };
 	const dragged = cards?.find((card) => card._id === draggedId) ?? null;
+
+	/** Shown while dragging, so a refused column fades before the drop, not after. */
+	function dropStateOf(column: Column): DropState {
+		if (!dragged || dragged.status === column) return "idle";
+		return dropAction(dragged, column, viewer) ? "accept" : "refuse";
+	}
 
 	function handleDragEnd(overId: string | undefined) {
 		setDraggedId(null);
 		if (!dragged || !overId || !COLUMN_IDS.has(overId)) return;
 
 		const to = overId as Column;
-		const viewer = { userId, isFounder };
 		const action = dropAction(dragged, to, viewer);
 		if (action === "ship") {
 			onShip(dragged);
@@ -97,12 +110,16 @@ export function Board({
 
 	if (!cards) {
 		return (
-			<div className="flex gap-3 overflow-x-auto p-4 md:p-6">
+			<div className={ROW_CLASS}>
 				{COLUMNS.map((column) => (
-					<Skeleton
+					<div
 						key={column.id}
-						className="h-64 w-72 shrink-0 md:w-auto md:flex-1"
-					/>
+						className="flex w-72 shrink-0 flex-col gap-1.5 rounded-lg bg-muted/25 p-1.5 md:w-auto md:min-w-52 md:flex-1"
+					>
+						<Skeleton className="m-1.5 h-4 w-20" />
+						<Skeleton className="h-16" />
+						<Skeleton className="h-12" />
+					</div>
 				))}
 			</div>
 		);
@@ -111,47 +128,48 @@ export function Board({
 	const hasOpenCards = cards.some((card) => card.status !== "done");
 
 	return (
-		<TooltipProvider>
-			<DndContext
-				sensors={sensors}
-				collisionDetection={collisionDetection}
-				onDragStart={(event) => setDraggedId(String(event.active.id))}
-				onDragEnd={(event) =>
-					handleDragEnd(event.over ? String(event.over.id) : undefined)
-				}
-				onDragCancel={() => setDraggedId(null)}
-			>
-				<div
-					ref={rootRef}
-					className="flex min-h-0 flex-1 gap-3 overflow-x-auto p-4 md:p-6"
-				>
-					{COLUMNS.map((column) => (
-						<BoardColumn
-							key={column.id}
-							id={column.id}
-							label={column.label}
-							cards={cards.filter((card) => card.status === column.id)}
-							isDragging={draggedId !== null}
-							onOpen={onOpen}
-						>
-							{column.id === "todo" ? (
-								<NewCardInput
-									inputRef={newCardRef}
-									hasOpenCards={hasOpenCards}
-									onCreate={create}
-								/>
-							) : null}
-						</BoardColumn>
-					))}
-				</div>
-				<DragOverlay>
-					{dragged ? (
-						<div className="rounded-lg border border-border bg-card p-3 shadow-lg">
-							<CardFace card={dragged} />
-						</div>
-					) : null}
-				</DragOverlay>
-			</DndContext>
-		</TooltipProvider>
+		<DndContext
+			sensors={sensors}
+			collisionDetection={collisionDetection}
+			onDragStart={(event) => setDraggedId(String(event.active.id))}
+			onDragEnd={(event) =>
+				handleDragEnd(event.over ? String(event.over.id) : undefined)
+			}
+			onDragCancel={() => setDraggedId(null)}
+		>
+			<div ref={rootRef} className={ROW_CLASS}>
+				{COLUMNS.map((column) => (
+					<BoardColumn
+						key={column.id}
+						id={column.id}
+						label={column.label}
+						cards={cards.filter((card) => card.status === column.id)}
+						dropState={dropStateOf(column.id)}
+						openCardId={openCardId}
+						onOpen={onOpen}
+					>
+						{column.id === "todo" ? (
+							<NewCardInput
+								inputRef={newCardRef}
+								hasOpenCards={hasOpenCards}
+								onCreate={create}
+							/>
+						) : null}
+					</BoardColumn>
+				))}
+			</div>
+			<DragOverlay>
+				{dragged ? (
+					<div
+						className={cn(
+							TILE_CLASS,
+							"cursor-grabbing border-input shadow-[0_8px_30px_rgb(0_0_0/0.5)]",
+						)}
+					>
+						<CardFace card={dragged} />
+					</div>
+				) : null}
+			</DragOverlay>
+		</DndContext>
 	);
 }
