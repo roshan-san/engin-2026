@@ -469,6 +469,7 @@ describe("card view", () => {
 		});
 		expect(card.verifiedAt).toEqual(expect.any(Number));
 		expect(card.submittedAt).toEqual(expect.any(Number));
+		expect(card.verifiedAt).toBeGreaterThanOrEqual(card.submittedAt as number);
 	});
 
 	it("What shipped images come with their URLs", async () => {
@@ -561,5 +562,37 @@ describe("card view", () => {
 		});
 
 		await expect(open).rejects.toThrow("You're not on this startup");
+	});
+
+	it("a Hackathon Card isn't shown in the Startup workspace", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonCard = await setup.t.run(async (ctx) => {
+			const hackathonId = await ctx.db.insert("hackathons", {
+				startupId: setup.startupId,
+				status: "draft",
+				job: { role: "frontend", pay: "unpaid", mode: "remote" },
+				problem: "Grow signups",
+				weeks: 1,
+				startsAt: 0,
+				endsAt: 0,
+				decideBy: 0,
+				builderCount: 0,
+				applicantCount: 0,
+			});
+			return await ctx.db.insert("cards", {
+				startupId: setup.startupId,
+				hackathonId,
+				title: "Starter",
+				notes: "",
+				status: "todo",
+			});
+		});
+
+		const card = await setup.founder.as.query(api.work.cards.get, {
+			startupId: setup.startupId,
+			cardId: hackathonCard,
+		});
+
+		expect(card).toBeNull();
 	});
 });
