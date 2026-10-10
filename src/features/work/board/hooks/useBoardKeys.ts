@@ -27,7 +27,7 @@ export function useBoardKeys({
 	isPaused,
 }: {
 	readonly rootRef: RefObject<HTMLElement | null>;
-	readonly newCardRef: RefObject<HTMLInputElement | null>;
+	readonly newCardRef: RefObject<HTMLElement | null>;
 	readonly onOpen: (cardId: string) => void;
 	readonly onVerify: (cardId: string) => void;
 	/** True while a drag is in progress, so arrows steer the drag instead. */

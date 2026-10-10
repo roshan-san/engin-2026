@@ -1,5 +1,7 @@
+import { XIcon } from "lucide-react";
 import { useEffect } from "react";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { PanelHeader } from "~/components/shared/PanelHeader";
+import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { Composer } from "./Composer";
@@ -9,7 +11,12 @@ import { MessageList } from "./MessageList";
 import { PresenceList } from "./PresenceList";
 
 /** The Team thread. It's mounted only while Threads is the visible panel. */
-export function ThreadsPanel() {
+export function ThreadsPanel({
+	onClose,
+}: {
+	/** On a phone, closes the sheet the panel sits in. */
+	readonly onClose?: () => void;
+}) {
 	const { startup, userId } = useWorkspace();
 	const thread = useTeamThread(startup._id);
 	const { messages, send, markRead } = useMessages(thread?._id);
@@ -21,23 +28,35 @@ export function ThreadsPanel() {
 		if (thread) markRead();
 	}, [thread?._id, newestId]);
 
-	if (!thread) {
-		return (
-			<div className="flex flex-col gap-3 p-4">
-				<Skeleton className="h-8 w-40" />
-				<Skeleton className="h-16 w-full" />
-			</div>
-		);
-	}
-
 	return (
 		<div data-testid="threads-panel" className="flex min-h-0 flex-1 flex-col">
-			<PresenceList />
-			<div className="px-4 pt-3">
-				<SectionLabel>Team</SectionLabel>
-			</div>
-			<MessageList messages={messages} userId={userId} />
-			<Composer onSend={send} />
+			<PanelHeader>
+				<h2 className="text-sm font-medium">Team</h2>
+				<div className="ml-auto flex items-center gap-2">
+					<PresenceList />
+					{onClose ? (
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							aria-label="Close"
+							onClick={onClose}
+						>
+							<XIcon />
+						</Button>
+					) : null}
+				</div>
+			</PanelHeader>
+			{thread ? (
+				<>
+					<MessageList messages={messages} userId={userId} />
+					<Composer onSend={send} />
+				</>
+			) : (
+				<div className="flex flex-col gap-3 p-4">
+					<Skeleton className="h-10 w-3/4" />
+					<Skeleton className="h-10 w-1/2" />
+				</div>
+			)}
 		</div>
 	);
 }

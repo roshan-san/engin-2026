@@ -5,6 +5,10 @@ import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import type { CardView } from "./types";
 
+/** A tile's frame, shared by the Board and the dragged copy. */
+export const TILE_CLASS =
+	"relative rounded-md border border-border bg-card px-3 py-2.5 text-card-foreground";
+
 /** What a Card looks like, on the Board and while it's dragged. */
 export function CardFace({ card }: { readonly card: CardView }) {
 	const { owner } = card;
@@ -12,12 +16,23 @@ export function CardFace({ card }: { readonly card: CardView }) {
 
 	return (
 		<>
+			{card.changesAsked ? (
+				<span
+					aria-hidden
+					className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-warning"
+				/>
+			) : null}
 			<div className="flex items-start gap-2">
-				<p className="min-w-0 flex-1 text-sm break-words">{card.title}</p>
+				<p className="line-clamp-3 min-w-0 flex-1 text-sm break-words">
+					{card.title}
+				</p>
 				{owner ? (
-					<Avatar className="size-6" title={owner.name ?? owner.username ?? ""}>
+					<Avatar
+						className="mt-px size-5"
+						title={owner.name ?? owner.username ?? ""}
+					>
 						{owner.image ? <AvatarImage src={owner.image} alt="" /> : null}
-						<AvatarFallback className="text-[10px]">
+						<AvatarFallback className="text-[9px]">
 							{initials(owner.name, owner.username)}
 						</AvatarFallback>
 					</Avatar>
@@ -31,7 +46,9 @@ export function CardFace({ card }: { readonly card: CardView }) {
 						</Badge>
 					) : null}
 					{card.selfVerified ? (
-						<Badge variant="outline">Self-verified</Badge>
+						<Badge variant="outline" className="text-muted-foreground">
+							Self-verified
+						</Badge>
 					) : null}
 				</div>
 			) : null}
@@ -42,9 +59,12 @@ export function CardFace({ card }: { readonly card: CardView }) {
 /** One draggable Card; click or Enter opens it. */
 export function CardTile({
 	card,
+	isOpen,
 	onOpen,
 }: {
 	readonly card: CardView;
+	/** Open in the side panel. */
+	readonly isOpen: boolean;
 	readonly onOpen: (cardId: string) => void;
 }) {
 	const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -58,11 +78,16 @@ export function CardTile({
 		<div
 			ref={setNodeRef}
 			data-card-id={card._id}
+			aria-current={isOpen ? "true" : undefined}
 			{...attributes}
 			{...listeners}
 			onClick={() => onOpen(card._id)}
 			className={cn(
-				"cursor-pointer rounded-lg border border-border bg-card p-3 text-card-foreground outline-none select-none hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/60",
+				TILE_CLASS,
+				"shrink-0 cursor-pointer outline-none transition-colors select-none hover:border-input focus-visible:ring-2 focus-visible:ring-ring/60",
+				// Done is this week's record: quieter, an outline rather than a tile.
+				card.status === "done" && "bg-transparent",
+				isOpen && "border-foreground/30 bg-accent/60",
 				isDragging && "opacity-40",
 			)}
 		>

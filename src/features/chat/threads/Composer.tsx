@@ -187,10 +187,7 @@ export function Composer({
 	return (
 		<section
 			aria-label="Message Team"
-			className={cn(
-				"relative flex flex-col gap-2 border-t border-border p-3",
-				isDragOver && "ring-2 ring-ring ring-inset",
-			)}
+			className="relative shrink-0 px-3 pb-3"
 			onPaste={(e) => {
 				const files = [...e.clipboardData.files];
 				if (files.length === 0) return;
@@ -219,50 +216,55 @@ export function Composer({
 				/>
 			) : null}
 
-			{mentioned.length > 0 ? (
-				<ul className="flex flex-wrap gap-1.5">
-					{mentioned.map((card) => (
-						<li
-							key={card._id}
-							className="max-w-full truncate rounded-md bg-muted px-1.5 text-xs"
-						>
-							# {card.title}
-						</li>
-					))}
-				</ul>
-			) : null}
-
-			{pictures.length > 0 ? (
-				<ul className="flex flex-wrap gap-2">
-					{pictures.map((picture) => (
-						<li
-							key={picture.key}
-							className="relative size-14 overflow-hidden rounded-md border border-border"
-						>
-							<img
-								src={picture.previewUrl}
-								alt=""
-								className="size-full object-cover"
-							/>
-							{picture.storageId === null ? (
-								<div className="absolute inset-0 flex items-center justify-center bg-background/60">
-									<Spinner />
-								</div>
-							) : null}
-							<button
-								type="button"
-								aria-label="Remove image"
-								className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 hover:bg-background"
-								onClick={() => removePicture(picture)}
+			<div
+				className={cn(
+					"flex flex-col rounded-lg border border-input bg-background transition-[border-color,box-shadow] focus-within:border-foreground/40 focus-within:ring-2 focus-within:ring-ring/60",
+					isDragOver && "border-ring ring-2 ring-ring/60",
+				)}
+			>
+				{mentioned.length > 0 ? (
+					<ul className="flex flex-wrap gap-1.5 px-3 pt-2.5">
+						{mentioned.map((card) => (
+							<li
+								key={card._id}
+								className="max-w-full truncate rounded-md bg-muted px-1.5 text-xs"
 							>
-								<XIcon className="size-3" />
-							</button>
-						</li>
-					))}
-				</ul>
-			) : null}
+								# {card.title}
+							</li>
+						))}
+					</ul>
+				) : null}
 
-			<div className="flex items-end gap-2">
+				{pictures.length > 0 ? (
+					<ul className="flex flex-wrap gap-2 px-3 pt-3">
+						{pictures.map((picture) => (
+							<li
+								key={picture.key}
+								className="relative size-14 overflow-hidden rounded-md border border-border"
+							>
+								<img
+									src={picture.previewUrl}
+									alt=""
+									className="size-full object-cover"
+								/>
+								{picture.storageId === null ? (
+									<div className="absolute inset-0 flex items-center justify-center bg-background/60">
+										<Spinner />
+									</div>
+								) : null}
+								<button
+									type="button"
+									aria-label="Remove image"
+									className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 hover:bg-background"
+									onClick={() => removePicture(picture)}
+								>
+									<XIcon className="size-3" />
+								</button>
+							</li>
+						))}
+					</ul>
+				) : null}
+
 				<Textarea
 					ref={textarea}
 					aria-label="Message"
@@ -273,7 +275,7 @@ export function Composer({
 					rows={1}
 					maxLength={TEXT.message}
 					value={text}
-					className="max-h-36 min-h-10 resize-none"
+					className="max-h-36 min-h-10 resize-none border-0 bg-transparent px-3 pt-2.5 pb-1 focus-visible:ring-0"
 					onChange={(e) => {
 						setText(e.target.value);
 						setCaret(e.target.selectionStart);
@@ -316,25 +318,32 @@ export function Composer({
 						e.target.value = "";
 					}}
 				/>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon"
-					aria-label="Add image"
-					disabled={pictures.length >= MAX_MESSAGE_IMAGES}
-					onClick={() => fileInput.current?.click()}
-				>
-					<ImageIcon />
-				</Button>
-				<Button
-					type="button"
-					size="icon"
-					aria-label="Send"
-					disabled={!canSend}
-					onClick={() => void handleSend()}
-				>
-					{isUploading || isSending ? <Spinner /> : <SendIcon />}
-				</Button>
+				<div className="flex items-center gap-1 px-1.5 pb-1.5">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Add image"
+						disabled={pictures.length >= MAX_MESSAGE_IMAGES}
+						onClick={() => fileInput.current?.click()}
+					>
+						<ImageIcon />
+					</Button>
+					<span className="hidden text-xs text-subtle-foreground md:inline">
+						# to mention a Card
+					</span>
+					<Button
+						type="button"
+						size="icon-sm"
+						variant={canSend ? "default" : "ghost"}
+						aria-label="Send"
+						className="ml-auto"
+						disabled={!canSend}
+						onClick={() => void handleSend()}
+					>
+						{isUploading || isSending ? <Spinner /> : <SendIcon />}
+					</Button>
+				</div>
 			</div>
 		</section>
 	);
