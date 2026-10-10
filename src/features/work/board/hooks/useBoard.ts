@@ -5,11 +5,12 @@ import { useMemo } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 
-/** The Board's Cards, creating, and moving between To do and In progress. */
+/** The Board's Cards: creating, moving between To do and In progress, and Verify. */
 export function useBoard(startupId: Id<"startups">) {
 	const cards = useQuery(api.work.cards.listBoard, { startupId });
 	const createCard = useMutation(api.work.cards.create);
 	const moveCard = useMutation(api.work.cards.move);
+	const verifyCard = useMutation(api.work.cards.verify);
 	const moveOptimistically = useMemo(
 		() =>
 			moveCard.withOptimisticUpdate((store, args) => {
@@ -45,5 +46,16 @@ export function useBoard(startupId: Id<"startups">) {
 		}
 	}
 
-	return { cards, create, move };
+	/** Founder only, from Review. Resolves `false` when it failed (the error is toasted). */
+	async function verify(cardId: Id<"cards">) {
+		try {
+			await verifyCard({ cardId });
+			return true;
+		} catch (error) {
+			toast.error(errorMessage(error));
+			return false;
+		}
+	}
+
+	return { cards, create, move, verify };
 }

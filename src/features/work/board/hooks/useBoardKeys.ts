@@ -16,21 +16,25 @@ function tilesIn(root: HTMLElement) {
 
 /**
  * Board shortcuts: C new Card, J/K or Up/Down within a column, Left/Right
- * across columns, Enter opens the focused Card, Esc closes it.
+ * across columns, Enter opens the focused Card, Esc closes it, V verifies the
+ * focused Card or else the open one.
  */
 export function useBoardKeys({
 	rootRef,
 	newCardRef,
 	onOpen,
+	onVerify,
 	isPaused,
 }: {
 	readonly rootRef: RefObject<HTMLElement | null>;
 	readonly newCardRef: RefObject<HTMLInputElement | null>;
 	readonly onOpen: (cardId: string) => void;
+	readonly onVerify: (cardId: string) => void;
 	/** True while a drag is in progress, so arrows steer the drag instead. */
 	readonly isPaused: boolean;
 }) {
 	const navigate = boardRoute.useNavigate();
+	const openCardId = boardRoute.useSearch({ select: (search) => search.card });
 
 	useEffect(() => {
 		function onKeyDown(event: KeyboardEvent) {
@@ -45,6 +49,18 @@ export function useBoardKeys({
 			}
 
 			const active = document.activeElement;
+
+			if (event.key === "v" || event.key === "V") {
+				const cardId =
+					active?.closest<HTMLElement>("[data-card-id]")?.dataset.cardId ??
+					openCardId;
+				if (cardId) {
+					event.preventDefault();
+					onVerify(cardId);
+				}
+				return;
+			}
+
 			const isOnBoard =
 				active === document.body || (active && root.contains(active));
 			if (!isOnBoard) return;
@@ -110,5 +126,5 @@ export function useBoardKeys({
 
 		document.addEventListener("keydown", onKeyDown);
 		return () => document.removeEventListener("keydown", onKeyDown);
-	}, [rootRef, newCardRef, onOpen, isPaused, navigate]);
+	}, [rootRef, newCardRef, onOpen, onVerify, openCardId, isPaused, navigate]);
 }

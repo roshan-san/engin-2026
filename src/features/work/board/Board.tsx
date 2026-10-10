@@ -40,7 +40,7 @@ export function Board({
 	readonly onOpen: (cardId: string) => void;
 }) {
 	const { startup, userId, isFounder } = useWorkspace();
-	const { cards, create, move } = useBoard(startup._id);
+	const { cards, create, move, verify } = useBoard(startup._id);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const newCardRef = useRef<HTMLInputElement>(null);
@@ -61,6 +61,10 @@ export function Board({
 		rootRef,
 		newCardRef,
 		onOpen,
+		onVerify: (cardId) => {
+			const card = cards?.find((c) => c._id === cardId);
+			if (isFounder && card?.status === "review") void verify(card._id);
+		},
 		isPaused: draggedId !== null,
 	});
 

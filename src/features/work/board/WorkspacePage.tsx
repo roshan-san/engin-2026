@@ -1,5 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
+import { MentorNote } from "~/components/shared/MentorNote";
 import { Button } from "~/components/ui/button";
 import {
 	Sheet,
@@ -8,6 +9,8 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
+import { useIsMobile } from "~/hooks/use-mobile";
+import { CardPanel } from "../cards/CardPanel";
 import { ShipDialog } from "../cards/ShipDialog";
 import { Board } from "./Board";
 import { CycleHeader } from "./CycleHeader";
@@ -15,11 +18,32 @@ import type { CardView } from "./types";
 
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 
-/** The Startup's workspace: the Cycle header, the Board and the Threads panel. */
+/** The Startup's workspace: the Cycle header, the Board and the side panel. */
 export function WorkspacePage() {
-	const [isPanelOpen, setIsPanelOpen] = useState(false);
+	const [isThreadsOpen, setIsThreadsOpen] = useState(false);
 	const [shipping, setShipping] = useState<CardView | null>(null);
+	const { card: cardId } = boardRoute.useSearch();
 	const navigate = boardRoute.useNavigate();
+	const isMobile = useIsMobile();
+
+	function closeCard() {
+		void navigate({ search: (prev) => ({ ...prev, card: undefined }) });
+	}
+
+	// Opening a Card on a phone raises the sheet; the sheet closing closes the Card.
+	const isSheetOpen = isMobile && (isThreadsOpen || cardId !== undefined);
+	const panel = cardId ? (
+		<CardPanel
+			key={cardId}
+			cardId={cardId}
+			onClose={closeCard}
+			onShip={setShipping}
+		/>
+	) : (
+		<div className="p-4">
+			<MentorNote>Open a Card to see it here.</MentorNote>
+		</div>
+	);
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
@@ -29,7 +53,7 @@ export function WorkspacePage() {
 					variant="outline"
 					size="sm"
 					className="ml-auto shrink-0 md:hidden"
-					onClick={() => setIsPanelOpen(true)}
+					onClick={() => setIsThreadsOpen(true)}
 				>
 					Threads
 				</Button>
@@ -41,25 +65,39 @@ export function WorkspacePage() {
 				>
 					<Board
 						onShip={setShipping}
-						onOpen={(cardId) => void navigate({ search: { card: cardId } })}
+						onOpen={(id) => void navigate({ search: { card: id } })}
 					/>
 				</div>
 				<aside
 					data-testid="panel"
 					className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex"
-				/>
+				>
+					{isMobile ? null : panel}
+				</aside>
 			</div>
 			{shipping ? (
 				<ShipDialog card={shipping} onClose={() => setShipping(null)} />
 			) : null}
-			<Sheet open={isPanelOpen} onOpenChange={setIsPanelOpen}>
-				<SheetContent side="bottom" className="h-[85dvh]">
-					<SheetHeader>
-						<SheetTitle>Threads</SheetTitle>
+			<Sheet
+				open={isSheetOpen}
+				onOpenChange={(isOpen) => {
+					if (isOpen) return;
+					setIsThreadsOpen(false);
+					if (cardId) closeCard();
+				}}
+			>
+				<SheetContent
+					side="bottom"
+					className="h-[85dvh]"
+					showCloseButton={!cardId}
+				>
+					<SheetHeader className={cardId ? "sr-only" : undefined}>
+						<SheetTitle>{cardId ? "Card" : "Threads"}</SheetTitle>
 						<SheetDescription className="sr-only">
-							Talk with your team.
+							{cardId ? "Edit this Card." : "Talk with your team."}
 						</SheetDescription>
 					</SheetHeader>
+					{isMobile ? panel : null}
 				</SheetContent>
 			</Sheet>
 		</div>
