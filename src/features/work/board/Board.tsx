@@ -10,11 +10,12 @@ import {
 	useSensors,
 } from "@dnd-kit/core";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { BoardColumn } from "./BoardColumn";
 import { CardFace } from "./CardTile";
-import { COLUMNS, type Column, dropAction } from "./dropRules";
+import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
 import { useBoard } from "./hooks/useBoard";
 import { useBoardKeys } from "./hooks/useBoardKeys";
 import { NewCardInput } from "./NewCardInput";
@@ -70,11 +71,15 @@ export function Board({
 		if (!dragged || !overId || !COLUMN_IDS.has(overId)) return;
 
 		const to = overId as Column;
-		const action = dropAction(dragged, to, { userId, isFounder });
+		const viewer = { userId, isFounder };
+		const action = dropAction(dragged, to, viewer);
 		if (action === "ship") {
 			onShip(dragged);
 		} else if (action === "move" && (to === "todo" || to === "in_progress")) {
 			void move(dragged._id, to);
+		} else {
+			const refusal = dropRefusal(dragged, to, viewer);
+			if (refusal) toast(refusal);
 		}
 	}
 

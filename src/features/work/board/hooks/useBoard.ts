@@ -26,11 +26,14 @@ export function useBoard(startupId: Id<"startups">) {
 		[moveCard, startupId],
 	);
 
+	/** Resolves `false` when the Card wasn't created (the error is toasted). */
 	async function create(title: string) {
 		try {
 			await createCard({ startupId, title });
+			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));
+			return false;
 		}
 	}
 

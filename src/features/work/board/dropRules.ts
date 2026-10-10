@@ -33,3 +33,17 @@ export function dropAction(
 	}
 	return "move";
 }
+
+/** Why dropping `card` on `to` is refused, in words to show; `null` when it's fine or a no-op. */
+export function dropRefusal(
+	card: CardView,
+	to: Column,
+	viewer: Viewer,
+): string | null {
+	if (card.status === to || card.status === "done") return null;
+	if (dropAction(card, to, viewer) !== null) return null;
+	if (to === "done") return "Only Verify moves a Card to Done";
+	if (to === "review") return "Only the owner can submit this Card";
+	if (card.status === "review") return "Only the Founder can send it back";
+	return null;
+}

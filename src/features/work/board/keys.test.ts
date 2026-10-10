@@ -20,6 +20,17 @@ describe("isSendKey", () => {
 		).toBe(false);
 	});
 
+	it("is false for Safari's composing Enter (keyCode 229)", () => {
+		expect(
+			isSendKey({
+				key: "Enter",
+				shiftKey: false,
+				isComposing: false,
+				keyCode: 229,
+			}),
+		).toBe(false);
+	});
+
 	it("is false for other keys", () => {
 		expect(isSendKey({ key: "a", shiftKey: false, isComposing: false })).toBe(
 			false,

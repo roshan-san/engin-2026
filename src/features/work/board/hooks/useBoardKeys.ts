@@ -103,8 +103,9 @@ export function useBoardKeys({
 				return;
 			}
 
+			if (!target) return;
 			event.preventDefault();
-			target?.focus();
+			target.focus();
 		}
 
 		document.addEventListener("keydown", onKeyDown);

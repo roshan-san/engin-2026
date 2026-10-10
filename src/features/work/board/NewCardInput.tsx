@@ -10,7 +10,7 @@ export function NewCardInput({
 	hasOpenCards,
 	inputRef,
 }: {
-	readonly onCreate: (title: string) => Promise<void>;
+	readonly onCreate: (title: string) => Promise<boolean>;
 	readonly hasOpenCards: boolean;
 	readonly inputRef: Ref<HTMLInputElement>;
 }) {
@@ -34,7 +34,10 @@ export function NewCardInput({
 						const next = title.trim();
 						if (!next) return;
 						setTitle("");
-						void onCreate(next);
+						void onCreate(next).then((isCreated) => {
+							// Keep what was typed, unless more has been typed since.
+							if (!isCreated) setTitle((current) => current || next);
+						});
 					}
 				}}
 			/>

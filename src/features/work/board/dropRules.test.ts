@@ -1,6 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { describe, expect, it } from "vitest";
-import { dropAction } from "./dropRules";
+import { dropAction, dropRefusal } from "./dropRules";
 import type { CardView } from "./types";
 
 const fay = "user-fay" as Id<"users">;
@@ -68,5 +68,32 @@ describe("dropAction", () => {
 	it("never moves a Card out of Done", () => {
 		expect(dropAction(aCard("done"), "todo", founder)).toBeNull();
 		expect(dropAction(aCard("done"), "review", founder)).toBeNull();
+	});
+});
+
+describe("dropRefusal", () => {
+	it("says Done only takes Verify", () => {
+		expect(dropRefusal(aCard("review"), "done", founder)).toBe(
+			"Only Verify moves a Card to Done",
+		);
+	});
+
+	it("says only the owner submits a Card", () => {
+		expect(dropRefusal(aCard("in_progress"), "review", founder)).toBe(
+			"Only the owner can submit this Card",
+		);
+	});
+
+	it("says only the Founder sends a Card back from Review", () => {
+		expect(dropRefusal(aCard("review"), "todo", owner)).toBe(
+			"Only the Founder can send it back",
+		);
+	});
+
+	it("is silent for allowed moves and drops where the Card already is", () => {
+		expect(dropRefusal(aCard("todo"), "in_progress", owner)).toBeNull();
+		expect(dropRefusal(aCard("in_progress"), "review", owner)).toBeNull();
+		expect(dropRefusal(aCard("review"), "todo", founder)).toBeNull();
+		expect(dropRefusal(aCard("todo"), "todo", owner)).toBeNull();
 	});
 });

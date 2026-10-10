@@ -3,8 +3,12 @@ export function isSendKey(e: {
 	key: string;
 	shiftKey: boolean;
 	isComposing: boolean;
+	/** Safari reports 229 for an IME's Enter after composition ends. */
+	keyCode?: number;
 }): boolean {
-	return e.key === "Enter" && !e.shiftKey && !e.isComposing;
+	return (
+		e.key === "Enter" && !e.shiftKey && !e.isComposing && e.keyCode !== 229
+	);
 }
 
 /** Whether keys typed at `target` belong to a text field, not to shortcuts. */
