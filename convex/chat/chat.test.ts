@@ -294,19 +294,4 @@ describe("chat", () => {
 			setup.founder.as.query(api.chat.threads.list, {}),
 		).rejects.toThrow("Pick a startup or a Hackathon");
 	});
-
-	it("signed-in people can get an upload URL", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-
-		const url = await setup.founder.as.mutation(
-			api.chat.messages.generateUploadUrl,
-			{},
-		);
-
-		expect(typeof url).toBe("string");
-		await expect(
-			t.mutation(api.chat.messages.generateUploadUrl, {}),
-		).rejects.toThrow("Not authenticated");
-	});
 });

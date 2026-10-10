@@ -1,0 +1,18 @@
+import { describe, expect, it } from "vitest";
+import { api } from "../_generated/api";
+import { createTest } from "../lib/testing.helpers";
+import { signUp } from "../people/users.helpers";
+
+describe("files", () => {
+	it("a signed-in person can get an upload URL; nobody else can", async () => {
+		const t = createTest();
+		const ada = await signUp(t, "Ada");
+
+		const url = await ada.as.mutation(api.files.files.generateUploadUrl, {});
+
+		expect(typeof url).toBe("string");
+		await expect(
+			t.mutation(api.files.files.generateUploadUrl, {}),
+		).rejects.toThrow("Not authenticated");
+	});
+});

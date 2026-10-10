@@ -29,15 +29,6 @@ export const list = query({
 	},
 });
 
-export const generateUploadUrl = mutation({
-	args: {},
-	handler: async (ctx) => {
-		await requireUserId(ctx);
-
-		return await ctx.storage.generateUploadUrl();
-	},
-});
-
 export const send = mutation({
 	args: {
 		threadId: v.id("threads"),
