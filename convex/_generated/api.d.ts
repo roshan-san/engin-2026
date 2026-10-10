@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as chat_messages from "../chat/messages.js";
+import type * as chat_presence from "../chat/presence.js";
 import type * as chat_threads from "../chat/threads.js";
 import type * as files_files from "../files/files.js";
 import type * as hiring_applications from "../hiring/applications.js";
@@ -35,6 +36,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "chat/messages": typeof chat_messages;
+  "chat/presence": typeof chat_presence;
   "chat/threads": typeof chat_threads;
   "files/files": typeof files_files;
   "hiring/applications": typeof hiring_applications;
@@ -78,4 +80,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  presence: import("@convex-dev/presence/_generated/component.js").ComponentApi<"presence">;
+};
