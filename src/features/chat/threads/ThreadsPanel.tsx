@@ -6,6 +6,7 @@ import { Composer } from "./Composer";
 import { useMessages } from "./hooks/useMessages";
 import { useTeamThread } from "./hooks/useTeamThread";
 import { MessageList } from "./MessageList";
+import { PresenceList } from "./PresenceList";
 
 /** The Team thread. It's mounted only while Threads is the visible panel. */
 export function ThreadsPanel() {
@@ -31,6 +32,7 @@ export function ThreadsPanel() {
 
 	return (
 		<div data-testid="threads-panel" className="flex min-h-0 flex-1 flex-col">
+			<PresenceList />
 			<div className="px-4 pt-3">
 				<SectionLabel>Team</SectionLabel>
 			</div>
