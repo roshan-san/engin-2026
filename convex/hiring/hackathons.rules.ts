@@ -1,361 +1,214 @@
-import { type Infer, type ObjectType, v } from "convex/values";
+import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { refundPublishCredit } from "../billing/credits.rules";
 import {
-	GOAL_MAX,
-	HACKATHON_TEXT_LIMITS,
-	MAX_HACKATHON_APPLICATIONS,
-	MAX_HACKATHON_PARTICIPANTS,
+	DECIDE_GRACE_MS,
+	MAX_APPLICATIONS,
+	MAX_BUILDERS,
+	MAX_HACKATHON_CARDS,
+	MIN_HACKATHON_CARDS,
+	TEXT,
 } from "../lib/limits";
-import { hackathonHref } from "../lib/links";
-import { buildSearchText, limitText, requireLimitedText } from "../lib/text";
-import { notify, notifyFounders } from "../people/notifications.rules";
-import type { cycleStatus, hackathonStatus, hackathonVerdict } from "../schema";
-import { seedLanes } from "./starterTasks.rules";
+import { limitText, requireLimitedText } from "../lib/text";
+import { requireFounder } from "../startups/access.rules";
+import { appendActivity } from "../work/activity.rules";
+import { WEEK_MS, weekOf, weekStart } from "../work/cycles.rules";
+import { jobMode, jobPay, jobRole } from "./hiring.schema";
 
-type HackathonCtx = QueryCtx | MutationCtx;
-type HackathonStatus = Infer<typeof hackathonStatus>;
-
-/** A hackathon's Cycle is Planned until it runs, and Closed once it ends either way. */
-const CYCLE_STATUS: Record<HackathonStatus, Infer<typeof cycleStatus>> = {
-	draft: "planned",
-	open: "planned",
-	active: "active",
-	closed: "closed",
-	cancelled: "closed",
-};
-
-/**
- * The one place a hackathon's status changes after `create`: its Cycle moves
- * with it, so the two never disagree.
- */
-export async function setHackathonStatus(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-	status: HackathonStatus,
-): Promise<void> {
-	await ctx.db.patch(hackathon._id, { status });
-	await ctx.db.patch(hackathon.cycleId, { status: CYCLE_STATUS[status] });
-}
-
-/**
- * Inserts a draft with its Cycle in one step. The Cycle goes in first because
- * the hackathon requires its id; the Cycle then gets the hackathon's.
- */
-export async function insertDraftHackathon(
-	ctx: MutationCtx,
-	startupId: Id<"startups">,
-	fields: ReturnType<typeof buildDraftFields>,
-	teamId?: Id<"teams">,
-): Promise<Id<"hackathons">> {
-	const cycleId = await ctx.db.insert("cycles", {
-		startupId,
-		teamId,
-		kind: "hackathon",
-		title: fields.title,
-		startAt: fields.startsAt,
-		endAt: fields.endsAt,
-		status: CYCLE_STATUS.draft,
-	});
-	const hackathonId = await ctx.db.insert("hackathons", {
-		startupId,
-		cycleId,
-		...fields,
-		status: "draft",
-		participantCount: 0,
-	});
-	await ctx.db.patch(cycleId, { hackathonId });
-	return hackathonId;
-}
-
-/** Keeps the Cycle's title, dates and Team in step with an edited or rescheduled draft. */
-export async function syncHackathonCycle(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-	fields: { title?: string; startsAt: number; endsAt: number },
-	role?: Doc<"roles">,
-): Promise<void> {
-	await ctx.db.patch(hackathon.cycleId, {
-		...(role && { teamId: role.teamId }),
-		...(fields.title !== undefined && { title: fields.title }),
-		startAt: fields.startsAt,
-		endAt: fields.endsAt,
-	});
-}
-
-/** Everything a Founder sets on a draft; `create` and `update` both take all of it. */
-export const draftFields = {
-	roleId: v.id("roles"),
-	title: v.string(),
-	description: v.string(),
-	maxParticipants: v.number(),
+/** What a Founder fills in to draft a Hackathon. */
+export const draftArgs = {
+	job: v.object({ role: jobRole, pay: jobPay, mode: jobMode }),
+	problem: v.string(),
+	weeks: v.number(),
 	startsAt: v.number(),
-	endsAt: v.number(),
-	applicationDeadline: v.optional(v.number()),
-	prize: v.optional(v.string()),
-	expectedOutcome: v.optional(v.string()),
-	evaluationCriteria: v.optional(v.string()),
-	compensation: v.optional(v.string()),
-	starterTasks: v.array(
-		v.object({ title: v.string(), description: v.optional(v.string()) }),
+	buildersGet: v.optional(v.string()),
+	cards: v.array(
+		v.object({ title: v.string(), notes: v.optional(v.string()) }),
 	),
 };
 
-export type DraftInput = ObjectType<typeof draftFields>;
+type DraftInput = {
+	job: Doc<"hackathons">["job"];
+	problem: string;
+	weeks: number;
+	startsAt: number;
+	buildersGet?: string;
+	cards: { title: string; notes?: string }[];
+};
 
-/**
- * The stored draft fields, trimmed and bounded. Optional fields left out come
- * back `undefined`, so a patch clears them.
- */
-export function buildDraftFields(input: DraftInput, role: Doc<"roles">) {
-	const title = requireLimitedText(
-		input.title,
-		"Title",
-		HACKATHON_TEXT_LIMITS.title,
-	);
-	const description = requireLimitedText(
-		input.description,
-		"Description",
-		HACKATHON_TEXT_LIMITS.description,
-	);
+/** Checks a draft and returns its normalized fields with the derived dates. */
+export function requireValidDraft(input: DraftInput, now: number) {
+	if (
+		input.startsAt !== weekStart(weekOf(input.startsAt)) ||
+		input.startsAt <= now
+	) {
+		throw new Error("Start on a coming Monday");
+	}
+	if (input.weeks !== 1 && input.weeks !== 2) {
+		throw new Error("Run it for 1 or 2 weeks");
+	}
+	const weeks: 1 | 2 = input.weeks;
+	if (
+		input.cards.length < MIN_HACKATHON_CARDS ||
+		input.cards.length > MAX_HACKATHON_CARDS
+	) {
+		throw new Error(`Add ${MIN_HACKATHON_CARDS}–${MAX_HACKATHON_CARDS} Cards`);
+	}
+
+	const endsAt = input.startsAt + weeks * WEEK_MS;
 	return {
-		roleId: role._id,
-		title,
-		description,
-		maxParticipants: Math.min(
-			MAX_HACKATHON_PARTICIPANTS,
-			Math.max(1, Math.floor(input.maxParticipants)),
-		),
+		job: input.job,
+		problem: requireLimitedText(input.problem, "Problem", TEXT.problem),
+		weeks,
 		startsAt: input.startsAt,
-		endsAt: input.endsAt,
-		applicationDeadline: input.applicationDeadline,
-		prize: limitText(input.prize, "Prize", HACKATHON_TEXT_LIMITS.prize),
-		// It becomes the Cycle's one-line goal at publish.
-		expectedOutcome: limitText(
-			input.expectedOutcome,
-			"Expected outcome",
-			GOAL_MAX,
-		),
-		evaluationCriteria: limitText(
-			input.evaluationCriteria,
-			"Evaluation criteria",
-			HACKATHON_TEXT_LIMITS.detail,
-		),
-		compensation: limitText(
-			input.compensation,
-			"Compensation",
-			HACKATHON_TEXT_LIMITS.detail,
-		),
-		searchText: buildSearchText(title, description, role.title),
+		endsAt,
+		decideBy: endsAt + DECIDE_GRACE_MS,
+		buildersGet: limitText(input.buildersGet, "Builders get", TEXT.buildersGet),
+		cards: input.cards.map((card) => ({
+			title: requireLimitedText(card.title, "Card title", TEXT.cardTitle),
+			notes: limitText(card.notes, "Notes", TEXT.notes) ?? "",
+		})),
 	};
 }
 
-export function isPassed(
-	verdict: Infer<typeof hackathonVerdict> | undefined,
-): boolean {
-	return verdict === "passed" || verdict === "passed_with_offer";
-}
-
-export async function requireHackathon(
-	ctx: HackathonCtx,
+/** The Hackathon, once the person is confirmed as its Startup's Founder. */
+export async function requireHackathonFounder(
+	ctx: QueryCtx | MutationCtx,
 	hackathonId: Id<"hackathons">,
+	userId: Id<"users">,
 ): Promise<Doc<"hackathons">> {
 	const hackathon = await ctx.db.get(hackathonId);
 	if (!hackathon) {
 		throw new Error("Hackathon not found");
 	}
+	await requireFounder(ctx, hackathon.startupId, userId);
 	return hackathon;
 }
 
-export async function getHackathonApplication(
-	ctx: HackathonCtx,
+/** The Cards every Builder starts with: ownerless Cards on the Hackathon. */
+export async function loadTemplateCards(
+	ctx: QueryCtx | MutationCtx,
 	hackathonId: Id<"hackathons">,
-	userId: Id<"users">,
-) {
+): Promise<Doc<"cards">[]> {
 	return await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon_and_user", (q) =>
-			q.eq("hackathonId", hackathonId).eq("userId", userId),
+		.query("cards")
+		.withIndex("by_hackathon_and_owner", (q) =>
+			q.eq("hackathonId", hackathonId).eq("ownerId", undefined),
 		)
-		.unique();
+		.take(MAX_HACKATHON_CARDS);
 }
 
-export async function listHackathonApplications(
-	ctx: HackathonCtx,
-	hackathonId: Id<"hackathons">,
-) {
-	return await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon", (q) => q.eq("hackathonId", hackathonId))
-		.take(MAX_HACKATHON_APPLICATIONS);
-}
-
-export function isHackathonLive(hackathon: Doc<"hackathons">): boolean {
-	return hackathon.status === "open" || hackathon.status === "active";
-}
-
-/**
- * A hackathon anyone may read: published, and its Startup isn't in stealth.
- * Drafts, stealth and missing all come back `null`, so they look the same.
- */
-export async function loadPublicHackathon(
-	ctx: HackathonCtx,
-	hackathonId: Id<"hackathons">,
-) {
-	const hackathon = await ctx.db.get(hackathonId);
-	if (!hackathon || hackathon.status === "draft") {
-		return null;
-	}
-	const startup = await ctx.db.get(hackathon.startupId);
-	if (!startup?.isPublic) {
-		return null;
-	}
-	return { hackathon, startup };
-}
-
-/**
- * One schedule rule for create, update and reschedule: the end follows the
- * start, the start is ahead, and a deadline (if set) falls between now and the start.
- */
-export function requireValidSchedule(
-	schedule: {
-		startsAt: number;
-		endsAt: number;
-		applicationDeadline?: number;
-	},
-	now: number,
-): void {
-	if (schedule.endsAt <= schedule.startsAt) {
-		throw new Error("Hackathon end must be after start");
-	}
-	if (schedule.startsAt <= now) {
-		throw new Error("Pick a start time in the future");
-	}
-	const deadline = schedule.applicationDeadline;
-	if (deadline === undefined) {
-		return;
-	}
-	if (deadline <= now) {
-		throw new Error("Pick an application deadline in the future");
-	}
-	if (deadline > schedule.startsAt) {
-		throw new Error("The application deadline must be before the start");
+export async function insertTemplateCards(
+	ctx: MutationCtx,
+	hackathon: Pick<Doc<"hackathons">, "_id" | "startupId">,
+	cards: { title: string; notes: string }[],
+): Promise<void> {
+	for (const card of cards) {
+		await ctx.db.insert("cards", {
+			startupId: hackathon.startupId,
+			hackathonId: hackathon._id,
+			title: card.title,
+			notes: card.notes,
+			status: "todo",
+		});
 	}
 }
 
-/** The Role a hackathon is for: it belongs to this Startup and is still open. */
-export async function requireOpenRoleOf(
-	ctx: HackathonCtx,
-	startupId: Id<"startups">,
-	roleId: Id<"roles">,
-): Promise<Doc<"roles">> {
-	const role = await ctx.db.get(roleId);
-	if (!role || role.startupId !== startupId) {
-		throw new Error("Role not found");
+export async function replaceTemplateCards(
+	ctx: MutationCtx,
+	hackathon: Pick<Doc<"hackathons">, "_id" | "startupId">,
+	cards: { title: string; notes: string }[],
+): Promise<void> {
+	for (const old of await loadTemplateCards(ctx, hackathon._id)) {
+		await ctx.db.delete(old._id);
 	}
-	if (role.status !== "open") {
-		throw new Error("This Role is closed");
-	}
-	return role;
+	await insertTemplateCards(ctx, hackathon, cards);
 }
 
-/** Entry closes at the application deadline, or at the start when none is set. */
-export function requireAcceptingEntries(hackathon: Doc<"hackathons">) {
-	if (hackathon.status === "draft") {
-		throw new Error("This hackathon isn't published yet");
-	}
-	const entryClosesAt = hackathon.applicationDeadline ?? hackathon.startsAt;
-	if (hackathon.status !== "open" || Date.now() > entryClosesAt) {
-		throw new Error("This Hackathon is no longer accepting people");
-	}
-}
-
-/** Ends a Hackathon without Verdicts; carries no Score consequence. */
-export async function cancelHackathon(
+/** Gives a Builder their own copy of the template Cards, once. */
+export async function copyTemplateCardsTo(
 	ctx: MutationCtx,
 	hackathon: Doc<"hackathons">,
-	reason?: string,
-): Promise<void> {
-	await refundPublishCredit(ctx, hackathon);
-	await setHackathonStatus(ctx, hackathon, "cancelled");
-
-	const href = await hackathonHref(ctx, hackathon);
-	for (const application of await listHackathonApplications(
-		ctx,
-		hackathon._id,
-	)) {
-		if (application.status !== "accepted" && application.status !== "applied") {
-			continue;
-		}
-		await notify(ctx, {
-			userId: application.userId,
-			kind: "hackathon",
-			title: `${hackathon.title} was cancelled`,
-			body: reason,
-			href,
-		});
-	}
-}
-
-/**
- * Runs at the start time: pending applications are rejected, then the Hackathon
- * Cycle either becomes active or, with nobody in it, is cancelled.
- */
-export async function startHackathon(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-): Promise<void> {
-	const applications = await listHackathonApplications(ctx, hackathon._id);
-	const href = await hackathonHref(ctx, hackathon);
-
-	for (const application of applications) {
-		if (application.status !== "applied") {
-			continue;
-		}
-		await ctx.db.patch(application._id, { status: "rejected" });
-		await notify(ctx, {
-			userId: application.userId,
-			kind: "application",
-			title: `${hackathon.title} started without your application being accepted`,
-			href,
-		});
-	}
-
-	if (hackathon.participantCount === 0) {
-		await setHackathonStatus(ctx, hackathon, "cancelled");
-		await notifyFounders(ctx, hackathon.startupId, {
-			kind: "hackathon",
-			title: `${hackathon.title} was cancelled: nobody joined`,
-			href,
-		});
-		return;
-	}
-
-	await setHackathonStatus(ctx, hackathon, "active");
-	const participants = applications.filter(
-		(application) => application.status === "accepted",
-	);
-	await seedLanes(
-		ctx,
-		hackathon,
-		participants.map((application) => application.userId),
-	);
-	for (const application of participants) {
-		await notify(ctx, {
-			userId: application.userId,
-			kind: "hackathon",
-			title: `${hackathon.title} has started`,
-			href,
-		});
-	}
-}
-
-export async function isHackathonParticipant(
-	ctx: HackathonCtx,
-	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
+): Promise<void> {
+	const existing = await ctx.db
+		.query("cards")
+		.withIndex("by_hackathon_and_owner", (q) =>
+			q.eq("hackathonId", hackathon._id).eq("ownerId", userId),
+		)
+		.first();
+	if (existing) {
+		return;
+	}
+	for (const card of await loadTemplateCards(ctx, hackathon._id)) {
+		await ctx.db.insert("cards", {
+			startupId: hackathon.startupId,
+			hackathonId: hackathon._id,
+			ownerId: userId,
+			title: card.title,
+			notes: card.notes,
+			status: "todo",
+		});
+	}
+}
+
+/**
+ * Declines up to one batch of applicants still `applied`. Applications are
+ * unlimited, so returns true when the batch was full and more may remain.
+ */
+export async function declineAppliedBatch(
+	ctx: MutationCtx,
+	hackathonId: Id<"hackathons">,
 ): Promise<boolean> {
-	const application = await getHackathonApplication(ctx, hackathonId, userId);
-	return application?.status === "accepted";
+	const applied = await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "applied"),
+		)
+		.take(MAX_APPLICATIONS);
+	for (const application of applied) {
+		await ctx.db.patch(application._id, { status: "declined" });
+	}
+	return applied.length === MAX_APPLICATIONS;
+}
+
+/** Builders still waiting for a decision from the Founder. */
+export async function countUndecidedBuilders(
+	ctx: QueryCtx | MutationCtx,
+	hackathonId: Id<"hackathons">,
+): Promise<number> {
+	const builders = await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "building"),
+		)
+		.take(MAX_BUILDERS);
+	return builders.filter((builder) => !builder.decision).length;
+}
+
+/** Ends the Hackathon once every Builder has a decision. Call after each decision. */
+export async function finishIfDecided(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+): Promise<void> {
+	if (hackathon.status !== "deciding" && hackathon.status !== "building") {
+		return;
+	}
+	const builders = await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathon._id).eq("status", "building"),
+		)
+		.take(MAX_BUILDERS);
+	if (builders.length === 0 || builders.some((builder) => !builder.decision)) {
+		return;
+	}
+
+	await ctx.db.patch(hackathon._id, { status: "done" });
+	await appendActivity(ctx, {
+		startupId: hackathon.startupId,
+		kind: "hackathon_finished",
+		at: Date.now(),
+		hackathonId: hackathon._id,
+	});
 }

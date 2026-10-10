@@ -1,10 +1,9 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema } from "convex/server";
-import { billingTables } from "./billing/billing.schema";
+import { chatTables } from "./chat/chat.schema";
 import { hiringTables } from "./hiring/hiring.schema";
-import { notificationsTables } from "./people/notifications.schema";
 import { peopleTables } from "./people/people.schema";
-import { teamsTables } from "./teams/teams.schema";
+import { startupsTables } from "./startups/startups.schema";
 import { workTables } from "./work/work.schema";
 
 /**
@@ -14,19 +13,17 @@ import { workTables } from "./work/work.schema";
  * Explicit timestamps only exist when they drive an indexed range query.
  */
 
-export * from "./billing/billing.schema";
+export * from "./chat/chat.schema";
 export * from "./hiring/hiring.schema";
-export * from "./people/notifications.schema";
 export * from "./people/people.schema";
-export * from "./teams/teams.schema";
+export * from "./startups/startups.schema";
 export * from "./work/work.schema";
 
 export default defineSchema({
 	...authTables,
 	...peopleTables,
-	...teamsTables,
-	...notificationsTables,
+	...startupsTables,
 	...workTables,
 	...hiringTables,
-	...billingTables,
+	...chatTables,
 });

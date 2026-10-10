@@ -1,185 +1,76 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
-import { internalQuery, mutation, query } from "../_generated/server";
-import { initUserProfile, requireUserId } from "../lib/auth";
-import { MAX_BIO, MAX_LOCATION, SKILL_LIMITS } from "../lib/limits";
-import { assertUrl, limitText, normalizeTags, optionalText } from "../lib/text";
-import { loadProofOfWork } from "./proofOfWork.rules";
-import { loadScoreEvidence } from "./score.rules";
-import { loadHackathonHistory } from "./hackathonHistory.rules";
-import { requireUsername } from "./username.rules";
-import { toPublicUser } from "./users.rules";
-
-type ProfilePatch = Partial<
-	Pick<
-		Doc<"users">,
-		| "name"
-		| "username"
-		| "bio"
-		| "skills"
-		| "location"
-		| "githubUrl"
-		| "linkedinUrl"
-		| "portfolioUrl"
-		| "hideFromExplore"
-	>
->;
+import { mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
+import { TEXT } from "../lib/limits";
+import { assertUrl, limitText } from "../lib/text";
+import { discipline } from "../schema";
+import { normalizeUsername, requireUsername } from "./username.rules";
+import { toOwnProfile, toPublicProfile } from "./users.rules";
 
 export const getMe = query({
 	args: {},
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return null;
-		}
-
-		const user = await ctx.db.get(userId);
-		if (!user) {
-			return null;
-		}
-
-		const evidence = await loadScoreEvidence(ctx, userId);
-
-		return {
-			_id: user._id,
-			name: user.name ?? null,
-			email: user.email ?? null,
-			image: user.image ?? null,
-			planTier: user.planTier ?? ("free" as const),
-			username: user.username ?? null,
-			bio: user.bio ?? null,
-			skills: user.skills ?? [],
-			location: user.location ?? null,
-			githubUrl: user.githubUrl ?? null,
-			linkedinUrl: user.linkedinUrl ?? null,
-			portfolioUrl: user.portfolioUrl ?? null,
-			focusedStartupId: user.focusedStartupId ?? null,
-			hideFromExplore: user.hideFromExplore ?? false,
-			evidence,
-			score: evidence.score,
-		};
+		const user = userId ? await ctx.db.get(userId) : null;
+		return user ? toOwnProfile(user) : null;
 	},
 });
 
 export const getByUsername = query({
 	args: { username: v.string() },
 	handler: async (ctx, args) => {
-		const username = args.username.trim().toLowerCase();
+		const username = normalizeUsername(args.username);
 		const user = await ctx.db
 			.query("users")
 			.withIndex("by_username", (q) => q.eq("username", username))
 			.unique();
-
-		if (!user) {
-			return null;
-		}
-
-		const evidence = await loadScoreEvidence(ctx, user._id);
-		const memberships = await ctx.db
-			.query("memberships")
-			.withIndex("by_user", (q) => q.eq("userId", user._id))
-			.take(50);
-
-		const startups = [];
-		for (const membership of memberships) {
-			const startup = await ctx.db.get(membership.startupId);
-			if (startup?.isPublic) {
-				startups.push({
-					_id: startup._id,
-					name: startup.name,
-					slug: startup.slug,
-					tagline: startup.tagline ?? null,
-					role: membership.role,
-				});
-			}
-		}
-
-		return {
-			...toPublicUser(user),
-			hackathonHistory: await loadHackathonHistory(ctx, user._id),
-			bio: user.bio ?? null,
-			skills: user.skills ?? [],
-			location: user.location ?? null,
-			githubUrl: user.githubUrl ?? null,
-			linkedinUrl: user.linkedinUrl ?? null,
-			portfolioUrl: user.portfolioUrl ?? null,
-			evidence,
-			proofOfWork: await loadProofOfWork(ctx, user._id),
-			startups,
-		};
+		return user ? toPublicProfile(user) : null;
 	},
 });
 
-export const usernameAvailable = query({
-	args: { username: v.string() },
-	handler: async (ctx, args) => {
-		let username: string;
-		try {
-			username = requireUsername(args.username);
-		} catch {
-			return false;
-		}
-
-		const userId = await getAuthUserId(ctx);
-		const existing = await ctx.db
-			.query("users")
-			.withIndex("by_username", (q) => q.eq("username", username))
-			.unique();
-
-		return existing === null || existing._id === userId;
-	},
-});
+type ProfilePatch = Partial<
+	Pick<
+		Doc<"users">,
+		| "username"
+		| "bio"
+		| "discipline"
+		| "linkedinUrl"
+		| "portfolioUrl"
+		| "githubUrl"
+	>
+>;
 
 export const updateProfile = mutation({
 	args: {
-		name: v.optional(v.string()),
 		username: v.optional(v.string()),
 		bio: v.optional(v.string()),
-		skills: v.optional(v.array(v.string())),
-		location: v.optional(v.string()),
-		githubUrl: v.optional(v.string()),
+		discipline: v.optional(discipline),
 		linkedinUrl: v.optional(v.string()),
 		portfolioUrl: v.optional(v.string()),
-		hideFromExplore: v.optional(v.boolean()),
+		githubUrl: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await initUserProfile(ctx, userId);
-
 		const patch: ProfilePatch = {};
 
-		if (args.name !== undefined) {
-			patch.name = optionalText(args.name);
-		}
-
 		if (args.username !== undefined) {
-			if (!args.username.trim()) {
-				patch.username = undefined;
-			} else {
-				const username = requireUsername(args.username);
-				const taken = await ctx.db
-					.query("users")
-					.withIndex("by_username", (q) => q.eq("username", username))
-					.unique();
-				if (taken && taken._id !== userId) {
-					throw new Error("This username is already taken");
-				}
-				patch.username = username;
+			const username = requireUsername(args.username);
+			const taken = await ctx.db
+				.query("users")
+				.withIndex("by_username", (q) => q.eq("username", username))
+				.unique();
+			if (taken && taken._id !== userId) {
+				throw new Error("That username is taken");
 			}
+			patch.username = username;
 		}
-
 		if (args.bio !== undefined) {
-			patch.bio = limitText(args.bio, "Bio", MAX_BIO);
+			patch.bio = limitText(args.bio, "Bio", TEXT.bio);
 		}
-		if (args.skills !== undefined) {
-			patch.skills = normalizeTags(args.skills, SKILL_LIMITS);
-		}
-		if (args.location !== undefined) {
-			patch.location = limitText(args.location, "Location", MAX_LOCATION);
-		}
-		if (args.githubUrl !== undefined) {
-			patch.githubUrl = assertUrl(args.githubUrl, "GitHub");
+		if (args.discipline !== undefined) {
+			patch.discipline = args.discipline;
 		}
 		if (args.linkedinUrl !== undefined) {
 			patch.linkedinUrl = assertUrl(args.linkedinUrl, "LinkedIn");
@@ -187,16 +78,10 @@ export const updateProfile = mutation({
 		if (args.portfolioUrl !== undefined) {
 			patch.portfolioUrl = assertUrl(args.portfolioUrl, "Portfolio");
 		}
-		if (args.hideFromExplore !== undefined) {
-			patch.hideFromExplore = args.hideFromExplore;
+		if (args.githubUrl !== undefined) {
+			patch.githubUrl = assertUrl(args.githubUrl, "GitHub");
 		}
 
 		await ctx.db.patch(userId, patch);
-		return userId;
 	},
-});
-
-export const getById = internalQuery({
-	args: { userId: v.id("users") },
-	handler: async (ctx, args) => await ctx.db.get(args.userId),
 });

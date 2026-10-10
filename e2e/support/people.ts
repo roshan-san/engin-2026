@@ -27,7 +27,6 @@ export async function signUp(name: string): Promise<Person> {
 		throw new Error(`Sign-up for ${email} returned no tokens`);
 	}
 	client.setAuth(result.tokens.token);
-	await client.mutation(api.people.users.updateProfile, { username });
 
 	return { name, email, username, tokens: result.tokens, api: client };
 }

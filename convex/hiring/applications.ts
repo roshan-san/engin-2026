@@ -2,235 +2,273 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import {
-	MAX_HACKATHON_APPLICATIONS,
+	MAX_BUILDERS,
 	MAX_USER_APPLICATIONS,
+	STARTING_RATING,
+	TEXT,
 } from "../lib/limits";
-import { hackathonHref } from "../lib/links";
-import { optionalText } from "../lib/text";
-import { notify, notifyFounders } from "../people/notifications.rules";
-import { refreshUserScore } from "../people/score.rules";
+import { limitText, requireLimitedText } from "../lib/text";
+import { isProvisional, toPublicUser } from "../people/users.rules";
+import { decision } from "../schema";
+import { getTeamRole } from "../startups/access.rules";
+import { ensureHireInvite } from "../startups/invites.rules";
+import { appendActivity } from "../work/activity.rules";
 import {
-	requireFounderMembership,
-	requireMembership,
-} from "../teams/membership.rules";
-import {
-	holdsLiveEntry,
-	releaseParticipantSpot,
-	requireCanEnter,
-	requireRoomToApply,
-	takeParticipantSpot,
+	ensurePrivateThread,
+	getApplication,
+	loadApplicationsForFounder,
+	requireApplicationFounder,
+	requireBuilding,
+	requireDecidable,
+	requireOpen,
+	requireRunning,
+	toFounderApplicationView,
+	toMyApplicationView,
 } from "./applications.rules";
-import { requireIpTerms } from "./ipTerms.rules";
-import {
-	getHackathonApplication,
-	isHackathonLive,
-	requireAcceptingEntries,
-} from "./hackathons.rules";
+import { finishIfDecided, requireHackathonFounder } from "./hackathons.rules";
 
+/** Everyone who applied, for the Founder. Never includes email. */
+export const listForHackathon = query({
+	args: { hackathonId: v.id("hackathons") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireHackathonFounder(ctx, args.hackathonId, userId);
+
+		const applications = await loadApplicationsForFounder(
+			ctx,
+			args.hackathonId,
+		);
+
+		const rows = await Promise.all(
+			applications.map(async (application) => {
+				const user = await ctx.db.get(application.userId);
+				return user
+					? {
+							application: toFounderApplicationView(application),
+							user: {
+								...toPublicUser(user),
+								rating: user.rating ?? STARTING_RATING,
+								isProvisional: isProvisional(user),
+							},
+						}
+					: null;
+			}),
+		);
+		return rows.filter((row) => row !== null);
+	},
+});
+
+/** The signed-in person's applications, for the switcher's Applied group and Builder places. */
 export const listMine = query({
 	args: {},
 	handler: async (ctx) => {
 		const userId = await requireUserId(ctx);
+
 		const applications = await ctx.db
 			.query("applications")
 			.withIndex("by_user", (q) => q.eq("userId", userId))
-			.order("desc")
 			.take(MAX_USER_APPLICATIONS);
 
-		const results = [];
-		for (const application of applications) {
-			const startup = await ctx.db.get(application.startupId);
-			const role = await ctx.db.get(application.roleId);
-			const hackathon = await ctx.db.get(application.hackathonId);
-			results.push({
-				_id: application._id,
-				status: application.status,
-				message: application.message ?? null,
-				verdict: application.verdict ?? null,
-				evaluation: application.evaluation ?? null,
-				evaluationPublic: application.evaluationPublic ?? false,
-				startupName: startup?.name ?? "Startup",
-				startupSlug: startup?.slug ?? "",
-				roleTitle: role?.title ?? null,
-				hackathonTitle: hackathon?.title ?? null,
-				hackathonStatus: hackathon?.status ?? null,
-				startsAt: hackathon?.startsAt ?? null,
-				endsAt: hackathon?.endsAt ?? null,
-				isLive: holdsLiveEntry(application, hackathon),
-				hackathonId: application.hackathonId,
-				roleId: application.roleId,
-			});
-		}
-		return results;
+		const rows = await Promise.all(
+			applications.map(async (application) => {
+				const hackathon = await ctx.db.get(application.hackathonId);
+				const startup = hackathon && (await ctx.db.get(hackathon.startupId));
+				return hackathon && startup
+					? {
+							hackathonId: hackathon._id,
+							startupName: startup.name,
+							job: hackathon.job,
+							...toMyApplicationView(application),
+							hackathonStatus: hackathon.status,
+						}
+					: null;
+			}),
+		);
+		return rows.filter((row) => row !== null);
 	},
 });
 
-export const listForStartup = query({
-	args: { startupId: v.id("startups") },
-	handler: async (ctx, args) => {
-		const userId = await requireUserId(ctx);
-		await requireMembership(ctx, args.startupId, userId);
-
-		const applications = await ctx.db
-			.query("applications")
-			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
-			.order("desc")
-			.take(MAX_HACKATHON_APPLICATIONS);
-
-		const results = [];
-		for (const application of applications) {
-			const user = await ctx.db.get(application.userId);
-			const role = await ctx.db.get(application.roleId);
-			const hackathon = await ctx.db.get(application.hackathonId);
-			results.push({
-				_id: application._id,
-				status: application.status,
-				message: application.message ?? null,
-				userName: user?.name ?? user?.username ?? user?.email ?? "Applicant",
-				userUsername: user?.username ?? null,
-				roleTitle: role?.title ?? null,
-				hackathonTitle: hackathon?.title ?? null,
-				hackathonId: application.hackathonId,
-			});
-		}
-		return results;
-	},
-});
-
-export const applyToHackathon = mutation({
-	args: {
-		hackathonId: v.id("hackathons"),
-		message: v.optional(v.string()),
-		acceptTerms: v.boolean(),
-	},
+export const apply = mutation({
+	args: { hackathonId: v.id("hackathons"), answer: v.string() },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const hackathon = await ctx.db.get(args.hackathonId);
-		if (!hackathon) {
+		if (!hackathon || hackathon.status === "draft") {
 			throw new Error("Hackathon not found");
 		}
-		requireAcceptingEntries(hackathon);
-		await requireRoomToApply(ctx, hackathon);
-		requireIpTerms(args.acceptTerms);
-		await requireCanEnter(ctx, hackathon, userId);
+		requireOpen(hackathon);
+		if (await getTeamRole(ctx, hackathon.startupId, userId)) {
+			throw new Error("You're on this startup");
+		}
+		if (await getApplication(ctx, hackathon._id, userId)) {
+			throw new Error("You've already applied");
+		}
+		const answer = requireLimitedText(args.answer, "Answer", TEXT.answer);
 
 		const applicationId = await ctx.db.insert("applications", {
-			userId,
-			startupId: hackathon.startupId,
-			roleId: hackathon.roleId,
 			hackathonId: hackathon._id,
+			userId,
+			answer,
 			status: "applied",
-			message: optionalText(args.message),
-			ipAcknowledgedAt: Date.now(),
+			shortlisted: false,
 		});
-
-		await notifyFounders(ctx, hackathon.startupId, {
-			kind: "application",
-			title: `New application for ${hackathon.title}`,
-			href: await hackathonHref(ctx, hackathon),
+		await ctx.db.patch(hackathon._id, {
+			applicantCount: hackathon.applicantCount + 1,
 		});
-
 		return applicationId;
+	},
+});
+
+/** Makes an applicant a Builder. They start building when the Hackathon starts. */
+export const accept = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		requireOpen(hackathon);
+		if (application.status === "building") {
+			return;
+		}
+		if (hackathon.builderCount >= MAX_BUILDERS) {
+			throw new Error(`${MAX_BUILDERS} Builders is the limit`);
+		}
+
+		await ctx.db.patch(application._id, { status: "building" });
+		await ctx.db.patch(hackathon._id, {
+			builderCount: hackathon.builderCount + 1,
+		});
+		await ensurePrivateThread(ctx, hackathon, application.userId);
+	},
+});
+
+export const decline = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		requireOpen(hackathon);
+
+		await ctx.db.patch(application._id, { status: "declined" });
+		if (application.status === "building") {
+			await ctx.db.patch(hackathon._id, {
+				builderCount: hackathon.builderCount - 1,
+			});
+		}
+	},
+});
+
+export const shortlist = mutation({
+	args: { applicationId: v.id("applications"), shortlisted: v.boolean() },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		requireRunning(hackathon);
+		requireBuilding(application);
+
+		await ctx.db.patch(application._id, { shortlisted: args.shortlisted });
+	},
+});
+
+export const markWalkthrough = mutation({
+	args: { applicationId: v.id("applications"), notes: v.optional(v.string()) },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		requireRunning(hackathon);
+		requireBuilding(application);
+		if (!application.shortlisted) {
+			throw new Error("Shortlist them first");
+		}
+		const notes = limitText(args.notes, "Notes", TEXT.walkthroughNotes);
+
+		await ctx.db.patch(application._id, {
+			walkthroughAt: Date.now(),
+			walkthroughNotes: notes,
+		});
 	},
 });
 
 export const decide = mutation({
 	args: {
 		applicationId: v.id("applications"),
-		status: v.union(v.literal("accepted"), v.literal("rejected")),
+		decision,
+		feedback: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const application = await ctx.db.get(args.applicationId);
-		if (!application) {
-			throw new Error("Application not found");
-		}
-
-		await requireFounderMembership(ctx, application.startupId, userId);
-		if (application.status !== "applied") {
-			throw new Error("This application has already been decided");
-		}
-
-		const hackathon = await ctx.db.get(application.hackathonId);
-		if (hackathon?.status !== "open") {
-			throw new Error("This Hackathon is no longer accepting people");
-		}
-
-		if (args.status === "rejected") {
-			await ctx.db.patch(application._id, { status: "rejected" });
-			await notify(ctx, {
-				userId: application.userId,
-				kind: "application",
-				title: `Your application to ${hackathon.title} was not accepted`,
-				href: await hackathonHref(ctx, hackathon),
-			});
-			return;
-		}
-
-		await takeParticipantSpot(ctx, hackathon);
-		await ctx.db.patch(application._id, { status: "accepted" });
-		await notify(ctx, {
-			userId: application.userId,
-			kind: "application",
-			title: `You were accepted to ${hackathon.title}`,
-			href: await hackathonHref(ctx, hackathon),
-		});
-	},
-});
-
-/**
- * Exiting before the Hackathon starts is a free withdrawal; exiting a
- * started one is Leaving, which is public and costs Score.
- */
-export const leaveHackathon = mutation({
-	args: { hackathonId: v.id("hackathons") },
-	handler: async (ctx, args) => {
-		const userId = await requireUserId(ctx);
-		const hackathon = await ctx.db.get(args.hackathonId);
-		const application = await getHackathonApplication(
+		const { application, hackathon } = await requireApplicationFounder(
 			ctx,
-			args.hackathonId,
+			args.applicationId,
 			userId,
 		);
-		const isIn =
-			application?.status === "applied" || application?.status === "accepted";
-		if (!hackathon || !isHackathonLive(hackathon) || !application || !isIn) {
-			throw new Error("You are not in this Hackathon");
+		requireBuilding(application);
+		if (application.decision) {
+			throw new Error("Already decided");
+		}
+		const now = Date.now();
+		requireDecidable(hackathon, now);
+		const feedback = limitText(args.feedback, "Feedback", TEXT.feedback);
+		if (args.decision === "hired" && application.walkthroughAt === undefined) {
+			throw new Error("Do the Walkthrough first");
 		}
 
-		const wasParticipant = application.status === "accepted";
-		const isLeaving = wasParticipant && hackathon.status === "active";
-		await ctx.db.patch(
-			application._id,
-			isLeaving ? { status: "left" } : { status: "withdrawn" },
-		);
-
-		if (wasParticipant) {
-			await releaseParticipantSpot(ctx, hackathon);
+		await ctx.db.patch(application._id, { decision: args.decision, feedback });
+		if (args.decision === "hired") {
+			const builder = await ctx.db.get(application.userId);
+			if (!builder?.email) {
+				throw new Error("This Builder has no email to invite");
+			}
+			await ensureHireInvite(ctx, {
+				startupId: hackathon.startupId,
+				userId: builder._id,
+				email: builder.email,
+				invitedBy: userId,
+				hackathonId: hackathon._id,
+			});
+			await appendActivity(ctx, {
+				startupId: hackathon.startupId,
+				kind: "builder_hired",
+				at: now,
+				actorId: application.userId,
+				hackathonId: hackathon._id,
+			});
 		}
-		if (isLeaving) {
-			await refreshUserScore(ctx, userId);
-		}
-
-		await notifyFounders(ctx, hackathon.startupId, {
-			kind: "application",
-			title: isLeaving
-				? `A Participant left ${hackathon.title}`
-				: `An application to ${hackathon.title} was withdrawn`,
-			href: await hackathonHref(ctx, hackathon),
-		});
+		await finishIfDecided(ctx, hackathon);
 	},
 });
 
-export const setEvaluationVisibility = mutation({
-	args: { applicationId: v.id("applications"), isPublic: v.boolean() },
+/** The Builder says whether the Startup kept what it promised Builders. */
+export const keepPromise = mutation({
+	args: { applicationId: v.id("applications"), kept: v.boolean() },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const application = await ctx.db.get(args.applicationId);
-		if (application?.userId !== userId || !application.evaluation) {
-			throw new Error("Evaluation not found");
+		if (!application || application.userId !== userId) {
+			throw new Error("This isn't your application");
+		}
+		if (!application.decision) {
+			throw new Error("Wait for the decision");
+		}
+		if (application.promiseKept !== undefined) {
+			throw new Error("Already answered");
 		}
 
-		await ctx.db.patch(application._id, { evaluationPublic: args.isPublic });
+		await ctx.db.patch(application._id, { promiseKept: args.kept });
 	},
 });

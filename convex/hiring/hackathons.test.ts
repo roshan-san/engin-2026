@@ -1,613 +1,414 @@
-import { describe, expect, test, vi } from "vitest";
-import { api } from "../_generated/api";
+import { describe, expect, it, vi } from "vitest";
+import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { balanceOf, giveCredit } from "../billing/credits.helpers";
+import { DAY, HOUR, advancePast, createTest } from "../lib/testing.helpers";
+import { signUp } from "../people/users.helpers";
 import {
-	advancePast,
-	type Client,
-	createTest,
-	DAY,
-	HOUR,
-	type TestConvex,
-} from "../lib/testing.helpers";
-import { notificationTitles } from "../people/notifications.helpers";
-import { scoreOf, signUp } from "../people/users.helpers";
-import {
-	goStealth,
-	joinAsMember,
+	addContributor,
+	type Setup,
 	setUpStartup,
-} from "../teams/startups.helpers";
+} from "../startups/startups.helpers";
 import {
-	applicationIdOf,
-	createDraftHackathon,
-	createHackathon,
-	cycleIdOf,
-	enterHackathon,
-	startedHackathonWith,
+	draftHackathon,
+	hackathonInput,
+	nextMonday,
+	publishedHackathon,
 } from "./hackathons.helpers";
+import { finishIfDecided } from "./hackathons.rules";
 
-async function evidenceOf(t: TestConvex, username: string) {
-	const profile = await t.query(api.people.users.getByUsername, { username });
-	return profile?.evidence;
-}
+describe("drafts", () => {
+	it("a draft is private until published", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await draftHackathon(setup);
 
-async function publish(
-	as: Client,
-	hackathonId: Id<"hackathons">,
-	acceptTerms = true,
-) {
-	await as.mutation(api.hiring.hackathons.publish, {
-		hackathonId,
-		acceptTerms,
-	});
-}
-
-describe("joining and starting", () => {
-	test("an accepted applicant becomes a Participant", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		const alice = await signUp(t, "Alice");
-
-		await enterHackathon(setup, hackathonId, alice);
-
-		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
+		const before = await setup.t.query(api.hiring.hackathons.getPublic, {
 			hackathonId,
 		});
-		expect(hackathon?.isParticipant).toBe(true);
-		expect(hackathon?.participantCount).toBe(1);
+		await setup.founder.as.mutation(api.hiring.hackathons.publish, {
+			hackathonId,
+		});
+		const after = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+
+		expect(before).toBeNull();
+		expect(after).toMatchObject({
+			status: "open",
+			myApplication: null,
+			startup: { name: "Acme", rating: 1000 },
+		});
 	});
 
-	test("an applicant is not a Participant until accepted", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		const alice = await signUp(t, "Alice");
+	it("a Hackathon starts on a coming Monday", async () => {
+		const setup = await setUpStartup(createTest());
 
-		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-			acceptTerms: true,
-			hackathonId,
-		});
+		const midweek = draftHackathon(setup, { startsAt: nextMonday() + HOUR });
+		const past = draftHackathon(setup, { startsAt: nextMonday() - 7 * DAY });
 
-		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.myStatus).toBe("applied");
-		expect(hackathon?.isParticipant).toBe(false);
-		expect(hackathon?.participantCount).toBe(0);
+		await expect(midweek).rejects.toThrow("Start on a coming Monday");
+		await expect(past).rejects.toThrow("Start on a coming Monday");
 	});
 
-	test("a Hackathon with Participants becomes active at its start time", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-		await enterHackathon(setup, hackathonId, alice);
+	it("a Hackathon has 3–5 Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const card = { title: "Fix signup" };
 
-		await advancePast(t, DAY + HOUR);
+		const two = draftHackathon(setup, { cards: Array(2).fill(card) });
+		const six = draftHackathon(setup, { cards: Array(6).fill(card) });
 
-		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("active");
+		await expect(two).rejects.toThrow("Add 3–5 Cards");
+		await expect(six).rejects.toThrow("Add 3–5 Cards");
 	});
 
-	test("a Hackathon nobody joined is cancelled at its start time and the Founder is told", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
+	it("a Hackathon runs for 1 or 2 weeks", async () => {
+		const setup = await setUpStartup(createTest());
 
-		await advancePast(t, DAY + HOUR);
+		const three = draftHackathon(setup, { weeks: 3 });
 
-		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("cancelled");
-		expect(await notificationTitles(setup.founder.as)).toContain(
-			"Build a feature was cancelled: nobody joined",
-		);
+		await expect(three).rejects.toThrow("Run it for 1 or 2 weeks");
 	});
 
-	test("Participants are told when a Hackathon starts", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-		await enterHackathon(setup, hackathonId, alice);
+	it("only the Founder drafts a Hackathon", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
 
-		await advancePast(t, DAY + HOUR);
-
-		expect(await notificationTitles(alice.as)).toContain(
-			"Build a feature has started",
-		);
-	});
-
-	test("nobody can apply to a Hackathon after its application deadline", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, {
-			startsInMs: 2 * DAY,
-			applicationDeadlineInMs: DAY,
-		});
-		const alice = await signUp(t, "Alice");
-
-		vi.advanceTimersByTime(DAY + HOUR);
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				acceptTerms: true,
-				hackathonId,
-			}),
-		).rejects.toThrow("no longer accepting");
-	});
-
-	test("pending applications are rejected when a Hackathon starts", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-		const bob = await signUp(t, "Bob");
-		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-			acceptTerms: true,
-			hackathonId,
-		});
-		await bob.as.mutation(api.hiring.applications.applyToHackathon, {
-			acceptTerms: true,
-			hackathonId,
-		});
-		const aliceApplication = await applicationIdOf(
-			t,
-			hackathonId,
-			alice.userId,
-		);
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
-			applicationId: aliceApplication,
-			status: "accepted",
-		});
-
-		await advancePast(t, DAY + HOUR);
-
-		const hackathon = await bob.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.myStatus).toBe("rejected");
-	});
-});
-
-describe("cancelling", () => {
-	test("a Founder can cancel an active Hackathon and Participants are told", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-		await enterHackathon(setup, hackathonId, alice);
-		await advancePast(t, DAY + HOUR);
-
-		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
-			hackathonId,
-		});
-
-		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("cancelled");
-		expect(await notificationTitles(alice.as)).toContain(
-			"Build a feature was cancelled",
-		);
-	});
-
-	test("a cancelled Hackathon stays cancelled when its start time passes", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-		await enterHackathon(setup, hackathonId, alice);
-		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
-			hackathonId,
-		});
-
-		await advancePast(t, DAY + HOUR);
-
-		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("cancelled");
-	});
-
-	test("work stops when a Hackathon is cancelled", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const alice = await signUp(t, "Alice");
-		const hackathonId = await startedHackathonWith(setup, [alice]);
-		const taskId = await alice.as.mutation(api.work.tasks.create, {
+		const draft = sam.as.mutation(api.hiring.hackathons.create, {
 			startupId: setup.startupId,
-			title: "Write the API",
-			cycleId: await cycleIdOf(t, hackathonId),
+			...hackathonInput(),
 		});
 
-		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
-			hackathonId,
-		});
-
-		await expect(
-			alice.as.mutation(api.work.tasks.setStatus, {
-				taskId,
-				status: "in_progress",
-			}),
-		).rejects.toThrow("This Hackathon is not active");
-		expect(await scoreOf(t, alice.userId)).toBe(0);
-		expect((await evidenceOf(t, "alice"))?.hackathonsLeft).toBe(0);
+		await expect(draft).rejects.toThrow("Only the Founder can do this");
 	});
 
-	test("a Founder can cancel a draft", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup);
+	it("a draft keeps its Cards and dates", async () => {
+		const setup = await setUpStartup(createTest());
 
-		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
-			hackathonId,
+		const hackathonId = await draftHackathon(setup, { weeks: 2 });
+
+		const { hackathon, cards } = await setup.founder.as.query(
+			api.hiring.hackathons.get,
+			{ hackathonId },
+		);
+		expect(hackathon).toMatchObject({
+			status: "draft",
+			startsAt: nextMonday(),
+			endsAt: nextMonday() + 14 * DAY,
+			decideBy: nextMonday() + 21 * DAY,
 		});
-
-		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("cancelled");
-	});
-});
-
-describe("drafts and publishing", () => {
-	test("publishing spends one credit, opens the hackathon and schedules its start", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup, {
-			startsInMs: DAY,
-			prize: "₹5,000 to the winner",
-		});
-		await giveCredit(t, setup.founder.userId);
-
-		await publish(setup.founder.as, hackathonId);
-
-		expect(await balanceOf(setup.founder.as)).toBe(0);
-		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("open");
-		expect(hackathon?.creditSource).toBe("purchase");
-		expect(hackathon?.ipAcknowledgedAt).toBeDefined();
-		const { hackathons } = await t.query(api.hiring.opportunities.search, {});
-		expect(hackathons.map((card) => card.prize)).toEqual([
-			"₹5,000 to the winner",
+		expect(cards.map((card) => card.title)).toEqual([
+			"Fix signup",
+			"Add onboarding",
+			"Track drop-off",
 		]);
-
-		const alice = await signUp(t, "Alice");
-		await enterHackathon(setup, hackathonId, alice);
-		await advancePast(t, DAY + HOUR);
-		expect(
-			(await alice.as.query(api.hiring.hackathons.get, { hackathonId }))
-				?.status,
-		).toBe("active");
+		expect(cards.every((card) => card.status === "todo" && !card.ownerId)).toBe(
+			true,
+		);
 	});
 
-	test("publishing a second time is rejected and spends nothing", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup);
-		await giveCredit(t, setup.founder.userId);
-		await giveCredit(t, setup.founder.userId);
-		await publish(setup.founder.as, hackathonId);
+	it("editing a draft replaces its Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await draftHackathon(setup);
 
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Only a draft",
-		);
-		expect(await balanceOf(setup.founder.as)).toBe(1);
-	});
-
-	test("publishing without a credit fails and leaves the draft", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup);
-
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"no hackathon credits",
-		);
-		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+		await setup.founder.as.mutation(api.hiring.hackathons.update, {
 			hackathonId,
-		});
-		expect(hackathon?.status).toBe("draft");
-	});
-
-	test("only a Founder can publish, and only with their own credits", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup);
-		const member = await joinAsMember(setup, "Mia");
-		await giveCredit(t, member.userId);
-
-		await expect(publish(member.as, hackathonId)).rejects.toThrow(
-			"Only founders",
-		);
-
-		const cofounder = await signUp(t, "Cody");
-		await t.run(async (ctx) => {
-			await ctx.db.insert("memberships", {
-				startupId: setup.startupId,
-				userId: cofounder.userId,
-				role: "founder",
-			});
-		});
-		await giveCredit(t, setup.founder.userId);
-		await expect(publish(cofounder.as, hackathonId)).rejects.toThrow(
-			"no hackathon credits",
-		);
-		expect(await balanceOf(setup.founder.as)).toBe(1);
-	});
-
-	test("a stealth startup can't publish a public hackathon", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup);
-		await giveCredit(t, setup.founder.userId);
-		await goStealth(setup);
-
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Turn off stealth mode",
-		);
-	});
-
-	test("a draft for a closed Role can't be published", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup);
-		await giveCredit(t, setup.founder.userId);
-		await t.run(async (ctx) => {
-			await ctx.db.patch(setup.roleId, { status: "closed" });
+			...hackathonInput({
+				problem: "New problem",
+				cards: [{ title: "One" }, { title: "Two" }, { title: "Three" }],
+			}),
 		});
 
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"This Role is closed",
+		const { hackathon, cards } = await setup.founder.as.query(
+			api.hiring.hackathons.get,
+			{ hackathonId },
 		);
+		expect(hackathon.problem).toBe("New problem");
+		expect(cards.map((card) => card.title)).toEqual(["One", "Two", "Three"]);
 	});
 
-	test("publishing requires the IP acknowledgment", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup);
-		await giveCredit(t, setup.founder.userId);
+	it("a published Hackathon can't be edited", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
 
-		await expect(publish(setup.founder.as, hackathonId, false)).rejects.toThrow(
-			"IP terms",
-		);
-		expect(await balanceOf(setup.founder.as)).toBe(1);
+		const edit = setup.founder.as.mutation(api.hiring.hackathons.update, {
+			hackathonId,
+			...hackathonInput(),
+		});
+
+		await expect(edit).rejects.toThrow("Only drafts can be edited");
+	});
+
+	it("the Founder space is for the Founder only", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const hackathonId = await draftHackathon(setup);
+
+		const read = sam.as.query(api.hiring.hackathons.get, { hackathonId });
+
+		await expect(read).rejects.toThrow("Only the Founder can do this");
 	});
 });
 
-describe("publish checks", () => {
-	test("a draft with no expected outcome can't be published", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup, {
-			expectedOutcome: null,
-		});
-		await giveCredit(t, setup.founder.userId);
+describe("publish", () => {
+	it("publishing opens the Everyone thread", async () => {
+		const setup = await setUpStartup(createTest());
 
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Add an expected outcome before publishing",
+		const hackathonId = await publishedHackathon(setup);
+
+		const threads = await setup.t.run(
+			async (ctx) =>
+				await ctx.db
+					.query("threads")
+					.withIndex("by_hackathon_and_kind", (q) =>
+						q.eq("hackathonId", hackathonId),
+					)
+					.take(10),
 		);
-
-		expect(await balanceOf(setup.founder.as)).toBe(1);
+		expect(threads).toMatchObject([{ kind: "everyone" }]);
 	});
 
-	test("a missing Starter Task is reported before a missing expected outcome", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup, {
-			starterTasks: [],
-			expectedOutcome: null,
-		});
-		await giveCredit(t, setup.founder.userId);
+	it("a Hackathon is published once", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
 
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Add at least one Starter Task before publishing",
-		);
+		const again = setup.founder.as.mutation(api.hiring.hackathons.publish, {
+			hackathonId,
+		});
+
+		await expect(again).rejects.toThrow("Already published");
 	});
 
-	test("publishing makes the expected outcome the Cycle's goal", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup, {
-			expectedOutcome: "A working payments API",
-		});
-		await giveCredit(t, setup.founder.userId);
+	it("a draft whose start has passed can't be published", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await draftHackathon(setup);
+		await advancePast(setup.t, 8 * DAY);
 
-		await publish(setup.founder.as, hackathonId);
-
-		const view = await setup.founder.as.query(api.work.cycles.get, {
-			cycleId: await cycleIdOf(t, hackathonId),
+		const publish = setup.founder.as.mutation(api.hiring.hackathons.publish, {
+			hackathonId,
 		});
-		expect(view?.cycle.goal).toBe("A working payments API");
+
+		await expect(publish).rejects.toThrow("Start on a coming Monday");
 	});
 
-	test("a draft with no Starter Task can't be published", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup, { starterTasks: [] });
-		await giveCredit(t, setup.founder.userId);
+	it("drafts show on the Hiring tab for the Founder only", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const draftId = await draftHackathon(setup);
+		const publishedId = await publishedHackathon(setup);
 
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Add at least one Starter Task before publishing",
-		);
-
-		expect(await balanceOf(setup.founder.as)).toBe(1);
-	});
-
-	test("stealth is reported before a missing Starter Task, and that before passed dates", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup, {
-			startsInMs: DAY,
-			starterTasks: [],
-		});
-		await giveCredit(t, setup.founder.userId);
-		await goStealth(setup);
-		vi.advanceTimersByTime(2 * DAY);
-
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Turn off stealth mode",
-		);
-		await setup.founder.as.mutation(api.teams.startups.update, {
+		const forSam = await sam.as.query(api.hiring.hackathons.list, {
 			startupId: setup.startupId,
-			isPublic: true,
 		});
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Starter Task",
-		);
-		await setup.founder.as.mutation(api.hiring.hackathons.addStarterTask, {
-			hackathonId,
-			title: "Build the API",
-		});
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Pick new dates",
-		);
-
-		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("draft");
-		expect(hackathon?.ipAcknowledgedAt).toBeUndefined();
-		expect(await balanceOf(setup.founder.as)).toBe(1);
-	});
-
-	test("publishing tells the other co-founders and logs the activity", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const cofounder = await signUp(t, "Cody");
-		await t.run(async (ctx) => {
-			await ctx.db.insert("memberships", {
-				startupId: setup.startupId,
-				userId: cofounder.userId,
-				role: "founder",
-			});
-		});
-		const hackathonId = await createDraftHackathon(setup);
-		await giveCredit(t, setup.founder.userId);
-
-		await publish(setup.founder.as, hackathonId);
-
-		expect(await notificationTitles(cofounder.as)).toContain(
-			"Build a feature is published",
-		);
-		expect(await notificationTitles(setup.founder.as)).not.toContain(
-			"Build a feature is published",
-		);
-		const { activity } = await setup.founder.as.query(
-			api.teams.activity.dashboard,
+		const forFounder = await setup.founder.as.query(
+			api.hiring.hackathons.list,
 			{ startupId: setup.startupId },
 		);
-		expect(
-			activity.filter((row) => row.kind === "hackathon_published"),
-		).toHaveLength(1);
+
+		expect(forSam.map((row) => row._id)).toEqual([publishedId]);
+		expect(forFounder.map((row) => row._id)).toEqual([publishedId, draftId]);
+	});
+
+	it("the Hiring tab lists the Startup's Hackathons for the team", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const stranger = await signUp(setup.t, "Zed");
+		const hackathonId = await publishedHackathon(setup);
+
+		const rows = await sam.as.query(api.hiring.hackathons.list, {
+			startupId: setup.startupId,
+		});
+		const outsider = stranger.as.query(api.hiring.hackathons.list, {
+			startupId: setup.startupId,
+		});
+
+		expect(rows).toMatchObject([
+			{
+				_id: hackathonId,
+				status: "open",
+				applicantCount: 0,
+				builderCount: 0,
+				toReview: 0,
+				toDecide: 0,
+			},
+		]);
+		await expect(outsider).rejects.toThrow("You're not on this startup");
 	});
 });
 
-describe("spending credits", () => {
-	test("publishing spends Pro credits first, then re-runs, then the signup credit, then purchases", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		for (const source of ["purchase", "signup", "rerun"] as const) {
-			await giveCredit(t, setup.founder.userId, { source });
-		}
-		await giveCredit(t, setup.founder.userId, {
-			source: "pro_monthly",
-			expiresAt: Date.now() + 20 * DAY,
-		});
-
-		const spent = [];
-		for (let index = 0; index < 4; index += 1) {
-			const hackathonId = await createDraftHackathon(setup);
-			await publish(setup.founder.as, hackathonId);
-			const hackathon = await setup.founder.as.query(
-				api.hiring.hackathons.get,
-				{
-					hackathonId,
-				},
-			);
-			spent.push(hackathon?.creditSource);
-		}
-
-		expect(spent).toEqual(["pro_monthly", "rerun", "signup", "purchase"]);
-	});
-
-	test("within one source, the credit expiring soonest is spent first", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const later = Date.now() + 30 * DAY;
-		await giveCredit(t, setup.founder.userId, {
-			source: "rerun",
-			expiresAt: later,
-		});
-		await giveCredit(t, setup.founder.userId, {
-			source: "rerun",
-			expiresAt: Date.now() + 10 * DAY,
-		});
-
-		await publish(setup.founder.as, await createDraftHackathon(setup));
-
-		const { credits } = await setup.founder.as.query(
-			api.billing.credits.balance,
-			{},
-		);
-		expect(credits.map((credit) => credit.expiresAt)).toEqual([later]);
-	});
-
-	test("an expired credit is never spent", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		await giveCredit(t, setup.founder.userId, {
-			source: "rerun",
-			expiresAt: Date.now() - 1,
-		});
-
-		await expect(
-			publish(setup.founder.as, await createDraftHackathon(setup)),
-		).rejects.toThrow("no hackathon credits");
-	});
-});
-
-describe("rescheduling", () => {
-	test("a draft whose dates passed must get new dates before it can publish", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createDraftHackathon(setup, { startsInMs: DAY });
-		await giveCredit(t, setup.founder.userId);
-		vi.advanceTimersByTime(2 * DAY);
-
-		await expect(publish(setup.founder.as, hackathonId)).rejects.toThrow(
-			"Pick new dates",
-		);
-		expect(await balanceOf(setup.founder.as)).toBe(1);
-
-		const startsAt = Date.now() + DAY;
-		await setup.founder.as.mutation(api.hiring.hackathons.reschedule, {
+/** Puts a person on the Hackathon as a Builder. */
+async function addBuilder(
+	setup: Setup,
+	hackathonId: Id<"hackathons">,
+	name: string,
+) {
+	const person = await signUp(setup.t, name);
+	await setup.t.run(async (ctx) => {
+		await ctx.db.insert("applications", {
 			hackathonId,
-			startsAt,
-			endsAt: startsAt + 7 * DAY,
+			userId: person.userId,
+			answer: "I can build it",
+			status: "building",
+			shortlisted: false,
 		});
-		await publish(setup.founder.as, hackathonId);
-		expect(await balanceOf(setup.founder.as)).toBe(0);
+		await ctx.db.patch(hackathonId, { builderCount: 1 });
+	});
+	return person;
+}
+
+describe("lifecycle", () => {
+	it("with no Builders, it ends at the start", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+
+		await advancePast(setup.t, nextMonday() - Date.now() + HOUR);
+
+		const { hackathon } = await setup.founder.as.query(
+			api.hiring.hackathons.get,
+			{ hackathonId },
+		);
+		expect(hackathon.status).toBe("done");
+		const activity = await setup.t.run(
+			async (ctx) => await ctx.db.query("activity").take(10),
+		);
+		expect(activity).toEqual([]);
 	});
 
-	test("only a draft can be rescheduled", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		const startsAt = Date.now() + 3 * DAY;
+	it("at the start, each Builder gets their own copy of the Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await addBuilder(setup, hackathonId, "Ana");
+		const ben = await addBuilder(setup, hackathonId, "Ben");
 
-		await expect(
-			setup.founder.as.mutation(api.hiring.hackathons.reschedule, {
+		await advancePast(setup.t, nextMonday() - Date.now() + HOUR);
+		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+
+		const cards = await setup.t.run(
+			async (ctx) => await ctx.db.query("cards").take(50),
+		);
+		const titlesOf = (userId: typeof ana.userId) =>
+			cards.filter((card) => card.ownerId === userId).map((card) => card.title);
+		expect(titlesOf(ana.userId)).toEqual([
+			"Fix signup",
+			"Add onboarding",
+			"Track drop-off",
+		]);
+		expect(titlesOf(ben.userId)).toEqual([
+			"Fix signup",
+			"Add onboarding",
+			"Track drop-off",
+		]);
+		expect(cards.filter((card) => !card.ownerId)).toHaveLength(3);
+	});
+
+	it("at the start, people still waiting are declined", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await addBuilder(setup, hackathonId, "Ana");
+		const waiting = await signUp(setup.t, "Wes");
+		await setup.t.run(async (ctx) => {
+			await ctx.db.insert("applications", {
 				hackathonId,
-				startsAt,
-				endsAt: startsAt + 7 * DAY,
-			}),
-		).rejects.toThrow("Only a draft");
+				userId: waiting.userId,
+				answer: "Pick me",
+				status: "applied",
+				shortlisted: false,
+			});
+		});
+
+		await advancePast(setup.t, nextMonday() - Date.now() + HOUR);
+		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+
+		const view = await waiting.as.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		expect(view?.myApplication).toMatchObject({
+			status: "declined",
+			decision: null,
+		});
+	});
+
+	it("after the end it's time to decide", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await addBuilder(setup, hackathonId, "Ana");
+
+		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
+		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+
+		const { hackathon } = await setup.founder.as.query(
+			api.hiring.hackathons.get,
+			{ hackathonId },
+		);
+		expect(hackathon.status).toBe("deciding");
+		expect(hackathon.decideBy).toBe(hackathon.endsAt + 7 * DAY);
+		const [row] = await setup.founder.as.query(api.hiring.hackathons.list, {
+			startupId: setup.startupId,
+		});
+		expect(row).toMatchObject({ status: "deciding", toDecide: 1 });
+	});
+
+	it("starting twice does nothing the second time", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await addBuilder(setup, hackathonId, "Ana");
+		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
+		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+
+		await setup.t.mutation(internal.hiring.hackathons.startBuilding, {
+			hackathonId,
+		});
+		await setup.t.mutation(internal.hiring.hackathons.copyCardsFor, {
+			hackathonId,
+			userId: ana.userId,
+		});
+
+		const cards = await setup.t.run(
+			async (ctx) => await ctx.db.query("cards").take(50),
+		);
+		expect(cards).toHaveLength(6);
+		const { hackathon } = await setup.founder.as.query(
+			api.hiring.hackathons.get,
+			{ hackathonId },
+		);
+		expect(hackathon.status).toBe("deciding");
+	});
+
+	it("when every Builder has a decision, the Hackathon is done", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await addBuilder(setup, hackathonId, "Ana");
+		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
+		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+		const before = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
+		});
+
+		await setup.t.run(async (ctx) => {
+			const application = await ctx.db
+				.query("applications")
+				.withIndex("by_hackathon_and_user", (q) =>
+					q.eq("hackathonId", hackathonId).eq("userId", ana.userId),
+				)
+				.unique();
+			if (application) {
+				await ctx.db.patch(application._id, { decision: "hired" });
+			}
+			const hackathon = await ctx.db.get(hackathonId);
+			if (hackathon) {
+				await finishIfDecided(ctx, hackathon);
+			}
+		});
+
+		expect(before.hackathon.status).toBe("deciding");
+		const { hackathon } = await setup.founder.as.query(
+			api.hiring.hackathons.get,
+			{ hackathonId },
+		);
+		expect(hackathon.status).toBe("done");
+		const activity = await setup.t.run(
+			async (ctx) => await ctx.db.query("activity").take(10),
+		);
+		expect(activity).toMatchObject([
+			{ kind: "hackathon_finished", hackathonId },
+		]);
 	});
 });

@@ -1,655 +1,117 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import type { Id } from "../_generated/dataModel";
-import {
-	createHackathon,
-	cycleIdOf,
-	enterHackathon,
-	startedHackathonWith,
-} from "../hiring/hackathons.helpers";
-import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
-import { type Person, signUp } from "../people/users.helpers";
-import {
-	joinAsCoFounder,
-	joinAsMember,
-	setUpStartup,
-} from "../teams/startups.helpers";
-import { submitWithProof } from "./cycles.helpers";
+import { createTest, DAY } from "../lib/testing.helpers";
+import { signUp } from "../people/users.helpers";
+import { addContributor, setUpStartup } from "../startups/startups.helpers";
+import { cycleNumber, weekOf, weekStart } from "./cycles.rules";
 
-async function setUpTeam() {
-	const t = createTest();
-	const setup = await setUpStartup(t);
-	const bob = await joinAsMember(setup, "Bob");
-	const carol = await joinAsMember(setup, "Carol");
-
-	async function createCycle(title: string, members: Person[] = []) {
-		return await setup.founder.as.mutation(api.work.cycles.create, {
-			startupId: setup.startupId,
-			title,
-			goal: "Ship it",
-			startAt: Date.now(),
-			endAt: Date.now() + 7 * DAY,
-			memberUserIds: members.map((member) => member.userId),
-		});
-	}
-
-	async function visibleCycles(person: Person) {
-		const cycles = await person.as.query(api.work.cycles.list, {
-			startupId: setup.startupId,
-		});
-		return cycles.map((cycle) => cycle.title);
-	}
-
-	async function statusOf(cycleId: Id<"cycles">) {
-		const view = await setup.founder.as.query(api.work.cycles.get, {
-			cycleId,
-		});
-		return view?.cycle.status;
-	}
-
-	async function addTask(person: Person, cycleId: Id<"cycles">, title: string) {
-		return await person.as.mutation(api.work.tasks.create, {
-			startupId: setup.startupId,
-			title,
-			cycleId,
-		});
-	}
-
-	async function boardOf(cycleId: Id<"cycles">) {
-		const tasks = await setup.founder.as.query(api.work.tasks.listForCycle, {
-			cycleId,
-		});
-		return tasks.map((task) => `${task.title}:${task.status}`).sort();
-	}
-
-	async function notificationTitles(person: Person) {
-		const { notifications } = await person.as.query(
-			api.people.notifications.list,
-			{},
-		);
-		return notifications.map((notification) => notification.title);
-	}
-
-	async function activitySummaries() {
-		const { activity } = await setup.founder.as.query(
-			api.teams.activity.dashboard,
-			{ startupId: setup.startupId },
-		);
-		return activity.map((row) => row.summary);
-	}
-
-	return {
-		t,
-		setup,
-		bob,
-		carol,
-		createCycle,
-		visibleCycles,
-		statusOf,
-		addTask,
-		boardOf,
-		notificationTitles,
-		activitySummaries,
-	};
-}
-
-describe("seeing Cycles", () => {
-	test("Members see only the Cycles they are Cycle Members of; Founders see all", async () => {
-		const { setup, bob, carol, createCycle, visibleCycles } = await setUpTeam();
-		await createCycle("Landing page", [bob]);
-		await createCycle("Billing", [carol]);
-
-		expect(await visibleCycles(bob)).toEqual(["Landing page"]);
-		expect(await visibleCycles(carol)).toEqual(["Billing"]);
-		expect((await visibleCycles(setup.founder)).sort()).toEqual([
-			"Billing",
-			"Landing page",
-		]);
+describe("cycles", () => {
+	it("weeks run Monday to Sunday in IST", () => {
+		expect(weekOf(Date.parse("2026-10-18T18:29:00Z"))).toBe("2026-W42");
+		expect(weekOf(Date.parse("2026-10-18T18:30:00Z"))).toBe("2026-W43");
+		expect(weekStart("2026-W43")).toBe(Date.parse("2026-10-18T18:30:00Z"));
 	});
 
-	test("a Member outside a Cycle gets nothing for it and cannot touch its Tasks, even by id", async () => {
-		const { setup, bob, carol, createCycle } = await setUpTeam();
-		const cycleId = await createCycle("Landing page", [bob]);
-		const taskId = await bob.as.mutation(api.work.tasks.create, {
-			startupId: setup.startupId,
-			title: "Hero",
-			cycleId,
-		});
-
-		expect(await carol.as.query(api.work.cycles.get, { cycleId })).toBeNull();
-		await expect(
-			carol.as.query(api.work.tasks.listForCycle, { cycleId }),
-		).rejects.toThrow("You are not part of this Cycle");
-		await expect(
-			carol.as.mutation(api.work.tasks.create, {
-				startupId: setup.startupId,
-				title: "Sneaky",
-				cycleId,
-			}),
-		).rejects.toThrow("You are not part of this Cycle");
-		await expect(
-			carol.as.mutation(api.work.tasks.setStatus, {
-				taskId,
-				status: "review",
-			}),
-		).rejects.toThrow("You are not part of this Cycle");
-		await expect(
-			carol.as.mutation(api.work.tasks.assignToMe, { taskId }),
-		).rejects.toThrow("You are not part of this Cycle");
+	it("a year boundary uses ISO weeks", () => {
+		expect(weekOf(Date.parse("2026-12-31T12:00:00Z"))).toBe("2026-W53");
+		expect(weekOf(Date.parse("2027-01-03T12:00:00Z"))).toBe("2026-W53");
+		expect(weekOf(Date.parse("2027-01-04T12:00:00Z"))).toBe("2027-W01");
+		expect(weekStart("2027-W01")).toBe(Date.parse("2027-01-03T18:30:00Z"));
 	});
 
-	test("a co-founder belongs to every Cycle without being added", async () => {
-		const { setup, createCycle, visibleCycles } = await setUpTeam();
-		await createCycle("Landing page");
-		const dana = await joinAsCoFounder(setup, "Dana");
+	it("the first Cycle is the signup week", () => {
+		const created = Date.parse("2026-10-14T09:00:00Z");
 
-		expect(await visibleCycles(dana)).toEqual(["Landing page"]);
-	});
-
-	test("the Cycle screen lists its Members, and planned Cycles only for Founders", async () => {
-		const { setup, bob, createCycle } = await setUpTeam();
-		const cycleId = await createCycle("Landing page", [bob]);
-		await createCycle("Billing", [bob]);
-
-		const asBob = await bob.as.query(api.work.cycles.get, { cycleId });
-		const asFounder = await setup.founder.as.query(api.work.cycles.get, {
-			cycleId,
-		});
-
-		expect(asBob?.members.map((member) => member.name)).toEqual(["Bob"]);
-		expect(asBob?.isFounder).toBe(false);
-		expect(asBob?.plannedCycles).toEqual([]);
-		expect(asFounder?.plannedCycles.map((cycle) => cycle.title).sort()).toEqual(
-			["Billing", "Landing page"],
-		);
+		expect(cycleNumber(created, created)).toBe(1);
+		expect(cycleNumber(created, created + 7 * DAY)).toBe(2);
+		expect(cycleNumber(created, created + 21 * DAY)).toBe(4);
 	});
 });
 
-describe("creating", () => {
-	test("a Founder's new Cycle starts out planned", async () => {
-		const { createCycle, statusOf } = await setUpTeam();
+describe("this week's goal", () => {
+	it("the Founder sets this week's goal", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
 
-		const cycleId = await createCycle("Cycle 12");
-
-		expect(await statusOf(cycleId)).toBe("planned");
-	});
-
-	test("a Cycle keeps its one-line goal", async () => {
-		const { setup, createCycle } = await setUpTeam();
-
-		const cycleId = await createCycle("Cycle 12");
-
-		const view = await setup.founder.as.query(api.work.cycles.get, {
-			cycleId,
-		});
-		expect(view?.cycle.goal).toBe("Ship it");
-	});
-
-	test("a Cycle needs a goal", async () => {
-		const { setup } = await setUpTeam();
-
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.create, {
-				startupId: setup.startupId,
-				title: "Aimless",
-				goal: "   ",
-				startAt: Date.now(),
-				endAt: Date.now() + DAY,
-			}),
-		).rejects.toThrow("A Cycle needs a goal");
-	});
-
-	test("a Cycle must end after it starts", async () => {
-		const { setup } = await setUpTeam();
-
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.create, {
-				startupId: setup.startupId,
-				title: "Backwards",
-				goal: "Ship it",
-				startAt: Date.now(),
-				endAt: Date.now() - DAY,
-			}),
-		).rejects.toThrow("Cycle end must be after start");
-	});
-
-	test("a Member cannot create a Cycle", async () => {
-		const { setup, bob } = await setUpTeam();
-
-		await expect(
-			bob.as.mutation(api.work.cycles.create, {
-				startupId: setup.startupId,
-				title: "Mine",
-				goal: "Ship it",
-				startAt: Date.now(),
-				endAt: Date.now() + DAY,
-			}),
-		).rejects.toThrow("Only founders can perform this action");
-	});
-});
-
-describe("Teams", () => {
-	test("a Cycle takes a Team and a Founder can change it", async () => {
-		const { setup, bob } = await setUpTeam();
-		const other = await setUpStartup(setup.t);
-		const payments = await setup.founder.as.mutation(api.teams.teams.create, {
+		await setup.founder.as.mutation(api.work.cycles.setGoal, {
 			startupId: setup.startupId,
-			name: "Payments",
-		});
-		const foreign = await other.founder.as.mutation(api.teams.teams.create, {
-			startupId: other.startupId,
-			name: "Elsewhere",
-		});
-		const cycleId = await setup.founder.as.mutation(api.work.cycles.create, {
-			startupId: setup.startupId,
-			title: "Cycle 12",
-			goal: "Ship it",
-			startAt: Date.now(),
-			endAt: Date.now() + DAY,
-			teamId: payments,
-		});
-		const teamOf = async () =>
-			(await setup.founder.as.query(api.work.cycles.get, { cycleId }))?.cycle
-				.teamId;
-		const createdIn = await teamOf();
-
-		await setup.founder.as.mutation(api.work.cycles.setTeam, {
-			cycleId,
-			teamId: null,
+			goal: "Get 10 paying users",
 		});
 
-		expect(createdIn).toBe(payments);
-		expect(await teamOf()).toBeUndefined();
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.setTeam, {
-				cycleId,
-				teamId: foreign,
-			}),
-		).rejects.toThrow("Team not found");
-		await expect(
-			bob.as.mutation(api.work.cycles.setTeam, { cycleId, teamId: payments }),
-		).rejects.toThrow("Only founders can perform this action");
-	});
-
-	test("a Cycle can't take another Startup's Team", async () => {
-		const { setup } = await setUpTeam();
-		const other = await setUpStartup(setup.t);
-		const foreign = await other.founder.as.mutation(api.teams.teams.create, {
-			startupId: other.startupId,
-			name: "Elsewhere",
-		});
-
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.create, {
-				startupId: setup.startupId,
-				title: "Cycle 12",
-				goal: "Ship it",
-				startAt: Date.now(),
-				endAt: Date.now() + DAY,
-				teamId: foreign,
-			}),
-		).rejects.toThrow("Team not found");
-	});
-});
-
-describe("starting", () => {
-	test("a planned Cycle stays planned past its start date until a Founder starts it", async () => {
-		const { t, setup, statusOf } = await setUpTeam();
-		const cycleId = await setup.founder.as.mutation(api.work.cycles.create, {
-			startupId: setup.startupId,
-			title: "Sprint",
-			goal: "Ship it",
-			startAt: Date.now() + DAY,
-			endAt: Date.now() + 8 * DAY,
-		});
-
-		await advancePast(t, 2 * DAY);
-
-		expect(await statusOf(cycleId)).toBe("planned");
-	});
-
-	test("starting makes the Cycle active, tells its Members and logs it", async () => {
-		const {
-			setup,
-			bob,
-			createCycle,
-			statusOf,
-			notificationTitles,
-			activitySummaries,
-		} = await setUpTeam();
-		const cycleId = await createCycle("Billing", [bob]);
-
-		await setup.founder.as.mutation(api.work.cycles.start, { cycleId });
-
-		expect(await statusOf(cycleId)).toBe("active");
-		expect(await notificationTitles(bob)).toContain("Cycle Billing started");
-		expect(await activitySummaries()).toContain('Cycle "Billing" started');
-	});
-
-	test("a co-founder hears when another Founder starts a Cycle", async () => {
-		const { setup, createCycle, notificationTitles } = await setUpTeam();
-		const dana = await joinAsCoFounder(setup, "Dana");
-		const cycleId = await createCycle("Billing");
-
-		await setup.founder.as.mutation(api.work.cycles.start, { cycleId });
-
-		expect(await notificationTitles(dana)).toContain("Cycle Billing started");
-		expect(await notificationTitles(setup.founder)).not.toContain(
-			"Cycle Billing started",
-		);
-	});
-
-	test("only one Cycle is active at a time", async () => {
-		const { setup, createCycle } = await setUpTeam();
-		const launch = await createCycle("Launch");
-		const billing = await createCycle("Billing");
-		await setup.founder.as.mutation(api.work.cycles.start, {
-			cycleId: launch,
-		});
-
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.start, { cycleId: billing }),
-		).rejects.toThrow("Close the active Cycle before starting another");
-	});
-
-	test("only a planned Cycle can be started, and only by a Founder", async () => {
-		const { setup, bob, createCycle } = await setUpTeam();
-		const cycleId = await createCycle("Launch", [bob]);
-
-		await expect(
-			bob.as.mutation(api.work.cycles.start, { cycleId }),
-		).rejects.toThrow("Only founders can perform this action");
-		await setup.founder.as.mutation(api.work.cycles.start, { cycleId });
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.start, { cycleId }),
-		).rejects.toThrow("Only a planned Cycle can be started");
-	});
-});
-
-describe("closing", () => {
-	async function setUpLaunch() {
-		const team = await setUpTeam();
-		const { setup, bob, createCycle, addTask } = team;
-		const launch = await createCycle("Launch", [bob]);
-		const billing = await createCycle("Billing");
-		await setup.founder.as.mutation(api.work.cycles.start, {
-			cycleId: launch,
-		});
-
-		const shipped = await addTask(bob, launch, "Shipped");
-		await bob.as.mutation(api.work.tasks.assignToMe, { taskId: shipped });
-		await submitWithProof(bob, shipped);
-		await setup.founder.as.mutation(api.work.tasks.verify, {
-			taskId: shipped,
-		});
-		const hero = await addTask(bob, launch, "Hero");
-		await bob.as.mutation(api.work.tasks.assignToMe, { taskId: hero });
-		await addTask(bob, launch, "Footer");
-		const pricing = await addTask(bob, launch, "Pricing");
-		await submitWithProof(bob, pricing);
-
-		return { ...team, launch, billing };
-	}
-
-	test("closing with carry-over moves unfinished Tasks as they are and keeps Done ones", async () => {
-		const { setup, launch, billing, statusOf, boardOf } = await setUpLaunch();
-
-		await setup.founder.as.mutation(api.work.cycles.close, {
-			cycleId: launch,
-			carryOverToCycleId: billing,
-		});
-
-		expect(await statusOf(launch)).toBe("closed");
-		expect(await boardOf(launch)).toEqual(["Shipped:done"]);
-		expect(await boardOf(billing)).toEqual([
-			"Footer:todo",
-			"Hero:in_progress",
-			"Pricing:review",
-		]);
-	});
-
-	test("an assignee follows their carried-over Task into the next Cycle", async () => {
-		const { setup, bob, launch, billing, visibleCycles } = await setUpLaunch();
-
-		await setup.founder.as.mutation(api.work.cycles.close, {
-			cycleId: launch,
-			carryOverToCycleId: billing,
-		});
-
-		expect((await visibleCycles(bob)).sort()).toEqual(["Billing", "Launch"]);
-		const tasks = await bob.as.query(api.work.tasks.listForCycle, {
-			cycleId: billing,
-		});
-		expect(tasks.map((task) => task.title)).toContain("Hero");
-	});
-
-	test("closing without carry-over leaves unfinished Tasks on the closed Cycle", async () => {
-		const { setup, launch, statusOf, boardOf } = await setUpLaunch();
-
-		await setup.founder.as.mutation(api.work.cycles.close, { cycleId: launch });
-
-		expect(await statusOf(launch)).toBe("closed");
-		expect(await boardOf(launch)).toHaveLength(4);
-	});
-
-	test("closing tells the Cycle's Members and logs it", async () => {
-		const { setup, bob, launch, notificationTitles, activitySummaries } =
-			await setUpLaunch();
-
-		await setup.founder.as.mutation(api.work.cycles.close, { cycleId: launch });
-
-		expect(await notificationTitles(bob)).toContain("Cycle Launch closed");
-		expect(await activitySummaries()).toContain('Cycle "Launch" closed');
-	});
-
-	test("unfinished Tasks carry over only to a planned Cycle", async () => {
-		const { setup, launch, createCycle } = await setUpLaunch();
-		const other = await setUpStartup(setup.t);
-		const elsewhere = await other.founder.as.mutation(api.work.cycles.create, {
-			startupId: other.startupId,
-			title: "Elsewhere",
-			goal: "Ship it",
-			startAt: Date.now(),
-			endAt: Date.now() + DAY,
-		});
-		const closed = await createCycle("Old");
-		await setup.t.run(async (ctx) => {
-			await ctx.db.patch(closed, { status: "closed" });
-		});
-
-		for (const target of [launch, closed, elsewhere]) {
-			await expect(
-				setup.founder.as.mutation(api.work.cycles.close, {
-					cycleId: launch,
-					carryOverToCycleId: target,
-				}),
-			).rejects.toThrow(
-				"Unfinished Tasks can only carry over to a planned Cycle",
-			);
-		}
-	});
-
-	test("only an active Cycle can be closed, and only by a Founder", async () => {
-		const { setup, bob, launch, billing } = await setUpLaunch();
-
-		await expect(
-			bob.as.mutation(api.work.cycles.close, { cycleId: launch }),
-		).rejects.toThrow("Only founders can perform this action");
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.close, { cycleId: billing }),
-		).rejects.toThrow("Only an active Cycle can be closed");
-	});
-});
-
-describe("Cycle Members", () => {
-	test("a Founder adds a Member, who then sees the Cycle and is notified", async () => {
-		const { setup, carol, createCycle, visibleCycles, notificationTitles } =
-			await setUpTeam();
-		const cycleId = await createCycle("Billing");
-
-		await setup.founder.as.mutation(api.work.cycles.addMember, {
-			cycleId,
-			userId: carol.userId,
-		});
-
-		expect(await visibleCycles(carol)).toEqual(["Billing"]);
-		expect(await notificationTitles(carol)).toContain(
-			"You were added to the Cycle Billing",
-		);
-	});
-
-	test("a Founder removes a Member, who then no longer sees the Cycle", async () => {
-		const { setup, bob, createCycle, visibleCycles } = await setUpTeam();
-		const cycleId = await createCycle("Billing", [bob]);
-
-		await setup.founder.as.mutation(api.work.cycles.removeMember, {
-			cycleId,
-			userId: bob.userId,
-		});
-
-		expect(await visibleCycles(bob)).toEqual([]);
-	});
-
-	test("Founders and people off the team cannot be added", async () => {
-		const { t, setup, createCycle } = await setUpTeam();
-		const cycleId = await createCycle("Billing");
-		const dana = await joinAsCoFounder(setup, "Dana");
-		const stranger = await signUp(t, "Stranger");
-
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.addMember, {
-				cycleId,
-				userId: dana.userId,
-			}),
-		).rejects.toThrow("Founders already belong to every Cycle");
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.addMember, {
-				cycleId,
-				userId: stranger.userId,
-			}),
-		).rejects.toThrow("That user is not on the team");
-	});
-
-	test("a closed Cycle's Members don't change, and only Founders manage them", async () => {
-		const { setup, bob, carol, createCycle } = await setUpTeam();
-		const cycleId = await createCycle("Billing", [bob]);
-
-		await expect(
-			bob.as.mutation(api.work.cycles.addMember, {
-				cycleId,
-				userId: carol.userId,
-			}),
-		).rejects.toThrow("Only founders can perform this action");
-
-		await setup.founder.as.mutation(api.work.cycles.start, { cycleId });
-		await setup.founder.as.mutation(api.work.cycles.close, { cycleId });
-
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.addMember, {
-				cycleId,
-				userId: carol.userId,
-			}),
-		).rejects.toThrow("This Cycle is closed");
-		await expect(
-			setup.founder.as.mutation(api.work.cycles.removeMember, {
-				cycleId,
-				userId: bob.userId,
-			}),
-		).rejects.toThrow("This Cycle is closed");
-	});
-});
-
-describe("hackathon Cycles", () => {
-	test("a hackathon starts while a team Cycle is active, and both are active", async () => {
-		const { t, setup, createCycle, statusOf } = await setUpTeam();
-		const launch = await createCycle("Launch");
-		await setup.founder.as.mutation(api.work.cycles.start, { cycleId: launch });
-		const alice = await signUp(t, "Alice");
-
-		const hackathonId = await startedHackathonWith(setup, [alice]);
-
-		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.status).toBe("active");
-		expect(await statusOf(launch)).toBe("active");
-		expect(await statusOf(await cycleIdOf(t, hackathonId))).toBe("active");
-	});
-
-	test("a running hackathon doesn't block starting a team Cycle", async () => {
-		const { t, setup, createCycle, statusOf } = await setUpTeam();
-		await startedHackathonWith(setup, [await signUp(t, "Alice")]);
-		const launch = await createCycle("Launch");
-
-		await setup.founder.as.mutation(api.work.cycles.start, { cycleId: launch });
-
-		expect(await statusOf(launch)).toBe("active");
-	});
-
-	test("hackathon Cycles stay out of the team's Cycle lists", async () => {
-		const { setup, createCycle, visibleCycles } = await setUpTeam();
-		await createCycle("Launch");
-		await createHackathon(setup);
-
-		expect(await visibleCycles(setup.founder)).toEqual(["Launch"]);
-		const mine = await setup.founder.as.query(api.work.cycles.listMine, {});
-		expect(mine.map((cycle) => cycle.title)).toEqual(["Launch"]);
-	});
-
-	test("a hackathon starting sends no team Cycle notification", async () => {
-		const { t, setup, bob, notificationTitles } = await setUpTeam();
-		const dana = await joinAsCoFounder(setup, "Dana");
-
-		await startedHackathonWith(setup, [await signUp(t, "Alice")]);
-
-		for (const person of [bob, dana]) {
-			expect(
-				(await notificationTitles(person)).filter((title) =>
-					title.startsWith("Cycle "),
-				),
-			).toEqual([]);
-		}
-	});
-
-	test("a hackathon's Cycle is managed from its hackathon", async () => {
-		const { t, setup, bob } = await setUpTeam();
-		const hackathonId = await createHackathon(setup);
-		const cycleId = await cycleIdOf(t, hackathonId);
-		const founder = setup.founder.as;
-
-		await expect(
-			founder.mutation(api.work.cycles.start, { cycleId }),
-		).rejects.toThrow("Manage this Cycle from its hackathon");
-		await expect(
-			founder.mutation(api.work.cycles.close, { cycleId }),
-		).rejects.toThrow("Manage this Cycle from its hackathon");
-		await expect(
-			founder.mutation(api.work.cycles.addMember, {
-				cycleId,
-				userId: bob.userId,
-			}),
-		).rejects.toThrow("Manage this Cycle from its hackathon");
-		await expect(
-			founder.mutation(api.work.cycles.removeMember, {
-				cycleId,
-				userId: bob.userId,
-			}),
-		).rejects.toThrow("Manage this Cycle from its hackathon");
-	});
-
-	test("a hackathon Participant is refused on a team Cycle", async () => {
-		const { t, setup, createCycle } = await setUpTeam();
-		const launch = await createCycle("Launch");
-		const dev = await signUp(t, "Dev");
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		await enterHackathon(setup, hackathonId, dev);
-		await advancePast(t, DAY + HOUR);
-
-		await expect(
-			dev.as.query(api.work.tasks.listForCycle, { cycleId: launch }),
-		).rejects.toThrow("You are not part of this Cycle");
 		expect(
-			await dev.as.query(api.work.cycles.get, { cycleId: launch }),
-		).toBeNull();
+			await sam.as.query(api.work.cycles.getCurrent, {
+				startupId: setup.startupId,
+			}),
+		).toMatchObject({ number: 1, goal: "Get 10 paying users" });
+		await expect(
+			sam.as.mutation(api.work.cycles.setGoal, {
+				startupId: setup.startupId,
+				goal: "Take over",
+			}),
+		).rejects.toThrow("Only the Founder can do this");
+	});
+
+	it("the Cycle runs Monday to Sunday and has no goal until one is set", async () => {
+		const setup = await setUpStartup(createTest());
+
+		const cycle = await setup.founder.as.query(api.work.cycles.getCurrent, {
+			startupId: setup.startupId,
+		});
+
+		expect(cycle.goal).toBeNull();
+		expect(cycle.week).toBe(weekOf(Date.now()));
+		expect(cycle.startsAt).toBe(weekStart(cycle.week));
+		expect(cycle.endsAt - cycle.startsAt).toBe(7 * DAY);
+	});
+
+	it("setting the goal again replaces it, and an empty goal clears it", async () => {
+		const setup = await setUpStartup(createTest());
+		const args = { startupId: setup.startupId };
+
+		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+			...args,
+			goal: "Ship pricing",
+		});
+		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+			...args,
+			goal: "  Ship onboarding  ",
+		});
+		const replaced = await setup.founder.as.query(
+			api.work.cycles.getCurrent,
+			args,
+		);
+		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+			...args,
+			goal: "   ",
+		});
+		const cleared = await setup.founder.as.query(
+			api.work.cycles.getCurrent,
+			args,
+		);
+
+		expect(replaced.goal).toBe("Ship onboarding");
+		expect(cleared.goal).toBeNull();
+	});
+
+	it("a goal over the limit is rejected", async () => {
+		const setup = await setUpStartup(createTest());
+
+		await expect(
+			setup.founder.as.mutation(api.work.cycles.setGoal, {
+				startupId: setup.startupId,
+				goal: "x".repeat(141),
+			}),
+		).rejects.toThrow("Goal must be under 140 characters");
+	});
+
+	it("only the team can see the Cycle", async () => {
+		const setup = await setUpStartup(createTest());
+		const outsider = await signUp(setup.t, "Olly");
+
+		await expect(
+			outsider.as.query(api.work.cycles.getCurrent, {
+				startupId: setup.startupId,
+			}),
+		).rejects.toThrow("You're not on this startup");
 	});
 });

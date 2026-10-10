@@ -1,46 +1,37 @@
-import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import type { TestConvex } from "../lib/testing.helpers";
+import type { Client, TestConvex } from "../lib/testing.helpers";
 import { onUserSignedIn } from "./users.rules";
 
-export type Person = Awaited<ReturnType<typeof signUp>>;
+export type Person = { userId: Id<"users">; as: Client };
 
-export async function signUp(
-	t: TestConvex,
-	name: string,
-	planTier: "free" | "pro" = "free",
-) {
-	const userId: Id<"users"> = await t.run(
+/** An existing account at the starting Rating. Its email is `<name>@example.com`, lowercased. */
+export async function signUp(t: TestConvex, name: string): Promise<Person> {
+	const userId = await t.run(
 		async (ctx) =>
 			await ctx.db.insert("users", {
 				name,
 				email: `${name.toLowerCase()}@example.com`,
 				username: name.toLowerCase(),
-				planTier,
-				score: 0,
+				rating: 1000,
+				ratingChange: 0,
+				ratedWeeks: 0,
 			}),
 	);
 	return { userId, as: t.withIdentity({ subject: `${userId}|session` }) };
 }
 
-/** A first sign-in through Google: the account is created and gets its signup credit. */
-export async function signUpNew(t: TestConvex, name: string) {
-	const person = await signUp(t, name);
-	await t.run(
+/** A first sign-in: the account is created without a Rating and `onUserSignedIn` starts it. */
+export async function signUpNew(t: TestConvex, name: string): Promise<Person> {
+	const userId = await t.run(
 		async (ctx) =>
-			await onUserSignedIn(ctx, {
-				userId: person.userId,
-				existingUserId: null,
+			await ctx.db.insert("users", {
+				name,
+				email: `${name.toLowerCase()}@example.com`,
+				username: name.toLowerCase(),
 			}),
 	);
-	return person;
-}
-
-/** The Score shown on someone's public profile. */
-export async function scoreOf(t: TestConvex, userId: Id<"users">) {
-	const user = await t.run(async (ctx) => await ctx.db.get(userId));
-	const profile = await t.query(api.people.users.getByUsername, {
-		username: user?.username ?? "",
-	});
-	return profile?.evidence.score ?? 0;
+	await t.run(
+		async (ctx) => await onUserSignedIn(ctx, { userId, existingUserId: null }),
+	);
+	return { userId, as: t.withIdentity({ subject: `${userId}|session` }) };
 }

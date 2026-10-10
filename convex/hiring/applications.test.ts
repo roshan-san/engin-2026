@@ -1,483 +1,740 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
-import { MAX_HACKATHON_APPLICATIONS } from "../lib/limits";
+import type { Id } from "../_generated/dataModel";
+import { MAX_APPLICATIONS } from "../lib/limits";
+import { createTest } from "../lib/testing.helpers";
 import {
-	advancePast,
-	type Client,
-	createTest,
-	DAY,
-	HOUR,
-	type TestConvex,
-} from "../lib/testing.helpers";
-import { notificationTitles } from "../people/notifications.helpers";
-import { signUp } from "../people/users.helpers";
-import { joinAsMember, setUpStartup } from "../teams/startups.helpers";
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../startups/startups.helpers";
+import { SHIPPED } from "../work/cards.helpers";
 import {
-	LIVE_ENTRY_LIMIT_MESSAGE,
-	ONE_ATTEMPT_MESSAGE,
-	TEAM_ENTRY_MESSAGE,
-	HACKATHON_FULL_MESSAGE,
-} from "./applications.rules";
-import { IP_TERMS_MESSAGE } from "./ipTerms.rules";
-import {
-	applicationIdOf,
-	closeWithVerdict,
-	createHackathon,
-	enterHackathon,
-	startedHackathonWith,
-} from "./hackathons.helpers";
+	type Applicant,
+	applicant,
+	builders,
+	endHackathon,
+	startHackathon,
+} from "./applications.helpers";
+import { publishedHackathon } from "./hackathons.helpers";
 
-async function evidenceOf(t: TestConvex, username: string) {
-	const profile = await t.query(api.people.users.getByUsername, { username });
-	return profile?.evidence;
+async function boardOf(hackathonId: Id<"hackathons">, builder: Applicant) {
+	return await builder.as.query(api.work.cards.listBuilderBoard, {
+		hackathonId,
+		builderId: builder.userId,
+	});
 }
 
-describe("withdrawing and leaving", () => {
-	test("an Applicant can withdraw before a decision", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-			acceptTerms: true,
-			hackathonId,
-		});
-
-		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
-			hackathonId,
-		});
-
-		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.myStatus).toBe("withdrawn");
+async function activityKinds(setup: Setup) {
+	const weeks = await setup.founder.as.query(api.work.activity.list, {
+		startupId: setup.startupId,
 	});
+	return weeks.flatMap((week) => week.entries.map((entry) => entry.kind));
+}
 
-	test("leaving before the start frees the spot and leaves no record", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { maxParticipants: 1 });
-		const alice = await signUp(t, "Alice");
-		const bob = await signUp(t, "Bob");
-		await enterHackathon(setup, hackathonId, alice);
+async function threadsFor(setup: Setup, hackathonId: Id<"hackathons">) {
+	return await setup.t.run(
+		async (ctx) =>
+			await ctx.db
+				.query("threads")
+				.withIndex("by_hackathon_and_kind", (q) =>
+					q.eq("hackathonId", hackathonId).eq("kind", "private"),
+				)
+				.take(20),
+	);
+}
 
-		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
-			hackathonId,
-		});
-		await enterHackathon(setup, hackathonId, bob);
-
-		expect((await evidenceOf(t, "alice"))?.hackathonsLeft).toBe(0);
-	});
-
-	test("Leaving a started Hackathon is recorded publicly and never takes Score below 0", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-		await enterHackathon(setup, hackathonId, alice);
-		await advancePast(t, DAY + HOUR);
-
-		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
-			hackathonId,
-		});
-
-		const evidence = await evidenceOf(t, "alice");
-		expect(evidence?.hackathonsLeft).toBe(1);
-		expect(evidence?.score).toBe(0);
-	});
-
-	test("leaving a running hackathon marks the entry Left, frees the spot and tells the founders", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const alice = await signUp(t, "Alice");
-		const hackathonId = await startedHackathonWith(setup, [alice]);
-
-		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
-			hackathonId,
-		});
-
-		const hackathon = await alice.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
-		expect(hackathon?.myStatus).toBe("left");
-		expect(hackathon?.participantCount).toBe(0);
-		expect(await notificationTitles(setup.founder.as)).toContain(
-			"A Participant left Build a feature",
-		);
-	});
-
-	test("leaving a closed hackathon is refused", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const alice = await signUp(t, "Alice");
-		const hackathonId = await startedHackathonWith(setup, [alice]);
-		await advancePast(t, 8 * DAY);
-		await closeWithVerdict(setup, hackathonId, alice, "passed");
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.leaveHackathon, {
+/** A crowd of applicants, more than one read can hold. No API inserts in bulk. */
+async function crowd(
+	setup: Setup,
+	hackathonId: Id<"hackathons">,
+	count: number,
+) {
+	await setup.t.run(async (ctx) => {
+		for (let i = 0; i < count; i++) {
+			const userId = await ctx.db.insert("users", {
+				name: `Crowd${i}`,
+				email: `crowd${i}@example.com`,
+			});
+			await ctx.db.insert("applications", {
 				hackathonId,
-			}),
-		).rejects.toThrow("You are not in this Hackathon");
-	});
-});
-
-describe("entry rules", () => {
-	test("a person gets one attempt per Hackathon", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		const alice = await signUp(t, "Alice");
-		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-			acceptTerms: true,
-			hackathonId,
-		});
-		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
-			hackathonId,
-		});
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				acceptTerms: true,
-				hackathonId,
-			}),
-		).rejects.toThrow(ONE_ATTEMPT_MESSAGE);
-	});
-
-	test("a person can hold 5 live entries, and a cancelled Hackathon frees a slot", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathons = [];
-		for (let index = 0; index < 6; index += 1) {
-			hackathons.push(await createHackathon(setup));
-		}
-		const alice = await signUp(t, "Alice");
-		for (const hackathonId of hackathons.slice(0, 5)) {
-			await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: true,
+				userId,
+				answer: "Pick me",
+				status: "applied",
+				shortlisted: false,
 			});
 		}
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId: hackathons[5],
-				acceptTerms: true,
-			}),
-		).rejects.toThrow(LIVE_ENTRY_LIMIT_MESSAGE);
-
-		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
-			hackathonId: hackathons[0],
-		});
-		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-			hackathonId: hackathons[5],
-			acceptTerms: true,
-		});
 	});
+}
 
-	test("Pro gives no extra entries", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const alice = await signUp(t, "Alice", "pro");
-		for (let index = 0; index < 5; index += 1) {
-			await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId: await createHackathon(setup),
-				acceptTerms: true,
-			});
-		}
+describe("applying", () => {
+	it("a person applies once", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
 
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId: await createHackathon(setup),
-				acceptTerms: true,
-			}),
-		).rejects.toThrow(LIVE_ENTRY_LIMIT_MESSAGE);
-	});
-
-	test("a startup's own Founders and Members can't enter its hackathon", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		const member = await joinAsMember(setup, "Mia");
-
-		await expect(
-			setup.founder.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: true,
-			}),
-		).rejects.toThrow(TEAM_ENTRY_MESSAGE);
-		await expect(
-			member.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: true,
-			}),
-		).rejects.toThrow(TEAM_ENTRY_MESSAGE);
-	});
-
-	test("entering requires the IP acknowledgment, and records when it was given", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		const alice = await signUp(t, "Alice");
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: false,
-			}),
-		).rejects.toThrow(IP_TERMS_MESSAGE);
-
-		await alice.as.mutation(api.hiring.applications.applyToHackathon, {
+		const again = ana.as.mutation(api.hiring.applications.apply, {
 			hackathonId,
-			acceptTerms: true,
+			answer: "Me again",
 		});
-		const application = await t.run(
+		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+
+		await expect(again).rejects.toThrow("You've already applied");
+		expect(hackathon).toMatchObject({
+			applicantCount: 1,
+			myApplication: null,
+		});
+	});
+
+	it("the Founder and team can't apply", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const sam = await addContributor(setup, "Sam");
+
+		const founder = setup.founder.as.mutation(api.hiring.applications.apply, {
+			hackathonId,
+			answer: "Hire me",
+		});
+		const contributor = sam.as.mutation(api.hiring.applications.apply, {
+			hackathonId,
+			answer: "Hire me",
+		});
+
+		await expect(founder).rejects.toThrow("You're on this startup");
+		await expect(contributor).rejects.toThrow("You're on this startup");
+	});
+
+	it("only the Founder accepts applicants", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+		const ben = await applicant(setup, hackathonId, "Ben");
+
+		const accept = ben.as.mutation(api.hiring.applications.accept, {
+			applicationId: ana.applicationId,
+		});
+
+		await expect(accept).rejects.toThrow("You're not on this startup");
+	});
+
+	it("the 11th Builder is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const names = Array.from({ length: 10 }, (_, i) => `Builder${i}`);
+		await builders(setup, hackathonId, names);
+		const eleventh = await applicant(setup, hackathonId, "Eleven");
+
+		const accept = setup.founder.as.mutation(api.hiring.applications.accept, {
+			applicationId: eleventh.applicationId,
+		});
+
+		await expect(accept).rejects.toThrow("10 Builders is the limit");
+	});
+
+	it("declining a Builder before the start frees their place", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const names = Array.from({ length: 10 }, (_, i) => `Builder${i}`);
+		const [first] = await builders(setup, hackathonId, names);
+		const eleventh = await applicant(setup, hackathonId, "Eleven");
+
+		await setup.founder.as.mutation(api.hiring.applications.decline, {
+			applicationId: first.applicationId,
+		});
+		await setup.founder.as.mutation(api.hiring.applications.accept, {
+			applicationId: eleventh.applicationId,
+		});
+		const list = await setup.founder.as.query(api.hiring.hackathons.list, {
+			startupId: setup.startupId,
+		});
+
+		expect(list[0].builderCount).toBe(10);
+	});
+
+	it("accepting gives the Builder one private Thread, even after a decline", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+		const accept = () =>
+			setup.founder.as.mutation(api.hiring.applications.accept, {
+				applicationId: ana.applicationId,
+			});
+
+		await accept();
+		await setup.founder.as.mutation(api.hiring.applications.decline, {
+			applicationId: ana.applicationId,
+		});
+		await accept();
+
+		expect(await threadsFor(setup, hackathonId)).toMatchObject([
+			{ kind: "private", builderId: ana.userId },
+		]);
+	});
+
+	it("at the start, applicants not picked are declined and Builders get their own Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana, ben] = await builders(setup, hackathonId, ["Ana", "Ben"]);
+		const cal = await applicant(setup, hackathonId, "Cal");
+
+		await startHackathon(setup, hackathonId);
+
+		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		const calView = await cal.as.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		expect(hackathon?.status).toBe("building");
+		expect(calView?.myApplication?.status).toBe("declined");
+		const anaCards = await boardOf(hackathonId, ana);
+		const benCards = await boardOf(hackathonId, ben);
+		expect(anaCards).toHaveLength(3);
+		expect(benCards).toHaveLength(3);
+		expect(anaCards.every((card) => card.owner?._id === ana.userId)).toBe(true);
+	});
+
+	it("at the start, every applicant not picked is declined, however many applied", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await builders(setup, hackathonId, ["Ana"]);
+		await crowd(setup, hackathonId, MAX_APPLICATIONS + 1);
+
+		await startHackathon(setup, hackathonId);
+
+		const stillApplied = await setup.t.run(
 			async (ctx) =>
 				await ctx.db
 					.query("applications")
-					.withIndex("by_hackathon_and_user", (q) =>
-						q.eq("hackathonId", hackathonId).eq("userId", alice.userId),
+					.withIndex("by_hackathon_and_status", (q) =>
+						q.eq("hackathonId", hackathonId).eq("status", "applied"),
 					)
-					.unique(),
+					.take(1),
 		);
-		expect(application?.ipAcknowledgedAt).toBeDefined();
-	});
-
-	test("applying to a hackathon with every Participant spot taken is refused as full", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { maxParticipants: 1 });
-		await enterHackathon(setup, hackathonId, await signUp(t, "Bob"));
-		const alice = await signUp(t, "Alice");
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: true,
-			}),
-		).rejects.toThrow(HACKATHON_FULL_MESSAGE);
-	});
-
-	test("applying to a hackathon with 50 applications is refused as full", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup);
-		await t.run(async (ctx) => {
-			const hackathon = await ctx.db.get(hackathonId);
-			if (!hackathon) {
-				throw new Error("No hackathon");
-			}
-			for (let index = 0; index < MAX_HACKATHON_APPLICATIONS; index += 1) {
-				const userId = await ctx.db.insert("users", {
-					name: `Applicant ${index}`,
-				});
-				await ctx.db.insert("applications", {
-					userId,
-					startupId: hackathon.startupId,
-					roleId: hackathon.roleId,
-					hackathonId,
-					status: index % 2 === 0 ? "applied" : "withdrawn",
-				});
-			}
-		});
-		const alice = await signUp(t, "Alice");
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: true,
-			}),
-		).rejects.toThrow(HACKATHON_FULL_MESSAGE);
-	});
-
-	test("applying after the application deadline is refused", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, {
-			applicationDeadlineInMs: HOUR,
-			startsInMs: DAY,
-		});
-		const alice = await signUp(t, "Alice");
-		await advancePast(t, 2 * HOUR);
-
-		await expect(
-			alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: true,
-			}),
-		).rejects.toThrow("This Hackathon is no longer accepting people");
-	});
-});
-
-describe("admission", () => {
-	async function setUpApplicant() {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { startsInMs: DAY });
-		const alice = await signUp(t, "Alice");
-		const applicationId = await alice.as.mutation(
-			api.hiring.applications.applyToHackathon,
-			{ hackathonId, acceptTerms: true },
-		);
-		return { t, setup, hackathonId, alice, applicationId };
-	}
-
-	async function notificationTitlesOf(as: Client) {
-		const { notifications } = await as.query(api.people.notifications.list, {});
-		return notifications.map((notification) => notification.title);
-	}
-
-	test("accepting an Applicant makes them a Participant, takes a spot and notifies them", async () => {
-		const { setup, hackathonId, alice, applicationId } = await setUpApplicant();
-
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
-			applicationId,
-			status: "accepted",
-		});
-
-		const hackathon = await setup.founder.as.query(api.hiring.hackathons.get, {
+		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
 			hackathonId,
 		});
-		expect(hackathon?.participantCount).toBe(1);
-		expect(hackathon?.applicants.map((applicant) => applicant.status)).toEqual([
-			"accepted",
+		expect(stillApplied).toEqual([]);
+		expect(hackathon?.status).toBe("building");
+	});
+
+	it("the Founder always sees their Builders, however many applied", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await crowd(setup, hackathonId, MAX_APPLICATIONS);
+
+		const list = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
+		);
+
+		expect(list).toHaveLength(MAX_APPLICATIONS + 1);
+		expect(list[0]).toMatchObject({
+			application: { _id: ana.applicationId, status: "building" },
+		});
+	});
+
+	it("nobody joins after the start", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await builders(setup, hackathonId, ["Ana"]);
+		const cal = await applicant(setup, hackathonId, "Cal");
+		await startHackathon(setup, hackathonId);
+
+		const accept = setup.founder.as.mutation(api.hiring.applications.accept, {
+			applicationId: cal.applicationId,
+		});
+		const late = applicant(setup, hackathonId, "Dee");
+
+		await expect(accept).rejects.toThrow("Applications are closed");
+		await expect(late).rejects.toThrow("Applications are closed");
+	});
+
+	it("an applicant sees their applications", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+
+		const mine = await ana.as.query(api.hiring.applications.listMine, {});
+
+		expect(mine).toEqual([
+			{
+				hackathonId,
+				startupName: "Acme",
+				job: { role: "frontend", pay: "6_9l", mode: "remote" },
+				applicationId: ana.applicationId,
+				status: "applied",
+				decision: null,
+				feedback: null,
+				promiseAnswered: false,
+				hackathonStatus: "open",
+			},
 		]);
-		expect(await notificationTitlesOf(alice.as)).toContain(
-			"You were accepted to Build a feature",
+	});
+
+	it("the Founder sees applicants with their Rating and no email", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+
+		const list = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
 		);
-	});
-
-	test("rejecting an Applicant notifies them and frees their live entry", async () => {
-		const { setup, alice, applicationId } = await setUpApplicant();
-
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
-			applicationId,
-			status: "rejected",
-		});
-
-		const [entry] = await alice.as.query(api.hiring.applications.listMine, {});
-		expect(entry?.status).toBe("rejected");
-		expect(entry?.isLive).toBe(false);
-		expect(await notificationTitlesOf(alice.as)).toContain(
-			"Your application to Build a feature was not accepted",
-		);
-	});
-
-	test("accepting when every spot is taken is refused as full and the Applicant stays pending", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const hackathonId = await createHackathon(setup, { maxParticipants: 2 });
-		const alice = await signUp(t, "Alice");
-		const applicationId = await alice.as.mutation(
-			api.hiring.applications.applyToHackathon,
-			{ hackathonId, acceptTerms: true },
-		);
-		await enterHackathon(setup, hackathonId, await signUp(t, "Bob"));
-		await enterHackathon(setup, hackathonId, await signUp(t, "Cara"));
-
-		await expect(
-			setup.founder.as.mutation(api.hiring.applications.decide, {
-				applicationId,
-				status: "accepted",
-			}),
-		).rejects.toThrow(HACKATHON_FULL_MESSAGE);
-
-		const [entry] = await alice.as.query(api.hiring.applications.listMine, {});
-		expect(entry?.status).toBe("applied");
-	});
-
-	test("an application can be decided only once", async () => {
-		const { setup, applicationId } = await setUpApplicant();
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
-			applicationId,
-			status: "rejected",
-		});
-
-		await expect(
-			setup.founder.as.mutation(api.hiring.applications.decide, {
-				applicationId,
-				status: "accepted",
-			}),
-		).rejects.toThrow("This application has already been decided");
-	});
-
-	test("no decisions once the hackathon is no longer open", async () => {
-		const { setup, hackathonId, applicationId } = await setUpApplicant();
-		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
+		const asApplicant = ana.as.query(api.hiring.applications.listForHackathon, {
 			hackathonId,
 		});
 
-		await expect(
-			setup.founder.as.mutation(api.hiring.applications.decide, {
-				applicationId,
-				status: "accepted",
-			}),
-		).rejects.toThrow("This Hackathon is no longer accepting people");
-	});
-
-	test("Members who aren't Founders cannot decide applications", async () => {
-		const { setup, applicationId } = await setUpApplicant();
-		const member = await joinAsMember(setup, "Mia");
-
-		await expect(
-			member.as.mutation(api.hiring.applications.decide, {
-				applicationId,
-				status: "accepted",
-			}),
-		).rejects.toThrow();
+		expect(list).toMatchObject([
+			{
+				application: { _id: ana.applicationId, status: "applied" },
+				user: {
+					_id: ana.userId,
+					name: "Ana",
+					rating: 1000,
+					isProvisional: true,
+				},
+			},
+		]);
+		expect(JSON.stringify(list)).not.toContain("@example.com");
+		await expect(asApplicant).rejects.toThrow("You're not on this startup");
 	});
 });
 
-describe("my hackathons", () => {
-	test("each entry carries its hackathon's status and dates, and only applied or accepted ones in a live hackathon are live", async () => {
-		const t = createTest();
-		const setup = await setUpStartup(t);
-		const applied = await createHackathon(setup);
-		const rejected = await createHackathon(setup);
-		const withdrawn = await createHackathon(setup);
-		const cancelled = await createHackathon(setup);
-		const alice = await signUp(t, "Alice");
-		for (const hackathonId of [applied, rejected, withdrawn, cancelled]) {
-			await alice.as.mutation(api.hiring.applications.applyToHackathon, {
-				hackathonId,
-				acceptTerms: true,
-			});
-		}
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
-			applicationId: await applicationIdOf(t, rejected, alice.userId),
-			status: "rejected",
+describe("building", () => {
+	async function twoBuilders() {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana, ben] = await builders(setup, hackathonId, ["Ana", "Ben"]);
+		await startHackathon(setup, hackathonId);
+		const [anaCard] = await boardOf(hackathonId, ana);
+		const [benCard] = await boardOf(hackathonId, ben);
+		return { setup, hackathonId, ana, ben, anaCard, benCard };
+	}
+
+	it("a Builder works only their own Cards", async () => {
+		const { hackathonId, ana, ben, benCard } = await twoBuilders();
+
+		const read = ana.as.query(api.work.cards.listBuilderBoard, {
+			hackathonId,
+			builderId: ben.userId,
 		});
-		await alice.as.mutation(api.hiring.applications.leaveHackathon, {
-			hackathonId: withdrawn,
+		const submit = ana.as.mutation(api.work.cards.submit, {
+			cardId: benCard._id,
+			shipped: SHIPPED,
 		});
-		await setup.founder.as.mutation(api.hiring.hackathons.cancel, {
-			hackathonId: cancelled,
+		const move = ana.as.mutation(api.work.cards.move, {
+			cardId: benCard._id,
+			to: "in_progress",
+		});
+		const update = ana.as.mutation(api.work.cards.update, {
+			cardId: benCard._id,
+			notes: "Mine now",
 		});
 
-		const entries = await alice.as.query(api.hiring.applications.listMine, {});
+		await expect(read).rejects.toThrow("This Card isn't yours");
+		await expect(submit).rejects.toThrow("This Card isn't yours");
+		await expect(move).rejects.toThrow("This Card isn't yours");
+		await expect(update).rejects.toThrow("This Card isn't yours");
+	});
 
-		const byHackathon = new Map(
-			entries.map((entry) => [entry.hackathonId, entry]),
+	it("the team doesn't work a Builder's Cards", async () => {
+		const { setup, hackathonId, ana, anaCard } = await twoBuilders();
+		const sam = await addContributor(setup, "Sam");
+
+		const read = sam.as.query(api.work.cards.listBuilderBoard, {
+			hackathonId,
+			builderId: ana.userId,
+		});
+		const move = sam.as.mutation(api.work.cards.move, {
+			cardId: anaCard._id,
+			to: "in_progress",
+		});
+
+		await expect(read).rejects.toThrow("This Card isn't yours");
+		await expect(move).rejects.toThrow("This Card isn't yours");
+	});
+
+	it("a Builder moves and submits their own Card but can't remove it", async () => {
+		const { ana, anaCard } = await twoBuilders();
+
+		await ana.as.mutation(api.work.cards.move, {
+			cardId: anaCard._id,
+			to: "in_progress",
+		});
+		await ana.as.mutation(api.work.cards.submit, {
+			cardId: anaCard._id,
+			shipped: SHIPPED,
+		});
+		const remove = ana.as.mutation(api.work.cards.remove, {
+			cardId: anaCard._id,
+		});
+
+		await expect(remove).rejects.toThrow(
+			"Only the Founder can remove this Card",
 		);
-		expect(byHackathon.get(applied)).toMatchObject({
-			status: "applied",
-			hackathonStatus: "open",
-			isLive: true,
+	});
+
+	it("a Builder can't hand their Card to someone else", async () => {
+		const { ana, ben, anaCard } = await twoBuilders();
+
+		const update = ana.as.mutation(api.work.cards.update, {
+			cardId: anaCard._id,
+			ownerId: ben.userId,
 		});
-		expect(byHackathon.get(applied)?.startsAt).toBeTypeOf("number");
-		expect(byHackathon.get(applied)?.endsAt).toBeTypeOf("number");
-		expect(byHackathon.get(rejected)).toMatchObject({
-			status: "rejected",
-			isLive: false,
+
+		await expect(update).rejects.toThrow(
+			"Hackathon Cards stay with their Builder",
+		);
+	});
+
+	it("a declined applicant can't work the Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await builders(setup, hackathonId, ["Ana"]);
+		const cal = await applicant(setup, hackathonId, "Cal");
+		await startHackathon(setup, hackathonId);
+
+		const read = cal.as.query(api.work.cards.listBuilderBoard, {
+			hackathonId,
+			builderId: cal.userId,
 		});
-		expect(byHackathon.get(withdrawn)).toMatchObject({
-			status: "withdrawn",
-			isLive: false,
+
+		await expect(read).rejects.toThrow("This Card isn't yours");
+	});
+
+	it("Builders stop working when the Hackathon ends", async () => {
+		const { setup, hackathonId, ana, anaCard } = await twoBuilders();
+
+		await endHackathon(setup, hackathonId);
+		const move = ana.as.mutation(api.work.cards.move, {
+			cardId: anaCard._id,
+			to: "in_progress",
 		});
-		expect(byHackathon.get(cancelled)).toMatchObject({
-			status: "applied",
-			hackathonStatus: "cancelled",
-			isLive: false,
+
+		await expect(move).rejects.toThrow("This Hackathon isn't running");
+	});
+
+	it("a Builder's work goes through the Founder's review queue", async () => {
+		const { setup, hackathonId, ana, ben, anaCard, benCard } =
+			await twoBuilders();
+		await ben.as.mutation(api.work.cards.submit, {
+			cardId: benCard._id,
+			shipped: SHIPPED,
 		});
+		vi.advanceTimersByTime(60_000);
+		await ana.as.mutation(api.work.cards.submit, {
+			cardId: anaCard._id,
+			shipped: SHIPPED,
+		});
+
+		const queue = await setup.founder.as.query(api.work.cards.listReviewQueue, {
+			hackathonId,
+		});
+		await setup.founder.as.mutation(api.work.cards.verify, {
+			cardId: benCard._id,
+		});
+		const after = await setup.founder.as.query(api.work.cards.listReviewQueue, {
+			hackathonId,
+		});
+
+		expect(queue.map((card) => card._id)).toEqual([benCard._id, anaCard._id]);
+		expect(after.map((card) => card._id)).toEqual([anaCard._id]);
+		expect(await activityKinds(setup)).not.toContain("card_verified");
+	});
+
+	it("only the Founder sees the review queue", async () => {
+		const { hackathonId, ana } = await twoBuilders();
+
+		const queue = ana.as.query(api.work.cards.listReviewQueue, {
+			hackathonId,
+		});
+
+		await expect(queue).rejects.toThrow("You're not on this startup");
+	});
+
+	it("the Founder sees any Builder's Cards", async () => {
+		const { setup, hackathonId, ben } = await twoBuilders();
+
+		const cards = await setup.founder.as.query(
+			api.work.cards.listBuilderBoard,
+			{ hackathonId, builderId: ben.userId },
+		);
+
+		expect(cards).toHaveLength(3);
+	});
+});
+
+describe("deciding", () => {
+	async function ended(names = ["Ana", "Ben"]) {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const accepted = await builders(setup, hackathonId, names);
+		await startHackathon(setup, hackathonId);
+		await endHackathon(setup, hackathonId);
+		return { setup, hackathonId, builders: accepted };
+	}
+
+	async function walkthrough(setup: Setup, builder: Applicant) {
+		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+			applicationId: builder.applicationId,
+			shortlisted: true,
+		});
+		await setup.founder.as.mutation(api.hiring.applications.markWalkthrough, {
+			applicationId: builder.applicationId,
+			notes: "Walked us through the signup fix",
+		});
+	}
+
+	it("decisions wait until the Hackathon ends", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+
+		const decide = setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+
+		await expect(decide).rejects.toThrow("Decide after the Hackathon ends");
+	});
+
+	it("a Walkthrough needs a shortlist", async () => {
+		const {
+			setup,
+			builders: [ana],
+		} = await ended();
+
+		const mark = setup.founder.as.mutation(
+			api.hiring.applications.markWalkthrough,
+			{ applicationId: ana.applicationId },
+		);
+
+		await expect(mark).rejects.toThrow("Shortlist them first");
+	});
+
+	it("Hired needs a Walkthrough", async () => {
+		const {
+			setup,
+			builders: [ana],
+		} = await ended();
+		const hire = () =>
+			setup.founder.as.mutation(api.hiring.applications.decide, {
+				applicationId: ana.applicationId,
+				decision: "hired",
+				feedback: "Great work",
+			});
+
+		await expect(hire()).rejects.toThrow("Do the Walkthrough first");
+		await walkthrough(setup, ana);
+		await hire();
+
+		const invites = await ana.as.query(api.startups.invites.listMine, {});
+		expect(invites).toMatchObject([
+			{ startupName: "Acme", fromHackathon: true },
+		]);
+		expect(await activityKinds(setup)).toContain("builder_hired");
+	});
+
+	it("Hired still works when the Builder was already invited", async () => {
+		const {
+			setup,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await walkthrough(setup, ana);
+		await setup.founder.as.mutation(api.startups.invites.create, {
+			startupId: setup.startupId,
+			email: "ana@example.com",
+		});
+
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+
+		const invites = await ana.as.query(api.startups.invites.listMine, {});
+		expect(invites).toHaveLength(1);
+		expect(invites).toMatchObject([
+			{ startupName: "Acme", fromHackathon: true },
+		]);
+	});
+
+	it("Hired a Builder already on the team saves the decision without an Invite", async () => {
+		const {
+			setup,
+			hackathonId,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await walkthrough(setup, ana);
+		await setup.founder.as.mutation(api.startups.invites.create, {
+			startupId: setup.startupId,
+			email: "ana@example.com",
+		});
+		const [invite] = await ana.as.query(api.startups.invites.listMine, {});
+		await ana.as.mutation(api.startups.invites.accept, {
+			inviteId: invite.inviteId,
+		});
+
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+
+		const list = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
+		);
+		expect(list[0].application).toMatchObject({ decision: "hired" });
+		expect(await ana.as.query(api.startups.invites.listMine, {})).toEqual([]);
+		expect(await activityKinds(setup)).toContain("builder_hired");
+	});
+
+	it("a Builder is decided once", async () => {
+		const {
+			setup,
+			builders: [ana],
+		} = await ended();
+		const decide = () =>
+			setup.founder.as.mutation(api.hiring.applications.decide, {
+				applicationId: ana.applicationId,
+				decision: "not_this_time",
+			});
+
+		await decide();
+
+		await expect(decide()).rejects.toThrow("Already decided");
+	});
+
+	it("everyone decided finishes the Hackathon", async () => {
+		const {
+			setup,
+			hackathonId,
+			builders: [ana, ben],
+		} = await ended();
+		await walkthrough(setup, ana);
+
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+		const halfway = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ben.applicationId,
+			decision: "not_this_time",
+			feedback: "Close one",
+		});
+
+		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		expect(halfway?.status).toBe("deciding");
+		expect(hackathon?.status).toBe("done");
+		expect(await activityKinds(setup)).toContain("hackathon_finished");
+	});
+
+	it("a Builder answers the promise question once", async () => {
+		const {
+			setup,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		const answer = () =>
+			ana.as.mutation(api.hiring.applications.keepPromise, {
+				applicationId: ana.applicationId,
+				kept: true,
+			});
+
+		await expect(answer()).rejects.toThrow("Wait for the decision");
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+		await answer();
+
+		await expect(answer()).rejects.toThrow("Already answered");
+	});
+
+	it("a Builder sees the Founder's note and answers the promise question from their applications", async () => {
+		const {
+			setup,
+			hackathonId,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+			feedback: "Close one",
+		});
+
+		const [before] = await ana.as.query(api.hiring.applications.listMine, {});
+		await ana.as.mutation(api.hiring.applications.keepPromise, {
+			applicationId: before.applicationId,
+			kept: true,
+		});
+
+		expect(before).toMatchObject({
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+			feedback: "Close one",
+			promiseAnswered: false,
+		});
+		const [after] = await ana.as.query(api.hiring.applications.listMine, {});
+		expect(after).toMatchObject({ promiseAnswered: true });
+		expect(after).not.toHaveProperty("promiseKept");
+		const hackathon = await ana.as.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		expect(hackathon?.myApplication).toMatchObject({
+			applicationId: ana.applicationId,
+			feedback: "Close one",
+			promiseAnswered: true,
+		});
+	});
+
+	it("the Founder doesn't see a Builder's promise answer", async () => {
+		const {
+			setup,
+			hackathonId,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+		await ana.as.mutation(api.hiring.applications.keepPromise, {
+			applicationId: ana.applicationId,
+			kept: false,
+		});
+
+		const list = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
+		);
+
+		expect(list[0].application).toMatchObject({ decision: "not_this_time" });
+		expect(list[0].application).not.toHaveProperty("promiseKept");
+	});
+
+	it("only the Builder answers their promise question", async () => {
+		const {
+			setup,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+
+		const answer = setup.founder.as.mutation(
+			api.hiring.applications.keepPromise,
+			{ applicationId: ana.applicationId, kept: false },
+		);
+
+		await expect(answer).rejects.toThrow("This isn't your application");
 	});
 });

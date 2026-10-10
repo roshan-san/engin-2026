@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { ConvexHttpClient } from "convex/browser";
 
 process.loadEnvFile(".env.local");
@@ -15,19 +14,4 @@ export const CONVEX_URL = convexUrl;
 
 export function convexClient() {
 	return new ConvexHttpClient(CONVEX_URL);
-}
-
-/** Runs an internal `convex/e2e/seed.ts` mutation; the deployment needs E2E=1. */
-export function seed(name: "startHackathon" | "giveCredit", args: object) {
-	// The CLI's own entry point, so no shell mangles the JSON argument.
-	execFileSync(
-		process.execPath,
-		[
-			"node_modules/convex/bin/main.js",
-			"run",
-			`e2e/seed:${name}`,
-			JSON.stringify(args),
-		],
-		{ stdio: "pipe" },
-	);
 }

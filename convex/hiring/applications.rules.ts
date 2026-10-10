@@ -1,110 +1,159 @@
 import type { Doc, Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
-import {
-	LIVE_ENTRY_STATUSES,
-	MAX_LIVE_ENTRIES,
-	MAX_HACKATHON_APPLICATIONS,
-	MAX_USER_APPLICATIONS,
-} from "../lib/limits";
-import { getMembership } from "../teams/membership.rules";
-import {
-	getHackathonApplication,
-	isHackathonLive,
-	listHackathonApplications,
-} from "./hackathons.rules";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { MAX_APPLICATIONS, MAX_BUILDERS } from "../lib/limits";
+import { requireHackathonFounder } from "./hackathons.rules";
 
-export const TEAM_ENTRY_MESSAGE =
-	"You're on this startup's team, so you can't enter its hackathon";
-export const ONE_ATTEMPT_MESSAGE =
-	"You get one attempt per Hackathon. Look for a later one for this Role.";
-export const LIVE_ENTRY_LIMIT_MESSAGE = `You're in ${MAX_LIVE_ENTRIES} hackathons already. Finish or withdraw from one to join another.`;
-export const HACKATHON_FULL_MESSAGE = "This Hackathon is full";
+type Ctx = QueryCtx | MutationCtx;
 
-/** An entry holds one of the person's live-entry slots while its hackathon is live. */
-export function holdsLiveEntry(
-	application: Doc<"applications">,
-	hackathon: Doc<"hackathons"> | null,
-): boolean {
-	return (
-		(LIVE_ENTRY_STATUSES as readonly string[]).includes(application.status) &&
-		hackathon !== null &&
-		isHackathonLive(hackathon)
-	);
-}
-
-async function countLiveEntries(ctx: MutationCtx, userId: Id<"users">) {
-	const applications = await ctx.db
-		.query("applications")
-		.withIndex("by_user", (q) => q.eq("userId", userId))
-		.take(MAX_USER_APPLICATIONS);
-
-	let count = 0;
-	for (const application of applications) {
-		const hackathon = await ctx.db.get(application.hackathonId);
-		if (holdsLiveEntry(application, hackathon)) {
-			count += 1;
-		}
-	}
-	return count;
-}
-
-/**
- * Nobody enters their own startup's hackathon (Score integrity, eng review
- * R3), everyone gets one attempt per Hackathon, and nobody holds more than
- * 5 live entries.
- */
-export async function requireCanEnter(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
+/** The person's application to the Hackathon, or null. */
+export async function getApplication(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
+): Promise<Doc<"applications"> | null> {
+	return await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_user", (q) =>
+			q.eq("hackathonId", hackathonId).eq("userId", userId),
+		)
+		.unique();
+}
+
+/** Whether the person is a Builder on the Hackathon (accepted, not declined). */
+export async function isBuilder(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+	userId: Id<"users">,
+): Promise<boolean> {
+	const application = await getApplication(ctx, hackathonId, userId);
+	return application?.status === "building";
+}
+
+/** The application and its Hackathon, once the person is confirmed as the Founder. */
+export async function requireApplicationFounder(
+	ctx: Ctx,
+	applicationId: Id<"applications">,
+	userId: Id<"users">,
+): Promise<{ application: Doc<"applications">; hackathon: Doc<"hackathons"> }> {
+	const application = await ctx.db.get(applicationId);
+	if (!application) {
+		throw new Error("Application not found");
+	}
+	const hackathon = await requireHackathonFounder(
+		ctx,
+		application.hackathonId,
+		userId,
+	);
+	return { application, hackathon };
+}
+
+export function requireOpen(hackathon: Doc<"hackathons">): void {
+	if (hackathon.status !== "open") {
+		throw new Error("Applications are closed");
+	}
+}
+
+export function requireRunning(hackathon: Doc<"hackathons">): void {
+	if (hackathon.status !== "building" && hackathon.status !== "deciding") {
+		throw new Error("This Hackathon isn't running");
+	}
+}
+
+export function requireBuilding(application: Doc<"applications">): void {
+	if (application.status !== "building") {
+		throw new Error("They're not a Builder");
+	}
+}
+
+/** Decisions open when the Hackathon ends, even before `startDeciding` has run. */
+export function requireDecidable(
+	hackathon: Doc<"hackathons">,
+	now: number,
+): void {
+	const ended =
+		hackathon.status === "deciding" ||
+		(hackathon.status === "building" && now >= hackathon.endsAt);
+	if (!ended) {
+		throw new Error("Decide after the Hackathon ends");
+	}
+}
+
+/** The Founder's private Thread with a Builder, created once. */
+export async function ensurePrivateThread(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+	builderId: Id<"users">,
 ): Promise<void> {
-	if (await getMembership(ctx, hackathon.startupId, userId)) {
-		throw new Error(TEAM_ENTRY_MESSAGE);
+	const existing = await ctx.db
+		.query("threads")
+		.withIndex("by_hackathon_and_builder", (q) =>
+			q.eq("hackathonId", hackathon._id).eq("builderId", builderId),
+		)
+		.first();
+	if (existing) {
+		return;
 	}
-	if (await getHackathonApplication(ctx, hackathon._id, userId)) {
-		throw new Error(ONE_ATTEMPT_MESSAGE);
-	}
-	if ((await countLiveEntries(ctx, userId)) >= MAX_LIVE_ENTRIES) {
-		throw new Error(LIVE_ENTRY_LIMIT_MESSAGE);
-	}
+	await ctx.db.insert("threads", {
+		startupId: hackathon.startupId,
+		hackathonId: hackathon._id,
+		kind: "private",
+		builderId,
+	});
 }
 
 /**
- * A hackathon is full for new applications once its Participant spots are
- * taken or it has 50 applications of any status, so the Founders' applicant
- * list (read up to the same bound) never hides anyone.
+ * A Hackathon's applications for its Founder: every Builder first, then up to
+ * MAX_APPLICATIONS others, so a crowd of applicants never hides a Builder.
  */
-export async function requireRoomToApply(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-): Promise<void> {
-	if (hackathon.participantCount >= hackathon.maxParticipants) {
-		throw new Error(HACKATHON_FULL_MESSAGE);
+export async function loadApplicationsForFounder(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"applications">[]> {
+	const byStatus = async (
+		status: Doc<"applications">["status"],
+		limit: number,
+	) =>
+		limit <= 0
+			? []
+			: await ctx.db
+					.query("applications")
+					.withIndex("by_hackathon_and_status", (q) =>
+						q.eq("hackathonId", hackathonId).eq("status", status),
+					)
+					.take(limit);
+
+	const builders = await byStatus("building", MAX_BUILDERS);
+	const others: Doc<"applications">[] = [];
+	for (const status of ["applied", "declined", "left"] as const) {
+		others.push(...(await byStatus(status, MAX_APPLICATIONS - others.length)));
 	}
-	const applications = await listHackathonApplications(ctx, hackathon._id);
-	if (applications.length >= MAX_HACKATHON_APPLICATIONS) {
-		throw new Error(HACKATHON_FULL_MESSAGE);
-	}
+	return [...builders, ...others];
 }
 
-/** Takes a Participant spot; the counter changes in the same mutation as the status. */
-export async function takeParticipantSpot(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-): Promise<void> {
-	if (hackathon.participantCount >= hackathon.maxParticipants) {
-		throw new Error(HACKATHON_FULL_MESSAGE);
-	}
-	await ctx.db.patch(hackathon._id, {
-		participantCount: hackathon.participantCount + 1,
-	});
+/** What the Founder sees of an application. Leaves out the Builder's private promise answer. */
+export function toFounderApplicationView(application: Doc<"applications">) {
+	return {
+		_id: application._id,
+		_creationTime: application._creationTime,
+		hackathonId: application.hackathonId,
+		userId: application.userId,
+		answer: application.answer,
+		status: application.status,
+		shortlisted: application.shortlisted,
+		walkthroughAt: application.walkthroughAt ?? null,
+		walkthroughNotes: application.walkthroughNotes ?? null,
+		decision: application.decision ?? null,
+		feedback: application.feedback ?? null,
+	};
 }
 
-export async function releaseParticipantSpot(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-): Promise<void> {
-	await ctx.db.patch(hackathon._id, {
-		participantCount: Math.max(0, hackathon.participantCount - 1),
-	});
+/** What the Builder sees of their own application: the decision, the Founder's note, and whether they've answered the promise question. */
+export function toMyApplicationView(application: Doc<"applications">) {
+	return {
+		applicationId: application._id,
+		status: application.status,
+		decision: application.decision ?? null,
+		feedback: application.feedback ?? null,
+		promiseAnswered: application.promiseKept !== undefined,
+	};
 }

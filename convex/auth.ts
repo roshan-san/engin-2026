@@ -4,7 +4,7 @@ import { convexAuth } from "@convex-dev/auth/server";
 import type { MutationCtx } from "./_generated/server";
 import { onUserSignedIn } from "./people/users.rules";
 
-/** Browser tests sign in with a password; only deployments with E2E=1 offer it. */
+/** Browser tests sign in with a password; only deployments with E2E=1 have it. */
 const e2ePassword =
 	process.env.E2E === "1"
 		? [

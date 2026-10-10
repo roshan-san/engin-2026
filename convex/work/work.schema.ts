@@ -1,76 +1,76 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const taskStatus = v.union(
+export const cardStatus = v.union(
 	v.literal("todo"),
 	v.literal("in_progress"),
-	/** A Submitted Task, awaiting a Founder's review. */
+	/** Submitted, waiting for the Founder to verify. */
 	v.literal("review"),
 	v.literal("done"),
 );
-export const proofLinkKind = v.union(
-	v.literal("pr"),
-	v.literal("commit"),
-	v.literal("deploy"),
-	v.literal("design"),
-	v.literal("doc"),
-	v.literal("demo"),
-	v.literal("other"),
-);
-export const proofLink = v.object({ kind: proofLinkKind, url: v.string() });
-/** A team's own Cycle, or the one a hackathon owns (its lanes are the Participants). */
-export const cycleKind = v.union(v.literal("team"), v.literal("hackathon"));
-export const cycleStatus = v.union(
-	v.literal("planned"),
-	v.literal("active"),
-	v.literal("closed"),
+
+/** What shipped: the line, proof links and images a Contributor submits. */
+export const shipped = v.object({
+	line: v.string(),
+	links: v.array(v.string()),
+	images: v.array(v.id("_storage")),
+});
+
+export const activityKind = v.union(
+	v.literal("card_verified"),
+	v.literal("contributor_joined"),
+	v.literal("hackathon_finished"),
+	v.literal("builder_hired"),
 );
 
 export const workTables = {
-	tasks: defineTable({
+	cards: defineTable({
 		startupId: v.id("startups"),
-		cycleId: v.id("cycles"),
-		title: v.string(),
-		description: v.optional(v.string()),
-		status: taskStatus,
-		assigneeUserId: v.optional(v.id("users")),
-		createdByUserId: v.id("users"),
-		proofLinks: v.optional(v.array(proofLink)),
-		/** Why a Founder sent a Submitted Task back. */
-		reviewNote: v.optional(v.string()),
-	})
-		.index("by_startup", ["startupId"])
-		.index("by_startup_and_status", ["startupId", "status"])
-		.index("by_cycle", ["cycleId"])
-		.index("by_cycle_and_status", ["cycleId", "status"])
-		/** A hackathon lane; Starter Task templates have no assignee. */
-		.index("by_cycle_and_assignee", ["cycleId", "assigneeUserId"])
-		.index("by_assignee", ["assigneeUserId"]),
-
-	cycles: defineTable({
-		startupId: v.id("startups"),
-		kind: cycleKind,
-		title: v.string(),
-		/** One line: what the Cycle ships. A hackathon's is its expected outcome, set at publish. */
-		goal: v.optional(v.string()),
-		/** Set on a hackathon's Cycle, whose status follows the hackathon. */
+		/** Set on a Hackathon Card, which lives on a Builder's board. */
 		hackathonId: v.optional(v.id("hackathons")),
-		startAt: v.number(),
-		endAt: v.number(),
-		status: cycleStatus,
-		/** A label; a hackathon's Cycle copies its Role's. */
-		teamId: v.optional(v.id("teams")),
+		ownerId: v.optional(v.id("users")),
+		title: v.string(),
+		notes: v.string(),
+		notesEditedAt: v.optional(v.number()),
+		notesEditedBy: v.optional(v.id("users")),
+		status: cardStatus,
+		shipped: v.optional(shipped),
+		submittedAt: v.optional(v.number()),
+		verifiedAt: v.optional(v.number()),
+		verifiedBy: v.optional(v.id("users")),
 	})
-		.index("by_startup", ["startupId"])
-		.index("by_team", ["teamId"])
-		.index("by_startup_and_status", ["startupId", "status"])
-		.index("by_startup_and_kind_and_status", ["startupId", "kind", "status"]),
+		.index("by_startup_and_hackathon_and_status", [
+			"startupId",
+			"hackathonId",
+			"status",
+		])
+		.index("by_startup_and_hackathon_and_status_and_verifiedAt", [
+			"startupId",
+			"hackathonId",
+			"status",
+			"verifiedAt",
+		])
+		.index("by_hackathon_and_owner", ["hackathonId", "ownerId"])
+		.index("by_hackathon_and_status", ["hackathonId", "status"])
+		.index("by_owner", ["ownerId"]),
 
-	/** Members (not Founders, who belong to every Cycle implicitly) added to a Cycle. */
-	cycleMembers: defineTable({
-		cycleId: v.id("cycles"),
-		userId: v.id("users"),
-	})
-		.index("by_cycle_and_user", ["cycleId", "userId"])
-		.index("by_cycle", ["cycleId"]),
+	cycleGoals: defineTable({
+		startupId: v.id("startups"),
+		/** ISO week key, `YYYY-Www`. */
+		week: v.string(),
+		goal: v.string(),
+	}).index("by_startup_and_week", ["startupId", "week"]),
+
+	/** Append-only; written only through `appendActivity`. */
+	activity: defineTable({
+		startupId: v.id("startups"),
+		kind: activityKind,
+		/** ISO week key, `YYYY-Www`. */
+		week: v.string(),
+		actorId: v.optional(v.id("users")),
+		cardId: v.optional(v.id("cards")),
+		hackathonId: v.optional(v.id("hackathons")),
+		line: v.optional(v.string()),
+		selfVerified: v.optional(v.boolean()),
+	}).index("by_startup_and_week", ["startupId", "week"]),
 };
