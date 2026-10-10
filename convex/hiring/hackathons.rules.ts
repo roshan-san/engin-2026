@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
 	DECIDE_GRACE_MS,
+	MAX_APPLICATIONS,
 	MAX_BUILDERS,
 	MAX_HACKATHON_CARDS,
 	TEXT,
@@ -147,6 +148,26 @@ export async function copyTemplateCardsTo(
 			status: "todo",
 		});
 	}
+}
+
+/**
+ * Declines up to one batch of applicants still `applied`. Applications are
+ * unlimited, so returns true when the batch was full and more may remain.
+ */
+export async function declineAppliedBatch(
+	ctx: MutationCtx,
+	hackathonId: Id<"hackathons">,
+): Promise<boolean> {
+	const applied = await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "applied"),
+		)
+		.take(MAX_APPLICATIONS);
+	for (const application of applied) {
+		await ctx.db.patch(application._id, { status: "declined" });
+	}
+	return applied.length === MAX_APPLICATIONS;
 }
 
 /** Builders still waiting for a decision from the Founder. */

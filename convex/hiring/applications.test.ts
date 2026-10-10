@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { MAX_APPLICATIONS } from "../lib/limits";
 import { createTest } from "../lib/testing.helpers";
 import {
 	addContributor,
@@ -41,6 +42,29 @@ async function threadsFor(setup: Setup, hackathonId: Id<"hackathons">) {
 				)
 				.take(20),
 	);
+}
+
+/** A crowd of applicants, more than one read can hold. No API inserts in bulk. */
+async function crowd(
+	setup: Setup,
+	hackathonId: Id<"hackathons">,
+	count: number,
+) {
+	await setup.t.run(async (ctx) => {
+		for (let i = 0; i < count; i++) {
+			const userId = await ctx.db.insert("users", {
+				name: `Crowd${i}`,
+				email: `crowd${i}@example.com`,
+			});
+			await ctx.db.insert("applications", {
+				hackathonId,
+				userId,
+				answer: "Pick me",
+				status: "applied",
+				shortlisted: false,
+			});
+		}
+	});
 }
 
 describe("applying", () => {
@@ -170,6 +194,47 @@ describe("applying", () => {
 		expect(anaCards).toHaveLength(2);
 		expect(benCards).toHaveLength(2);
 		expect(anaCards.every((card) => card.owner?._id === ana.userId)).toBe(true);
+	});
+
+	it("at the start, every applicant not picked is declined, however many applied", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await builders(setup, hackathonId, ["Ana"]);
+		await crowd(setup, hackathonId, MAX_APPLICATIONS + 1);
+
+		await startHackathon(setup, hackathonId);
+
+		const stillApplied = await setup.t.run(
+			async (ctx) =>
+				await ctx.db
+					.query("applications")
+					.withIndex("by_hackathon_and_status", (q) =>
+						q.eq("hackathonId", hackathonId).eq("status", "applied"),
+					)
+					.take(1),
+		);
+		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		expect(stillApplied).toEqual([]);
+		expect(hackathon?.status).toBe("building");
+	});
+
+	it("the Founder always sees their Builders, however many applied", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await crowd(setup, hackathonId, MAX_APPLICATIONS);
+
+		const list = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
+		);
+
+		expect(list).toHaveLength(MAX_APPLICATIONS + 1);
+		expect(list[0]).toMatchObject({
+			application: { _id: ana.applicationId, status: "building" },
+		});
 	});
 
 	it("nobody joins after the start", async () => {
@@ -536,6 +601,30 @@ describe("deciding", () => {
 		await answer();
 
 		await expect(answer()).rejects.toThrow("Already answered");
+	});
+
+	it("the Founder doesn't see a Builder's promise answer", async () => {
+		const {
+			setup,
+			hackathonId,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+		await ana.as.mutation(api.hiring.applications.keepPromise, {
+			applicationId: ana.applicationId,
+			kept: false,
+		});
+
+		const list = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
+		);
+
+		expect(list[0].application).toMatchObject({ decision: "not_this_time" });
+		expect(list[0].application).not.toHaveProperty("promiseKept");
 	});
 
 	it("only the Builder answers their promise question", async () => {

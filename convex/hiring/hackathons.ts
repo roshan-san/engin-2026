@@ -4,7 +4,6 @@ import { internal } from "../_generated/api";
 import { internalMutation, mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import {
-	MAX_APPLICATIONS,
 	MAX_BUILDERS,
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
@@ -13,6 +12,7 @@ import { requireFounder, requireTeam } from "../startups/access.rules";
 import {
 	copyTemplateCardsTo,
 	countUndecidedBuilders,
+	declineAppliedBatch,
 	draftArgs,
 	insertTemplateCards,
 	loadTemplateCards,
@@ -207,14 +207,14 @@ export const startBuilding = internalMutation({
 			return;
 		}
 
-		const applied = await ctx.db
-			.query("applications")
-			.withIndex("by_hackathon_and_status", (q) =>
-				q.eq("hackathonId", hackathon._id).eq("status", "applied"),
-			)
-			.take(MAX_APPLICATIONS);
-		for (const application of applied) {
-			await ctx.db.patch(application._id, { status: "declined" });
+		if (await declineAppliedBatch(ctx, hackathon._id)) {
+			await ctx.scheduler.runAfter(
+				0,
+				internal.hiring.hackathons.declineApplied,
+				{
+					hackathonId: hackathon._id,
+				},
+			);
 		}
 
 		const builders = await ctx.db
@@ -232,6 +232,30 @@ export const startBuilding = internalMutation({
 				hackathonId: hackathon._id,
 				userId: builder.userId,
 			});
+		}
+	},
+});
+
+/** Declines the rest of the applicants not picked, a batch at a time. */
+export const declineApplied = internalMutation({
+	args: { hackathonId: v.id("hackathons") },
+	handler: async (ctx, args) => {
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (
+			!hackathon ||
+			hackathon.status === "draft" ||
+			hackathon.status === "open"
+		) {
+			return;
+		}
+		if (await declineAppliedBatch(ctx, hackathon._id)) {
+			await ctx.scheduler.runAfter(
+				0,
+				internal.hiring.hackathons.declineApplied,
+				{
+					hackathonId: hackathon._id,
+				},
+			);
 		}
 	},
 });

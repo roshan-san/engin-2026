@@ -2,7 +2,6 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import {
-	MAX_APPLICATIONS,
 	MAX_BUILDERS,
 	MAX_USER_APPLICATIONS,
 	STARTING_RATING,
@@ -17,11 +16,13 @@ import { appendActivity } from "../work/activity.rules";
 import {
 	ensurePrivateThread,
 	getApplication,
+	loadApplicationsForFounder,
 	requireApplicationFounder,
 	requireBuilding,
 	requireDecidable,
 	requireOpen,
 	requireRunning,
+	toFounderApplicationView,
 } from "./applications.rules";
 import { finishIfDecided, requireHackathonFounder } from "./hackathons.rules";
 
@@ -32,19 +33,17 @@ export const listForHackathon = query({
 		const userId = await requireUserId(ctx);
 		await requireHackathonFounder(ctx, args.hackathonId, userId);
 
-		const applications = await ctx.db
-			.query("applications")
-			.withIndex("by_hackathon_and_status", (q) =>
-				q.eq("hackathonId", args.hackathonId),
-			)
-			.take(MAX_APPLICATIONS);
+		const applications = await loadApplicationsForFounder(
+			ctx,
+			args.hackathonId,
+		);
 
 		const rows = await Promise.all(
 			applications.map(async (application) => {
 				const user = await ctx.db.get(application.userId);
 				return user
 					? {
-							application,
+							application: toFounderApplicationView(application),
 							user: {
 								...toPublicUser(user),
 								rating: user.rating ?? STARTING_RATING,

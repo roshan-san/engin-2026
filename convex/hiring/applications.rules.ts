@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { MAX_APPLICATIONS, MAX_BUILDERS } from "../lib/limits";
 import { requireHackathonFounder } from "./hackathons.rules";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -98,4 +99,50 @@ export async function ensurePrivateThread(
 		kind: "private",
 		builderId,
 	});
+}
+
+/**
+ * A Hackathon's applications for its Founder: every Builder first, then up to
+ * MAX_APPLICATIONS others, so a crowd of applicants never hides a Builder.
+ */
+export async function loadApplicationsForFounder(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"applications">[]> {
+	const byStatus = async (
+		status: Doc<"applications">["status"],
+		limit: number,
+	) =>
+		limit <= 0
+			? []
+			: await ctx.db
+					.query("applications")
+					.withIndex("by_hackathon_and_status", (q) =>
+						q.eq("hackathonId", hackathonId).eq("status", status),
+					)
+					.take(limit);
+
+	const builders = await byStatus("building", MAX_BUILDERS);
+	const others: Doc<"applications">[] = [];
+	for (const status of ["applied", "declined", "left"] as const) {
+		others.push(...(await byStatus(status, MAX_APPLICATIONS - others.length)));
+	}
+	return [...builders, ...others];
+}
+
+/** What the Founder sees of an application. Leaves out the Builder's private promise answer. */
+export function toFounderApplicationView(application: Doc<"applications">) {
+	return {
+		_id: application._id,
+		_creationTime: application._creationTime,
+		hackathonId: application.hackathonId,
+		userId: application.userId,
+		answer: application.answer,
+		status: application.status,
+		shortlisted: application.shortlisted,
+		walkthroughAt: application.walkthroughAt ?? null,
+		walkthroughNotes: application.walkthroughNotes ?? null,
+		decision: application.decision ?? null,
+		feedback: application.feedback ?? null,
+	};
 }
