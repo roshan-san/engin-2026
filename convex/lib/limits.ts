@@ -4,6 +4,7 @@ export const MAX_HACKATHON_CARDS = 5;
 export const MAX_SHIPPED_LINKS = 5;
 export const MAX_SHIPPED_IMAGES = 5;
 export const MAX_MESSAGE_IMAGES = 4;
+export const MAX_MESSAGE_MENTIONS = 10;
 export const MAX_BOARD_CARDS = 200;
 export const MAX_LISTED_HACKATHONS = 50;
 export const MAX_APPLICATIONS = 500;

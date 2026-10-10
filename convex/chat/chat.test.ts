@@ -3,7 +3,7 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { builders } from "../hiring/applications.helpers";
 import { publishedHackathon } from "../hiring/hackathons.helpers";
-import { MAX_MESSAGE_IMAGES, TEXT } from "../lib/limits";
+import { MAX_MESSAGE_IMAGES, MAX_MESSAGE_MENTIONS, TEXT } from "../lib/limits";
 import { createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import {
@@ -11,6 +11,8 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.helpers";
+import { cardOn } from "../work/cards.helpers";
+import { mentionToken } from "./mentions.rules";
 
 async function teamThreadId(setup: Setup) {
 	const threads = await setup.founder.as.query(api.chat.threads.list, {
@@ -293,5 +295,141 @@ describe("chat", () => {
 		await expect(
 			setup.founder.as.query(api.chat.threads.list, {}),
 		).rejects.toThrow("Pick a startup or a Hackathon");
+	});
+});
+
+describe("card mentions", () => {
+	it("a mention of a Card on the Board comes with its title", async () => {
+		const setup = await setUpStartup(createTest());
+		const threadId = await teamThreadId(setup);
+		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
+
+		await setup.founder.as.mutation(api.chat.messages.send, {
+			threadId,
+			body: `look at ${mentionToken(cardId)}`,
+		});
+
+		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+			threadId,
+		});
+		expect(messages[0].mentions).toEqual([
+			{ cardId, title: "Write welcome emails" },
+		]);
+	});
+
+	it("a mention of a removed Card stays plain text", async () => {
+		const setup = await setUpStartup(createTest());
+		const threadId = await teamThreadId(setup);
+		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
+		const body = `look at ${mentionToken(cardId)}`;
+		await setup.founder.as.mutation(api.chat.messages.send, { threadId, body });
+
+		await setup.founder.as.mutation(api.work.cards.remove, { cardId });
+
+		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+			threadId,
+		});
+		expect(messages[0].mentions).toEqual([]);
+		expect(messages[0].body).toBe(body);
+	});
+
+	it("a mention of another Startup's Card stays plain text", async () => {
+		const setup = await setUpStartup(createTest());
+		const threadId = await teamThreadId(setup);
+		const { startupId: betaId } = await setup.founder.as.mutation(
+			api.startups.startups.create,
+			{
+				name: "Beta",
+				stage: "building",
+				category: "saas",
+				city: "bengaluru",
+			},
+		);
+		const betaCard = await setup.founder.as.mutation(api.work.cards.create, {
+			startupId: betaId,
+			title: "Beta work",
+		});
+
+		await setup.founder.as.mutation(api.chat.messages.send, {
+			threadId,
+			body: `look at ${mentionToken(betaCard)}`,
+		});
+
+		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+			threadId,
+		});
+		expect(messages[0].mentions).toEqual([]);
+	});
+
+	it("a mention of a Hackathon Card stays plain text", async () => {
+		const setup = await setUpStartup(createTest());
+		const threadId = await teamThreadId(setup);
+		const hackathonCard = await setup.t.run(async (ctx) => {
+			const hackathonId = await ctx.db.insert("hackathons", {
+				startupId: setup.startupId,
+				status: "draft",
+				job: { role: "frontend", pay: "unpaid", mode: "remote" },
+				problem: "Grow signups",
+				weeks: 1,
+				startsAt: 0,
+				endsAt: 0,
+				decideBy: 0,
+				builderCount: 0,
+				applicantCount: 0,
+			});
+			return await ctx.db.insert("cards", {
+				startupId: setup.startupId,
+				hackathonId,
+				title: "Starter",
+				notes: "",
+				status: "todo",
+			});
+		});
+
+		await setup.founder.as.mutation(api.chat.messages.send, {
+			threadId,
+			body: `look at ${mentionToken(hackathonCard)}`,
+		});
+
+		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+			threadId,
+		});
+		expect(messages[0].mentions).toEqual([]);
+	});
+
+	it("text that isn't a Card id stays plain text", async () => {
+		const setup = await setUpStartup(createTest());
+		const threadId = await teamThreadId(setup);
+
+		await setup.founder.as.mutation(api.chat.messages.send, {
+			threadId,
+			body: "look at #card:notacardid",
+		});
+
+		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+			threadId,
+		});
+		expect(messages[0].mentions).toEqual([]);
+	});
+
+	it("only the first mentions in a message are resolved", async () => {
+		const setup = await setUpStartup(createTest());
+		const threadId = await teamThreadId(setup);
+		const cardIds: Id<"cards">[] = [];
+		for (let i = 0; i <= MAX_MESSAGE_MENTIONS; i++) {
+			cardIds.push(await cardOn(setup, setup.founder, `Card ${i}`));
+		}
+
+		await setup.founder.as.mutation(api.chat.messages.send, {
+			threadId,
+			body: cardIds.map(mentionToken).join(" "),
+		});
+
+		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+			threadId,
+		});
+		expect(messages[0].mentions.map((mention) => mention.cardId)).toEqual(
+			cardIds.slice(0, MAX_MESSAGE_MENTIONS),
+		);
 	});
 });
