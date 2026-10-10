@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { Page } from "~/components/shared/Page";
@@ -15,7 +14,6 @@ import { useMyStartups } from "./hooks/useMyStartups";
 import { NewStartupForm } from "./NewStartupForm";
 
 export function HomePage() {
-	const navigate = useNavigate();
 	const startups = useMyStartups();
 	const [isCreating, setIsCreating] = useState(false);
 	const newStartup = (
@@ -38,10 +36,8 @@ export function HomePage() {
 								key={startup.startupId}
 								title={startup.name}
 								meta={startup.role === "founder" ? "Founder" : "Contributor"}
-								// Task 6 adds the /s/$slug/board route, then this becomes a typed `to`.
-								onClick={() =>
-									navigate({ to: `/s/${startup.slug}/board` as string })
-								}
+								to="/s/$slug/board"
+								params={{ slug: startup.slug }}
 							/>
 						))}
 					</RowList>

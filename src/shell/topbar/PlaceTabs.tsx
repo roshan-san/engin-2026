@@ -1,0 +1,29 @@
+import { Link, useParams } from "@tanstack/react-router";
+import { useStartup } from "~/features/work/board/hooks/useStartup";
+
+/** Inside a Startup: its name, then the places in it. Nothing elsewhere. */
+export function PlaceTabs() {
+	const { slug } = useParams({ strict: false });
+	const found = useStartup(slug);
+
+	if (!slug || !found) {
+		return null;
+	}
+
+	return (
+		<>
+			<span className="max-w-40 truncate text-sm font-medium">
+				{found.startup.name}
+			</span>
+			<nav className="ml-2 flex h-14 items-stretch">
+				<Link
+					to="/s/$slug/board"
+					params={{ slug }}
+					className="relative flex items-center px-2 text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:text-foreground aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground"
+				>
+					Board
+				</Link>
+			</nav>
+		</>
+	);
+}

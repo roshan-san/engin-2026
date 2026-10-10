@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
 import { Route as ShellAuthedHomeRouteImport } from './routes/_shell/_authed/home'
+import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_authed/s/$slug/route'
+import { Route as ShellAuthedSSlugBoardRouteImport } from './routes/_shell/_authed/s/$slug/board'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -32,14 +34,28 @@ const ShellAuthedHomeRoute = ShellAuthedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => ShellAuthedRouteRoute,
 } as any)
+const ShellAuthedSSlugRouteRoute = ShellAuthedSSlugRouteRouteImport.update({
+  id: '/s/$slug',
+  path: '/s/$slug',
+  getParentRoute: () => ShellAuthedRouteRoute,
+} as any)
+const ShellAuthedSSlugBoardRoute = ShellAuthedSSlugBoardRouteImport.update({
+  id: '/board',
+  path: '/board',
+  getParentRoute: () => ShellAuthedSSlugRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof ShellAuthedHomeRoute
+  '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
+  '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/home': typeof ShellAuthedHomeRoute
+  '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
+  '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -47,13 +63,22 @@ export interface FileRoutesById {
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
   '/_shell/_authed/home': typeof ShellAuthedHomeRoute
+  '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
+  '/_shell/_authed/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home'
+  fullPaths: '/' | '/home' | '/s/$slug' | '/s/$slug/board'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home'
-  id: '__root__' | '/' | '/_shell' | '/_shell/_authed' | '/_shell/_authed/home'
+  to: '/' | '/home' | '/s/$slug' | '/s/$slug/board'
+  id:
+    | '__root__'
+    | '/'
+    | '/_shell'
+    | '/_shell/_authed'
+    | '/_shell/_authed/home'
+    | '/_shell/_authed/s/$slug'
+    | '/_shell/_authed/s/$slug/board'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -91,15 +116,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedHomeRouteImport
       parentRoute: typeof ShellAuthedRouteRoute
     }
+    '/_shell/_authed/s/$slug': {
+      id: '/_shell/_authed/s/$slug'
+      path: '/s/$slug'
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof ShellAuthedSSlugRouteRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
+    }
+    '/_shell/_authed/s/$slug/board': {
+      id: '/_shell/_authed/s/$slug/board'
+      path: '/board'
+      fullPath: '/s/$slug/board'
+      preLoaderRoute: typeof ShellAuthedSSlugBoardRouteImport
+      parentRoute: typeof ShellAuthedSSlugRouteRoute
+    }
   }
 }
 
+interface ShellAuthedSSlugRouteRouteChildren {
+  ShellAuthedSSlugBoardRoute: typeof ShellAuthedSSlugBoardRoute
+}
+
+const ShellAuthedSSlugRouteRouteChildren: ShellAuthedSSlugRouteRouteChildren = {
+  ShellAuthedSSlugBoardRoute: ShellAuthedSSlugBoardRoute,
+}
+
+const ShellAuthedSSlugRouteRouteWithChildren =
+  ShellAuthedSSlugRouteRoute._addFileChildren(
+    ShellAuthedSSlugRouteRouteChildren,
+  )
+
 interface ShellAuthedRouteRouteChildren {
   ShellAuthedHomeRoute: typeof ShellAuthedHomeRoute
+  ShellAuthedSSlugRouteRoute: typeof ShellAuthedSSlugRouteRouteWithChildren
 }
 
 const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
   ShellAuthedHomeRoute: ShellAuthedHomeRoute,
+  ShellAuthedSSlugRouteRoute: ShellAuthedSSlugRouteRouteWithChildren,
 }
 
 const ShellAuthedRouteRouteWithChildren =

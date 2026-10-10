@@ -28,8 +28,7 @@ export function NewStartupForm() {
 		setIsPending(true);
 		const slug = await createStartup({ name: trimmed, stage, category, city });
 		setIsPending(false);
-		// Task 6 adds the /s/$slug/board route; until then its path isn't in the router types.
-		if (slug) await navigate({ to: `/s/${slug}/board` as string });
+		if (slug) await navigate({ to: "/s/$slug/board", params: { slug } });
 	}
 
 	return (
