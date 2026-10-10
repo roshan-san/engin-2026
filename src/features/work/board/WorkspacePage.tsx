@@ -1,6 +1,5 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
-import { MentorNote } from "~/components/shared/MentorNote";
 import { Button } from "~/components/ui/button";
 import {
 	Sheet,
@@ -9,11 +8,14 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
+import { useTeamThread } from "~/features/chat/threads/hooks/useTeamThread";
+import { ThreadsPanel } from "~/features/chat/threads/ThreadsPanel";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { CardPanel } from "../cards/CardPanel";
 import { ShipDialog } from "../cards/ShipDialog";
 import { Board } from "./Board";
 import { CycleHeader } from "./CycleHeader";
+import { useWorkspace } from "./StartupContext";
 import type { CardView } from "./types";
 
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
@@ -25,24 +27,39 @@ export function WorkspacePage() {
 	const { card: cardId } = boardRoute.useSearch();
 	const navigate = boardRoute.useNavigate();
 	const isMobile = useIsMobile();
+	const { startup } = useWorkspace();
+	const isTeamUnread = useTeamThread(startup._id)?.unread ?? false;
 
 	function closeCard() {
 		void navigate({ search: (prev) => ({ ...prev, card: undefined }) });
 	}
 
+	// On a phone the sheet stays open and switches to Threads.
+	function backToThreads() {
+		setIsThreadsOpen(true);
+		closeCard();
+	}
+
 	// Opening a Card on a phone raises the sheet; the sheet closing closes the Card.
 	const isSheetOpen = isMobile && (isThreadsOpen || cardId !== undefined);
 	const panel = cardId ? (
-		<CardPanel
-			key={cardId}
-			cardId={cardId}
-			onClose={closeCard}
-			onShip={setShipping}
-		/>
+		<>
+			<div className="border-b border-border px-2 py-1">
+				<Button variant="ghost" size="sm" onClick={backToThreads}>
+					Back to Threads
+					{isTeamUnread ? <UnreadDot /> : null}
+				</Button>
+			</div>
+			<CardPanel
+				key={cardId}
+				cardId={cardId}
+				onClose={closeCard}
+				onBack={backToThreads}
+				onShip={setShipping}
+			/>
+		</>
 	) : (
-		<div className="p-4">
-			<MentorNote>Open a Card to see it here.</MentorNote>
-		</div>
+		<ThreadsPanel />
 	);
 
 	return (
@@ -56,6 +73,7 @@ export function WorkspacePage() {
 					onClick={() => setIsThreadsOpen(true)}
 				>
 					Threads
+					{isTeamUnread ? <UnreadDot /> : null}
 				</Button>
 			</div>
 			<div className="flex min-h-0 flex-1">
@@ -101,5 +119,16 @@ export function WorkspacePage() {
 				</SheetContent>
 			</Sheet>
 		</div>
+	);
+}
+
+/** A small dot: Team has messages you haven't read. */
+function UnreadDot() {
+	return (
+		<span
+			role="img"
+			aria-label="Unread"
+			className="size-1.5 rounded-full bg-foreground"
+		/>
 	);
 }

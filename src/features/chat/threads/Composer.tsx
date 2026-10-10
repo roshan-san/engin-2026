@@ -1,0 +1,319 @@
+import type { Id } from "@convex/_generated/dataModel";
+import { mentionToken, parseMentions } from "@convex/chat/mentions.rules";
+import { MAX_MESSAGE_IMAGES, TEXT } from "@convex/lib/limits";
+import { ImageIcon, SendIcon, XIcon } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
+import { Textarea } from "~/components/ui/textarea";
+import { useUpload } from "~/features/shared/hooks/useUpload";
+import { pickImages } from "~/features/shared/images";
+import { useBoard } from "~/features/work/board/hooks/useBoard";
+import { isSendKey } from "~/features/work/board/keys";
+import { useWorkspace } from "~/features/work/board/StartupContext";
+import { errorMessage } from "~/lib/errors";
+import { cn } from "~/lib/utils";
+import { MentionPicker } from "./MentionPicker";
+
+/** The most Cards the picker lists at once. */
+const MAX_OPTIONS = 8;
+
+type Picture = {
+	readonly key: string;
+	readonly previewUrl: string;
+	/** `null` while the file is still uploading. */
+	readonly storageId: Id<"_storage"> | null;
+};
+
+/** The `#query` being typed right before the caret, if any. */
+function findTrigger(text: string, caret: number) {
+	const match = text.slice(0, caret).match(/(?:^|\s)#([^\s#]*)$/);
+	if (!match) return null;
+	return { start: caret - match[1].length - 1, query: match[1] };
+}
+
+/** Message Team: text, pasted or dropped images, and `#` to mention a Card. */
+export function Composer({
+	onSend,
+}: {
+	readonly onSend: (body: string, images: Id<"_storage">[]) => Promise<boolean>;
+}) {
+	const { startup } = useWorkspace();
+	const { cards } = useBoard(startup._id);
+	const { upload } = useUpload();
+	const [text, setText] = useState("");
+	const [caret, setCaret] = useState(0);
+	const [dismissedAt, setDismissedAt] = useState<number | null>(null);
+	const [activeId, setActiveId] = useState("");
+	const [pictures, setPictures] = useState<Picture[]>([]);
+	const [isSending, setIsSending] = useState(false);
+	const [isDragOver, setIsDragOver] = useState(false);
+	const textarea = useRef<HTMLTextAreaElement>(null);
+	const fileInput = useRef<HTMLInputElement>(null);
+	const picturesRef = useRef<Picture[]>([]);
+	picturesRef.current = pictures;
+
+	const isUploading = pictures.some((picture) => picture.storageId === null);
+	const canSend =
+		(text.trim().length > 0 || pictures.length > 0) &&
+		!isUploading &&
+		!isSending;
+
+	const trigger = findTrigger(text, caret);
+	const query = trigger?.query.toLowerCase() ?? "";
+	const options =
+		trigger && trigger.start !== dismissedAt
+			? (cards ?? [])
+					.filter((card) => card.title.toLowerCase().includes(query))
+					.slice(0, MAX_OPTIONS)
+			: [];
+	const isPickerOpen = options.length > 0;
+	const active = options.find((o) => o._id === activeId) ?? options[0];
+	const mentioned = parseMentions(text).flatMap((id) => {
+		const card = cards?.find((c) => c._id === id);
+		return card ? [card] : [];
+	});
+
+	// Grow with the text up to about six lines, where browsers lack field-sizing.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: resize when the text changes
+	useLayoutEffect(() => {
+		const el = textarea.current;
+		if (!el || CSS.supports("field-sizing", "content")) return;
+		el.style.height = "auto";
+		el.style.height = `${el.scrollHeight}px`;
+	}, [text]);
+
+	// Thumbnails hold object URLs; free them when the composer goes.
+	useEffect(
+		() => () => {
+			for (const picture of picturesRef.current) {
+				URL.revokeObjectURL(picture.previewUrl);
+			}
+		},
+		[],
+	);
+
+	function addImages(files: File[]) {
+		const { accepted, skipped } = pickImages(
+			files,
+			MAX_MESSAGE_IMAGES - pictures.length,
+		);
+		if (skipped > 0) toast(`Images only, up to ${MAX_MESSAGE_IMAGES}.`);
+
+		for (const file of accepted) {
+			const picture: Picture = {
+				key: crypto.randomUUID(),
+				previewUrl: URL.createObjectURL(file),
+				storageId: null,
+			};
+			setPictures((current) => [...current, picture]);
+			upload(file).then(
+				(storageId) =>
+					setPictures((current) =>
+						current.map((p) =>
+							p.key === picture.key ? { ...p, storageId } : p,
+						),
+					),
+				(error) => {
+					toast.error(errorMessage(error));
+					removePicture(picture);
+				},
+			);
+		}
+	}
+
+	function removePicture(picture: Picture) {
+		URL.revokeObjectURL(picture.previewUrl);
+		setPictures((current) => current.filter((p) => p.key !== picture.key));
+	}
+
+	function pick(option: { readonly _id: string }) {
+		if (!trigger) return;
+		const inserted = `${mentionToken(option._id)} `;
+		const next = text.slice(0, trigger.start) + inserted + text.slice(caret);
+		const nextCaret = trigger.start + inserted.length;
+		setText(next);
+		setCaret(nextCaret);
+		requestAnimationFrame(() => {
+			textarea.current?.focus();
+			textarea.current?.setSelectionRange(nextCaret, nextCaret);
+		});
+	}
+
+	function moveActive(step: 1 | -1) {
+		const index = options.findIndex((o) => o._id === active?._id);
+		const next = options[(index + step + options.length) % options.length];
+		setActiveId(next._id);
+	}
+
+	async function handleSend() {
+		if (!canSend) return;
+		setIsSending(true);
+		const images = pictures.flatMap((p) => (p.storageId ? [p.storageId] : []));
+		const isSent = await onSend(text.trim(), images);
+		setIsSending(false);
+		if (isSent) {
+			for (const picture of pictures) URL.revokeObjectURL(picture.previewUrl);
+			setPictures([]);
+			setText("");
+			setCaret(0);
+			textarea.current?.focus();
+		}
+	}
+
+	return (
+		<section
+			aria-label="Message Team"
+			className={cn(
+				"relative flex flex-col gap-2 border-t border-border p-3",
+				isDragOver && "ring-2 ring-ring ring-inset",
+			)}
+			onPaste={(e) => {
+				const files = [...e.clipboardData.files];
+				if (files.length === 0) return;
+				e.preventDefault();
+				addImages(files);
+			}}
+			onDragOver={(e) => {
+				if (!e.dataTransfer.types.includes("Files")) return;
+				e.preventDefault();
+				setIsDragOver(true);
+			}}
+			onDragLeave={() => setIsDragOver(false)}
+			onDrop={(e) => {
+				if (e.dataTransfer.files.length === 0) return;
+				e.preventDefault();
+				setIsDragOver(false);
+				addImages([...e.dataTransfer.files]);
+			}}
+		>
+			{isPickerOpen ? (
+				<MentionPicker
+					options={options}
+					activeId={active?._id ?? ""}
+					onActiveChange={setActiveId}
+					onPick={pick}
+				/>
+			) : null}
+
+			{mentioned.length > 0 ? (
+				<ul className="flex flex-wrap gap-1.5">
+					{mentioned.map((card) => (
+						<li
+							key={card._id}
+							className="max-w-full truncate rounded-md bg-muted px-1.5 text-xs"
+						>
+							# {card.title}
+						</li>
+					))}
+				</ul>
+			) : null}
+
+			{pictures.length > 0 ? (
+				<ul className="flex flex-wrap gap-2">
+					{pictures.map((picture) => (
+						<li
+							key={picture.key}
+							className="relative size-14 overflow-hidden rounded-md border border-border"
+						>
+							<img
+								src={picture.previewUrl}
+								alt=""
+								className="size-full object-cover"
+							/>
+							{picture.storageId === null ? (
+								<div className="absolute inset-0 flex items-center justify-center bg-background/60">
+									<Spinner />
+								</div>
+							) : null}
+							<button
+								type="button"
+								aria-label="Remove image"
+								className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 hover:bg-background"
+								onClick={() => removePicture(picture)}
+							>
+								<XIcon className="size-3" />
+							</button>
+						</li>
+					))}
+				</ul>
+			) : null}
+
+			<div className="flex items-end gap-2">
+				<Textarea
+					ref={textarea}
+					aria-label="Message"
+					aria-haspopup="listbox"
+					aria-expanded={isPickerOpen}
+					aria-controls={isPickerOpen ? "mention-picker" : undefined}
+					placeholder="Message Team"
+					rows={1}
+					maxLength={TEXT.message}
+					value={text}
+					className="max-h-36 min-h-10 resize-none"
+					onChange={(e) => {
+						setText(e.target.value);
+						setCaret(e.target.selectionStart);
+					}}
+					onSelect={(e) => setCaret(e.currentTarget.selectionStart)}
+					onKeyDown={(e) => {
+						const native = e.nativeEvent;
+						if (isPickerOpen && !native.isComposing) {
+							if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+								e.preventDefault();
+								moveActive(e.key === "ArrowDown" ? 1 : -1);
+								return;
+							}
+							if (isSendKey(native) || e.key === "Tab") {
+								e.preventDefault();
+								if (active) pick(active);
+								return;
+							}
+							if (e.key === "Escape") {
+								e.preventDefault();
+								e.stopPropagation();
+								setDismissedAt(trigger?.start ?? null);
+								return;
+							}
+						}
+						if (isSendKey(native)) {
+							e.preventDefault();
+							void handleSend();
+						}
+					}}
+				/>
+				<input
+					ref={fileInput}
+					type="file"
+					accept="image/*"
+					multiple
+					hidden
+					onChange={(e) => {
+						addImages([...(e.target.files ?? [])]);
+						e.target.value = "";
+					}}
+				/>
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon"
+					aria-label="Add image"
+					disabled={pictures.length >= MAX_MESSAGE_IMAGES}
+					onClick={() => fileInput.current?.click()}
+				>
+					<ImageIcon />
+				</Button>
+				<Button
+					type="button"
+					size="icon"
+					aria-label="Send"
+					disabled={!canSend}
+					onClick={() => void handleSend()}
+				>
+					{isUploading || isSending ? <Spinner /> : <SendIcon />}
+				</Button>
+			</div>
+		</section>
+	);
+}
