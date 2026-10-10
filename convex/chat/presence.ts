@@ -4,7 +4,7 @@ import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { toPublicUser } from "../people/users.rules";
 import { requireTeam } from "../startups/access.rules";
-import { loadWorkingOn, presence } from "./presence.rules";
+import { loadWorkingOn, parseHeartbeat, presence } from "./presence.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -40,12 +40,14 @@ export const heartbeat = mutation({
 		const userId = await requireUserId(ctx);
 		await requireTeam(ctx, args.startupId, userId);
 
+		const { sessionId, interval } = parseHeartbeat(args);
+
 		return await presence.heartbeat(
 			ctx,
 			args.startupId,
 			userId,
-			args.sessionId,
-			args.interval,
+			sessionId,
+			interval,
 		);
 	},
 });

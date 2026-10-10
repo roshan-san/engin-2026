@@ -2,9 +2,32 @@ import { Presence } from "@convex-dev/presence";
 import { components } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_BOARD_CARDS } from "../lib/limits";
+import {
+	MAX_BOARD_CARDS,
+	MAX_PRESENCE_INTERVAL_MS,
+	MIN_PRESENCE_INTERVAL_MS,
+	TEXT,
+} from "../lib/limits";
+import { requireLimitedText } from "../lib/text";
 
 export const presence = new Presence(components.presence);
+
+/** A tab's session id and heartbeat interval, checked before they are stored. */
+export function parseHeartbeat(args: { sessionId: string; interval: number }) {
+	const sessionId = requireLimitedText(
+		args.sessionId,
+		"Session",
+		TEXT.sessionId,
+	);
+	if (
+		!Number.isFinite(args.interval) ||
+		args.interval < MIN_PRESENCE_INTERVAL_MS ||
+		args.interval > MAX_PRESENCE_INTERVAL_MS
+	) {
+		throw new Error("Heartbeat interval is out of range");
+	}
+	return { sessionId, interval: args.interval };
+}
 
 type Ctx = QueryCtx | MutationCtx;
 

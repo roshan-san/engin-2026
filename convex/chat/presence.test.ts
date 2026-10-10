@@ -37,6 +37,10 @@ describe("presence", () => {
 				interval: INTERVAL,
 			}),
 		).rejects.toThrow("You're not on this startup");
+		const online = await setup.founder.as.query(api.chat.presence.list, {
+			startupId: setup.startupId,
+		});
+		expect(online).toEqual([]);
 	});
 
 	it("an outsider can't see who's online", async () => {
@@ -49,6 +53,34 @@ describe("presence", () => {
 				startupId: setup.startupId,
 			}),
 		).rejects.toThrow("You're not on this startup");
+	});
+
+	it("a heartbeat with an unreasonable interval is refused", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+
+		for (const interval of [0, -5, 999, 60_001, Number.POSITIVE_INFINITY]) {
+			await expect(
+				setup.founder.as.mutation(api.chat.presence.heartbeat, {
+					startupId: setup.startupId,
+					sessionId: "fay-tab",
+					interval,
+				}),
+			).rejects.toThrow("Heartbeat interval is out of range");
+		}
+	});
+
+	it("a heartbeat with an over-long session id is refused", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+
+		await expect(
+			setup.founder.as.mutation(api.chat.presence.heartbeat, {
+				startupId: setup.startupId,
+				sessionId: "x".repeat(65),
+				interval: INTERVAL,
+			}),
+		).rejects.toThrow("Session must be under 64 characters");
 	});
 
 	it("online people show the Card they're working on", async () => {
