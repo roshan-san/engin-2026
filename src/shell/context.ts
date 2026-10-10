@@ -23,10 +23,7 @@ type TabDefinition = {
 };
 
 const YOU_TABS: readonly TabDefinition[] = [
-	{ label: "Inbox", path: "/inbox" },
-	{ label: "My Tasks", path: "/my-tasks" },
 	{ label: "My Hackathons", path: "/my-hackathons" },
-	{ label: "Threads", path: "/threads" },
 ];
 
 // Pages that belong to You but have no tab of their own.

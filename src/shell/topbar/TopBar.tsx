@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Compass } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { AccountMenu } from "~/shell/account/AccountMenu";
 import { useCommands } from "~/shell/command/CommandProvider";
@@ -56,6 +57,14 @@ export function TopBar() {
 							</>
 						) : null}
 					</nav>
+					<Link
+						to="/explore/startups"
+						aria-current={context.kind === "explore" ? "page" : undefined}
+						className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:text-foreground md:flex"
+					>
+						<Compass className="size-4" />
+						Explore
+					</Link>
 					<SearchField onOpen={togglePalette} />
 					<BellLink />
 					<AccountMenu />

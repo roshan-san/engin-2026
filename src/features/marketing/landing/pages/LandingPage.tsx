@@ -1,5 +1,6 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { Link, Navigate } from "@tanstack/react-router";
+import { GitPullRequest } from "lucide-react";
 import type { ReactNode } from "react";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { GlowHero } from "~/components/shared/GlowHero";
@@ -63,9 +64,12 @@ export function LandingPage() {
 				/>
 
 				<footer className="flex flex-col gap-3 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-					<p>
-						<span className="font-semibold text-foreground">Engin</span> · Hire
-						by watching people build.
+					<p className="flex items-center gap-2">
+						<GitPullRequest aria-hidden className="size-4 text-foreground" />
+						<span>
+							<span className="font-semibold text-foreground">Engin</span> ·
+							Hire by watching people build.
+						</span>
 					</p>
 					<nav className="flex gap-4">
 						<Link to="/explore/startups" className="hover:text-foreground">

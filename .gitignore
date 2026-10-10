@@ -29,8 +29,6 @@ docs/
 .env.local
 scripts/.jwt_private_key.txt
 scripts/.jwks.txt
-.planning/
-openspec/
 # Playwright
 /test-results/
 /playwright-report/

@@ -7,7 +7,8 @@ type GoogleButtonProps = {
 	/** Where to land after signing in; defaults to My Tasks. */
 	readonly returnTo?: string;
 	readonly variant?: "default" | "outline";
-	readonly size?: "default" | "lg";
+	readonly size?: "sm" | "default" | "lg";
+	readonly className?: string;
 };
 
 export function GoogleButton({
@@ -15,6 +16,7 @@ export function GoogleButton({
 	returnTo,
 	variant = "outline",
 	size = "default",
+	className,
 }: GoogleButtonProps) {
 	const { signInWithGoogle, isPending } = useGoogleSignIn(returnTo);
 
@@ -23,6 +25,7 @@ export function GoogleButton({
 			type="button"
 			variant={variant}
 			size={size}
+			className={className}
 			disabled={isPending}
 			onClick={signInWithGoogle}
 		>

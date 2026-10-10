@@ -9,7 +9,7 @@ import {
 	startupOf,
 } from "./support/world";
 
-test("a founder switches between You, their Startup and Explore on desktop", async ({
+test("a founder switches between Personal, their Startup and Explore on desktop", async ({
 	pageAs,
 }) => {
 	const startup = await founderWithStartup();
@@ -20,7 +20,7 @@ test("a founder switches between You, their Startup and Explore on desktop", asy
 	await expect(
 		sections.getByRole("link", { name: "My Tasks" }),
 	).toHaveAttribute("aria-current", "page");
-	await page.getByRole("button", { name: /Switch context/ }).click();
+	await page.getByRole("button", { name: /Switch workspace/ }).click();
 	await page
 		.getByRole("menuitem", { name: `Acme ${startup.founder.username}` })
 		.click();
@@ -30,8 +30,7 @@ test("a founder switches between You, their Startup and Explore on desktop", asy
 		"aria-current",
 		"page",
 	);
-	await page.getByRole("button", { name: /Switch context/ }).click();
-	await page.getByRole("menuitem", { name: "Explore" }).click();
+	await page.getByRole("banner").getByRole("link", { name: "Explore" }).click();
 
 	await expect(page).toHaveURL(/\/explore\/startups$/);
 	await expect(
@@ -47,7 +46,7 @@ test("switching Startup keeps the section the founder is in", async ({
 	const page = await pageAs(acme.founder);
 
 	await page.goto(`/s/${acme.slug}/hiring`);
-	await page.getByRole("button", { name: /Switch context/ }).click();
+	await page.getByRole("button", { name: /Switch workspace/ }).click();
 	await page
 		.getByRole("menuitem", { name: `Beta ${acme.founder.username}` })
 		.click();
@@ -72,9 +71,9 @@ test("on a phone the switcher is a bottom sheet and long names never scroll the 
 	await page.setViewportSize({ width: 390, height: 844 });
 
 	await page.goto("/my-tasks");
-	await page.getByRole("button", { name: /Switch context/ }).click();
+	await page.getByRole("button", { name: /Switch workspace/ }).click();
 	await page
-		.getByRole("dialog", { name: "Switch context" })
+		.getByRole("dialog", { name: "Switch workspace" })
 		.getByRole("link", { name: "A very long startup name" })
 		.click();
 
@@ -126,7 +125,7 @@ test("at tablet widths the top bar stays one row on a Startup page", async ({
 
 		const header = await page.getByRole("banner").boundingBox();
 		const switcher = await page
-			.getByRole("button", { name: /Switch context/ })
+			.getByRole("button", { name: /Switch workspace/ })
 			.boundingBox();
 		const bell = await page.getByRole("link", { name: /^Inbox/ }).boundingBox();
 		expect(header?.height).toBeLessThanOrEqual(57);
@@ -143,13 +142,14 @@ test("someone with no Startups sees no sections on another Startup's page", asyn
 
 	await page.goto(`/s/${other.slug}/cycles`);
 	await page
-		.getByRole("button", { name: "Switch context, current: Engin" })
+		.getByRole("button", {
+			name: "Switch workspace, current: Choose workspace",
+		})
 		.click();
 
 	const menu = page.getByRole("menu");
 	await expect(menu.getByRole("menuitem")).toHaveText([
-		/You/,
-		/Explore/,
+		/Vic/,
 		/Create a Startup/,
 	]);
 	await expect(page.getByRole("navigation", { name: "Sections" })).toHaveCount(

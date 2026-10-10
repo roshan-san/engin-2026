@@ -8,6 +8,7 @@ import { Row, RowList } from "~/components/shared/RowList";
 import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
 import { categoryLabel, stageLabel } from "~/features/teams/startup/constants";
 import { PublicOpenings } from "~/features/teams/startup/public/components/PublicOpenings";
 import { StartupAvatar } from "~/shell/topbar/StartupAvatar";
@@ -162,9 +163,11 @@ export function PublicStartupPage({ slug }: PublicStartupPageProps) {
 								})}
 							</RowList>
 						) : (
-							<Button asChild variant="outline" className="mt-2">
-								<Link to="/">Sign in to see the team</Link>
-							</Button>
+							<GoogleButton
+								label="Sign in to see the team"
+								returnTo={`/startup/${slug}`}
+								className="mt-2"
+							/>
 						)}
 					</section>
 

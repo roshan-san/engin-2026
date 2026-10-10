@@ -1,13 +1,17 @@
 import { Link } from "@tanstack/react-router";
+import { GitPullRequest } from "lucide-react";
 import { cn } from "~/lib/utils";
 
-/** The Engin mark (a block E), linking to My Tasks, or home when signed out. */
+/** The Engin mark (a pull request), linking to My Tasks, or home when signed out. */
 export function EnginLogo({
 	to = "/my-tasks",
+	wordmark = false,
 	className,
 	tabIndex,
 }: {
 	readonly to?: "/" | "/my-tasks";
+	/** Show "Engin" beside the mark, as on the signed-out header. */
+	readonly wordmark?: boolean;
 	readonly className?: string;
 	readonly tabIndex?: number;
 }) {
@@ -17,13 +21,15 @@ export function EnginLogo({
 			aria-label="Engin"
 			tabIndex={tabIndex}
 			className={cn(
-				"flex size-8 shrink-0 items-center justify-center rounded-md text-foreground outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60",
+				"flex h-8 shrink-0 items-center justify-center gap-2 rounded-md text-foreground outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60",
+				wordmark ? "px-1.5" : "w-8",
 				className,
 			)}
 		>
-			<svg viewBox="0 0 24 24" aria-hidden className="size-5">
-				<path d="M5 4h14v4H9.5v2H17v4H9.5v2H19v4H5z" fill="currentColor" />
-			</svg>
+			<GitPullRequest aria-hidden className="size-5" />
+			{wordmark ? (
+				<span className="text-[17px] font-semibold tracking-tight">Engin</span>
+			) : null}
 		</Link>
 	);
 }

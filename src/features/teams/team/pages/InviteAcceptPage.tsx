@@ -6,6 +6,7 @@ import { PageLoading } from "~/components/globals/PageLoading";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { PageHeader } from "~/components/shared/PageHeader";
 import { Button } from "~/components/ui/button";
+import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
 import { useAcceptInvite } from "~/features/teams/team/hooks/useAcceptInvite";
 
 type InviteAcceptPageProps = {
@@ -66,9 +67,11 @@ export function InviteAcceptPage({ token }: InviteAcceptPageProps) {
 						<p className="text-sm text-muted-foreground">
 							Sign in with Google to accept this invite.
 						</p>
-						<Button asChild>
-							<Link to="/">Sign in</Link>
-						</Button>
+						<GoogleButton
+							label="Sign in"
+							variant="default"
+							returnTo={`/invite/${token}`}
+						/>
 					</div>
 				)}
 			</Page>
