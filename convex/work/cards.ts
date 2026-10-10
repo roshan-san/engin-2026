@@ -76,6 +76,21 @@ export const listReviewQueue = query({
 	},
 });
 
+/** One Startup Card, opened from its own workspace. Hackathon Cards and other Startups' Cards read as missing. */
+export const get = query({
+	args: { startupId: v.id("startups"), cardId: v.id("cards") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireTeam(ctx, args.startupId, userId);
+
+		const card = await ctx.db.get(args.cardId);
+		if (!card || card.startupId !== args.startupId || card.hackathonId) {
+			return null;
+		}
+		return await toCardView(ctx, card);
+	},
+});
+
 export const create = mutation({
 	args: {
 		startupId: v.id("startups"),

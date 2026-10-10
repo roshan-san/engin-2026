@@ -449,3 +449,117 @@ describe("locks", () => {
 		expect(await boardOf(setup)).toEqual([]);
 	});
 });
+
+describe("card view", () => {
+	it("a verified Card says who verified it and when", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const cardId = await cardOn(setup, sam, "Write welcome emails");
+		await sam.as.mutation(api.work.cards.submit, {
+			cardId,
+			shipped: SHIPPED,
+		});
+
+		await setup.founder.as.mutation(api.work.cards.verify, { cardId });
+
+		const [card] = await boardOf(setup);
+		expect(card).toMatchObject({
+			verifiedBy: { _id: setup.founder.userId },
+			shipped: { line: "Sent welcome emails", imageUrls: [] },
+		});
+		expect(card.verifiedAt).toEqual(expect.any(Number));
+		expect(card.submittedAt).toEqual(expect.any(Number));
+	});
+
+	it("What shipped images come with their URLs", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const cardId = await cardOn(setup, sam, "Write welcome emails");
+		const imageId = await setup.t.run(
+			async (ctx) => await ctx.storage.store(new Blob(["x"])),
+		);
+
+		await sam.as.mutation(api.work.cards.submit, {
+			cardId,
+			shipped: { line: "Sent welcome emails", links: [], images: [imageId] },
+		});
+
+		const [card] = await boardOf(setup);
+		expect(card.shipped?.imageUrls).toHaveLength(1);
+		expect(card.shipped?.imageUrls[0]).toEqual(expect.any(String));
+	});
+
+	it("an open Card has no submission or verification yet", async () => {
+		const setup = await setUpStartup(createTest());
+		await cardOn(setup, setup.founder, "Write welcome emails");
+
+		expect(await boardOf(setup)).toMatchObject([
+			{ submittedAt: null, verifiedAt: null, verifiedBy: null, shipped: null },
+		]);
+	});
+
+	it("a Card can be opened by id from its own workspace", async () => {
+		const setup = await setUpStartup(createTest());
+		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
+
+		const card = await setup.founder.as.query(api.work.cards.get, {
+			startupId: setup.startupId,
+			cardId,
+		});
+
+		expect(card).toMatchObject({
+			_id: cardId,
+			title: "Write welcome emails",
+		});
+	});
+
+	it("a Card from another Startup isn't shown in this workspace", async () => {
+		const setup = await setUpStartup(createTest());
+		const { startupId: betaId } = await setup.founder.as.mutation(
+			api.startups.startups.create,
+			{
+				name: "Beta",
+				stage: "building",
+				category: "saas",
+				city: "bengaluru",
+			},
+		);
+		const betaCard = await setup.founder.as.mutation(api.work.cards.create, {
+			startupId: betaId,
+			title: "Beta work",
+		});
+
+		const card = await setup.founder.as.query(api.work.cards.get, {
+			startupId: setup.startupId,
+			cardId: betaCard,
+		});
+
+		expect(card).toBeNull();
+	});
+
+	it("a removed Card opens as nothing", async () => {
+		const setup = await setUpStartup(createTest());
+		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
+		await setup.founder.as.mutation(api.work.cards.remove, { cardId });
+
+		const card = await setup.founder.as.query(api.work.cards.get, {
+			startupId: setup.startupId,
+			cardId,
+		});
+
+		expect(card).toBeNull();
+	});
+
+	it("someone off the team can't open a Card", async () => {
+		const setup = await setUpStartup(createTest());
+		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
+		const outsider = await signUp(setup.t, "Olly");
+
+		const open = outsider.as.query(api.work.cards.get, {
+			startupId: setup.startupId,
+			cardId,
+		});
+
+		await expect(open).rejects.toThrow("You're not on this startup");
+	});
+});
