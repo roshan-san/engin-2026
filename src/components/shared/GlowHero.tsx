@@ -7,7 +7,7 @@ type GlowHeroProps = {
 	readonly subtitle?: ReactNode;
 	readonly children?: ReactNode;
 	readonly size?: "page" | "compact";
-	/** A hero below the page's own `h1` (a verdict panel, an offer) is an `h2`. */
+	/** A hero below the page's own `h1` (a result panel) is an `h2`. */
 	readonly titleAs?: "h1" | "h2";
 };
 

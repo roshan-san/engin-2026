@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "~/lib/utils";
 
-/** The Engin mark (a block E), linking to My Tasks, or home when signed out. */
+/** The Engin mark (a block E), linking to Home, or the landing page when signed out. */
 export function EnginLogo({
-	to = "/my-tasks",
+	to = "/home",
 	className,
 	tabIndex,
 }: {
-	readonly to?: "/" | "/my-tasks";
+	readonly to?: "/" | "/home";
 	readonly className?: string;
 	readonly tabIndex?: number;
 }) {

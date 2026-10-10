@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { grantSignupCredit } from "../billing/credits.rules";
+import { STARTING_RATING } from "../lib/limits";
 
 type PublicUser = {
 	_id: Id<"users">;
@@ -19,17 +19,6 @@ export function toPublicUser(user: Doc<"users">): PublicUser {
 	};
 }
 
-type MemberUser = PublicUser & {
-	email: string | null;
-};
-
-export function toMemberUser(user: Doc<"users">): MemberUser {
-	return {
-		...toPublicUser(user),
-		email: user.email ?? null,
-	};
-}
-
 export async function loadPublicUser(
 	ctx: QueryCtx | MutationCtx,
 	userId: Id<"users"> | undefined,
@@ -43,13 +32,17 @@ export async function loadPublicUser(
 
 /**
  * Runs after every sign-in (`convex/auth.ts`). `existingUserId` is null only
- * when the account was just created, which earns the signup credit.
+ * when the account was just created, which starts its Rating.
  */
 export async function onUserSignedIn(
 	ctx: MutationCtx,
 	args: { userId: Id<"users">; existingUserId: Id<"users"> | null },
 ): Promise<void> {
 	if (args.existingUserId === null) {
-		await grantSignupCredit(ctx, args.userId);
+		await ctx.db.patch(args.userId, {
+			rating: STARTING_RATING,
+			ratingChange: 0,
+			ratedWeeks: 0,
+		});
 	}
 }

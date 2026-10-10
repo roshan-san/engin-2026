@@ -1,7 +1,14 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const planTier = v.union(v.literal("free"), v.literal("pro"));
+export const discipline = v.union(
+	v.literal("engineer"),
+	v.literal("designer"),
+	v.literal("marketing"),
+	v.literal("sales"),
+	v.literal("ops"),
+	v.literal("other"),
+);
 
 export const peopleTables = {
 	users: defineTable({
@@ -9,22 +16,20 @@ export const peopleTables = {
 		image: v.optional(v.string()),
 		email: v.optional(v.string()),
 		emailVerificationTime: v.optional(v.number()),
-		planTier: v.optional(planTier),
-		/** When the current Pro run began; Pro months and their credits count from it. */
-		proStartedAt: v.optional(v.number()),
 		username: v.optional(v.string()),
 		bio: v.optional(v.string()),
-		skills: v.optional(v.array(v.string())),
-		location: v.optional(v.string()),
-		githubUrl: v.optional(v.string()),
+		discipline: v.optional(discipline),
 		linkedinUrl: v.optional(v.string()),
 		portfolioUrl: v.optional(v.string()),
-		/** Denormalised Score. Recomputed from verified work. */
-		score: v.optional(v.number()),
-		focusedStartupId: v.optional(v.id("startups")),
-		hideFromExplore: v.optional(v.boolean()),
+		githubUrl: v.optional(v.string()),
+		/** A person's Rating; starts at STARTING_RATING on sign-up. */
+		rating: v.optional(v.number()),
+		/** The Rating's change over the last rated week. */
+		ratingChange: v.optional(v.number()),
+		/** Weeks that have counted toward the Rating. */
+		ratedWeeks: v.optional(v.number()),
+		investorVerifiedAt: v.optional(v.number()),
 	})
 		.index("email", ["email"])
-		.index("by_username", ["username"])
-		.index("by_plan_tier", ["planTier"]),
+		.index("by_username", ["username"]),
 };
