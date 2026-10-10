@@ -11,7 +11,7 @@ import { limitText, requireLimitedText } from "../lib/text";
 import { isProvisional, toPublicUser } from "../people/users.rules";
 import { decision } from "../schema";
 import { getTeamRole } from "../startups/access.rules";
-import { createInvite } from "../startups/invites.rules";
+import { ensureHireInvite } from "../startups/invites.rules";
 import { appendActivity } from "../work/activity.rules";
 import {
 	ensurePrivateThread,
@@ -23,6 +23,7 @@ import {
 	requireOpen,
 	requireRunning,
 	toFounderApplicationView,
+	toMyApplicationView,
 } from "./applications.rules";
 import { finishIfDecided, requireHackathonFounder } from "./hackathons.rules";
 
@@ -77,8 +78,7 @@ export const listMine = query({
 							hackathonId: hackathon._id,
 							startupName: startup.name,
 							job: hackathon.job,
-							status: application.status,
-							decision: application.decision ?? null,
+							...toMyApplicationView(application),
 							hackathonStatus: hackathon.status,
 						}
 					: null;
@@ -234,8 +234,9 @@ export const decide = mutation({
 			if (!builder?.email) {
 				throw new Error("This Builder has no email to invite");
 			}
-			await createInvite(ctx, {
+			await ensureHireInvite(ctx, {
 				startupId: hackathon.startupId,
+				userId: builder._id,
 				email: builder.email,
 				invitedBy: userId,
 				hackathonId: hackathon._id,

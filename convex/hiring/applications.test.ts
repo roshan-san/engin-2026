@@ -191,8 +191,8 @@ describe("applying", () => {
 		expect(calView?.myApplication?.status).toBe("declined");
 		const anaCards = await boardOf(hackathonId, ana);
 		const benCards = await boardOf(hackathonId, ben);
-		expect(anaCards).toHaveLength(2);
-		expect(benCards).toHaveLength(2);
+		expect(anaCards).toHaveLength(3);
+		expect(benCards).toHaveLength(3);
 		expect(anaCards.every((card) => card.owner?._id === ana.userId)).toBe(true);
 	});
 
@@ -265,8 +265,11 @@ describe("applying", () => {
 				hackathonId,
 				startupName: "Acme",
 				job: { role: "frontend", pay: "6_9l", mode: "remote" },
+				applicationId: ana.applicationId,
 				status: "applied",
 				decision: null,
+				feedback: null,
+				promiseAnswered: false,
 				hackathonStatus: "open",
 			},
 		]);
@@ -461,7 +464,7 @@ describe("building", () => {
 			{ hackathonId, builderId: ben.userId },
 		);
 
-		expect(cards).toHaveLength(2);
+		expect(cards).toHaveLength(3);
 	});
 });
 
@@ -537,6 +540,59 @@ describe("deciding", () => {
 		expect(await activityKinds(setup)).toContain("builder_hired");
 	});
 
+	it("Hired still works when the Builder was already invited", async () => {
+		const {
+			setup,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await walkthrough(setup, ana);
+		await setup.founder.as.mutation(api.startups.invites.create, {
+			startupId: setup.startupId,
+			email: "ana@example.com",
+		});
+
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+
+		const invites = await ana.as.query(api.startups.invites.listMine, {});
+		expect(invites).toHaveLength(1);
+		expect(invites).toMatchObject([
+			{ startupName: "Acme", fromHackathon: true },
+		]);
+	});
+
+	it("Hired a Builder already on the team saves the decision without an Invite", async () => {
+		const {
+			setup,
+			hackathonId,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await walkthrough(setup, ana);
+		await setup.founder.as.mutation(api.startups.invites.create, {
+			startupId: setup.startupId,
+			email: "ana@example.com",
+		});
+		const [invite] = await ana.as.query(api.startups.invites.listMine, {});
+		await ana.as.mutation(api.startups.invites.accept, {
+			inviteId: invite.inviteId,
+		});
+
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+
+		const list = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
+		);
+		expect(list[0].application).toMatchObject({ decision: "hired" });
+		expect(await ana.as.query(api.startups.invites.listMine, {})).toEqual([]);
+		expect(await activityKinds(setup)).toContain("builder_hired");
+	});
+
 	it("a Builder is decided once", async () => {
 		const {
 			setup,
@@ -601,6 +657,43 @@ describe("deciding", () => {
 		await answer();
 
 		await expect(answer()).rejects.toThrow("Already answered");
+	});
+
+	it("a Builder sees the Founder's note and answers the promise question from their applications", async () => {
+		const {
+			setup,
+			hackathonId,
+			builders: [ana],
+		} = await ended(["Ana"]);
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+			feedback: "Close one",
+		});
+
+		const [before] = await ana.as.query(api.hiring.applications.listMine, {});
+		await ana.as.mutation(api.hiring.applications.keepPromise, {
+			applicationId: before.applicationId,
+			kept: true,
+		});
+
+		expect(before).toMatchObject({
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+			feedback: "Close one",
+			promiseAnswered: false,
+		});
+		const [after] = await ana.as.query(api.hiring.applications.listMine, {});
+		expect(after).toMatchObject({ promiseAnswered: true });
+		expect(after).not.toHaveProperty("promiseKept");
+		const hackathon = await ana.as.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		expect(hackathon?.myApplication).toMatchObject({
+			applicationId: ana.applicationId,
+			feedback: "Close one",
+			promiseAnswered: true,
+		});
 	});
 
 	it("the Founder doesn't see a Builder's promise answer", async () => {

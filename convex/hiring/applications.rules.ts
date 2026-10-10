@@ -146,3 +146,14 @@ export function toFounderApplicationView(application: Doc<"applications">) {
 		feedback: application.feedback ?? null,
 	};
 }
+
+/** What the Builder sees of their own application: the decision, the Founder's note, and whether they've answered the promise question. */
+export function toMyApplicationView(application: Doc<"applications">) {
+	return {
+		applicationId: application._id,
+		status: application.status,
+		decision: application.decision ?? null,
+		feedback: application.feedback ?? null,
+		promiseAnswered: application.promiseKept !== undefined,
+	};
+}

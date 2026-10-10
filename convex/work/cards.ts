@@ -122,6 +122,10 @@ export const update = mutation({
 			if (card.hackathonId) {
 				throw new Error("Hackathon Cards stay with their Builder");
 			}
+			// Verifying credits the owner, so the owner is fixed once submitted.
+			if (card.status === "review") {
+				throw new Error("This Card is in Review");
+			}
 			await requireTeamOwner(ctx, card.startupId, args.ownerId);
 			patch.ownerId = args.ownerId;
 		}

@@ -49,15 +49,15 @@ describe("drafts", () => {
 		await expect(past).rejects.toThrow("Start on a coming Monday");
 	});
 
-	it("a Hackathon has 1–5 Cards", async () => {
+	it("a Hackathon has 3–5 Cards", async () => {
 		const setup = await setUpStartup(createTest());
 		const card = { title: "Fix signup" };
 
-		const none = draftHackathon(setup, { cards: [] });
+		const two = draftHackathon(setup, { cards: Array(2).fill(card) });
 		const six = draftHackathon(setup, { cards: Array(6).fill(card) });
 
-		await expect(none).rejects.toThrow("Add 1–5 Cards");
-		await expect(six).rejects.toThrow("Add 1–5 Cards");
+		await expect(two).rejects.toThrow("Add 3–5 Cards");
+		await expect(six).rejects.toThrow("Add 3–5 Cards");
 	});
 
 	it("a Hackathon runs for 1 or 2 weeks", async () => {
@@ -98,6 +98,7 @@ describe("drafts", () => {
 		expect(cards.map((card) => card.title)).toEqual([
 			"Fix signup",
 			"Add onboarding",
+			"Track drop-off",
 		]);
 		expect(cards.every((card) => card.status === "todo" && !card.ownerId)).toBe(
 			true,
@@ -110,7 +111,10 @@ describe("drafts", () => {
 
 		await setup.founder.as.mutation(api.hiring.hackathons.update, {
 			hackathonId,
-			...hackathonInput({ problem: "New problem", cards: [{ title: "Only" }] }),
+			...hackathonInput({
+				problem: "New problem",
+				cards: [{ title: "One" }, { title: "Two" }, { title: "Three" }],
+			}),
 		});
 
 		const { hackathon, cards } = await setup.founder.as.query(
@@ -118,7 +122,7 @@ describe("drafts", () => {
 			{ hackathonId },
 		);
 		expect(hackathon.problem).toBe("New problem");
-		expect(cards.map((card) => card.title)).toEqual(["Only"]);
+		expect(cards.map((card) => card.title)).toEqual(["One", "Two", "Three"]);
 	});
 
 	it("a published Hackathon can't be edited", async () => {
@@ -183,6 +187,24 @@ describe("publish", () => {
 		});
 
 		await expect(publish).rejects.toThrow("Start on a coming Monday");
+	});
+
+	it("drafts show on the Hiring tab for the Founder only", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const draftId = await draftHackathon(setup);
+		const publishedId = await publishedHackathon(setup);
+
+		const forSam = await sam.as.query(api.hiring.hackathons.list, {
+			startupId: setup.startupId,
+		});
+		const forFounder = await setup.founder.as.query(
+			api.hiring.hackathons.list,
+			{ startupId: setup.startupId },
+		);
+
+		expect(forSam.map((row) => row._id)).toEqual([publishedId]);
+		expect(forFounder.map((row) => row._id)).toEqual([publishedId, draftId]);
 	});
 
 	it("the Hiring tab lists the Startup's Hackathons for the team", async () => {
@@ -264,9 +286,17 @@ describe("lifecycle", () => {
 		);
 		const titlesOf = (userId: typeof ana.userId) =>
 			cards.filter((card) => card.ownerId === userId).map((card) => card.title);
-		expect(titlesOf(ana.userId)).toEqual(["Fix signup", "Add onboarding"]);
-		expect(titlesOf(ben.userId)).toEqual(["Fix signup", "Add onboarding"]);
-		expect(cards.filter((card) => !card.ownerId)).toHaveLength(2);
+		expect(titlesOf(ana.userId)).toEqual([
+			"Fix signup",
+			"Add onboarding",
+			"Track drop-off",
+		]);
+		expect(titlesOf(ben.userId)).toEqual([
+			"Fix signup",
+			"Add onboarding",
+			"Track drop-off",
+		]);
+		expect(cards.filter((card) => !card.ownerId)).toHaveLength(3);
 	});
 
 	it("at the start, people still waiting are declined", async () => {
@@ -290,7 +320,10 @@ describe("lifecycle", () => {
 		const view = await waiting.as.query(api.hiring.hackathons.getPublic, {
 			hackathonId,
 		});
-		expect(view?.myApplication).toEqual({ status: "declined", decision: null });
+		expect(view?.myApplication).toMatchObject({
+			status: "declined",
+			decision: null,
+		});
 	});
 
 	it("after the end it's time to decide", async () => {
@@ -331,7 +364,7 @@ describe("lifecycle", () => {
 		const cards = await setup.t.run(
 			async (ctx) => await ctx.db.query("cards").take(50),
 		);
-		expect(cards).toHaveLength(4);
+		expect(cards).toHaveLength(6);
 		const { hackathon } = await setup.founder.as.query(
 			api.hiring.hackathons.get,
 			{ hackathonId },

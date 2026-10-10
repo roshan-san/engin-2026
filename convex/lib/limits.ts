@@ -1,4 +1,5 @@
 export const MAX_BUILDERS = 10;
+export const MIN_HACKATHON_CARDS = 3;
 export const MAX_HACKATHON_CARDS = 5;
 export const MAX_SHIPPED_LINKS = 5;
 export const MAX_SHIPPED_IMAGES = 5;

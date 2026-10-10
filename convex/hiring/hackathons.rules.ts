@@ -6,15 +6,14 @@ import {
 	MAX_APPLICATIONS,
 	MAX_BUILDERS,
 	MAX_HACKATHON_CARDS,
+	MIN_HACKATHON_CARDS,
 	TEXT,
 } from "../lib/limits";
 import { limitText, requireLimitedText } from "../lib/text";
 import { requireFounder } from "../startups/access.rules";
 import { appendActivity } from "../work/activity.rules";
-import { weekOf, weekStart } from "../work/cycles.rules";
+import { WEEK_MS, weekOf, weekStart } from "../work/cycles.rules";
 import { jobMode, jobPay, jobRole } from "./hiring.schema";
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {
@@ -49,8 +48,11 @@ export function requireValidDraft(input: DraftInput, now: number) {
 		throw new Error("Run it for 1 or 2 weeks");
 	}
 	const weeks: 1 | 2 = input.weeks;
-	if (input.cards.length < 1 || input.cards.length > MAX_HACKATHON_CARDS) {
-		throw new Error(`Add 1–${MAX_HACKATHON_CARDS} Cards`);
+	if (
+		input.cards.length < MIN_HACKATHON_CARDS ||
+		input.cards.length > MAX_HACKATHON_CARDS
+	) {
+		throw new Error(`Add ${MIN_HACKATHON_CARDS}–${MAX_HACKATHON_CARDS} Cards`);
 	}
 
 	const endsAt = input.startsAt + weeks * WEEK_MS;

@@ -170,10 +170,10 @@ export async function loadBoardCards(
 	startupId: Id<"startups">,
 	now: number,
 ): Promise<Doc<"cards">[]> {
-	const byStatus = (status: Doc<"cards">["status"]) =>
+	const open = (status: "todo" | "in_progress" | "review") =>
 		ctx.db
 			.query("cards")
-			.withIndex("by_startup_and_status", (q) =>
+			.withIndex("by_startup_and_hackathon_and_status", (q) =>
 				q
 					.eq("startupId", startupId)
 					.eq("hackathonId", undefined)
@@ -181,20 +181,26 @@ export async function loadBoardCards(
 			)
 			.order("desc")
 			.take(MAX_BOARD_CARDS);
+	const thisWeek = weekStart(weekOf(now));
+	const verifiedThisWeek = ctx.db
+		.query("cards")
+		.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
+			q
+				.eq("startupId", startupId)
+				.eq("hackathonId", undefined)
+				.eq("status", "done")
+				.gte("verifiedAt", thisWeek),
+		)
+		.order("desc")
+		.take(MAX_BOARD_CARDS);
 
 	const [todo, inProgress, review, done] = await Promise.all([
-		byStatus("todo"),
-		byStatus("in_progress"),
-		byStatus("review"),
-		byStatus("done"),
+		open("todo"),
+		open("in_progress"),
+		open("review"),
+		verifiedThisWeek,
 	]);
-	const thisWeek = weekStart(weekOf(now));
-	return [
-		...todo,
-		...inProgress,
-		...review,
-		...done.filter((card) => (card.verifiedAt ?? 0) >= thisWeek),
-	];
+	return [...todo, ...inProgress, ...review, ...done];
 }
 
 export async function toCardView(ctx: Ctx, card: Doc<"cards">) {

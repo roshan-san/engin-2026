@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { MAX_BOARD_CARDS } from "../lib/limits";
 import { createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import {
@@ -120,6 +121,34 @@ describe("board", () => {
 		});
 
 		expect(await boardOf(setup)).toMatchObject([{ title: "Open work" }]);
+	});
+
+	it("a Card verified this week stays on the Board however many Cards were verified before it", async () => {
+		const setup = await setUpStartup(createTest());
+		const cardId = await cardOn(setup, setup.founder, "Long-running work");
+		await setup.t.run(async (ctx) => {
+			for (let i = 0; i <= MAX_BOARD_CARDS; i++) {
+				await ctx.db.insert("cards", {
+					startupId: setup.startupId,
+					ownerId: setup.founder.userId,
+					title: `Old work ${i}`,
+					notes: "",
+					status: "done",
+					shipped: SHIPPED,
+					verifiedAt: Date.now() - 30 * 24 * 3600_000,
+					verifiedBy: setup.founder.userId,
+				});
+			}
+		});
+
+		await setup.founder.as.mutation(api.work.cards.submit, {
+			cardId,
+			shipped: SHIPPED,
+		});
+
+		expect(await boardOf(setup)).toMatchObject([
+			{ title: "Long-running work", status: "done" },
+		]);
 	});
 
 	it("a Card needs a title", async () => {
@@ -350,6 +379,29 @@ describe("locks", () => {
 		await expect(
 			setup.founder.as.mutation(api.work.cards.remove, { cardId }),
 		).rejects.toThrow("This Card is verified");
+	});
+
+	it("a Card in Review keeps its owner", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const lee = await addContributor(setup, "Lee");
+		const cardId = await cardOn(setup, sam, "Write welcome emails");
+		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+
+		const toFounder = setup.founder.as.mutation(api.work.cards.update, {
+			cardId,
+			ownerId: setup.founder.userId,
+		});
+		const toLee = lee.as.mutation(api.work.cards.update, {
+			cardId,
+			ownerId: lee.userId,
+		});
+
+		await expect(toFounder).rejects.toThrow("This Card is in Review");
+		await expect(toLee).rejects.toThrow("This Card is in Review");
+		expect(await boardOf(setup)).toMatchObject([
+			{ status: "review", owner: { _id: sam.userId } },
+		]);
 	});
 
 	it("a Card in Review can't be submitted again", async () => {

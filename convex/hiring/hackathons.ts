@@ -9,6 +9,7 @@ import {
 	MAX_LISTED_HACKATHONS,
 } from "../lib/limits";
 import { requireFounder, requireTeam } from "../startups/access.rules";
+import { toMyApplicationView } from "./applications.rules";
 import {
 	copyTemplateCardsTo,
 	countUndecidedBuilders,
@@ -25,16 +26,21 @@ export const list = query({
 	args: { startupId: v.id("startups") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireTeam(ctx, args.startupId, userId);
+		const { role } = await requireTeam(ctx, args.startupId, userId);
 
 		const hackathons = await ctx.db
 			.query("hackathons")
 			.withIndex("by_startup", (q) => q.eq("startupId", args.startupId))
 			.order("desc")
 			.take(MAX_LISTED_HACKATHONS);
+		// Drafts are the Founder's until published.
+		const visible =
+			role === "founder"
+				? hackathons
+				: hackathons.filter((hackathon) => hackathon.status !== "draft");
 
 		return await Promise.all(
-			hackathons.map(async (hackathon) => {
+			visible.map(async (hackathon) => {
 				const inReview = await ctx.db
 					.query("cards")
 					.withIndex("by_hackathon_and_status", (q) =>
@@ -111,12 +117,7 @@ export const getPublic = query({
 				rating: startup.rating,
 			},
 			applicantCount: hackathon.applicantCount,
-			myApplication: application
-				? {
-						status: application.status,
-						decision: application.decision ?? null,
-					}
-				: null,
+			myApplication: application ? toMyApplicationView(application) : null,
 		};
 	},
 });

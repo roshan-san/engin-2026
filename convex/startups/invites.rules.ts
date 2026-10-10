@@ -34,18 +34,7 @@ export async function createInvite(
 		throw new Error("Already on this startup");
 	}
 
-	const now = Date.now();
-	const pending = await ctx.db
-		.query("invites")
-		.withIndex("by_email_and_status", (q) =>
-			q.eq("email", email).eq("status", "pending"),
-		)
-		.take(MAX_INVITES);
-	if (
-		pending.some(
-			(invite) => invite.startupId === args.startupId && invite.expiresAt > now,
-		)
-	) {
+	if (await loadOpenInvite(ctx, args.startupId, email)) {
 		throw new Error("Already invited");
 	}
 
@@ -54,9 +43,63 @@ export async function createInvite(
 		email,
 		invitedBy: args.invitedBy,
 		status: "pending",
-		expiresAt: now + INVITE_TTL_MS,
+		expiresAt: Date.now() + INVITE_TTL_MS,
 		hackathonId: args.hackathonId,
 	});
+}
+
+/**
+ * The Invite a Hackathon hire sends. Never throws for someone already on the
+ * Startup (no Invite) or already invited (their open Invite now carries the Hackathon).
+ */
+export async function ensureHireInvite(
+	ctx: MutationCtx,
+	args: {
+		startupId: Id<"startups">;
+		userId: Id<"users">;
+		email: string;
+		invitedBy: Id<"users">;
+		hackathonId: Id<"hackathons">;
+	},
+): Promise<void> {
+	if (await getTeamRole(ctx, args.startupId, args.userId)) {
+		return;
+	}
+	const open = await loadOpenInvite(
+		ctx,
+		args.startupId,
+		normalizeEmail(args.email),
+	);
+	if (open) {
+		await ctx.db.patch(open._id, { hackathonId: args.hackathonId });
+		return;
+	}
+	await createInvite(ctx, {
+		startupId: args.startupId,
+		email: args.email,
+		invitedBy: args.invitedBy,
+		hackathonId: args.hackathonId,
+	});
+}
+
+/** The pending, unexpired Invite for this email to the Startup, or null. */
+async function loadOpenInvite(
+	ctx: QueryCtx | MutationCtx,
+	startupId: Id<"startups">,
+	email: string,
+): Promise<Doc<"invites"> | null> {
+	const now = Date.now();
+	const pending = await ctx.db
+		.query("invites")
+		.withIndex("by_email_and_status", (q) =>
+			q.eq("email", email).eq("status", "pending"),
+		)
+		.take(MAX_INVITES);
+	return (
+		pending.find(
+			(invite) => invite.startupId === startupId && invite.expiresAt > now,
+		) ?? null
+	);
 }
 
 /** The invite, when it is still open and addressed to this person's email. */

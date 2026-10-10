@@ -1,13 +1,12 @@
 import type { FunctionArgs } from "convex/server";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { DAY } from "../lib/testing.helpers";
 import type { Setup } from "../startups/startups.helpers";
-import { weekOf, weekStart } from "../work/cycles.rules";
+import { WEEK_MS, weekOf, weekStart } from "../work/cycles.rules";
 
 /** The Monday 00:00 IST that starts next week. */
 export function nextMonday(): number {
-	return weekStart(weekOf(Date.now())) + 7 * DAY;
+	return weekStart(weekOf(Date.now())) + WEEK_MS;
 }
 
 type HackathonInput = Omit<
@@ -28,6 +27,7 @@ export function hackathonInput(
 		cards: [
 			{ title: "Fix signup" },
 			{ title: "Add onboarding", notes: "Keep it short" },
+			{ title: "Track drop-off" },
 		],
 		...overrides,
 	};

@@ -2,10 +2,8 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { requireFounder, requireTeam } from "../startups/access.rules";
-import { cycleNumber, weekOf, weekStart } from "./cycles.rules";
+import { cycleNumber, WEEK_MS, weekOf, weekStart } from "./cycles.rules";
 import { loadGoal, saveGoal } from "./goals.rules";
-
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const getCurrent = query({
 	args: { startupId: v.id("startups") },
