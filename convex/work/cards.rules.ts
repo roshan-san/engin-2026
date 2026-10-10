@@ -7,6 +7,7 @@ import {
 	TEXT,
 } from "../lib/limits";
 import { assertUrl, requireLimitedText } from "../lib/text";
+import { isBuilder } from "../hiring/applications.rules";
 import { loadPublicUser } from "../people/users.rules";
 import {
 	getTeamRole,
@@ -40,10 +41,65 @@ export async function requireCardAccess(
 		throw new Error("This Card doesn't exist");
 	}
 	if (card.hackathonId) {
-		throw new Error("This Card isn't yours");
+		const { startup, role } = await requireHackathonCardRole(
+			ctx,
+			card,
+			card.hackathonId,
+			userId,
+		);
+		return { card, startup, role };
 	}
 	const { startup, role } = await requireTeam(ctx, card.startupId, userId);
 	return { card, startup, role };
+}
+
+/**
+ * Hackathon Cards: the Founder works any of them; a Builder only their own,
+ * and only while the Hackathon is building. Nobody else, Contributors included.
+ */
+async function requireHackathonCardRole(
+	ctx: Ctx,
+	card: Doc<"cards">,
+	hackathonId: Id<"hackathons">,
+	userId: Id<"users">,
+): Promise<{ startup: Doc<"startups">; role: CardRole }> {
+	const [hackathon, startup] = await Promise.all([
+		ctx.db.get(hackathonId),
+		ctx.db.get(card.startupId),
+	]);
+	if (!hackathon || !startup) {
+		throw new Error("This Card doesn't exist");
+	}
+	if (startup.founderId === userId) {
+		return { startup, role: "founder" };
+	}
+	if (card.ownerId === userId && (await isBuilder(ctx, hackathonId, userId))) {
+		if (hackathon.status !== "building") {
+			throw new Error("This Hackathon isn't running");
+		}
+		return { startup, role: "builder" };
+	}
+	throw new Error("This Card isn't yours");
+}
+
+/** Who may see a Builder's Cards: the Founder, or that Builder. */
+export async function requireBuilderBoardAccess(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+	builderId: Id<"users">,
+	userId: Id<"users">,
+): Promise<void> {
+	const hackathon = await ctx.db.get(hackathonId);
+	if (!hackathon) {
+		throw new Error("Hackathon not found");
+	}
+	const startup = await ctx.db.get(hackathon.startupId);
+	if (startup?.founderId === userId) {
+		return;
+	}
+	if (builderId !== userId || !(await isBuilder(ctx, hackathonId, userId))) {
+		throw new Error("This Card isn't yours");
+	}
 }
 
 /** A Card the Founder sent back: it is back in play but still carries its last submission. */
@@ -163,7 +219,7 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 	};
 }
 
-/** Moves a Card to Done, locking its What shipped, and logs it. The owner verifying their own Card is self-verified. */
+/** Moves a Card to Done, locking its What shipped, and logs it on the Startup's Activity. The owner verifying their own Card is self-verified. */
 export async function markVerified(
 	ctx: MutationCtx,
 	card: Doc<"cards">,
@@ -177,6 +233,10 @@ export async function markVerified(
 		verifiedAt: now,
 		verifiedBy: verifierId,
 	});
+	// Hackathon work is the Builder's, not the Startup's: it stays off the Activity.
+	if (card.hackathonId) {
+		return;
+	}
 	await appendActivity(ctx, {
 		startupId: card.startupId,
 		kind: "card_verified",

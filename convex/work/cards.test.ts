@@ -363,8 +363,9 @@ describe("locks", () => {
 		).rejects.toThrow("This Card is in Review");
 	});
 
-	it("a Hackathon Card isn't reachable through the startup Board", async () => {
+	it("a Hackathon Card stays off the startup Board and away from the team", async () => {
 		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
 		const hackathonCard = await setup.t.run(async (ctx) => {
 			const hackathonId = await ctx.db.insert("hackathons", {
 				startupId: setup.startupId,
@@ -387,12 +388,12 @@ describe("locks", () => {
 			});
 		});
 
-		await expect(
-			setup.founder.as.mutation(api.work.cards.update, {
-				cardId: hackathonCard,
-				notes: "hi",
-			}),
-		).rejects.toThrow("This Card isn't yours");
+		const update = sam.as.mutation(api.work.cards.update, {
+			cardId: hackathonCard,
+			notes: "hi",
+		});
+
+		await expect(update).rejects.toThrow("This Card isn't yours");
 		expect(await boardOf(setup)).toEqual([]);
 	});
 });

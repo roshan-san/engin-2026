@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { requireHackathonFounder } from "../hiring/hackathons.rules";
 import { requireUserId } from "../lib/auth";
+import { MAX_BUILDERS, MAX_HACKATHON_CARDS } from "../lib/limits";
 import { shipped } from "../schema";
 import { requireTeam } from "../startups/access.rules";
 import {
@@ -9,6 +11,7 @@ import {
 	normalizeNotes,
 	normalizeTitle,
 	parseShipped,
+	requireBuilderBoardAccess,
 	requireCardAccess,
 	requireNotVerified,
 	requireTeamOwner,
@@ -23,6 +26,53 @@ export const listBoard = query({
 
 		const cards = await loadBoardCards(ctx, args.startupId, Date.now());
 		return await Promise.all(cards.map((card) => toCardView(ctx, card)));
+	},
+});
+
+/** One Builder's Cards on a Hackathon, in every status. */
+export const listBuilderBoard = query({
+	args: { hackathonId: v.id("hackathons"), builderId: v.id("users") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireBuilderBoardAccess(
+			ctx,
+			args.hackathonId,
+			args.builderId,
+			userId,
+		);
+
+		const cards = await ctx.db
+			.query("cards")
+			.withIndex("by_hackathon_and_owner", (q) =>
+				q.eq("hackathonId", args.hackathonId).eq("ownerId", args.builderId),
+			)
+			.take(MAX_HACKATHON_CARDS);
+		return await Promise.all(cards.map((card) => toCardView(ctx, card)));
+	},
+});
+
+/** Builders' Cards waiting in Review, oldest submission first. */
+export const listReviewQueue = query({
+	args: { hackathonId: v.id("hackathons") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireHackathonFounder(ctx, args.hackathonId, userId);
+
+		const inReview = await ctx.db
+			.query("cards")
+			.withIndex("by_hackathon_and_status", (q) =>
+				q.eq("hackathonId", args.hackathonId).eq("status", "review"),
+			)
+			.take(MAX_BUILDERS * MAX_HACKATHON_CARDS);
+		const queue = inReview
+			.filter((card) => card.ownerId !== undefined)
+			.sort((a, b) => (a.submittedAt ?? 0) - (b.submittedAt ?? 0));
+		return await Promise.all(
+			queue.map(async (card) => ({
+				...(await toCardView(ctx, card)),
+				submittedAt: card.submittedAt ?? 0,
+			})),
+		);
 	},
 });
 
@@ -69,6 +119,9 @@ export const update = mutation({
 			patch.title = normalizeTitle(args.title);
 		}
 		if (args.ownerId !== undefined) {
+			if (card.hackathonId) {
+				throw new Error("Hackathon Cards stay with their Builder");
+			}
 			await requireTeamOwner(ctx, card.startupId, args.ownerId);
 			patch.ownerId = args.ownerId;
 		}
@@ -151,6 +204,9 @@ export const remove = mutation({
 		const userId = await requireUserId(ctx);
 		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
 		requireNotVerified(card);
+		if (role === "builder") {
+			throw new Error("Only the Founder can remove this Card");
+		}
 		if (card.ownerId !== userId && role !== "founder") {
 			throw new Error("Only the owner or the Founder can remove this Card");
 		}
