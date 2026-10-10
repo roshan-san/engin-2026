@@ -17,6 +17,7 @@ import type * as people_users from "../people/users.js";
 import type * as startups_contributors from "../startups/contributors.js";
 import type * as startups_invites from "../startups/invites.js";
 import type * as startups_startups from "../startups/startups.js";
+import type * as work_cards from "../work/cards.js";
 
 import type {
   ApiFromModules,
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   "startups/contributors": typeof startups_contributors;
   "startups/invites": typeof startups_invites;
   "startups/startups": typeof startups_startups;
+  "work/cards": typeof work_cards;
 }>;
 
 /**
