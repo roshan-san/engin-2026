@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as hiring_hackathons from "../hiring/hackathons.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_limits from "../lib/limits.js";
@@ -29,6 +30,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "hiring/hackathons": typeof hiring_hackathons;
   http: typeof http;
   "lib/auth": typeof lib_auth;
   "lib/limits": typeof lib_limits;
