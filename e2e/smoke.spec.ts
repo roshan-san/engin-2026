@@ -7,10 +7,12 @@ test("the landing page offers Google sign-in", async ({ page }) => {
 	await expect(page.getByRole("button", { name: "Get started" })).toBeVisible();
 });
 
-test("a signed-in person lands on the holding page", async ({ pageAs }) => {
+test("a signed-in person lands on their startups", async ({ pageAs }) => {
 	const page = await pageAs(await signUp("Fay"));
 
 	await page.goto("/home");
 
-	await expect(page.getByText("Engin is being rebuilt.")).toBeVisible();
+	await expect(
+		page.getByRole("heading", { name: "Your startups" }),
+	).toBeVisible();
 });

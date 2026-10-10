@@ -1,8 +1,14 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { MAX_MESSAGE_IMAGES, MAX_MESSAGES, TEXT } from "../lib/limits";
+import {
+	MAX_MESSAGE_IMAGES,
+	MAX_MESSAGE_MENTIONS,
+	MAX_MESSAGES,
+	TEXT,
+} from "../lib/limits";
 import { limitText } from "../lib/text";
 import { loadPublicUser } from "../people/users.rules";
+import { parseMentions } from "./mentions.rules";
 
 /** A trimmed message that has text, images, or both. */
 export function parseMessage(
@@ -46,8 +52,29 @@ export async function loadPinnedMessages(
 		.take(MAX_MESSAGES);
 }
 
+/**
+ * The Startup Cards a message mentions, with titles. Ids that aren't Cards,
+ * removed Cards, other Startups' Cards and Hackathon Cards stay plain text.
+ */
+async function loadMentionedCards(
+	ctx: QueryCtx,
+	thread: Doc<"threads">,
+	body: string,
+): Promise<{ cardId: Id<"cards">; title: string }[]> {
+	const mentions = [];
+	for (const id of parseMentions(body).slice(0, MAX_MESSAGE_MENTIONS)) {
+		const cardId = ctx.db.normalizeId("cards", id);
+		const card = cardId ? await ctx.db.get(cardId) : null;
+		if (card && card.startupId === thread.startupId && !card.hackathonId) {
+			mentions.push({ cardId: card._id, title: card.title });
+		}
+	}
+	return mentions;
+}
+
 export async function buildMessageViews(
 	ctx: QueryCtx,
+	thread: Doc<"threads">,
 	messages: Doc<"messages">[],
 ) {
 	const authors = new Map<
@@ -78,6 +105,7 @@ export async function buildMessageViews(
 			_id: message._id,
 			author,
 			body: message.body,
+			mentions: await loadMentionedCards(ctx, thread, message.body),
 			imageUrls,
 			at: message._creationTime,
 		});

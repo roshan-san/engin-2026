@@ -203,10 +203,14 @@ export async function loadBoardCards(
 	return [...todo, ...inProgress, ...review, ...done];
 }
 
+export type CardView = Awaited<ReturnType<typeof toCardView>>;
+
 export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
-	const [owner, notesEditedBy] = await Promise.all([
+	const [owner, notesEditedBy, verifiedBy, imageUrls] = await Promise.all([
 		loadPublicUser(ctx, card.ownerId),
 		loadPublicUser(ctx, card.notesEditedBy),
+		loadPublicUser(ctx, card.verifiedBy),
+		loadImageUrls(ctx, card.shipped?.images ?? []),
 	]);
 	return {
 		_id: card._id,
@@ -214,7 +218,10 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 		notes: card.notes,
 		status: card.status,
 		owner,
-		shipped: card.shipped ?? null,
+		shipped: card.shipped ? { ...card.shipped, imageUrls } : null,
+		submittedAt: card.submittedAt ?? null,
+		verifiedAt: card.verifiedAt ?? null,
+		verifiedBy,
 		notesEditedAt: card.notesEditedAt ?? null,
 		notesEditedBy,
 		changesAsked: isChangesAsked(card),
@@ -223,6 +230,15 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 			card.ownerId !== undefined &&
 			card.verifiedBy === card.ownerId,
 	};
+}
+
+/** Serving URLs for stored images, skipping any that are gone. */
+async function loadImageUrls(
+	ctx: Ctx,
+	images: Id<"_storage">[],
+): Promise<string[]> {
+	const urls = await Promise.all(images.map((id) => ctx.storage.getUrl(id)));
+	return urls.filter((url): url is string => url !== null);
 }
 
 /** Moves a Card to Done, locking its What shipped, and logs it on the Startup's Activity. The owner verifying their own Card is self-verified. */

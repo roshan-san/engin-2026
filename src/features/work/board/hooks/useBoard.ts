@@ -1,0 +1,61 @@
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
+import { useMemo } from "react";
+import { toast } from "sonner";
+import { errorMessage } from "~/lib/errors";
+
+/** The Board's Cards: creating, moving between To do and In progress, and Verify. */
+export function useBoard(startupId: Id<"startups">) {
+	const cards = useQuery(api.work.cards.listBoard, { startupId });
+	const createCard = useMutation(api.work.cards.create);
+	const moveCard = useMutation(api.work.cards.move);
+	const verifyCard = useMutation(api.work.cards.verify);
+	const moveOptimistically = useMemo(
+		() =>
+			moveCard.withOptimisticUpdate((store, args) => {
+				const current = store.getQuery(api.work.cards.listBoard, { startupId });
+				if (!current) return;
+				store.setQuery(
+					api.work.cards.listBoard,
+					{ startupId },
+					current.map((card) =>
+						card._id === args.cardId ? { ...card, status: args.to } : card,
+					),
+				);
+			}),
+		[moveCard, startupId],
+	);
+
+	/** Resolves `false` when the Card wasn't created (the error is toasted). */
+	async function create(title: string) {
+		try {
+			await createCard({ startupId, title });
+			return true;
+		} catch (error) {
+			toast.error(errorMessage(error));
+			return false;
+		}
+	}
+
+	async function move(cardId: Id<"cards">, to: "todo" | "in_progress") {
+		try {
+			await moveOptimistically({ cardId, to });
+		} catch (error) {
+			toast.error(errorMessage(error));
+		}
+	}
+
+	/** Founder only, from Review. Resolves `false` when it failed (the error is toasted). */
+	async function verify(cardId: Id<"cards">) {
+		try {
+			await verifyCard({ cardId });
+			return true;
+		} catch (error) {
+			toast.error(errorMessage(error));
+			return false;
+		}
+	}
+
+	return { cards, create, move, verify };
+}

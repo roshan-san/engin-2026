@@ -14,27 +14,20 @@ export const list = query({
 	args: { threadId: v.id("threads") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireThreadAccess(ctx, args.threadId, userId);
+		const { thread } = await requireThreadAccess(ctx, args.threadId, userId);
 
 		return {
 			pinned: await buildMessageViews(
 				ctx,
+				thread,
 				await loadPinnedMessages(ctx, args.threadId),
 			),
 			messages: await buildMessageViews(
 				ctx,
+				thread,
 				await loadLatestMessages(ctx, args.threadId),
 			),
 		};
-	},
-});
-
-export const generateUploadUrl = mutation({
-	args: {},
-	handler: async (ctx) => {
-		await requireUserId(ctx);
-
-		return await ctx.storage.generateUploadUrl();
 	},
 });
 

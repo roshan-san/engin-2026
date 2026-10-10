@@ -4,6 +4,7 @@ export const MAX_HACKATHON_CARDS = 5;
 export const MAX_SHIPPED_LINKS = 5;
 export const MAX_SHIPPED_IMAGES = 5;
 export const MAX_MESSAGE_IMAGES = 4;
+export const MAX_MESSAGE_MENTIONS = 10;
 export const MAX_BOARD_CARDS = 200;
 export const MAX_LISTED_HACKATHONS = 50;
 export const MAX_APPLICATIONS = 500;
@@ -14,6 +15,10 @@ export const MAX_INVITES = 100;
 export const MAX_THREADS = 20;
 export const MAX_MESSAGES = 100;
 export const MAX_ACTIVITY = 200;
+
+/** How often a tab may announce itself, in ms. */
+export const MIN_PRESENCE_INTERVAL_MS = 1_000;
+export const MAX_PRESENCE_INTERVAL_MS = 60_000;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const INVITE_TTL_MS = 14 * DAY_MS;
@@ -35,6 +40,7 @@ export const TEXT = {
 	walkthroughNotes: 2000,
 	message: 2000,
 	bio: 280,
+	sessionId: 64,
 };
 
 export const STARTING_RATING = 1000;

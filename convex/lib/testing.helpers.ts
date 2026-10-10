@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import presence from "@convex-dev/presence/test";
 import { convexTest } from "convex-test";
 import { vi } from "vitest";
 import schema from "../schema";
@@ -10,7 +11,9 @@ export const DAY = 24 * HOUR;
 const modules = import.meta.glob(["../**/*.*s", "!../**/*.test.ts"]);
 
 export function createTest() {
-	return convexTest(schema, modules);
+	const t = convexTest(schema, modules);
+	presence.register(t);
+	return t;
 }
 
 export type TestConvex = ReturnType<typeof createTest>;
