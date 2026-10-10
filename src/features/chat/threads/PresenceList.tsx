@@ -9,13 +9,13 @@ import {
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { displayName } from "~/features/work/cards/displayName";
 import { initials } from "~/lib/initials";
-import { usePresence } from "./hooks/usePresence";
+import { useOnline } from "./hooks/useOnline";
 import { orderPresence, presenceLabel } from "./presence";
 
 /** Overlapping avatars of who is online, you first. Hover for what they're on. */
 export function PresenceList() {
 	const { startup, userId } = useWorkspace();
-	const online = usePresence(startup._id);
+	const online = useOnline(startup._id);
 	if (!online || online.length === 0) return null;
 
 	return (

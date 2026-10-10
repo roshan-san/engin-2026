@@ -1,24 +1,16 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useConvex, useMutation, useQuery } from "convex/react";
-import type { FunctionReturnType } from "convex/server";
+import { useConvex, useMutation } from "convex/react";
 import { useEffect } from "react";
-
-export type PresenceView = FunctionReturnType<
-	typeof api.chat.presence.list
->[number];
 
 const HEARTBEAT_MS = 10_000;
 
 /**
- * Who is online on the Startup. While mounted this tab heartbeats; it
+ * Tells the Startup this tab is online. While mounted it heartbeats; it
  * disconnects on unmount and when the page hides. Presence is ambient, so
  * errors are swallowed and never toasted.
  */
-export function usePresence(
-	startupId: Id<"startups">,
-): PresenceView[] | undefined {
-	const online = useQuery(api.chat.presence.list, { startupId });
+export function useHeartbeat(startupId: Id<"startups">) {
 	const convex = useConvex();
 	const heartbeat = useMutation(api.chat.presence.heartbeat);
 
@@ -61,6 +53,4 @@ export function usePresence(
 			disconnect();
 		};
 	}, [convex, heartbeat, startupId]);
-
-	return online;
 }

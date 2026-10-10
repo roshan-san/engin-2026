@@ -1,3 +1,4 @@
+import { TEXT } from "@convex/lib/limits";
 import { useRef, useState } from "react";
 import { MentorNote } from "~/components/shared/MentorNote";
 import { Input } from "~/components/ui/input";
@@ -54,7 +55,7 @@ export function CycleHeader() {
 					aria-label="Cycle goal"
 					placeholder="Set this week's goal"
 					value={draft ?? goal}
-					maxLength={140}
+					maxLength={TEXT.goal}
 					autoComplete="off"
 					className="max-w-md flex-1"
 					onFocus={() => {

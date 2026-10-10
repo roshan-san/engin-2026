@@ -14,6 +14,7 @@ import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
 import { Route as ShellAuthedHomeRouteImport } from './routes/_shell/_authed/home'
 import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_authed/s/$slug/route'
+import { Route as ShellAuthedSSlugIndexRouteImport } from './routes/_shell/_authed/s/$slug/index'
 import { Route as ShellAuthedSSlugBoardRouteImport } from './routes/_shell/_authed/s/$slug/board'
 
 const IndexRoute = IndexRouteImport.update({
@@ -39,6 +40,11 @@ const ShellAuthedSSlugRouteRoute = ShellAuthedSSlugRouteRouteImport.update({
   path: '/s/$slug',
   getParentRoute: () => ShellAuthedRouteRoute,
 } as any)
+const ShellAuthedSSlugIndexRoute = ShellAuthedSSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShellAuthedSSlugRouteRoute,
+} as any)
 const ShellAuthedSSlugBoardRoute = ShellAuthedSSlugBoardRouteImport.update({
   id: '/board',
   path: '/board',
@@ -50,12 +56,13 @@ export interface FileRoutesByFullPath {
   '/home': typeof ShellAuthedHomeRoute
   '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
+  '/s/$slug/': typeof ShellAuthedSSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/home': typeof ShellAuthedHomeRoute
-  '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
+  '/s/$slug': typeof ShellAuthedSSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -65,12 +72,13 @@ export interface FileRoutesById {
   '/_shell/_authed/home': typeof ShellAuthedHomeRoute
   '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
   '/_shell/_authed/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
+  '/_shell/_authed/s/$slug/': typeof ShellAuthedSSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/s/$slug' | '/s/$slug/board'
+  fullPaths: '/' | '/home' | '/s/$slug' | '/s/$slug/board' | '/s/$slug/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/s/$slug' | '/s/$slug/board'
+  to: '/' | '/home' | '/s/$slug/board' | '/s/$slug'
   id:
     | '__root__'
     | '/'
@@ -79,6 +87,7 @@ export interface FileRouteTypes {
     | '/_shell/_authed/home'
     | '/_shell/_authed/s/$slug'
     | '/_shell/_authed/s/$slug/board'
+    | '/_shell/_authed/s/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -123,6 +132,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedSSlugRouteRouteImport
       parentRoute: typeof ShellAuthedRouteRoute
     }
+    '/_shell/_authed/s/$slug/': {
+      id: '/_shell/_authed/s/$slug/'
+      path: '/'
+      fullPath: '/s/$slug/'
+      preLoaderRoute: typeof ShellAuthedSSlugIndexRouteImport
+      parentRoute: typeof ShellAuthedSSlugRouteRoute
+    }
     '/_shell/_authed/s/$slug/board': {
       id: '/_shell/_authed/s/$slug/board'
       path: '/board'
@@ -135,10 +151,12 @@ declare module '@tanstack/react-router' {
 
 interface ShellAuthedSSlugRouteRouteChildren {
   ShellAuthedSSlugBoardRoute: typeof ShellAuthedSSlugBoardRoute
+  ShellAuthedSSlugIndexRoute: typeof ShellAuthedSSlugIndexRoute
 }
 
 const ShellAuthedSSlugRouteRouteChildren: ShellAuthedSSlugRouteRouteChildren = {
   ShellAuthedSSlugBoardRoute: ShellAuthedSSlugBoardRoute,
+  ShellAuthedSSlugIndexRoute: ShellAuthedSSlugIndexRoute,
 }
 
 const ShellAuthedSSlugRouteRouteWithChildren =

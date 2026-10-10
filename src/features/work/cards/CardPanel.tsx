@@ -45,13 +45,10 @@ import { ShippedView } from "./ShippedView";
 export function CardPanel({
 	cardId,
 	onClose,
-	onBack,
 	onShip,
 }: {
 	readonly cardId: string;
 	readonly onClose: () => void;
-	/** Back to Threads, keeping the panel open. */
-	readonly onBack: () => void;
 	/** Called when the owner picks Review; opens What shipped. */
 	readonly onShip: (card: CardView) => void;
 }) {
@@ -69,11 +66,8 @@ export function CardPanel({
 	}
 	if (card === null) {
 		return (
-			<div className="flex flex-col items-start gap-3 p-4">
+			<div className="p-4">
 				<p className="text-sm">This Card isn't here.</p>
-				<Button variant="outline" size="sm" onClick={onBack}>
-					Back to Threads
-				</Button>
 			</div>
 		);
 	}

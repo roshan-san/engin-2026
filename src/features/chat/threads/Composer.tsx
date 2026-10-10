@@ -149,17 +149,39 @@ export function Composer({
 
 	async function handleSend() {
 		if (!canSend) return;
+		// Clear first, so what's typed while sending is kept and not erased after.
+		const sentText = text;
+		const sentPictures = pictures;
+		const images = sentPictures.flatMap((p) =>
+			p.storageId ? [p.storageId] : [],
+		);
 		setIsSending(true);
-		const images = pictures.flatMap((p) => (p.storageId ? [p.storageId] : []));
-		const isSent = await onSend(text.trim(), images);
+		setText("");
+		setCaret(0);
+		setPictures((current) =>
+			current.filter((p) => !sentPictures.some((sent) => sent.key === p.key)),
+		);
+		textarea.current?.focus();
+
+		const isSent = await onSend(sentText.trim(), images);
 		setIsSending(false);
 		if (isSent) {
-			for (const picture of pictures) URL.revokeObjectURL(picture.previewUrl);
-			setPictures([]);
-			setText("");
-			setCaret(0);
-			textarea.current?.focus();
+			for (const picture of sentPictures)
+				URL.revokeObjectURL(picture.previewUrl);
+			return;
 		}
+
+		// Put it back, ahead of anything typed or added since.
+		setText((current) =>
+			current ? `${sentText} ${current}`.slice(0, TEXT.message) : sentText,
+		);
+		setPictures((current) => {
+			const all = [...sentPictures, ...current];
+			for (const extra of all.slice(MAX_MESSAGE_IMAGES)) {
+				URL.revokeObjectURL(extra.previewUrl);
+			}
+			return all.slice(0, MAX_MESSAGE_IMAGES);
+		});
 	}
 
 	return (

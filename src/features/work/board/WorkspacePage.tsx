@@ -8,6 +8,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
+import { useHeartbeat } from "~/features/chat/threads/hooks/useHeartbeat";
 import { useTeamThread } from "~/features/chat/threads/hooks/useTeamThread";
 import { ThreadsPanel } from "~/features/chat/threads/ThreadsPanel";
 import { useIsMobile } from "~/hooks/use-mobile";
@@ -30,6 +31,9 @@ export function WorkspacePage() {
 	const { startup } = useWorkspace();
 	const isTeamUnread = useTeamThread(startup._id)?.unread ?? false;
 
+	// Online for as long as the workspace is open, whichever panel is showing.
+	useHeartbeat(startup._id);
+
 	function closeCard() {
 		void navigate({ search: (prev) => ({ ...prev, card: undefined }) });
 	}
@@ -41,7 +45,9 @@ export function WorkspacePage() {
 	}
 
 	// Opening a Card on a phone raises the sheet; the sheet closing closes the Card.
-	const isSheetOpen = isMobile && (isThreadsOpen || cardId !== undefined);
+	// The panel waits for `isMobile`, so a phone never mounts it in the hidden aside.
+	const isSheetOpen =
+		isMobile === true && (isThreadsOpen || cardId !== undefined);
 	const panel = cardId ? (
 		<>
 			<div className="border-b border-border px-2 py-1">
@@ -54,7 +60,6 @@ export function WorkspacePage() {
 				key={cardId}
 				cardId={cardId}
 				onClose={closeCard}
-				onBack={backToThreads}
 				onShip={setShipping}
 			/>
 		</>
@@ -63,7 +68,7 @@ export function WorkspacePage() {
 	);
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col">
+		<div className="flex h-[calc(100dvh-3.5rem-1px)] min-h-0 flex-col">
 			<div className="flex items-start gap-3 border-b border-border px-4 py-3 md:px-6">
 				<CycleHeader />
 				<Button
@@ -90,7 +95,7 @@ export function WorkspacePage() {
 					data-testid="panel"
 					className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex"
 				>
-					{isMobile ? null : panel}
+					{isMobile === false ? panel : null}
 				</aside>
 			</div>
 			{shipping ? (
@@ -115,7 +120,7 @@ export function WorkspacePage() {
 							{cardId ? "Edit this Card." : "Talk with your team."}
 						</SheetDescription>
 					</SheetHeader>
-					{isMobile ? panel : null}
+					{isMobile === true ? panel : null}
 				</SheetContent>
 			</Sheet>
 		</div>
