@@ -9,6 +9,8 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as chat_messages from "../chat/messages.js";
+import type * as chat_threads from "../chat/threads.js";
 import type * as hiring_applications from "../hiring/applications.js";
 import type * as hiring_hackathons from "../hiring/hackathons.js";
 import type * as http from "../http.js";
@@ -31,6 +33,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "chat/messages": typeof chat_messages;
+  "chat/threads": typeof chat_threads;
   "hiring/applications": typeof hiring_applications;
   "hiring/hackathons": typeof hiring_hackathons;
   http: typeof http;
