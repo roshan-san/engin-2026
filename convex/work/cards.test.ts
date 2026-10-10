@@ -551,6 +551,37 @@ describe("card view", () => {
 		expect(card).toBeNull();
 	});
 
+	it("a link with a broken Card id opens as nothing", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await setup.t.run(
+			async (ctx) =>
+				await ctx.db.insert("hackathons", {
+					startupId: setup.startupId,
+					status: "draft",
+					job: { role: "frontend", pay: "unpaid", mode: "remote" },
+					problem: "Grow signups",
+					weeks: 1,
+					startsAt: 0,
+					endsAt: 0,
+					decideBy: 0,
+					builderCount: 0,
+					applicantCount: 0,
+				}),
+		);
+
+		const garbage = await setup.founder.as.query(api.work.cards.get, {
+			startupId: setup.startupId,
+			cardId: "not-a-card",
+		});
+		const otherTable = await setup.founder.as.query(api.work.cards.get, {
+			startupId: setup.startupId,
+			cardId: hackathonId,
+		});
+
+		expect(garbage).toBeNull();
+		expect(otherTable).toBeNull();
+	});
+
 	it("someone off the team can't open a Card", async () => {
 		const setup = await setUpStartup(createTest());
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");

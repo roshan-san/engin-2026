@@ -9,7 +9,7 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
 import { TooltipProvider } from "~/components/ui/tooltip";
@@ -57,14 +57,22 @@ export function Board({
 		}),
 	);
 
+	// Always the latest cards and verify, but one stable function for the key listener.
+	const verifyLatest = useRef((_cardId: string) => {});
+	verifyLatest.current = (cardId) => {
+		const card = cards?.find((c) => c._id === cardId);
+		if (isFounder && card?.status === "review") void verify(card._id);
+	};
+	const onVerify = useCallback(
+		(cardId: string) => verifyLatest.current(cardId),
+		[],
+	);
+
 	useBoardKeys({
 		rootRef,
 		newCardRef,
 		onOpen,
-		onVerify: (cardId) => {
-			const card = cards?.find((c) => c._id === cardId);
-			if (isFounder && card?.status === "review") void verify(card._id);
-		},
+		onVerify,
 		isPaused: draggedId !== null,
 	});
 

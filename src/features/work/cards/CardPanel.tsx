@@ -92,6 +92,7 @@ function OpenCard({
 	const { update, remove } = useCardActions();
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [isVerifying, setIsVerifying] = useState(false);
+	const isDeleting = useRef(false);
 
 	const viewer = { userId, isFounder };
 	const isDone = card.status === "done";
@@ -183,6 +184,7 @@ function OpenCard({
 					<SectionLabel as="h3">Notes</SectionLabel>
 					<NotesField
 						card={card}
+						isDiscarded={isDeleting}
 						onSave={(notes) => update(card._id, { notes })}
 					/>
 				</section>
@@ -220,8 +222,11 @@ function OpenCard({
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
 						<AlertDialogAction
-							onClick={async () => {
-								if (await remove(card._id)) onClose();
+							onClick={() => {
+								// Close first, so a gone Card never shows and its notes aren't saved.
+								isDeleting.current = true;
+								onClose();
+								void remove(card._id);
 							}}
 						>
 							Delete

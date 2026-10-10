@@ -17,7 +17,7 @@ export function useCard(
 	const onBoard = cards?.find((card) => card._id === cardId);
 	const fetched = useQuery(
 		api.work.cards.get,
-		cards && !onBoard ? { startupId, cardId: cardId as Id<"cards"> } : "skip",
+		cards && !onBoard ? { startupId, cardId } : "skip",
 	);
 
 	if (!cards) return undefined;

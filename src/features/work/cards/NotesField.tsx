@@ -1,5 +1,5 @@
 import { TEXT } from "@convex/lib/limits";
-import { useEffect, useRef } from "react";
+import { type RefObject, useEffect, useRef } from "react";
 import { MentorNote } from "~/components/shared/MentorNote";
 import { Textarea } from "~/components/ui/textarea";
 import type { CardView } from "../board/types";
@@ -13,8 +13,11 @@ const IDLE_MS = 1000;
 export function NotesField({
 	card,
 	onSave,
+	isDiscarded,
 }: {
 	readonly card: CardView;
+	/** True while the Card is being deleted: nothing more is saved. */
+	readonly isDiscarded: RefObject<boolean>;
 	readonly onSave: (notes: string) => Promise<boolean>;
 }) {
 	const { draft, setDraft, setIsFocused, expect, settle } = useDraft(
@@ -26,6 +29,7 @@ export function NotesField({
 
 	async function save() {
 		clearTimeout(timer.current);
+		if (isDiscarded.current) return;
 		const { draft: text, saved, onSave: send } = latest.current;
 		const next = text.trim();
 		if (next === saved) return;

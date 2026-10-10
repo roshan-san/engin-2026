@@ -42,6 +42,14 @@ export function useBoardKeys({
 			if (!root || isPaused || event.defaultPrevented) return;
 			if (event.ctrlKey || event.metaKey || event.altKey) return;
 			if (isTypingTarget(event.target)) return;
+			// Dialogs, lists and menus own their keys; the Board is behind them.
+			if (
+				(event.target as HTMLElement | null)?.closest?.(
+					"[role=dialog], [role=alertdialog], [role=listbox], [role=menu]",
+				)
+			) {
+				return;
+			}
 
 			if (event.key === "Escape") {
 				void navigate({ search: (prev) => ({ ...prev, card: undefined }) });
