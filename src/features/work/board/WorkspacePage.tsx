@@ -1,3 +1,4 @@
+import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
@@ -7,11 +8,15 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
+import { Board } from "./Board";
 import { CycleHeader } from "./CycleHeader";
+
+const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 
 /** The Startup's workspace: the Cycle header, the Board and the Threads panel. */
 export function WorkspacePage() {
 	const [isPanelOpen, setIsPanelOpen] = useState(false);
+	const navigate = boardRoute.useNavigate();
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
@@ -27,7 +32,16 @@ export function WorkspacePage() {
 				</Button>
 			</div>
 			<div className="flex min-h-0 flex-1">
-				<div data-testid="board" className="min-w-0 flex-1" />
+				<div
+					data-testid="board"
+					className="flex min-h-0 min-w-0 flex-1 flex-col"
+				>
+					<Board
+						// Task 8 wires the What shipped dialog here.
+						onShip={() => {}}
+						onOpen={(cardId) => void navigate({ search: { card: cardId } })}
+					/>
+				</div>
 				<aside
 					data-testid="panel"
 					className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex"
