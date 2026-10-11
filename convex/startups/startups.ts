@@ -7,7 +7,6 @@ import { requireUserId } from "../lib/auth";
 import {
 	EXPLORE_SCAN,
 	MAX_EXPLORE_ROWS,
-	MAX_USER_STARTUPS,
 	STARTING_RATING,
 	TEXT,
 } from "../lib/limits";
@@ -72,42 +71,6 @@ export const explore = query({
 				.slice(0, MAX_EXPLORE_ROWS)
 				.map((startup) => toExploreStartup(ctx, startup, lastWeek)),
 		);
-	},
-});
-
-/** Every Startup the person founded or contributes to, for the place switcher. */
-export const listMine = query({
-	args: {},
-	handler: async (ctx) => {
-		const userId = await requireUserId(ctx);
-
-		const founded = await ctx.db
-			.query("startups")
-			.withIndex("by_founder", (q) => q.eq("founderId", userId))
-			.take(MAX_USER_STARTUPS);
-		const contributions = await ctx.db
-			.query("contributors")
-			.withIndex("by_user", (q) => q.eq("userId", userId))
-			.take(MAX_USER_STARTUPS);
-
-		const contributed = (
-			await Promise.all(
-				contributions.map((contribution) => ctx.db.get(contribution.startupId)),
-			)
-		).filter((startup) => startup !== null);
-
-		return [
-			...founded.map((startup) => ({ startup, role: "founder" as const })),
-			...contributed.map((startup) => ({
-				startup,
-				role: "contributor" as const,
-			})),
-		].map(({ startup, role }) => ({
-			startupId: startup._id,
-			slug: startup.slug,
-			name: startup.name,
-			role,
-		}));
 	},
 });
 

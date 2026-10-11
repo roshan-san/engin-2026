@@ -24,8 +24,10 @@ describe("invites", () => {
 			inviteId: invites[0].inviteId,
 		});
 
-		const mine = await sam.as.query(api.startups.startups.listMine, {});
-		expect(mine).toMatchObject([{ name: "Acme", role: "contributor" }]);
+		const places = await sam.as.query(api.people.places.list, {});
+		expect(places.startups).toMatchObject([
+			{ name: "Acme", role: "contributor" },
+		]);
 		expect(await sam.as.query(api.startups.invites.listMine, {})).toEqual([]);
 		const activity = await t.run(
 			async (ctx) => await ctx.db.query("activity").take(10),

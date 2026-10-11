@@ -19,8 +19,6 @@ describe("startups", () => {
 
 		const { founder } = await setUpStartup(t);
 
-		const mine = await founder.as.query(api.startups.startups.listMine, {});
-		expect(mine).toMatchObject([{ name: "Acme", role: "founder" }]);
 		const workspace = await founder.as.query(api.startups.startups.getBySlug, {
 			slug: "acme",
 		});
@@ -91,7 +89,7 @@ describe("startups", () => {
 		).rejects.toThrow("Only the Founder can do this");
 	});
 
-	it("a Contributor sees the workspace and the startup in their list", async () => {
+	it("a Contributor sees the workspace", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const ben = await addContributor(setup, "Ben");
@@ -99,10 +97,8 @@ describe("startups", () => {
 		const workspace = await ben.as.query(api.startups.startups.getBySlug, {
 			slug: setup.slug,
 		});
-		const mine = await ben.as.query(api.startups.startups.listMine, {});
 
 		expect(workspace?.role).toBe("contributor");
-		expect(mine).toMatchObject([{ name: "Acme", role: "contributor" }]);
 	});
 
 	it("the Founder edits details and the slug stays put", async () => {

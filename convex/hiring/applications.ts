@@ -1,12 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import {
-	MAX_BUILDERS,
-	MAX_USER_APPLICATIONS,
-	STARTING_RATING,
-	TEXT,
-} from "../lib/limits";
+import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../lib/limits";
 import { limitText, requireLimitedText } from "../lib/text";
 import {
 	isProvisional,
@@ -29,7 +24,6 @@ import {
 	requireOpen,
 	requireRunning,
 	toFounderApplicationView,
-	toMyApplicationView,
 } from "./applications.rules";
 import { finishIfDecided, requireHackathonFounder } from "./hackathons.rules";
 
@@ -92,37 +86,6 @@ export const getApplicant = query({
 			user: toPublicProfile(user),
 			record: await loadProfileRecord(ctx, user, Date.now()),
 		};
-	},
-});
-
-/** The signed-in person's applications, for the switcher's Applied group and Builder places. */
-export const listMine = query({
-	args: {},
-	handler: async (ctx) => {
-		const userId = await requireUserId(ctx);
-
-		const applications = await ctx.db
-			.query("applications")
-			.withIndex("by_user", (q) => q.eq("userId", userId))
-			.take(MAX_USER_APPLICATIONS);
-
-		const rows = await Promise.all(
-			applications.map(async (application) => {
-				const hackathon = await ctx.db.get(application.hackathonId);
-				const startup = hackathon && (await ctx.db.get(hackathon.startupId));
-				return hackathon && startup
-					? {
-							hackathonId: hackathon._id,
-							startupName: startup.name,
-							startupSlug: startup.slug,
-							job: hackathon.job,
-							...toMyApplicationView(application),
-							hackathonStatus: hackathon.status,
-						}
-					: null;
-			}),
-		);
-		return rows.filter((row) => row !== null);
 	},
 });
 

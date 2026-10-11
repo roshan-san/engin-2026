@@ -1,5 +1,4 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
 import { decisionTitle } from "./decisionCopy";
 import { useKeepPromise } from "./hooks/useKeepPromise";
@@ -30,15 +29,7 @@ export function DecisionBanner({
 					<span className="text-muted-foreground"> {application.feedback}</span>
 				) : null}
 				{application.decision === "hired" ? (
-					<>
-						{" "}
-						<Link
-							to="/home"
-							className="text-link underline-offset-4 hover:underline"
-						>
-							Join from Home.
-						</Link>
-					</>
+					<> Join from your Invites.</>
 				) : null}
 			</p>
 			{application.promiseAnswered ? (

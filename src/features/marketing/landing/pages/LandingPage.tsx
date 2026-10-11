@@ -4,6 +4,24 @@ import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { GlowHero } from "~/components/shared/GlowHero";
 import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
 import { PublicShell } from "~/shell/layout/PublicShell";
+import { usePlaces } from "~/shell/places/hooks/usePlaces";
+import { LAST_PLACE_KEY, pickLanding } from "~/shell/places/landing";
+
+/** Sends a signed-in visitor to the place they were last in, else their first. */
+function LandingRedirect() {
+	const places = usePlaces();
+
+	if (!places) {
+		return <GlobalSpinner />;
+	}
+
+	return (
+		<Navigate
+			to={pickLanding(places, localStorage.getItem(LAST_PLACE_KEY))}
+			replace
+		/>
+	);
+}
 
 export function LandingPage() {
 	const { isAuthenticated, isLoading } = useConvexAuth();
@@ -13,7 +31,7 @@ export function LandingPage() {
 	}
 
 	if (isAuthenticated) {
-		return <Navigate to="/home" />;
+		return <LandingRedirect />;
 	}
 
 	return (

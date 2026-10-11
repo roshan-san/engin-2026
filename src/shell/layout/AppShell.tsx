@@ -1,7 +1,10 @@
+import { useRememberPlace } from "~/shell/places/hooks/useRememberPlace";
 import { TopBar } from "~/shell/topbar/TopBar";
 
 /** Signed-in frame: the top bar over the page, which fills the rest and scrolls inside it. */
 export function AppShell({ children }: { readonly children: React.ReactNode }) {
+	useRememberPlace();
+
 	return (
 		<div className="flex h-dvh flex-col bg-background text-foreground">
 			<TopBar />
