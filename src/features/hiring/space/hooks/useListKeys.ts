@@ -40,6 +40,13 @@ export function useListKeys({
 
 			const { ids, activeId, onMove, keys } = latest.current;
 			const key = event.key.toLowerCase();
+			// Enter on a button or link belongs to it.
+			if (
+				key === "enter" &&
+				(event.target as HTMLElement | null)?.closest?.("button, a")
+			) {
+				return;
+			}
 			const index = activeId ? ids.indexOf(activeId) : -1;
 
 			if (key === "j" || key === "k") {

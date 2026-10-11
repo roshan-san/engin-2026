@@ -24,6 +24,7 @@ export function ThreadPanel({
 }: {
 	/** `undefined` while the thread loads. */
 	readonly threadId: Id<"threads"> | undefined;
+	/** A heading, or a control that stands in for one (a pane switch). */
 	readonly title: ReactNode;
 	readonly userId: Id<"users">;
 	/** The composer's placeholder: "Message Team". */
@@ -55,7 +56,11 @@ export function ThreadPanel({
 	return (
 		<div data-testid="threads-panel" className="flex min-h-0 flex-1 flex-col">
 			<PanelHeader>
-				<h2 className="truncate text-sm font-medium">{title}</h2>
+				{typeof title === "string" ? (
+					<h2 className="truncate text-sm font-medium">{title}</h2>
+				) : (
+					title
+				)}
 				<div className="ml-auto flex items-center gap-2">
 					{actions}
 					{onClose ? (

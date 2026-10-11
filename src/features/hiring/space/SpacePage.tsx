@@ -8,6 +8,7 @@ import { jobLine } from "../jobChips";
 import { DraftView } from "./DraftView";
 import { useApplicants } from "./hooks/useApplicants";
 import { useSpace } from "./hooks/useSpace";
+import { RunningView } from "./RunningView";
 import { ScreeningView } from "./ScreeningView";
 import { spaceStatusLine } from "./spaceStatus";
 
@@ -33,7 +34,9 @@ export function SpacePage() {
 				<DraftView hackathon={hackathon} cards={cards} />
 			) : hackathon.status === "open" ? (
 				<ScreeningView hackathon={hackathon} />
-			) : null}
+			) : (
+				<RunningView hackathon={hackathon} />
+			)}
 		</div>
 	);
 }
