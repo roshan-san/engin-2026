@@ -1,10 +1,12 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
+import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import {
 	MAX_BUILDERS,
+	MAX_EXPLORE_ROWS,
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
 } from "../lib/limits";
@@ -23,11 +25,15 @@ import {
 	finishHackathon,
 	insertTemplateCards,
 	loadTemplateCards,
+	matchesExplore,
 	replaceTemplateCards,
 	requireHackathonFounder,
 	requireValidDraft,
+	sortExplore,
+	toExploreHackathon,
 } from "./hackathons.rules";
-import { loadHiringRecord } from "./record.rules";
+import { jobRole } from "./hiring.schema";
+import { type HiringRecord, loadHiringRecord } from "./record.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -162,6 +168,52 @@ export const getPublic = query({
 				: false,
 			myApplication: application ? toMyApplicationView(application) : null,
 		};
+	},
+});
+
+/** Hackathons Builders can still join or are building now, for anyone. */
+export const explore = query({
+	args: {
+		role: v.optional(jobRole),
+		weeks: v.optional(v.union(v.literal(1), v.literal(2))),
+		paid: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
+		const [open, building] = await Promise.all(
+			(["open", "building"] as const).map((status) =>
+				ctx.db
+					.query("hackathons")
+					.withIndex("by_status", (q) => q.eq("status", status))
+					.take(MAX_LISTED_HACKATHONS),
+			),
+		);
+		const shown = sortExplore(open, building)
+			.filter((hackathon) => matchesExplore(hackathon, args))
+			.slice(0, MAX_EXPLORE_ROWS);
+
+		const startups = new Map<
+			Id<"startups">,
+			{ startup: Doc<"startups">; hiringRecord: HiringRecord } | null
+		>();
+		for (const { startupId } of shown) {
+			if (startups.has(startupId)) {
+				continue;
+			}
+			const startup = await ctx.db.get(startupId);
+			startups.set(
+				startupId,
+				startup
+					? { startup, hiringRecord: await loadHiringRecord(ctx, startupId) }
+					: null,
+			);
+		}
+
+		return shown.flatMap((hackathon) => {
+			const loaded = startups.get(hackathon.startupId);
+			return loaded
+				? [toExploreHackathon(hackathon, loaded.startup, loaded.hiringRecord)]
+				: [];
+		});
 	},
 });
 

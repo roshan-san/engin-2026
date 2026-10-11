@@ -21,7 +21,7 @@ import {
 	type BoardScope,
 	BoardScopeContext,
 } from "~/features/work/board/BoardScope";
-import { useMe } from "~/features/work/board/hooks/useMe";
+import { useMe } from "~/shell/hooks/useMe";
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
@@ -44,7 +44,7 @@ export function BuilderPage() {
 	const me = useMe();
 
 	if (page === undefined || me === undefined) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 	if (page === null || me === null) {
 		return <GlobalNotFound />;
@@ -165,7 +165,7 @@ function BuilderSpace({
 
 	return (
 		<BoardScopeContext.Provider value={scope}>
-			<div className="flex h-[calc(100dvh-3.5rem-1px)] min-h-0">
+			<div className="flex h-full min-h-0">
 				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 					<PanelHeader className="gap-3 md:px-6">
 						<h1 className="flex min-w-0 items-baseline gap-2 truncate text-sm">

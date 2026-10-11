@@ -48,7 +48,6 @@ export function CardRows({
 					<NewCardInput
 						placeholder="What will a Builder finish in a day?"
 						shortcut={null}
-						hasOpenCards
 						onCreate={async (title) => {
 							onChange([...cards, draftCard(title)]);
 							return true;

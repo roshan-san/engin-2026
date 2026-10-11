@@ -14,6 +14,7 @@ import { requireFounder } from "../startups/access.rules";
 import { appendActivity } from "../work/activity.rules";
 import { WEEK_MS, weekOf, weekStart } from "../work/cycles.rules";
 import { jobMode, jobPay, jobRole } from "./hiring.schema";
+import type { HiringRecord } from "./record.rules";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {
@@ -221,4 +222,55 @@ export async function finishHackathon(
 		at: Date.now(),
 		hackathonId: hackathon._id,
 	});
+}
+
+/** Whether the Hackathon passes every filter that is set. `paid` means Builders get something. */
+export function matchesExplore(
+	hackathon: Doc<"hackathons">,
+	filters: {
+		role?: Doc<"hackathons">["job"]["role"];
+		weeks?: 1 | 2;
+		paid?: boolean;
+	},
+): boolean {
+	return (
+		(filters.role === undefined || hackathon.job.role === filters.role) &&
+		(filters.weeks === undefined || hackathon.weeks === filters.weeks) &&
+		(filters.paid !== true || hackathon.buildersGet !== undefined)
+	);
+}
+
+/** Open Hackathons by soonest start, then building ones by latest start. */
+export function sortExplore(
+	open: Doc<"hackathons">[],
+	building: Doc<"hackathons">[],
+): Doc<"hackathons">[] {
+	return [
+		...[...open].sort((a, b) => a.startsAt - b.startsAt),
+		...[...building].sort((a, b) => b.startsAt - a.startsAt),
+	];
+}
+
+/** One Explore row. Its Startup and hiring record are loaded once per Startup by the caller. */
+export function toExploreHackathon(
+	hackathon: Doc<"hackathons">,
+	startup: Doc<"startups">,
+	hiringRecord: HiringRecord,
+) {
+	return {
+		hackathonId: hackathon._id,
+		status: hackathon.status,
+		job: hackathon.job,
+		weeks: hackathon.weeks,
+		startsAt: hackathon.startsAt,
+		buildersGet: hackathon.buildersGet ?? null,
+		startup: {
+			name: startup.name,
+			slug: startup.slug,
+			rating: startup.rating,
+			ratingChange: startup.ratingChange,
+			isProvisional: startup.provisional,
+		},
+		hiringRecord,
+	};
 }

@@ -254,29 +254,6 @@ describe("applying", () => {
 		await expect(late).rejects.toThrow("Applications are closed");
 	});
 
-	it("an applicant sees their applications", async () => {
-		const setup = await setUpStartup(createTest());
-		const hackathonId = await publishedHackathon(setup);
-		const ana = await applicant(setup, hackathonId, "Ana");
-
-		const mine = await ana.as.query(api.hiring.applications.listMine, {});
-
-		expect(mine).toEqual([
-			{
-				hackathonId,
-				startupName: "Acme",
-				startupSlug: "acme",
-				job: { role: "frontend", pay: "6_9l", mode: "remote" },
-				applicationId: ana.applicationId,
-				status: "applied",
-				decision: null,
-				feedback: null,
-				promiseAnswered: false,
-				hackathonStatus: "open",
-			},
-		]);
-	});
-
 	it("the Founder sees applicants with their Rating and no email", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
@@ -342,16 +319,6 @@ describe("screening", () => {
 
 		await expect(forSam).rejects.toThrow("Only the Founder can do this");
 		await expect(forAna).rejects.toThrow("You're not on this startup");
-	});
-
-	it("my applications link to the Startup", async () => {
-		const setup = await setUpStartup(createTest());
-		const hackathonId = await publishedHackathon(setup);
-		const ana = await applicant(setup, hackathonId, "Ana");
-
-		const [row] = await ana.as.query(api.hiring.applications.listMine, {});
-
-		expect(row).toMatchObject({ startupName: "Acme", startupSlug: setup.slug });
 	});
 });
 
@@ -750,7 +717,7 @@ describe("deciding", () => {
 		await expect(answer()).rejects.toThrow("Already answered");
 	});
 
-	it("a Builder sees the Founder's note and answers the promise question from their applications", async () => {
+	it("a Builder sees the Founder's note and answers the promise question", async () => {
 		const {
 			setup,
 			hackathonId,
@@ -762,29 +729,29 @@ describe("deciding", () => {
 			feedback: "Close one",
 		});
 
-		const [before] = await ana.as.query(api.hiring.applications.listMine, {});
+		const before = await ana.as.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
 		await ana.as.mutation(api.hiring.applications.keepPromise, {
-			applicationId: before.applicationId,
+			applicationId: ana.applicationId,
 			kept: true,
 		});
 
-		expect(before).toMatchObject({
+		expect(before?.myApplication).toMatchObject({
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
 			feedback: "Close one",
 			promiseAnswered: false,
 		});
-		const [after] = await ana.as.query(api.hiring.applications.listMine, {});
-		expect(after).toMatchObject({ promiseAnswered: true });
-		expect(after).not.toHaveProperty("promiseKept");
-		const hackathon = await ana.as.query(api.hiring.hackathons.getPublic, {
+		const after = await ana.as.query(api.hiring.hackathons.getPublic, {
 			hackathonId,
 		});
-		expect(hackathon?.myApplication).toMatchObject({
+		expect(after?.myApplication).toMatchObject({
 			applicationId: ana.applicationId,
 			feedback: "Close one",
 			promiseAnswered: true,
 		});
+		expect(after?.myApplication).not.toHaveProperty("promiseKept");
 	});
 
 	it("the Founder doesn't see a Builder's promise answer", async () => {

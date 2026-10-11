@@ -1,7 +1,9 @@
+import type { FunctionArgs } from "convex/server";
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
+import { runRating, toNextWeek, verifyCards } from "../work/rating.helpers";
 import { addContributor, setUpStartup } from "./startups.helpers";
 
 const acme = {
@@ -17,8 +19,6 @@ describe("startups", () => {
 
 		const { founder } = await setUpStartup(t);
 
-		const mine = await founder.as.query(api.startups.startups.listMine, {});
-		expect(mine).toMatchObject([{ name: "Acme", role: "founder" }]);
 		const workspace = await founder.as.query(api.startups.startups.getBySlug, {
 			slug: "acme",
 		});
@@ -89,7 +89,7 @@ describe("startups", () => {
 		).rejects.toThrow("Only the Founder can do this");
 	});
 
-	it("a Contributor sees the workspace and the startup in their list", async () => {
+	it("a Contributor sees the workspace", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const ben = await addContributor(setup, "Ben");
@@ -97,10 +97,8 @@ describe("startups", () => {
 		const workspace = await ben.as.query(api.startups.startups.getBySlug, {
 			slug: setup.slug,
 		});
-		const mine = await ben.as.query(api.startups.startups.listMine, {});
 
 		expect(workspace?.role).toBe("contributor");
-		expect(mine).toMatchObject([{ name: "Acme", role: "contributor" }]);
 	});
 
 	it("the Founder edits details and the slug stays put", async () => {
@@ -154,5 +152,123 @@ describe("startups", () => {
 		await expect(
 			t.mutation(api.startups.startups.create, acme),
 		).rejects.toThrow("Not authenticated");
+	});
+
+	it("a new Startup starts with an empty rhythm", async () => {
+		const t = createTest();
+
+		const { startupId } = await setUpStartup(t);
+
+		const startup = await t.run(async (ctx) => await ctx.db.get(startupId));
+		expect(startup?.rhythm).toEqual([]);
+	});
+});
+
+describe("explore", () => {
+	async function secondStartup(
+		t: ReturnType<typeof createTest>,
+		overrides: Partial<FunctionArgs<typeof api.startups.startups.create>> & {
+			name: string;
+		},
+	) {
+		const owner = await signUp(t, `${overrides.name} Owner`);
+		return await owner.as.mutation(api.startups.startups.create, {
+			...acme,
+			...overrides,
+		});
+	}
+
+	it("anyone can explore Startups signed out", async () => {
+		const t = createTest();
+		await setUpStartup(t);
+
+		const rows = await t.query(api.startups.startups.explore, {});
+
+		expect(rows).toMatchObject([
+			{
+				slug: "acme",
+				name: "Acme",
+				oneLiner: null,
+				stage: "building",
+				category: "saas",
+				city: "bengaluru",
+				rating: 1000,
+				ratingChange: 0,
+				isProvisional: true,
+				logoUrl: null,
+			},
+		]);
+	});
+
+	it("Startups come highest Rating first", async () => {
+		const t = createTest();
+		const low = await secondStartup(t, { name: "Low" });
+		const high = await secondStartup(t, { name: "High" });
+		const middle = await secondStartup(t, { name: "Middle" });
+		await t.run(async (ctx) => {
+			await ctx.db.patch(low.startupId, { rating: 900 });
+			await ctx.db.patch(high.startupId, { rating: 1300 });
+			await ctx.db.patch(middle.startupId, { rating: 1100 });
+		});
+
+		const rows = await t.query(api.startups.startups.explore, {});
+
+		expect(rows.map((row) => row.name)).toEqual(["High", "Middle", "Low"]);
+	});
+
+	it("each chip filters", async () => {
+		const t = createTest();
+		await secondStartup(t, { name: "Alpha" });
+		await secondStartup(t, {
+			name: "Beta",
+			stage: "launched",
+			category: "fintech",
+			city: "pune",
+		});
+
+		const byStage = await t.query(api.startups.startups.explore, {
+			stage: "launched",
+		});
+		const byCategory = await t.query(api.startups.startups.explore, {
+			category: "saas",
+		});
+		const byCity = await t.query(api.startups.startups.explore, {
+			city: "pune",
+		});
+		const byAll = await t.query(api.startups.startups.explore, {
+			stage: "launched",
+			city: "bengaluru",
+		});
+
+		expect(byStage.map((row) => row.name)).toEqual(["Beta"]);
+		expect(byCategory.map((row) => row.name)).toEqual(["Alpha"]);
+		expect(byCity.map((row) => row.name)).toEqual(["Beta"]);
+		expect(byAll).toEqual([]);
+	});
+
+	it("a Startup never rated shows twelve empty weeks", async () => {
+		const t = createTest();
+		await setUpStartup(t);
+
+		const [row] = await t.query(api.startups.startups.explore, {});
+
+		expect(row.strip).toHaveLength(12);
+		expect(row.strip.every((cell) => cell.count === null)).toBe(true);
+		expect(new Set(row.strip.map((cell) => cell.week)).size).toBe(12);
+	});
+
+	it("a rated Startup shows its counts at the end of the strip", async () => {
+		const setup = await setUpStartup(createTest());
+		await verifyCards(setup, setup.founder, 2);
+		await toNextWeek(setup.t);
+		await runRating(setup.t);
+
+		const [row] = await setup.t.query(api.startups.startups.explore, {});
+
+		expect(row.strip).toHaveLength(12);
+		expect(row.strip.map((cell) => cell.count)).toEqual([
+			...Array(11).fill(null),
+			2,
+		]);
 	});
 });

@@ -20,6 +20,7 @@ import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_limits from "../lib/limits.js";
 import type * as lib_text from "../lib/text.js";
+import type * as people_places from "../people/places.js";
 import type * as people_users from "../people/users.js";
 import type * as startups_contributors from "../startups/contributors.js";
 import type * as startups_invites from "../startups/invites.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/limits": typeof lib_limits;
   "lib/text": typeof lib_text;
+  "people/places": typeof people_places;
   "people/users": typeof people_users;
   "startups/contributors": typeof startups_contributors;
   "startups/invites": typeof startups_invites;

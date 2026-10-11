@@ -4,7 +4,7 @@ import { MAX_THREADS } from "../lib/limits";
 import { loadPublicUser } from "../people/users.rules";
 import { getThreadAccess } from "./access.rules";
 
-async function loadThreadRead(
+export async function loadThreadRead(
 	ctx: QueryCtx | MutationCtx,
 	threadId: Id<"threads">,
 	userId: Id<"users">,
@@ -15,6 +15,17 @@ async function loadThreadRead(
 			q.eq("threadId", threadId).eq("userId", userId),
 		)
 		.unique();
+}
+
+/** Whether the thread has a message the person hasn't read. Sending marks your own read. */
+export function isThreadUnread(
+	thread: Doc<"threads">,
+	read: Doc<"threadReads"> | null,
+): boolean {
+	return (
+		thread.lastMessageAt !== undefined &&
+		thread.lastMessageAt > (read?.lastReadAt ?? 0)
+	);
 }
 
 /** Marks everything in the thread as read by this person, as of now. */
@@ -85,9 +96,7 @@ export async function buildThreadViews(
 			kind: thread.kind,
 			builder: await loadPublicUser(ctx, thread.builderId),
 			lastMessageAt: thread.lastMessageAt ?? null,
-			unread:
-				thread.lastMessageAt !== undefined &&
-				thread.lastMessageAt > (read?.lastReadAt ?? 0),
+			unread: isThreadUnread(thread, read),
 		});
 	}
 	return views;

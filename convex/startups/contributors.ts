@@ -1,9 +1,10 @@
 import { v } from "convex/values";
+import type { Id } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { MAX_CONTRIBUTORS } from "../lib/limits";
-import { loadPublicUser } from "../people/users.rules";
 import { requireFounder, requireTeam } from "./access.rules";
+import { loadVerifiedThisCycle, toTeamPerson } from "./contributors.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -17,12 +18,17 @@ export const list = query({
 				q.eq("startupId", args.startupId),
 			)
 			.take(MAX_CONTRIBUTORS);
+		const counts = await loadVerifiedThisCycle(ctx, args.startupId, Date.now());
+		const toPerson = async (id: Id<"users">) => {
+			const user = await ctx.db.get(id);
+			return user ? toTeamPerson(user, counts.get(id) ?? 0) : null;
+		};
 		const contributors = await Promise.all(
-			rows.map((row) => loadPublicUser(ctx, row.userId)),
+			rows.map((row) => toPerson(row.userId)),
 		);
 
 		return {
-			founder: await loadPublicUser(ctx, startup.founderId),
+			founder: await toPerson(startup.founderId),
 			contributors: contributors.filter((person) => person !== null),
 		};
 	},

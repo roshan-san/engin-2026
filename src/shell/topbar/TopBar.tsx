@@ -1,17 +1,44 @@
+import { Link, useLocation } from "@tanstack/react-router";
+import { Compass } from "lucide-react";
 import { AccountMenu } from "~/shell/account/AccountMenu";
+import { InviteTray } from "~/shell/invites/InviteTray";
+import { currentPlace } from "~/shell/places/places";
+import { PlaceSwitcher } from "~/shell/places/PlaceSwitcher";
 import { EnginLogo } from "~/shell/topbar/EnginLogo";
+import { HackathonCrumb } from "~/shell/topbar/HackathonCrumb";
 import { PlaceTabs } from "~/shell/topbar/PlaceTabs";
 
-/** The signed-in bar: the logo, the Startup you are in and the account menu. */
+/** The signed-in bar: the logo, where you are, the tabs there, Explore, your Invites and the account menu. */
 export function TopBar() {
+	const inStartup = currentPlace(useLocation().pathname)?.kind === "startup";
+
 	return (
 		<header className="border-b border-border bg-background">
 			<div className="flex h-14 items-center gap-2 px-4 md:px-6">
 				<EnginLogo />
-				<PlaceTabs />
+				<PlaceSwitcher />
+				<div className="hidden h-full items-center gap-2 md:flex">
+					<PlaceTabs />
+					<HackathonCrumb />
+				</div>
 				<div className="flex-1" />
+				<Link
+					to="/explore"
+					aria-label="Explore"
+					className="flex h-8 shrink-0 items-center rounded-md px-2 text-sm text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+				>
+					<Compass aria-hidden className="size-4 md:hidden" />
+					<span className="hidden md:inline">Explore</span>
+				</Link>
+				<InviteTray />
 				<AccountMenu />
 			</div>
+			{inStartup ? (
+				<div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-t border-border px-4 md:hidden">
+					<PlaceTabs />
+					<HackathonCrumb />
+				</div>
+			) : null}
 		</header>
 	);
 }

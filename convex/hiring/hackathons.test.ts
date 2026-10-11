@@ -8,7 +8,12 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.helpers";
-import { closeHackathon, decidedHackathon } from "./applications.helpers";
+import {
+	builders,
+	closeHackathon,
+	decidedHackathon,
+	startHackathon,
+} from "./applications.helpers";
 import {
 	draftHackathon,
 	hackathonInput,
@@ -580,5 +585,136 @@ describe("hiring rows", () => {
 		});
 
 		expect(row).toMatchObject({ status: "done", hires: 0, undecided: 1 });
+	});
+});
+
+describe("explore", () => {
+	/** A second Startup with its own Founder, sharing the same deployment. */
+	async function otherStartup(setup: Setup, name: string): Promise<Setup> {
+		const founder = await signUp(setup.t, `${name} Founder`);
+		const { startupId, slug } = await founder.as.mutation(
+			api.startups.startups.create,
+			{ name, stage: "building", category: "saas", city: "pune" },
+		);
+		return { t: setup.t, founder, startupId, slug };
+	}
+
+	it("anyone can explore Hackathons signed out", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+
+		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+
+		expect(rows).toMatchObject([
+			{
+				hackathonId,
+				status: "open",
+				job: { role: "frontend", pay: "6_9l", mode: "remote" },
+				weeks: 1,
+				buildersGet: "Ship real work and meet the team",
+				startup: {
+					name: "Acme",
+					slug: "acme",
+					rating: 1000,
+					ratingChange: 0,
+					isProvisional: true,
+				},
+			},
+		]);
+	});
+
+	it("open Hackathons come before building ones", async () => {
+		const setup = await setUpStartup(createTest());
+		const zeta = await otherStartup(setup, "Zeta");
+		const buildingId = await publishedHackathon(setup);
+		await builders(setup, buildingId, ["Ben"]);
+		const laterId = await publishedHackathon(zeta, {
+			startsAt: nextMonday() + 14 * DAY,
+		});
+		const soonerId = await publishedHackathon(zeta, {
+			startsAt: nextMonday() + 7 * DAY,
+		});
+		await startHackathon(setup, buildingId);
+
+		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+
+		expect(rows.map((row) => [row.hackathonId, row.status])).toEqual([
+			[soonerId, "open"],
+			[laterId, "open"],
+			[buildingId, "building"],
+		]);
+	});
+
+	it("building Hackathons come latest start first", async () => {
+		const setup = await setUpStartup(createTest());
+		const zeta = await otherStartup(setup, "Zeta");
+		const firstId = await publishedHackathon(setup, { weeks: 2 });
+		await builders(setup, firstId, ["Ben"]);
+		const secondId = await publishedHackathon(zeta, {
+			startsAt: nextMonday() + 7 * DAY,
+		});
+		await builders(zeta, secondId, ["Cal"]);
+		await startHackathon(zeta, secondId);
+
+		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+
+		expect(rows.map((row) => row.hackathonId)).toEqual([secondId, firstId]);
+	});
+
+	it("drafts and finished Hackathons are left out", async () => {
+		const setup = await setUpStartup(createTest());
+		await draftHackathon(setup);
+		const { hackathonId: finishedId } = await decidedHackathon(setup, [
+			{ name: "Ben", decision: "hired" },
+		]);
+		await closeHackathon(setup, finishedId);
+		const openId = await publishedHackathon(setup);
+
+		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+
+		expect(rows.map((row) => row.hackathonId)).toEqual([openId]);
+	});
+
+	it("role, length and paid filter", async () => {
+		const setup = await setUpStartup(createTest());
+		const designerId = await publishedHackathon(setup, {
+			job: { role: "designer", pay: "equity", mode: "remote" },
+			buildersGet: undefined,
+		});
+		const backendId = await publishedHackathon(setup, {
+			job: { role: "backend", pay: "6_9l", mode: "remote" },
+			weeks: 2,
+		});
+		const ids = async (args: {
+			role?: "designer";
+			weeks?: 1 | 2;
+			paid?: boolean;
+		}) =>
+			(await setup.t.query(api.hiring.hackathons.explore, args)).map(
+				(row) => row.hackathonId,
+			);
+
+		expect(await ids({ role: "designer" })).toEqual([designerId]);
+		expect(await ids({ weeks: 2 })).toEqual([backendId]);
+		expect(await ids({ paid: true })).toEqual([backendId]);
+		expect(await ids({ role: "designer", paid: true })).toEqual([]);
+		expect(await ids({})).toHaveLength(2);
+	});
+
+	it("each row carries the hiring record", async () => {
+		const setup = await setUpStartup(createTest());
+		const { hackathonId: finishedId } = await decidedHackathon(setup, [
+			{ name: "Ben", decision: "hired" },
+		]);
+		await closeHackathon(setup, finishedId);
+		await publishedHackathon(setup);
+		await publishedHackathon(setup, { startsAt: nextMonday() + 7 * DAY });
+
+		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+
+		expect(rows).toHaveLength(2);
+		for (const row of rows) {
+			expect(row.hiringRecord).toMatchObject({ finished: 1, hires: 1 });
+		}
 	});
 });

@@ -14,6 +14,7 @@ const router = createRouter({
 	defaultPendingComponent: GlobalSpinner,
 	defaultNotFoundComponent: GlobalNotFound,
 	scrollRestoration: true,
+	scrollToTopSelectors: ["[data-scroll-restoration-id=main]"],
 });
 
 declare module "@tanstack/react-router" {

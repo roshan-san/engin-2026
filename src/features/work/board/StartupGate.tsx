@@ -1,7 +1,7 @@
 import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { BoardScopeContext } from "./BoardScope";
-import { useMe } from "./hooks/useMe";
+import { useMe } from "~/shell/hooks/useMe";
 import { useStartup } from "./hooks/useStartup";
 import { StartupContext } from "./StartupContext";
 
@@ -20,7 +20,7 @@ export function StartupGate({
 		return <GlobalNotFound />;
 	}
 	if (found === undefined || !me) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 
 	const isFounder = found.role === "founder";

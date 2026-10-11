@@ -2,19 +2,17 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "~/lib/utils";
 import { GitPullRequest } from "lucide-react";
 
-/** The Engin mark (a block E), linking to Home, or the landing page when signed out. */
+/** The Engin mark (a block E), linking to the landing page, which picks your place. */
 export function EnginLogo({
-	to = "/home",
 	className,
 	tabIndex,
 }: {
-	readonly to?: "/" | "/home";
 	readonly className?: string;
 	readonly tabIndex?: number;
 }) {
 	return (
 		<Link
-			to={to}
+			to="/"
 			aria-label="Engin"
 			tabIndex={tabIndex}
 			className={cn(

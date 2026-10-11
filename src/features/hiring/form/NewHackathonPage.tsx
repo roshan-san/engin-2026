@@ -4,7 +4,6 @@ import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { Page } from "~/components/shared/Page";
 import { PanelHeader } from "~/components/shared/PanelHeader";
 import { useWorkspace } from "~/features/work/board/StartupContext";
-import { HiringCrumb } from "../HiringCrumb";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";
 import { useHackathonForm } from "./hooks/useHackathonForm";
@@ -21,12 +20,9 @@ export function NewHackathonPage() {
 	}
 
 	return (
-		<div className="flex h-[calc(100dvh-3.5rem-1px)] min-h-0 flex-col">
+		<div className="flex h-full min-h-0 flex-col">
 			<PanelHeader className="gap-3 md:px-6">
-				<HiringCrumb slug={startup.slug}>
-					<h1 className="truncate text-sm font-medium">New hackathon</h1>
-				</HiringCrumb>
-				<span className="hidden truncate text-xs text-muted-foreground md:inline">
+				<span className="truncate text-xs text-muted-foreground">
 					Saved as a draft. Publish it when it reads right.
 				</span>
 			</PanelHeader>

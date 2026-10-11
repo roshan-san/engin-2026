@@ -1,0 +1,72 @@
+import type {
+	startupCategory,
+	startupCity,
+	startupStage,
+} from "@convex/schema";
+import type { Infer } from "convex/values";
+import { type JobRole, ROLES } from "~/features/hiring/jobChips";
+import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
+
+type Stage = Infer<typeof startupStage>;
+type Category = Infer<typeof startupCategory>;
+type City = Infer<typeof startupCity>;
+
+export type HackathonSearch = {
+	role?: JobRole;
+	weeks?: 1 | 2;
+	paid?: true;
+};
+
+export type StartupSearch = {
+	stage?: Stage;
+	category?: Category;
+	city?: City;
+};
+
+/** The chip value, or nothing when the URL carries something else. */
+function pickChip<T extends string>(
+	chips: readonly { readonly value: T }[],
+	raw: unknown,
+): T | undefined {
+	return chips.find((chip) => chip.value === raw)?.value;
+}
+
+/** 1 or 2, as the number the router decodes or as text. */
+function parseWeeks(raw: unknown): 1 | 2 | undefined {
+	if (typeof raw !== "number" && typeof raw !== "string") {
+		return undefined;
+	}
+	const weeks = Number(raw);
+	return weeks === 1 || weeks === 2 ? weeks : undefined;
+}
+
+/** Hackathon filters from the URL. Unknown values are dropped, so a bad link shows everything. */
+export function parseHackathonSearch(
+	raw: Record<string, unknown>,
+): HackathonSearch {
+	const role = pickChip(ROLES, raw.role);
+	const weeks = parseWeeks(raw.weeks);
+	// The router decodes `?paid=true` to a boolean; a hand-typed value may stay text.
+	const paid = raw.paid === true || raw.paid === "true";
+
+	return {
+		...(role && { role }),
+		...(weeks && { weeks }),
+		...(paid && { paid: true as const }),
+	};
+}
+
+/** Startup filters from the URL. Unknown values are dropped. */
+export function parseStartupSearch(
+	raw: Record<string, unknown>,
+): StartupSearch {
+	const stage = pickChip(STAGES, raw.stage);
+	const category = pickChip(KINDS, raw.category);
+	const city = pickChip(CITIES, raw.city);
+
+	return {
+		...(stage && { stage }),
+		...(category && { category }),
+		...(city && { city }),
+	};
+}
