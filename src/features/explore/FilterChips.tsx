@@ -16,7 +16,7 @@ export function FilterChips<T extends string | number>({
 }: FilterChipsProps<T>) {
 	return (
 		<fieldset className="min-w-0">
-			<legend className="mb-2 hidden text-xs font-semibold text-muted-foreground md:block">
+			<legend className="mb-2 text-xs font-semibold text-muted-foreground max-md:sr-only">
 				{label}
 			</legend>
 			<div className="flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
@@ -27,7 +27,6 @@ export function FilterChips<T extends string | number>({
 							key={option.value}
 							type="button"
 							aria-pressed={on}
-							aria-label={`${label}: ${option.label}`}
 							onClick={() => onChange(on ? undefined : option.value)}
 							className={cn(
 								"shrink-0 rounded-full border px-3 py-1 text-sm whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-hidden",
