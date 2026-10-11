@@ -3,7 +3,7 @@ import {
 	startupCategory,
 	startupCity,
 	startupStage,
-} from "../../../../convex/startups/startups.schema";
+} from "../../../convex/startups/startups.schema";
 import { CITIES, KINDS, STAGES } from "./startupChips";
 
 function literalsOf(validator: {

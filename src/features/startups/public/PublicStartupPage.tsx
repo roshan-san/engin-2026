@@ -10,7 +10,7 @@ import { ActivityFeed } from "~/features/work/activity/ActivityFeed";
 import { useSignals } from "~/features/work/activity/hooks/useSignals";
 import { RecordSignals } from "~/features/work/activity/RecordSignals";
 import { initials } from "~/lib/initials";
-import { CITIES, KINDS, STAGES } from "../home/startupChips";
+import { CITIES, KINDS, STAGES } from "../startupChips";
 import { hiringLine } from "./hiringLine";
 import { usePublicActivity } from "./hooks/usePublicActivity";
 import { usePublicStartup } from "./hooks/usePublicStartup";

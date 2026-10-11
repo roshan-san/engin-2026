@@ -1,0 +1,76 @@
+import type { api } from "@convex/_generated/api";
+import { Link } from "@tanstack/react-router";
+import type { FunctionReturnType } from "convex/server";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
+import { RatingBadge } from "~/features/work/activity/RatingBadge";
+import { RhythmStrip } from "~/features/work/activity/RhythmStrip";
+import { initials } from "~/lib/initials";
+
+export type StartupExploreRowData = FunctionReturnType<
+	typeof api.startups.startups.explore
+>[number];
+
+function labelOf(
+	chips: readonly { readonly value: string; readonly label: string }[],
+	value: string,
+) {
+	return chips.find((chip) => chip.value === value)?.label ?? value;
+}
+
+/** "Building · SaaS · Bengaluru" */
+function chipsLine(startup: StartupExploreRowData): string {
+	return [
+		labelOf(STAGES, startup.stage),
+		labelOf(KINDS, startup.category),
+		labelOf(CITIES, startup.city),
+	].join(" · ");
+}
+
+/** One Startup: who it is, its Rating and its last 12 weeks. */
+export function StartupExploreRow({
+	startup,
+}: {
+	readonly startup: StartupExploreRowData;
+}) {
+	return (
+		<li>
+			<Link
+				to="/startups/$slug"
+				params={{ slug: startup.slug }}
+				className="flex flex-col gap-3 px-2 py-4 outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60 sm:flex-row sm:items-center sm:gap-6"
+			>
+				<div className="flex min-w-0 flex-1 items-center gap-3">
+					<Avatar className="size-10 rounded-lg">
+						{startup.logoUrl ? (
+							<AvatarImage src={startup.logoUrl} alt="" />
+						) : null}
+						<AvatarFallback className="rounded-lg">
+							{initials(startup.name, null)}
+						</AvatarFallback>
+					</Avatar>
+					<div className="flex min-w-0 flex-col">
+						<span className="truncate font-medium">{startup.name}</span>
+						{startup.oneLiner ? (
+							<span className="truncate text-sm text-muted-foreground">
+								{startup.oneLiner}
+							</span>
+						) : null}
+						<span className="truncate text-xs text-muted-foreground">
+							{chipsLine(startup)}
+						</span>
+					</div>
+				</div>
+				<div className="flex shrink-0 items-center justify-between gap-6 sm:justify-end">
+					<RatingBadge
+						size="sm"
+						rating={startup.rating}
+						ratingChange={startup.ratingChange}
+						isProvisional={startup.isProvisional}
+					/>
+					<RhythmStrip strip={startup.strip} size="fixed" />
+				</div>
+			</Link>
+		</li>
+	);
+}
