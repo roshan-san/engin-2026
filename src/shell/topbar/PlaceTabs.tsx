@@ -24,6 +24,9 @@ export function PlaceTabs() {
 				<Link to="/s/$slug/board" params={{ slug }} className={TAB_CLASS}>
 					Board
 				</Link>
+				<Link to="/s/$slug/hiring" params={{ slug }} className={TAB_CLASS}>
+					Hiring
+				</Link>
 				<Link to="/s/$slug/activity" params={{ slug }} className={TAB_CLASS}>
 					Activity
 				</Link>
