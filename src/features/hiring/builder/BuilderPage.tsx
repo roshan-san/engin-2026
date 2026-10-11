@@ -165,7 +165,7 @@ function BuilderSpace({
 
 	return (
 		<BoardScopeContext.Provider value={scope}>
-			<div className="flex h-[calc(100dvh-3.5rem-1px)] min-h-0">
+			<div className="flex h-full min-h-0">
 				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 					<PanelHeader className="gap-3 md:px-6">
 						<h1 className="flex min-w-0 items-baseline gap-2 truncate text-sm">

@@ -20,7 +20,7 @@ export function NewHackathonPage() {
 	}
 
 	return (
-		<div className="flex h-[calc(100dvh-3.5rem-1px)] min-h-0 flex-col">
+		<div className="flex h-full min-h-0 flex-col">
 			<PanelHeader className="gap-3 md:px-6">
 				<span className="truncate text-xs text-muted-foreground">
 					Saved as a draft. Publish it when it reads right.

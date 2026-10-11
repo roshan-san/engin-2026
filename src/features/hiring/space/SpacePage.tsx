@@ -31,7 +31,7 @@ export function SpacePage() {
 
 	const { hackathon, cards } = space;
 	return (
-		<div className="flex h-[calc(100dvh-3.5rem-1px)] min-h-0 flex-col">
+		<div className="flex h-full min-h-0 flex-col">
 			<SpaceHeader hackathon={hackathon} />
 			{hackathon.status === "draft" ? (
 				<DraftView hackathon={hackathon} cards={cards} />
