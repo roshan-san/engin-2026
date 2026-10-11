@@ -7,7 +7,11 @@ import { TEXT } from "../lib/limits";
 import { assertUrl, limitText } from "../lib/text";
 import { discipline } from "../schema";
 import { normalizeUsername, requireUsername } from "./username.rules";
-import { toOwnProfile, toPublicProfile } from "./users.rules";
+import {
+	loadProfileRecord,
+	toOwnProfile,
+	toPublicProfile,
+} from "./users.rules";
 
 export const getMe = query({
 	args: {},
@@ -27,6 +31,25 @@ export const getByUsername = query({
 			.withIndex("by_username", (q) => q.eq("username", username))
 			.unique();
 		return user ? toPublicProfile(user) : null;
+	},
+});
+
+/** A profile and its Record, for anyone. */
+export const getRecord = query({
+	args: { username: v.string() },
+	handler: async (ctx, args) => {
+		const username = normalizeUsername(args.username);
+		const user = await ctx.db
+			.query("users")
+			.withIndex("by_username", (q) => q.eq("username", username))
+			.unique();
+		if (!user) {
+			return null;
+		}
+		return {
+			...toPublicProfile(user),
+			...(await loadProfileRecord(ctx, user, Date.now())),
+		};
 	},
 });
 
