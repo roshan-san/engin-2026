@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { decidedHackathon } from "../hiring/applications.helpers";
 import { INVITE_TTL_MS } from "../lib/limits";
 import { advancePast, createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
@@ -115,6 +116,78 @@ describe("invites", () => {
 		expect(team.founder).toMatchObject({ _id: setup.founder.userId });
 		expect(team.contributors).toMatchObject([{ _id: sam.userId }]);
 		expect(JSON.stringify(team)).not.toContain("example.com");
+	});
+
+	it("the Founder lists pending Invites", async () => {
+		const setup = await setUpStartup(createTest());
+		const inviteId = await setup.founder.as.mutation(
+			api.startups.invites.create,
+			{ startupId: setup.startupId, email: "Sam@Example.com" },
+		);
+
+		const invites = await setup.founder.as.query(api.startups.invites.list, {
+			startupId: setup.startupId,
+		});
+
+		expect(invites).toEqual([
+			{
+				inviteId,
+				email: "sam@example.com",
+				expiresAt: Date.now() + INVITE_TTL_MS,
+				fromHackathon: false,
+			},
+		]);
+	});
+
+	it("revoked and expired Invites aren't listed", async () => {
+		const setup = await setUpStartup(createTest());
+		const revoked = await setup.founder.as.mutation(
+			api.startups.invites.create,
+			{ startupId: setup.startupId, email: "sam@example.com" },
+		);
+		await setup.founder.as.mutation(api.startups.invites.revoke, {
+			inviteId: revoked,
+		});
+		await setup.founder.as.mutation(api.startups.invites.create, {
+			startupId: setup.startupId,
+			email: "lee@example.com",
+		});
+
+		await advancePast(setup.t, INVITE_TTL_MS + 1);
+
+		expect(
+			await setup.founder.as.query(api.startups.invites.list, {
+				startupId: setup.startupId,
+			}),
+		).toEqual([]);
+	});
+
+	it("a Hired Invite says so", async () => {
+		const setup = await setUpStartup(createTest());
+		await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+		await setup.founder.as.mutation(api.startups.invites.create, {
+			startupId: setup.startupId,
+			email: "lee@example.com",
+		});
+
+		const invites = await setup.founder.as.query(api.startups.invites.list, {
+			startupId: setup.startupId,
+		});
+
+		expect(invites).toHaveLength(2);
+		expect(invites).toMatchObject([
+			{ email: "ana@example.com", fromHackathon: true },
+			{ email: "lee@example.com", fromHackathon: false },
+		]);
+	});
+
+	it("a Contributor can't list Invites", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+
+		await expect(
+			sam.as.query(api.startups.invites.list, { startupId: setup.startupId }),
+		).rejects.toThrow("Only the Founder can do this");
 	});
 
 	it("the Founder can't be removed", async () => {

@@ -10,6 +10,32 @@ import {
 	requireOpenInviteFor,
 } from "./invites.rules";
 
+/** The Founder's pending, unexpired Invites for the Startup. */
+export const list = query({
+	args: { startupId: v.id("startups") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireFounder(ctx, args.startupId, userId);
+
+		const now = Date.now();
+		const pending = await ctx.db
+			.query("invites")
+			.withIndex("by_startup_and_status", (q) =>
+				q.eq("startupId", args.startupId).eq("status", "pending"),
+			)
+			.take(MAX_INVITES);
+
+		return pending
+			.filter((invite) => invite.expiresAt > now)
+			.map((invite) => ({
+				inviteId: invite._id,
+				email: invite.email,
+				expiresAt: invite.expiresAt,
+				fromHackathon: invite.hackathonId !== undefined,
+			}));
+	},
+});
+
 /** Open invites addressed to the signed-in person's email. */
 export const listMine = query({
 	args: {},
