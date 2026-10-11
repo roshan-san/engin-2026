@@ -13,13 +13,14 @@ import {
 } from "~/components/ui/select";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { initials } from "~/lib/initials";
+import { cn } from "~/lib/utils";
 import { BuilderView } from "./BuilderView";
 import { EveryonePanel } from "./EveryonePanel";
 import { useApplicants } from "./hooks/useApplicants";
 import { useReviewQueue } from "./hooks/useReviewQueue";
 import { useHackathonThreads } from "./hooks/useSpace";
 import { ReviewQueue } from "./ReviewQueue";
-import { resolveView, sidebarItems } from "./sidebarItems";
+import { resolveView, type SidebarBuilder, sidebarItems } from "./sidebarItems";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
@@ -74,7 +75,7 @@ export function RunningView({
 		<div className="flex min-h-0 flex-1 flex-col md:flex-row">
 			<nav
 				aria-label="Hackathon"
-				className="hidden w-60 shrink-0 flex-col gap-4 overflow-y-auto border-r border-border p-2 md:flex"
+				className="hidden w-56 shrink-0 flex-col gap-4 overflow-y-auto border-r border-border p-2 md:flex"
 			>
 				<div className="flex flex-col gap-0.5">
 					<button
@@ -112,10 +113,10 @@ export function RunningView({
 								<button
 									type="button"
 									aria-current={current === builder.userId}
-									className={ITEM_CLASS}
+									className={cn(ITEM_CLASS, "items-start py-2")}
 									onClick={() => show(builder.userId)}
 								>
-									<Avatar className="size-5">
+									<Avatar className="mt-0.5 size-5">
 										{builder.image ? (
 											<AvatarImage src={builder.image} alt="" />
 										) : null}
@@ -123,21 +124,29 @@ export function RunningView({
 											{initials(builder.name, builder.username)}
 										</AvatarFallback>
 									</Avatar>
-									<span className="min-w-0 flex-1 truncate">
-										{builder.name}
-									</span>
-									{builder.shortlisted ? (
-										<StarIcon
-											aria-label="Shortlisted"
-											className="size-3.5 shrink-0 fill-current text-muted-foreground"
-										/>
-									) : null}
-									{builder.unread ? <UnreadDot /> : null}
-									{builder.reviewCount > 0 ? (
-										<span className="text-xs tabular-nums text-muted-foreground">
-											{builder.reviewCount}
+									<span className="flex min-w-0 flex-1 flex-col gap-1">
+										<span className="flex items-center gap-1.5">
+											<span className="min-w-0 flex-1 truncate">
+												{builder.name}
+											</span>
+											{builder.shortlisted ? (
+												<StarIcon
+													aria-label="Shortlisted"
+													className="size-3.5 shrink-0 fill-current text-warning"
+												/>
+											) : null}
+											{builder.unread ? <UnreadDot /> : null}
+											{builder.reviewCount > 0 ? (
+												<span
+													title={`${builder.reviewCount} to review`}
+													className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-medium tabular-nums text-foreground"
+												>
+													{builder.reviewCount}
+												</span>
+											) : null}
 										</span>
-									) : null}
+										<BuilderProgress builder={builder} />
+									</span>
 								</button>
 							</li>
 						))}
@@ -187,5 +196,30 @@ export function RunningView({
 				) : null}
 			</main>
 		</div>
+	);
+}
+
+/** "2/4 done" with a thin bar, or the decision once it's made. */
+function BuilderProgress({ builder }: { readonly builder: SidebarBuilder }) {
+	const { done, total } = builder.progress;
+	if (builder.decision) {
+		return (
+			<span className="text-xs text-muted-foreground">
+				{builder.decision === "hired" ? "Hired" : "Not this time"}
+			</span>
+		);
+	}
+	return (
+		<span className="flex items-center gap-2">
+			<span className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+				<span
+					className="block h-full rounded-full bg-success"
+					style={{ width: total > 0 ? `${(done / total) * 100}%` : 0 }}
+				/>
+			</span>
+			<span className="text-[11px] text-muted-foreground tabular-nums">
+				{done}/{total}
+			</span>
+		</span>
 	);
 }

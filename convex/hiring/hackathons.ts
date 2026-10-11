@@ -137,6 +137,9 @@ export const getPublic = query({
 			_id: hackathon._id,
 			job: hackathon.job,
 			problem: hackathon.problem,
+			cards: (await loadTemplateCards(ctx, hackathon._id)).map(
+				(card) => card.title,
+			),
 			weeks: hackathon.weeks,
 			startsAt: hackathon.startsAt,
 			endsAt: hackathon.endsAt,

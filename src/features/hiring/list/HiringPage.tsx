@@ -28,10 +28,10 @@ export function HiringPage() {
 		<>
 			<PageHeader
 				title="Hiring"
-				width="narrow"
+				meta={isFounder && hasRows ? "Hire by watching people build." : null}
 				actions={hasRows ? newHackathon : null}
 			/>
-			<Page width="narrow">
+			<Page>
 				{rows === undefined ? (
 					<div className="flex flex-col gap-3">
 						<Skeleton className="h-12" />
@@ -43,6 +43,11 @@ export function HiringPage() {
 							isFounder
 								? "Hire by watching people build."
 								: "No hackathons yet."
+						}
+						body={
+							isFounder
+								? "Post a real problem. Up to 10 Builders work it for a week on their own Boards. Hire on what they ship."
+								: null
 						}
 						action={newHackathon}
 					/>

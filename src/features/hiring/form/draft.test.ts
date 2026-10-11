@@ -5,6 +5,7 @@ import {
 	fromBuildersGet,
 	type HackathonDraft,
 	isDraftReady,
+	missingParts,
 	toBuildersGet,
 } from "./draft";
 
@@ -65,5 +66,28 @@ describe("isDraftReady", () => {
 			}),
 		).toBe(false);
 		expect(isDraftReady({ ...ready, startsAt: null })).toBe(false);
+	});
+});
+
+describe("missingParts", () => {
+	it("a new draft still needs the job, the problem and its Cards", () => {
+		expect(missingParts(emptyDraft(Date.now()))).toEqual([
+			"a role",
+			"the pay",
+			"where",
+			"the problem",
+			"at least 3 Cards",
+		]);
+	});
+
+	it("one untitled Card is named once", () => {
+		const draft: HackathonDraft = {
+			...emptyDraft(Date.now()),
+			job: { role: "frontend", pay: "6_9l", mode: "remote" },
+			problem: "Signup drops people",
+			cards: [draftCard("A"), draftCard("B"), draftCard(" ")],
+		};
+
+		expect(missingParts(draft)).toEqual(["a Card title"]);
 	});
 });

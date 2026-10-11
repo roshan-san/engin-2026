@@ -1,12 +1,19 @@
 import { Link } from "@tanstack/react-router";
-import { formatDateRange } from "~/lib/dates";
-import { jobLine } from "../jobChips";
-import { type HiringRow, promiseLine, rowNumber } from "./hiringGroups";
+import { Badge } from "~/components/ui/badge";
+import { cn } from "~/lib/utils";
+import { roleLabel, termsLine } from "../jobChips";
+import { STAGE, stageDate } from "../stage";
+import {
+	type HiringRow,
+	needsYou,
+	promiseLine,
+	rowNumber,
+} from "./hiringGroups";
 
 const ROW_CLASS =
-	"flex w-full items-center gap-3 px-2 py-3 text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60";
+	"grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-2 px-2 py-4 text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60 md:grid-cols-[minmax(0,1fr)_14rem_9rem]";
 
-/** One Hackathon: the job, its dates and the number that matters now. */
+/** One Hackathon: the job, its stage and date, and the number that matters now. */
 export function HackathonRow({
 	row,
 	slug,
@@ -16,17 +23,39 @@ export function HackathonRow({
 	readonly slug: string;
 	readonly isFounder: boolean;
 }) {
+	const stage = STAGE[row.status];
 	const promises = row.status === "done" ? promiseLine(row) : null;
+	const isWaiting = needsYou(row);
 	const content = (
 		<>
-			<div className="min-w-0 flex-1">
-				<div className="truncate text-sm font-medium">{jobLine(row.job)}</div>
+			<div className="min-w-0">
+				<div className="truncate text-sm font-medium">
+					{roleLabel(row.job.role)}
+				</div>
 				<div className="mt-0.5 truncate text-xs text-muted-foreground">
-					{formatDateRange(row.startsAt, row.endsAt - 1)}
+					{termsLine(row.job)} · {row.weeks === 1 ? "1 week" : "2 weeks"}
 				</div>
 			</div>
-			<div className="flex shrink-0 flex-col items-end text-sm">
-				<span className="text-muted-foreground">{rowNumber(row)}</span>
+			<div className="col-span-2 row-start-2 flex min-w-0 items-center gap-2 md:col-span-1 md:row-start-auto">
+				<Badge variant="status" tone={stage.tone}>
+					{stage.label}
+				</Badge>
+				<span className="truncate text-xs text-muted-foreground">
+					{stageDate(row)}
+				</span>
+			</div>
+			<div className="col-start-2 row-start-1 flex flex-col items-end text-sm md:col-start-auto md:row-start-auto">
+				<span
+					className={cn(
+						"flex items-center gap-1.5 tabular-nums",
+						isWaiting ? "font-medium text-foreground" : "text-muted-foreground",
+					)}
+				>
+					{isWaiting ? (
+						<span aria-hidden className="size-1.5 rounded-full bg-warning" />
+					) : null}
+					{rowNumber(row)}
+				</span>
 				{promises ? (
 					<span className="text-xs text-subtle-foreground">{promises}</span>
 				) : null}

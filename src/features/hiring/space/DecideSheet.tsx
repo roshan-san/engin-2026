@@ -1,7 +1,7 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/lib/limits";
-import { StarIcon } from "lucide-react";
-import { useState } from "react";
+import { CheckIcon, StarIcon } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { MentorNote } from "~/components/shared/MentorNote";
 import { SectionLabel } from "~/components/shared/SectionLabel";
 import {
@@ -17,7 +17,8 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { dayLabel } from "../hackathonDates";
+import { cn } from "~/lib/utils";
+import { dayLabel, lastDay } from "../hackathonDates";
 import type { ApplicantRow } from "./applicantSort";
 import { decideState } from "./decideSteps";
 import { useDecide } from "./hooks/useDecide";
@@ -55,92 +56,117 @@ export function DecideSheet({
 		);
 	}
 
+	const walkthroughStep = application.walkthroughAt
+		? "done"
+		: application.shortlisted
+			? "current"
+			: "later";
+
 	return (
-		<div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto p-4">
-			<section className="flex flex-col gap-2">
-				<SectionLabel as="h3">1 · Shortlist</SectionLabel>
-				<Button
-					variant={application.shortlisted ? "default" : "outline"}
-					className="self-start"
-					disabled={!state.canShortlist}
-					aria-pressed={application.shortlisted}
-					onClick={() => void shortlist(!application.shortlisted)}
+		<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+			<ol className="flex flex-col">
+				<Step
+					number={1}
+					title="Shortlist"
+					state={application.shortlisted ? "done" : "current"}
 				>
-					<StarIcon
-						className={application.shortlisted ? "fill-current" : undefined}
-					/>
-					{application.shortlisted ? "Shortlisted" : "Shortlist"}
-				</Button>
-			</section>
-
-			<section className="flex flex-col gap-2">
-				<SectionLabel as="h3">2 · Walkthrough</SectionLabel>
-				{application.walkthroughAt !== null ? (
-					<WalkthroughNotes application={application} />
-				) : application.shortlisted ? (
-					<>
-						<Textarea
-							aria-label="Walkthrough notes"
-							placeholder="Notes"
-							value={notes}
-							maxLength={TEXT.walkthroughNotes}
-							className="min-h-20"
-							onChange={(e) => setNotes(e.target.value)}
+					<Button
+						variant={application.shortlisted ? "secondary" : "outline"}
+						size="sm"
+						className="self-start"
+						disabled={!state.canShortlist}
+						aria-pressed={application.shortlisted}
+						onClick={() => void shortlist(!application.shortlisted)}
+					>
+						<StarIcon
+							className={
+								application.shortlisted
+									? "fill-current text-warning"
+									: undefined
+							}
 						/>
-						<MentorNote>Private. What you learned on the call.</MentorNote>
-						<Button
-							variant="outline"
-							className="self-start"
-							disabled={!state.canWalkthrough}
-							onClick={() => void markWalkthrough(notes)}
-						>
-							Walkthrough done
-						</Button>
-					</>
-				) : (
-					<MentorNote>
-						Shortlist first. Send a call link in the thread.
-					</MentorNote>
-				)}
-			</section>
+						{application.shortlisted ? "Shortlisted" : "Shortlist"}
+					</Button>
+				</Step>
 
-			<section className="flex flex-col gap-2">
-				<SectionLabel as="h3">3 · Decide</SectionLabel>
-				{state.canDecide ? (
-					<>
-						<Input
-							aria-label="Note for them"
-							placeholder="One line for them"
-							value={feedback}
-							maxLength={TEXT.feedback}
-							onChange={(e) => setFeedback(e.target.value)}
-						/>
-						<div className="flex flex-wrap items-center gap-2">
-							<Button
-								disabled={!state.canHire}
-								onClick={() => setConfirming("hired")}
-							>
-								Hired
-							</Button>
+				<Step number={2} title="Walkthrough" state={walkthroughStep}>
+					{application.walkthroughAt !== null ? (
+						<WalkthroughNotes application={application} />
+					) : application.shortlisted ? (
+						<>
+							<MentorNote>
+								Send a call link in the thread. Notes are private.
+							</MentorNote>
+							<Textarea
+								aria-label="Walkthrough notes"
+								placeholder="What you learned on the call"
+								value={notes}
+								maxLength={TEXT.walkthroughNotes}
+								className="min-h-20"
+								onChange={(e) => setNotes(e.target.value)}
+							/>
 							<Button
 								variant="outline"
-								onClick={() => setConfirming("not_this_time")}
+								size="sm"
+								className="self-start"
+								disabled={!state.canWalkthrough}
+								onClick={() => void markWalkthrough(notes)}
 							>
-								Not this time
+								Walkthrough done
 							</Button>
+						</>
+					) : (
+						<MentorNote>Shortlist first.</MentorNote>
+					)}
+				</Step>
+
+				<Step
+					number={3}
+					title="Decide"
+					isLast
+					state={state.canDecide ? "current" : "later"}
+				>
+					{state.canDecide ? (
+						<>
+							<MentorNote>
+								Due {dayLabel(lastDay(hackathon.decideBy))}. They see your note.
+							</MentorNote>
+							<Input
+								aria-label="Note for them"
+								placeholder="One line for them"
+								value={feedback}
+								maxLength={TEXT.feedback}
+								onChange={(e) => setFeedback(e.target.value)}
+							/>
+							<div className="flex flex-wrap items-center gap-2">
+								<Button
+									size="sm"
+									disabled={!state.canHire}
+									onClick={() => setConfirming("hired")}
+								>
+									Hired
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setConfirming("not_this_time")}
+								>
+									Not this time
+								</Button>
+							</div>
 							{state.hireHint ? (
 								<MentorNote>{state.hireHint}</MentorNote>
 							) : null}
-						</div>
-					</>
-				) : (
-					<MentorNote>
-						{hackathon.status === "done"
-							? "This Hackathon has ended."
-							: "Decide after it ends."}
-					</MentorNote>
-				)}
-			</section>
+						</>
+					) : (
+						<MentorNote>
+							{hackathon.status === "done"
+								? "This Hackathon has ended."
+								: `Decide from ${dayLabel(hackathon.endsAt)}.`}
+						</MentorNote>
+					)}
+				</Step>
+			</ol>
 
 			<AlertDialog
 				open={confirming !== null}
@@ -174,6 +200,56 @@ export function DecideSheet({
 				</AlertDialogContent>
 			</AlertDialog>
 		</div>
+	);
+}
+
+/** One step of the decision: a check once done, the next one lit, the rest quiet. */
+function Step({
+	number,
+	title,
+	state,
+	isLast = false,
+	children,
+}: {
+	readonly number: number;
+	readonly isLast?: boolean;
+	readonly title: string;
+	readonly state: "done" | "current" | "later";
+	readonly children: ReactNode;
+}) {
+	return (
+		<li className="relative flex gap-3 pb-7 last:pb-0">
+			{isLast ? null : (
+				<span
+					aria-hidden
+					className="absolute top-7 bottom-1 left-[11px] w-px bg-border"
+				/>
+			)}
+			<span
+				className={cn(
+					"flex size-6 shrink-0 items-center justify-center rounded-full border text-xs tabular-nums",
+					state === "done" && "border-success/40 bg-success/15 text-success",
+					state === "current" && "border-foreground text-foreground",
+					state === "later" && "border-border text-subtle-foreground",
+				)}
+			>
+				{state === "done" ? <CheckIcon className="size-3.5" /> : number}
+				<span className="sr-only">
+					{state === "done" ? "Done" : state === "current" ? "Next" : "Later"}
+				</span>
+			</span>
+			<div className="flex min-w-0 flex-1 flex-col gap-2.5 pt-0.5">
+				<h3
+					className={cn(
+						"text-sm font-medium",
+						state === "later" && "text-muted-foreground",
+					)}
+				>
+					{title}
+				</h3>
+				{children}
+			</div>
+		</li>
 	);
 }
 

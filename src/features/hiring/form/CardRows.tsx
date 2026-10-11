@@ -1,18 +1,23 @@
-import {
-	MAX_HACKATHON_CARDS,
-	MIN_HACKATHON_CARDS,
-	TEXT,
-} from "@convex/lib/limits";
-import { PlusIcon, XIcon } from "lucide-react";
+import { MAX_HACKATHON_CARDS, TEXT } from "@convex/lib/limits";
+import { XIcon } from "lucide-react";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
+import { MentorNote } from "~/components/shared/MentorNote";
+import { TILE_CLASS } from "~/features/work/board/CardTile";
+import { ColumnIcon } from "~/features/work/board/ColumnIcon";
+import { NewCardInput } from "~/features/work/board/NewCardInput";
+import { cn } from "~/lib/utils";
 import { draftCard, type HackathonDraft } from "./draft";
 
 type DraftCard = HackathonDraft["cards"][number];
 
-/** The 3–5 Cards every Builder starts with: a title each, notes if needed. */
+/** A field drawn as plain text on the tile, the way the Board shows it. */
+const BARE_FIELD_CLASS =
+	"field-sizing-content w-full min-w-0 resize-none bg-transparent outline-none placeholder:text-subtle-foreground";
+
+/**
+ * The 3–5 Cards every Builder starts with, drawn as the To do column they land in: the Board's
+ * new-Card input on top, then a tile per Card, edited in place.
+ */
 export function CardRows({
 	cards,
 	onChange,
@@ -27,89 +32,117 @@ export function CardRows({
 	}
 
 	return (
-		<div className="flex flex-col gap-2">
-			<ol className="flex flex-col gap-2">
-				{cards.map((card, index) => (
-					<CardRow
-						key={card.key}
-						index={index}
-						card={card}
-						canRemove={cards.length > MIN_HACKATHON_CARDS}
-						onChange={(next) => patch(card.key, next)}
-						onRemove={() => onChange(cards.filter((c) => c.key !== card.key))}
+		<section
+			aria-label="To do"
+			className="flex w-full max-w-sm flex-col rounded-lg bg-muted/25"
+		>
+			<h3 className="flex h-10 shrink-0 items-center gap-2 px-3 text-sm font-medium">
+				<ColumnIcon column="todo" />
+				To do
+				<span className="text-xs font-normal text-subtle-foreground tabular-nums">
+					{cards.length}
+				</span>
+			</h3>
+			<div className="flex flex-col gap-1.5 px-1.5 pt-0.5 pb-1.5">
+				{cards.length < MAX_HACKATHON_CARDS ? (
+					<NewCardInput
+						placeholder="What will a Builder finish in a day?"
+						shortcut={null}
+						hasOpenCards
+						onCreate={async (title) => {
+							onChange([...cards, draftCard(title)]);
+							return true;
+						}}
 					/>
-				))}
-			</ol>
-			{cards.length < MAX_HACKATHON_CARDS ? (
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					className="self-start"
-					onClick={() => onChange([...cards, draftCard()])}
-				>
-					<PlusIcon />
-					Add card
-				</Button>
-			) : null}
-		</div>
+				) : (
+					<div className="px-2.5 py-2">
+						<MentorNote>{MAX_HACKATHON_CARDS} is the most.</MentorNote>
+					</div>
+				)}
+				<ol className="flex flex-col gap-1.5">
+					{cards.map((card, index) => (
+						<DraftCardTile
+							key={card.key}
+							number={index + 1}
+							card={card}
+							onChange={(next) => patch(card.key, next)}
+							onRemove={() => onChange(cards.filter((c) => c.key !== card.key))}
+						/>
+					))}
+				</ol>
+			</div>
+		</section>
 	);
 }
 
-function CardRow({
-	index,
+/** One Card as a Board tile: its title, then its notes once there are any. */
+function DraftCardTile({
+	number,
 	card,
-	canRemove,
 	onChange,
 	onRemove,
 }: {
-	readonly index: number;
+	readonly number: number;
 	readonly card: DraftCard;
-	readonly canRemove: boolean;
 	readonly onChange: (next: Partial<DraftCard>) => void;
 	readonly onRemove: () => void;
 }) {
 	const [hasNotes, setHasNotes] = useState(card.notes.length > 0);
-	const number = index + 1;
+	const isUntitled = !card.title.trim();
 
 	return (
-		<li className="flex flex-col gap-1.5 rounded-lg border border-border p-2">
-			<div className="flex items-center gap-2">
-				<span className="w-5 shrink-0 text-center text-xs text-muted-foreground">
-					{number}
-				</span>
-				<Input
+		<li
+			className={cn(
+				TILE_CLASS,
+				"group flex flex-col gap-1.5 transition-colors hover:border-input focus-within:border-input",
+				isUntitled && "border-dashed",
+			)}
+		>
+			<div className="flex items-start gap-2">
+				{/* Titles stay one line, as on the Board; the textarea only wraps them. */}
+				<textarea
+					rows={1}
 					aria-label={`Card ${number} title`}
 					placeholder="Card title"
 					value={card.title}
 					maxLength={TEXT.cardTitle}
-					onChange={(e) => onChange({ title: e.target.value })}
+					className={cn(BARE_FIELD_CLASS, "text-sm break-words")}
+					onChange={(e) =>
+						onChange({ title: e.target.value.replace(/\s*\n\s*/g, " ") })
+					}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") e.preventDefault();
+					}}
 				/>
-				{canRemove ? (
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						aria-label={`Remove card ${number}`}
-						onClick={onRemove}
-					>
-						<XIcon />
-					</Button>
-				) : null}
+				<button
+					type="button"
+					aria-label={`Remove card ${number}`}
+					className="-mt-0.5 -mr-1 flex size-6 shrink-0 items-center justify-center rounded text-subtle-foreground opacity-0 outline-none transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/60"
+					onClick={onRemove}
+				>
+					<XIcon className="size-3.5" />
+				</button>
 			</div>
 			{hasNotes ? (
-				<Textarea
+				<textarea
+					rows={1}
+					// Opened by "Add notes", so the cursor goes where the click was.
+					// biome-ignore lint/a11y/noAutofocus: see above
+					autoFocus={card.notes.length === 0}
 					aria-label={`Card ${number} notes`}
-					placeholder="Notes"
+					placeholder="Notes for the Builder"
 					value={card.notes}
 					maxLength={TEXT.notes}
-					className="ml-7 w-[calc(100%-1.75rem)]"
+					className={cn(BARE_FIELD_CLASS, "text-xs text-muted-foreground")}
 					onChange={(e) => onChange({ notes: e.target.value })}
+					onBlur={() => {
+						if (!card.notes.trim()) setHasNotes(false);
+					}}
 				/>
 			) : (
 				<button
 					type="button"
-					className="ml-7 self-start text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+					className="self-start text-xs text-subtle-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
 					onClick={() => setHasNotes(true)}
 				>
 					Add notes

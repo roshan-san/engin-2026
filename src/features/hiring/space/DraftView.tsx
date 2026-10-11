@@ -2,6 +2,7 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Page } from "~/components/shared/Page";
+import { useWorkspace } from "~/features/work/board/StartupContext";
 import { draftCard, fromBuildersGet, type HackathonDraft } from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";
 import { useHackathonForm } from "../form/hooks/useHackathonForm";
@@ -14,6 +15,7 @@ export function DraftView({
 	readonly hackathon: Doc<"hackathons">;
 	readonly cards: Doc<"cards">[];
 }) {
+	const { startup } = useWorkspace();
 	const { update, publish } = useHackathonForm();
 	const [initial] = useState<HackathonDraft>(() => ({
 		job: hackathon.job,
@@ -26,8 +28,9 @@ export function DraftView({
 
 	return (
 		<div className="min-h-0 flex-1 overflow-y-auto">
-			<Page width="narrow">
+			<Page>
 				<HackathonForm
+					startupName={startup.name}
 					initial={initial}
 					submitLabel="Save"
 					onSubmit={async (draft) => {

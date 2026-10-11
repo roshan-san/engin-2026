@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	groupHackathons,
 	type HiringRow,
+	needsYou,
 	promiseLine,
 	rowNumber,
 } from "./hiringGroups";
@@ -94,5 +95,18 @@ describe("promise line", () => {
 				row({ status: "done", promisesKept: 3, promisesAnswered: 3 }),
 			),
 		).toBe("promises kept 3/3");
+	});
+});
+
+describe("needsYou", () => {
+	it("Cards to review and Builders to decide wait on the Founder", () => {
+		expect(needsYou(row({ status: "building", toReview: 2 }))).toBe(true);
+		expect(needsYou(row({ status: "deciding", toDecide: 1 }))).toBe(true);
+	});
+
+	it("applicants and finished Hackathons don't", () => {
+		expect(needsYou(row({ status: "building", toReview: 0 }))).toBe(false);
+		expect(needsYou(row({ status: "open", applicantCount: 9 }))).toBe(false);
+		expect(needsYou(row({ status: "done", hires: 1 }))).toBe(false);
 	});
 });

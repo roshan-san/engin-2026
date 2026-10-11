@@ -23,7 +23,10 @@ export type SidebarBuilder = {
 	readonly username: string | null;
 	readonly reviewCount: number;
 	readonly shortlisted: boolean;
+	readonly decision: "hired" | "not_this_time" | null;
 	readonly unread: boolean;
+	/** Their Cards, and how many are Done. */
+	readonly progress: { readonly done: number; readonly total: number };
 };
 
 /** The space's left bar: Review's count, # Everyone's dot, and each Builder. */
@@ -41,7 +44,7 @@ export function sidebarItems(input: SidebarInput) {
 			input.threads.find((thread) => thread.kind === "everyone")?.unread ??
 			false,
 		builders: input.builders.map(
-			({ application, user }): SidebarBuilder => ({
+			({ application, user, progress }): SidebarBuilder => ({
 				userId: user._id,
 				applicationId: application._id,
 				name: displayName(user),
@@ -49,7 +52,9 @@ export function sidebarItems(input: SidebarInput) {
 				username: user.username,
 				reviewCount: reviewsOf(user._id),
 				shortlisted: application.shortlisted,
+				decision: application.decision,
 				unread: privateThread(user._id)?.unread ?? false,
+				progress: progress ?? { done: 0, total: 0 },
 			}),
 		),
 	};

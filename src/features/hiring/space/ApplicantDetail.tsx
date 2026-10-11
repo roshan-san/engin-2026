@@ -6,9 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { hackathonLine, workLine } from "~/features/people/profile/profileText";
-import { displayName } from "~/features/work/cards/displayName";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { RatingParts } from "~/features/work/activity/RatingParts";
+import { displayName } from "~/features/work/cards/displayName";
 import { initials } from "~/lib/initials";
 import { useApplicant } from "./hooks/useApplicants";
 

@@ -36,6 +36,14 @@ export function rowNumber(row: HiringRow): string {
 	}
 }
 
+/** The row's number is waiting on the Founder: Cards to review, Builders to decide. */
+export function needsYou(row: HiringRow): boolean {
+	return (
+		(row.status === "building" && row.toReview > 0) ||
+		(row.status === "deciding" && row.toDecide > 0)
+	);
+}
+
 /** "promises kept 3/3", once any Builder answered. */
 export function promiseLine(row: HiringRow): string | null {
 	return row.promisesAnswered > 0

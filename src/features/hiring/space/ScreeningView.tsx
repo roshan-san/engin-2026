@@ -1,14 +1,11 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { MAX_BUILDERS } from "@convex/lib/limits";
 import { getRouteApi } from "@tanstack/react-router";
-import { LinkIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { Kbd } from "~/components/shared/Kbd";
 import { PanelHeader } from "~/components/shared/PanelHeader";
 import { Segmented } from "~/components/shared/Segmented";
-import { Button } from "~/components/ui/button";
 import {
 	Sheet,
 	SheetContent,
@@ -19,9 +16,11 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { useIsMobile } from "~/hooks/use-mobile";
+import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";
 import { sortApplicants } from "./applicantSort";
+import { CopyLinkButton } from "./CopyLinkButton";
 import { EveryonePanel } from "./EveryonePanel";
 import { useApplicants, useScreening } from "./hooks/useApplicants";
 import { useListKeys } from "./hooks/useListKeys";
@@ -36,19 +35,24 @@ const SORTS = [
 const PANES = [
 	{ value: "applicant", label: "Applicant" },
 	{ value: "everyone", label: "# Everyone" },
+	{ value: "post", label: "Post" },
 ] as const;
 
 /** Before the start: pick up to 10 Builders from the Applicants, J/K, A, D. */
 export function ScreeningView({
 	hackathon,
+	cards,
 }: {
 	readonly hackathon: Doc<"hackathons">;
+	readonly cards: Doc<"cards">[];
 }) {
-	const { userId } = useWorkspace();
+	const { userId, startup } = useWorkspace();
 	const applicants = useApplicants(hackathon._id);
 	const { accept, decline } = useScreening();
 	const [sort, setSort] = useState<"newest" | "rating">("newest");
-	const [pane, setPane] = useState<"applicant" | "everyone">("applicant");
+	const [pane, setPane] = useState<"applicant" | "everyone" | "post">(
+		"applicant",
+	);
 	const view = route.useSearch({ select: (search) => search.view });
 	const navigate = route.useNavigate();
 	const isMobile = useIsMobile();
@@ -56,6 +60,8 @@ export function ScreeningView({
 	const rows = applicants ? sortApplicants(applicants, sort) : [];
 	const ids = rows.map((row) => row.application._id);
 	const activeId = ids.find((id) => id === view) ?? ids[0];
+	// With nobody to show yet, the pane shows the post being shared.
+	const shownPane = pane === "applicant" && !activeId ? "post" : pane;
 	const builderCount = rows.filter(
 		(row) => row.application.status === "building",
 	).length;
@@ -84,7 +90,7 @@ export function ScreeningView({
 			a: (id) => void act(id, accept),
 			d: (id) => void act(id, decline),
 		},
-		isEnabled: isMobile === false && pane === "applicant",
+		isEnabled: isMobile === false && shownPane === "applicant",
 	});
 
 	const detail = activeId ? (
@@ -125,7 +131,8 @@ export function ScreeningView({
 						</div>
 					) : rows.length === 0 ? (
 						<EmptyState
-							title="No applicants yet. Share the page."
+							title="No applicants yet."
+							body="Share the page. Applications close when it starts."
 							action={<CopyLinkButton hackathonId={hackathon._id} />}
 						/>
 					) : (
@@ -152,13 +159,29 @@ export function ScreeningView({
 					<Segmented
 						label="Show"
 						options={PANES}
-						value={pane}
+						value={shownPane}
 						onChange={setPane}
 					/>
 				</PanelHeader>
 				{isMobile === false ? (
-					pane === "everyone" ? (
+					shownPane === "everyone" ? (
 						<EveryonePanel hackathonId={hackathon._id} userId={userId} />
+					) : shownPane === "post" ? (
+						<div className="min-h-0 flex-1 overflow-y-auto">
+							<div className="mx-auto w-full max-w-2xl px-6 py-8">
+								<HackathonPost
+									post={{
+										startupName: startup.name,
+										job: hackathon.job,
+										problem: hackathon.problem,
+										cards: cards.map((card) => card.title),
+										weeks: hackathon.weeks,
+										startsAt: hackathon.startsAt,
+										buildersGet: hackathon.buildersGet ?? null,
+									}}
+								/>
+							</div>
+						</div>
 					) : (
 						detail
 					)
@@ -182,27 +205,5 @@ export function ScreeningView({
 				</SheetContent>
 			</Sheet>
 		</div>
-	);
-}
-
-function CopyLinkButton({
-	hackathonId,
-}: {
-	readonly hackathonId: Id<"hackathons">;
-}) {
-	return (
-		<Button
-			variant="outline"
-			onClick={() => {
-				const url = `${window.location.origin}/hackathons/${hackathonId}`;
-				navigator.clipboard
-					.writeText(url)
-					.then(() => toast("Link copied"))
-					.catch(() => toast(url));
-			}}
-		>
-			<LinkIcon />
-			Copy link
-		</Button>
 	);
 }

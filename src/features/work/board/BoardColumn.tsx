@@ -38,7 +38,7 @@ export function BoardColumn({
 			data-column={id}
 			aria-label={label}
 			className={cn(
-				"flex w-72 shrink-0 snap-start flex-col rounded-lg bg-muted/25 transition-[opacity,background-color,box-shadow] duration-150 md:w-auto md:min-w-52 md:flex-1",
+				"flex w-72 shrink-0 snap-start flex-col rounded-lg bg-muted/25 transition-[opacity,background-color,box-shadow] duration-150 md:w-auto md:min-w-44 md:flex-1",
 				dropState === "refuse" && "opacity-40",
 				dropState === "accept" && isOver && "bg-accent/50 ring-1 ring-ring/50",
 			)}

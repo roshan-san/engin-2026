@@ -1,11 +1,12 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { getRouteApi, Navigate } from "@tanstack/react-router";
+import { getRouteApi, Link, Navigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { PanelHeader } from "~/components/shared/PanelHeader";
 import { Segmented } from "~/components/shared/Segmented";
 import { UnreadDot } from "~/components/shared/UnreadDot";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
 	Sheet,
@@ -25,9 +26,10 @@ import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
 import { useIsMobile } from "~/hooks/use-mobile";
-import { jobLine } from "../jobChips";
+import { roleLabel } from "../jobChips";
 import { useHackathon } from "../public/hooks/useHackathon";
 import { useHackathonThreads } from "../space/hooks/useSpace";
+import { BuilderBrief } from "./BuilderBrief";
 import { builderStatus } from "./builderStatus";
 import { DecisionBanner } from "./DecisionBanner";
 
@@ -61,7 +63,7 @@ function BuilderSpace({
 	readonly page: Hackathon;
 	readonly userId: Id<"users">;
 }) {
-	const { card: cardId, thread = "everyone" } = route.useSearch();
+	const { card: cardId, panel = "brief" } = route.useSearch();
 	const navigate = route.useNavigate();
 	const isMobile = useIsMobile();
 	const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -69,7 +71,7 @@ function BuilderSpace({
 	const threads = useHackathonThreads(page._id);
 	const everyone = threads?.find((t) => t.kind === "everyone");
 	const founder = threads?.find((t) => t.kind === "private");
-	const current = thread === "founder" ? founder : everyone;
+	const current = panel === "founder" ? founder : everyone;
 	const status = builderStatus(
 		page,
 		page.myApplication?.decision ?? null,
@@ -103,14 +105,15 @@ function BuilderSpace({
 
 	const switcher = (
 		<Segmented
-			label="Thread"
+			label="Panel"
 			options={[
+				{ value: "brief", label: "Brief" },
 				{
 					value: "everyone",
 					label: (
 						<>
 							Everyone
-							{everyone?.unread && thread !== "everyone" ? <UnreadDot /> : null}
+							{everyone?.unread && panel !== "everyone" ? <UnreadDot /> : null}
 						</>
 					),
 				},
@@ -119,39 +122,39 @@ function BuilderSpace({
 					label: (
 						<>
 							Founder
-							{founder?.unread && thread !== "founder" ? <UnreadDot /> : null}
+							{founder?.unread && panel !== "founder" ? <UnreadDot /> : null}
 						</>
 					),
 				},
 			]}
-			value={thread}
+			value={panel}
 			onChange={(next) =>
-				void navigate({ search: (prev) => ({ ...prev, thread: next }) })
+				void navigate({ search: (prev) => ({ ...prev, panel: next }) })
 			}
 		/>
 	);
 
-	const panel = cardId ? (
+	const side = cardId ? (
 		<CardPanel
 			key={cardId}
 			cardId={cardId}
-			backLabel="Threads"
+			backLabel={panel === "brief" ? "Brief" : "Threads"}
 			isBackUnread={isAnyUnread}
 			onBack={closeCard}
 			onClose={onClose}
 			onShip={setShipping}
 		/>
+	) : panel === "brief" ? (
+		<BuilderBrief hackathon={page} title={switcher} onClose={onClose} />
 	) : (
 		<ThreadPanel
-			key={thread}
+			key={panel}
 			threadId={current?._id}
 			title={switcher}
 			userId={userId}
-			placeholder={
-				thread === "founder" ? "Message the Founder" : "Ask Everyone"
-			}
+			placeholder={panel === "founder" ? "Message the Founder" : "Ask Everyone"}
 			emptyNote={
-				thread === "founder"
+				panel === "founder"
 					? "Only you and the Founder see this."
 					: "Ask here. Everyone sees it."
 			}
@@ -165,23 +168,30 @@ function BuilderSpace({
 			<div className="flex h-[calc(100dvh-3.5rem-1px)] min-h-0">
 				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 					<PanelHeader className="gap-3 md:px-6">
-						<h1 className="truncate text-sm font-medium">
-							{jobLine(page.job)}
-							<span className="font-normal text-muted-foreground">
-								{" "}
+						<h1 className="flex min-w-0 items-baseline gap-2 truncate text-sm">
+							<span className="font-medium">{roleLabel(page.job.role)}</span>
+							<Link
+								to="/hackathons/$id"
+								params={{ id: page._id }}
+								className="truncate text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+							>
 								at {page.startup.name}
-							</span>
+							</Link>
 						</h1>
-						<span className="hidden shrink-0 text-sm text-muted-foreground sm:inline">
+						<Badge
+							variant="status"
+							tone={status.isClosed ? "neutral" : "success"}
+							className="hidden shrink-0 sm:inline-flex"
+						>
 							{status.line}
-						</span>
+						</Badge>
 						<Button
 							variant="ghost"
 							size="sm"
 							className="ml-auto shrink-0 md:hidden"
 							onClick={() => setIsPanelOpen(true)}
 						>
-							Threads
+							Brief and threads
 							{isAnyUnread ? <UnreadDot /> : null}
 						</Button>
 					</PanelHeader>
@@ -207,7 +217,7 @@ function BuilderSpace({
 					/>
 				</div>
 				<aside className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex">
-					{isMobile === false ? panel : null}
+					{isMobile === false ? side : null}
 				</aside>
 				{shipping ? (
 					<ShipDialog card={shipping} onClose={() => setShipping(null)} />
@@ -224,10 +234,10 @@ function BuilderSpace({
 						showCloseButton={false}
 					>
 						<SheetHeader className="sr-only">
-							<SheetTitle>{cardId ? "Card" : "Threads"}</SheetTitle>
+							<SheetTitle>{cardId ? "Card" : "Brief and threads"}</SheetTitle>
 							<SheetDescription>Talk with the Founder.</SheetDescription>
 						</SheetHeader>
-						{isMobile === true ? panel : null}
+						{isMobile === true ? side : null}
 					</SheetContent>
 				</Sheet>
 			</div>

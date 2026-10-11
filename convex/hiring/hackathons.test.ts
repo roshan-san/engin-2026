@@ -218,6 +218,21 @@ describe("public page", () => {
 		expect(signedOut?.decideBy).toBe((signedOut?.endsAt ?? 0) + 7 * DAY);
 		expect(forFounder?.isTeam).toBe(true);
 	});
+
+	it("the public page lists the Cards Builders will work, without their notes", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+
+		const page = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+
+		expect(page?.cards).toEqual([
+			"Fix signup",
+			"Add onboarding",
+			"Track drop-off",
+		]);
+	});
 });
 
 describe("publish", () => {

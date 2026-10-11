@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Route as HackathonRoute } from "~/routes/_shell/hackathons/$id";
 import { Route as BuilderRoute } from "~/routes/_shell/_authed/h/$id";
 import { Route as SpaceRoute } from "~/routes/_shell/_authed/s/$slug/hiring/$id";
 import { Route as HiringRoute } from "~/routes/_shell/_authed/s/$slug/hiring/index";
 import { Route as NewRoute } from "~/routes/_shell/_authed/s/$slug/hiring/new";
+import { Route as HackathonRoute } from "~/routes/_shell/hackathons/$id";
 import { BuilderPage } from "./builder/BuilderPage";
 import { NewHackathonPage } from "./form/NewHackathonPage";
 import { HiringPage } from "./list/HiringPage";

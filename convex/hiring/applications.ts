@@ -22,6 +22,7 @@ import {
 	ensurePrivateThread,
 	getApplication,
 	loadApplicationsForFounder,
+	loadBuilderProgress,
 	requireApplicationFounder,
 	requireBuilding,
 	requireDecidable,
@@ -55,6 +56,14 @@ export const listForHackathon = query({
 								rating: user.rating ?? STARTING_RATING,
 								isProvisional: isProvisional(user),
 							},
+							progress:
+								application.status === "building"
+									? await loadBuilderProgress(
+											ctx,
+											application.hackathonId,
+											application.userId,
+										)
+									: null,
 						}
 					: null;
 			}),

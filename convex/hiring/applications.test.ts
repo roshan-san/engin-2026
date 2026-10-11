@@ -507,6 +507,27 @@ describe("building", () => {
 		await expect(queue).rejects.toThrow("You're not on this startup");
 	});
 
+	it("the Founder sees how far each Builder has got", async () => {
+		const { setup, hackathonId, ana, anaCard } = await twoBuilders();
+		await ana.as.mutation(api.work.cards.submit, {
+			cardId: anaCard._id,
+			shipped: SHIPPED,
+		});
+		await setup.founder.as.mutation(api.work.cards.verify, {
+			cardId: anaCard._id,
+		});
+
+		const rows = await setup.founder.as.query(
+			api.hiring.applications.listForHackathon,
+			{ hackathonId },
+		);
+
+		const progressOf = (userId: Id<"users">) =>
+			rows.find((row) => row.user._id === userId)?.progress;
+		expect(progressOf(ana.userId)).toEqual({ done: 1, total: 3 });
+		expect(rows.filter((row) => row.progress?.done === 0)).toHaveLength(1);
+	});
+
 	it("the Founder sees any Builder's Cards", async () => {
 		const { setup, hackathonId, ben } = await twoBuilders();
 

@@ -13,16 +13,24 @@ export function RatingBadge({
 	rating,
 	ratingChange,
 	isProvisional,
+	size = "lg",
 }: {
 	readonly rating: number;
 	readonly ratingChange: number;
 	readonly isProvisional: boolean;
+	/** `sm` sits inside a card or a row; `lg` heads a page. */
+	readonly size?: "sm" | "lg";
 }) {
 	const change = ratingChangeLabel(ratingChange);
 
 	return (
 		<div className="flex items-center gap-2.5">
-			<span className="text-4xl font-semibold tracking-tight tabular-nums">
+			<span
+				className={cn(
+					"font-semibold tracking-tight tabular-nums",
+					size === "lg" ? "text-4xl" : "text-xl",
+				)}
+			>
 				{rating}
 			</span>
 			{change.text ? (

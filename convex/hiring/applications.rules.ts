@@ -1,6 +1,10 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_APPLICATIONS, MAX_BUILDERS } from "../lib/limits";
+import {
+	MAX_APPLICATIONS,
+	MAX_BUILDERS,
+	MAX_HACKATHON_CARDS,
+} from "../lib/limits";
 import { requireHackathonFounder } from "./hackathons.rules";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -128,6 +132,24 @@ export async function loadApplicationsForFounder(
 		others.push(...(await byStatus(status, MAX_APPLICATIONS - others.length)));
 	}
 	return [...builders, ...others];
+}
+
+/** How far a Builder has got: their Cards on the Hackathon, and how many are Done. */
+export async function loadBuilderProgress(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+	userId: Id<"users">,
+): Promise<{ done: number; total: number }> {
+	const cards = await ctx.db
+		.query("cards")
+		.withIndex("by_hackathon_and_owner", (q) =>
+			q.eq("hackathonId", hackathonId).eq("ownerId", userId),
+		)
+		.take(MAX_HACKATHON_CARDS);
+	return {
+		done: cards.filter((card) => card.status === "done").length,
+		total: cards.length,
+	};
 }
 
 /** What the Founder sees of an application. Leaves out the Builder's private promise answer. */

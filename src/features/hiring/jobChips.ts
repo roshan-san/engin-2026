@@ -40,6 +40,11 @@ export function roleLabel(role: JobRole): string {
 	return labelOf(ROLES, role);
 }
 
+/** "₹6–9 L · Remote": the job's terms, without the role. */
+export function termsLine(job: Job): string {
+	return `${labelOf(PAYS, job.pay)} · ${labelOf(MODES, job.mode)}`;
+}
+
 /** "Frontend · ₹6–9 L · Remote" */
 export function jobLine(job: Job): string {
 	return [

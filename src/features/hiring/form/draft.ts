@@ -9,7 +9,7 @@ export const BUILDERS_GET = [
 	"₹5,000 to the hire",
 ] as const;
 
-/** A Hackathon being written. Chips start unpicked. */
+/** A Hackathon being written. Chips start unpicked; Cards are added one at a time, as on the Board. */
 export type HackathonDraft = {
 	job: { role: JobRole | null; pay: JobPay | null; mode: JobMode | null };
 	problem: string;
@@ -31,7 +31,7 @@ export function emptyDraft(now: number): HackathonDraft {
 		weeks: 1,
 		startsAt: startOptions(now)[0].startsAt,
 		buildersGet: { choice: "Nothing", custom: "" },
-		cards: Array.from({ length: MIN_HACKATHON_CARDS }, () => draftCard()),
+		cards: [],
 	};
 }
 
@@ -55,17 +55,25 @@ export function fromBuildersGet(value: string | null): {
 		: { choice: "Custom", custom: value };
 }
 
-export function isDraftReady(draft: HackathonDraft): boolean {
+/** What's still to fill in before the draft can be saved, in form order. */
+export function missingParts(draft: HackathonDraft): string[] {
 	const { role, pay, mode } = draft.job;
-	return (
-		role !== null &&
-		pay !== null &&
-		mode !== null &&
-		draft.problem.trim().length > 0 &&
-		draft.cards.length >= MIN_HACKATHON_CARDS &&
-		draft.cards.every((card) => card.title.trim().length > 0) &&
-		draft.startsAt !== null
-	);
+	const untitled = draft.cards.filter((card) => !card.title.trim()).length;
+	return [
+		role === null ? "a role" : null,
+		pay === null ? "the pay" : null,
+		mode === null ? "where" : null,
+		draft.problem.trim() ? null : "the problem",
+		untitled > 0 ? (untitled === 1 ? "a Card title" : "Card titles") : null,
+		draft.cards.length < MIN_HACKATHON_CARDS
+			? `at least ${MIN_HACKATHON_CARDS} Cards`
+			: null,
+		draft.startsAt === null ? "a start" : null,
+	].filter((part) => part !== null);
+}
+
+export function isDraftReady(draft: HackathonDraft): boolean {
+	return missingParts(draft).length === 0;
 }
 
 /** The draft as `hackathons.create` / `update` args. Call only when ready. */

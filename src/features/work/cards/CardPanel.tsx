@@ -33,15 +33,15 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { isReadOnly, useBoardScope } from "../board/BoardScope";
 import { ColumnIcon } from "../board/ColumnIcon";
 import { COLUMNS, type Column, dropAction } from "../board/dropRules";
-import { isReadOnly, useBoardScope } from "../board/BoardScope";
 import { useBoard } from "../board/hooks/useBoard";
 import type { CardView } from "../board/types";
+import { displayName } from "./displayName";
 import { useCard } from "./hooks/useCard";
 import { useCardActions } from "./hooks/useCardActions";
 import { useDraft } from "./hooks/useDraft";
-import { displayName } from "./displayName";
 import { NotesField } from "./NotesField";
 import { GHOST_TRIGGER, OwnerPicker } from "./OwnerPicker";
 import { ShippedView } from "./ShippedView";

@@ -1,7 +1,7 @@
 import { PanelHeader } from "~/components/shared/PanelHeader";
 import { Skeleton } from "~/components/ui/skeleton";
-import type { SignalsView } from "./record";
 import { RecordSignals } from "./RecordSignals";
+import type { SignalsView } from "./record";
 
 /** The side panel while no entry is open: the Rating, the rhythm and who sees what. */
 export function RecordPanel({

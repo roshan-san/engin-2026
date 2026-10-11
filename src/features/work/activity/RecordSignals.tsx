@@ -1,8 +1,8 @@
 import { cn } from "~/lib/utils";
 import { RatingBadge } from "./RatingBadge";
 import { RatingParts } from "./RatingParts";
-import type { SignalsView } from "./record";
 import { RhythmStrip, StripLegend } from "./RhythmStrip";
+import type { SignalsView } from "./record";
 
 const LABEL = "text-xs leading-5 font-semibold text-muted-foreground";
 

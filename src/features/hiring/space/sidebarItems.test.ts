@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { resolveView, type SidebarInput, sidebarItems } from "./sidebarItems";
 
-function builder(id: string, shortlisted = false) {
+function builder(id: string, shortlisted = false, done = 0) {
 	return {
+		progress: { done, total: 3 },
 		application: {
 			_id: `app-${id}`,
 			status: "building",
@@ -14,7 +15,7 @@ function builder(id: string, shortlisted = false) {
 }
 
 const input = {
-	builders: [builder("ana", true), builder("ben")],
+	builders: [builder("ana", true, 2), builder("ben")],
 	queue: [
 		{ owner: { _id: "ana" } },
 		{ owner: { _id: "ana" } },
@@ -37,6 +38,15 @@ describe("sidebarItems", () => {
 		).toEqual([
 			["ana", 2, true],
 			["ben", 1, false],
+		]);
+	});
+
+	it("shows how far each Builder has got", () => {
+		const items = sidebarItems(input);
+
+		expect(items.builders.map((b) => b.progress)).toEqual([
+			{ done: 2, total: 3 },
+			{ done: 0, total: 3 },
 		]);
 	});
 

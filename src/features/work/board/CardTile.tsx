@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
+import { useBoardScope } from "./BoardScope";
 import type { CardView } from "./types";
 
 /** A tile's frame, shared by the Board and the dragged copy. */
@@ -11,7 +12,8 @@ export const TILE_CLASS =
 
 /** What a Card looks like, on the Board and while it's dragged. */
 export function CardFace({ card }: { readonly card: CardView }) {
-	const { owner } = card;
+	// A Builder's Board is one person's: their face on every Card says nothing.
+	const owner = useBoardScope().kind === "startup" ? card.owner : null;
 	const showsBadges = card.changesAsked || card.selfVerified;
 
 	return (

@@ -14,12 +14,12 @@ import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { BoardColumn, type DropState } from "./BoardColumn";
+import { isReadOnly, useBoardScope } from "./BoardScope";
 import { CardFace, TILE_CLASS } from "./CardTile";
 import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
 import { useBoard } from "./hooks/useBoard";
 import { useBoardKeys } from "./hooks/useBoardKeys";
 import { NewCardInput } from "./NewCardInput";
-import { isReadOnly, useBoardScope } from "./BoardScope";
 import type { CardView } from "./types";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((column) => column.id));
@@ -128,7 +128,7 @@ export function Board({
 				{COLUMNS.map((column) => (
 					<div
 						key={column.id}
-						className="flex w-72 shrink-0 flex-col gap-1.5 rounded-lg bg-muted/25 p-1.5 md:w-auto md:min-w-52 md:flex-1"
+						className="flex w-72 shrink-0 flex-col gap-1.5 rounded-lg bg-muted/25 p-1.5 md:w-auto md:min-w-44 md:flex-1"
 					>
 						<Skeleton className="m-1.5 h-4 w-20" />
 						<Skeleton className="h-16" />

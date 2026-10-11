@@ -11,10 +11,15 @@ export function NewCardInput({
 	onCreate,
 	hasOpenCards,
 	inputRef,
+	placeholder = "What will you finish this week?",
+	shortcut = "C",
 }: {
 	readonly onCreate: (title: string) => Promise<boolean>;
 	readonly hasOpenCards: boolean;
-	readonly inputRef: Ref<HTMLTextAreaElement>;
+	readonly inputRef?: Ref<HTMLTextAreaElement>;
+	readonly placeholder?: string;
+	/** The key that focuses it, hinted while it's empty; `null` where there is none. */
+	readonly shortcut?: string | null;
 }) {
 	const [title, setTitle] = useState("");
 
@@ -30,7 +35,7 @@ export function NewCardInput({
 					ref={inputRef}
 					rows={1}
 					aria-label="New Card"
-					placeholder="What will you finish this week?"
+					placeholder={placeholder}
 					value={title}
 					maxLength={TEXT.cardTitle}
 					autoComplete="off"
@@ -55,9 +60,11 @@ export function NewCardInput({
 						}
 					}}
 				/>
-				<Kbd className="absolute top-2 right-2 peer-focus:invisible peer-[:not(:placeholder-shown)]:invisible">
-					C
-				</Kbd>
+				{shortcut ? (
+					<Kbd className="absolute top-2 right-2 peer-focus:invisible peer-[:not(:placeholder-shown)]:invisible">
+						{shortcut}
+					</Kbd>
+				) : null}
 			</div>
 			{hasOpenCards ? null : (
 				<div className="px-2.5">

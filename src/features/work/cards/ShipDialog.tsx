@@ -23,8 +23,8 @@ import { Spinner } from "~/components/ui/spinner";
 import { errorMessage } from "~/lib/errors";
 import { useUpload } from "../../shared/hooks/useUpload";
 import { pickImages } from "../../shared/images";
-import { isSendKey } from "../board/keys";
 import { useBoardScope } from "../board/BoardScope";
+import { isSendKey } from "../board/keys";
 import type { CardView } from "../board/types";
 import { useSubmit } from "./hooks/useSubmit";
 
