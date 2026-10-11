@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import {
+	builders,
+	endHackathon,
+	startHackathon,
+} from "../hiring/applications.helpers";
+import { publishedHackathon } from "../hiring/hackathons.helpers";
+import { MAX_LISTED_CYCLES } from "../lib/limits";
 import { advancePast, createTest, DAY } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import {
@@ -17,7 +24,14 @@ async function verifiedCard(setup: Setup, title: string) {
 		shipped: { ...SHIPPED, line: title },
 	});
 	await setup.founder.as.mutation(api.work.cards.verify, { cardId });
-	return sam;
+	return { ...sam, cardId };
+}
+
+async function list(setup: Setup, count?: number) {
+	return await setup.founder.as.query(api.work.activity.list, {
+		startupId: setup.startupId,
+		count,
+	});
 }
 
 describe("activity", () => {
@@ -31,29 +45,35 @@ describe("activity", () => {
 		await advancePast(setup.t, 7 * DAY);
 		await verifiedCard(setup, "Pricing page");
 
-		const weeks = await setup.founder.as.query(api.work.activity.list, {
-			startupId: setup.startupId,
-		});
+		const { cycles } = await list(setup);
 
-		expect(weeks).toHaveLength(2);
-		expect(weeks[0]).toMatchObject({
+		expect(cycles).toHaveLength(2);
+		expect(cycles[0]).toMatchObject({
 			number: 2,
 			goal: null,
+			shippedCount: 1,
 			entries: [{ kind: "card_verified", line: "Pricing page" }],
 		});
-		expect(weeks[1]).toMatchObject({
+		expect(cycles[1]).toMatchObject({
 			number: 1,
 			goal: "Get 10 paying users",
+			shippedCount: 1,
 			entries: [
 				{
 					kind: "card_verified",
 					line: "Welcome emails",
 					selfVerified: false,
 					actor: { _id: first.userId, name: "Sam Welcome emails" },
+					card: {
+						title: "Welcome emails",
+						links: ["https://example.com/doc"],
+						imageUrls: [],
+						verifier: { name: "Fay" },
+					},
 				},
 			],
 		});
-		expect(weeks[0].week > weeks[1].week).toBe(true);
+		expect(cycles[0].week > cycles[1].week).toBe(true);
 	});
 
 	it("a week lists its newest entry first", async () => {
@@ -62,18 +82,106 @@ describe("activity", () => {
 		await advancePast(setup.t, 1000);
 		await verifiedCard(setup, "Newer");
 
-		const weeks = await setup.founder.as.query(api.work.activity.list, {
-			startupId: setup.startupId,
-		});
+		const { cycles } = await list(setup);
 
-		expect(weeks).toHaveLength(1);
-		expect(weeks[0].entries.map((entry) => entry.line)).toEqual([
+		expect(cycles).toHaveLength(1);
+		expect(cycles[0].entries.map((entry) => entry.line)).toEqual([
 			"Newer",
 			"Older",
 		]);
 	});
 
-	it("Activity is team-only", async () => {
+	it("empty weeks show as empty", async () => {
+		const setup = await setUpStartup(createTest());
+		await verifiedCard(setup, "Week one");
+		await advancePast(setup.t, 14 * DAY);
+		await verifiedCard(setup, "Week three");
+
+		const { cycles } = await list(setup);
+
+		expect(cycles.map((cycle) => cycle.number)).toEqual([3, 2, 1]);
+		expect(cycles[1]).toMatchObject({ shippedCount: 0, entries: [] });
+	});
+
+	it("the list stops at the first Cycle", async () => {
+		const setup = await setUpStartup(createTest());
+
+		const result = await list(setup);
+
+		expect(result.cycles).toHaveLength(1);
+		expect(result.hasMore).toBe(false);
+	});
+
+	it("Show earlier adds older Cycles", async () => {
+		const setup = await setUpStartup(createTest());
+		await advancePast(setup.t, 10 * 7 * DAY);
+
+		const page = await list(setup, 8);
+		const all = await list(setup, 16);
+
+		expect(page.cycles).toHaveLength(8);
+		expect(page.hasMore).toBe(true);
+		expect(all.cycles).toHaveLength(11);
+		expect(all.hasMore).toBe(false);
+	});
+
+	it("the list stops at the cap", async () => {
+		const setup = await setUpStartup(createTest());
+		await advancePast(setup.t, 110 * 7 * DAY);
+
+		const result = await list(setup, 500);
+
+		expect(result.cycles).toHaveLength(MAX_LISTED_CYCLES);
+		expect(result.hasMore).toBe(false);
+	});
+
+	it("an entry outlives its Card", async () => {
+		const setup = await setUpStartup(createTest());
+		const { cardId } = await verifiedCard(setup, "Gone soon");
+		await setup.t.run(async (ctx) => await ctx.db.delete(cardId));
+
+		const { cycles } = await list(setup);
+
+		expect(cycles[0].entries[0]).toMatchObject({
+			line: "Gone soon",
+			card: null,
+		});
+	});
+
+	it("hires and finished Hackathons carry the job", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+			applicationId: ana.applicationId,
+			shortlisted: true,
+		});
+		await setup.founder.as.mutation(api.hiring.applications.markWalkthrough, {
+			applicationId: ana.applicationId,
+		});
+		await endHackathon(setup, hackathonId);
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+
+		const { cycles } = await list(setup);
+
+		const entries = cycles.flatMap((cycle) => cycle.entries);
+		expect(
+			entries.find((entry) => entry.kind === "builder_hired"),
+		).toMatchObject({
+			job: { role: "frontend" },
+			actor: { name: "Ana" },
+			card: null,
+		});
+		expect(
+			entries.find((entry) => entry.kind === "hackathon_finished"),
+		).toMatchObject({ job: { role: "frontend" } });
+	});
+
+	it("only the team reads the list", async () => {
 		const setup = await setUpStartup(createTest());
 		const outsider = await signUp(setup.t, "Olly");
 

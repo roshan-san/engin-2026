@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
+import { loadHiringRecord } from "../hiring/record.rules";
 import { requireUserId } from "../lib/auth";
 import { MAX_USER_STARTUPS, STARTING_RATING, TEXT } from "../lib/limits";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
@@ -30,7 +31,13 @@ export const getPublic = query({
 	args: { slug: v.string() },
 	handler: async (ctx, args) => {
 		const startup = await getStartupBySlug(ctx, args.slug);
-		return startup ? await toPublicStartup(ctx, startup) : null;
+		if (!startup) {
+			return null;
+		}
+		return {
+			...(await toPublicStartup(ctx, startup)),
+			hiringRecord: await loadHiringRecord(ctx, startup._id, Date.now()),
+		};
 	},
 });
 
@@ -94,6 +101,8 @@ export const create = mutation({
 			founderId: userId,
 			rating: STARTING_RATING,
 			ratingChange: 0,
+			ratedWeeks: 0,
+			provisional: true,
 		});
 		await ctx.db.insert("threads", { startupId, kind: "team" });
 

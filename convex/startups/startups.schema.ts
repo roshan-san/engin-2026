@@ -47,6 +47,11 @@ export const startupsTables = {
 		founderId: v.id("users"),
 		rating: v.number(),
 		ratingChange: v.number(),
+		/** Active weeks (≥1 verified Card) the weekly run has rated. */
+		ratedWeeks: v.number(),
+		/** The week key last rated, so a rerun skips the row. */
+		ratedThrough: v.optional(v.string()),
+		provisional: v.boolean(),
 	})
 		.index("by_slug", ["slug"])
 		.index("by_founder", ["founderId"]),

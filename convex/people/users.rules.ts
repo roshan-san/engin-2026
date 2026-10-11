@@ -1,8 +1,18 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { STARTING_RATING } from "../lib/limits";
+import { MAX_PROFILE_ROWS, STARTING_RATING } from "../lib/limits";
+import { shiftWeek, weekOf } from "../work/cycles.rules";
+import {
+	buildParts,
+	countedWeeks,
+	loadOutcomes,
+	loadPersonCounts,
+	outcomeScore,
+	recentOutcomes,
+	toPartsView,
+} from "../work/rating.rules";
 
-type PublicUser = {
+export type PublicUser = {
 	_id: Id<"users">;
 	name: string | null;
 	username: string | null;
@@ -30,9 +40,9 @@ export async function loadPublicUser(
 	return user ? toPublicUser(user) : null;
 }
 
-/** A Rating stays provisional until four rated weeks have counted. */
+/** Set weekly by the Rating run (`work/rating.rules.ts`). */
 export function isProvisional(user: Doc<"users">): boolean {
-	return (user.ratedWeeks ?? 0) < 4;
+	return user.provisional ?? true;
 }
 
 /** What anyone may see on a profile page. Never includes email. */
@@ -74,6 +84,66 @@ export async function onUserSignedIn(
 			rating: STARTING_RATING,
 			ratingChange: 0,
 			ratedWeeks: 0,
+			provisional: true,
 		});
 	}
+}
+
+/** The profile's Record: Rating parts, finished Hackathons, and Cards verified by others. */
+export async function loadProfileRecord(
+	ctx: QueryCtx,
+	user: Doc<"users">,
+	now: number,
+) {
+	const weeks = countedWeeks(user._creationTime, shiftWeek(weekOf(now), -1));
+	const parts = buildParts(await loadPersonCounts(ctx, user._id, weeks));
+	const outcomes = await loadOutcomes(ctx, user._id);
+
+	const hackathons = [];
+	for (const { outcome, hackathon } of outcomes) {
+		const startup = await ctx.db.get(hackathon.startupId);
+		if (!startup) continue;
+		hackathons.push({
+			startup: { name: startup.name, slug: startup.slug },
+			job: { role: hackathon.job.role },
+			outcome,
+			endsAt: hackathon.endsAt,
+		});
+	}
+
+	const rows = await ctx.db
+		.query("activity")
+		.withIndex("by_actor_and_kind_and_selfVerified_and_week", (q) =>
+			q
+				.eq("actorId", user._id)
+				.eq("kind", "card_verified")
+				.eq("selfVerified", false),
+		)
+		.order("desc")
+		.take(MAX_PROFILE_ROWS);
+	const capped = rows.length === MAX_PROFILE_ROWS;
+	const counts = new Map<Id<"startups">, number>();
+	for (const row of rows) {
+		counts.set(row.startupId, (counts.get(row.startupId) ?? 0) + 1);
+	}
+	const work = [];
+	for (const [startupId, count] of counts) {
+		const startup = await ctx.db.get(startupId);
+		if (!startup) continue;
+		work.push({
+			startup: { name: startup.name, slug: startup.slug },
+			count,
+			capped,
+		});
+	}
+
+	return {
+		parts: {
+			...toPartsView(parts),
+			outcomes:
+				Math.round(outcomeScore(recentOutcomes(outcomes, now)) * 100) / 100,
+		},
+		hackathons,
+		work,
+	};
 }

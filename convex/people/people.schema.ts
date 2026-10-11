@@ -28,6 +28,10 @@ export const peopleTables = {
 		ratingChange: v.optional(v.number()),
 		/** Weeks that have counted toward the Rating. */
 		ratedWeeks: v.optional(v.number()),
+		/** The week key last rated, so a rerun skips the row. */
+		ratedThrough: v.optional(v.string()),
+		/** Set by the weekly run; absent means provisional. */
+		provisional: v.optional(v.boolean()),
 		investorVerifiedAt: v.optional(v.number()),
 	})
 		.index("email", ["email"])

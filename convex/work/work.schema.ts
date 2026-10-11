@@ -72,5 +72,13 @@ export const workTables = {
 		hackathonId: v.optional(v.id("hackathons")),
 		line: v.optional(v.string()),
 		selfVerified: v.optional(v.boolean()),
-	}).index("by_startup_and_week", ["startupId", "week"]),
+	})
+		.index("by_startup_and_week", ["startupId", "week"])
+		.index("by_startup_and_kind_and_week", ["startupId", "kind", "week"])
+		.index("by_actor_and_kind_and_selfVerified_and_week", [
+			"actorId",
+			"kind",
+			"selfVerified",
+			"week",
+		]),
 };

@@ -35,3 +35,8 @@ export function cycleNumber(startupCreatedAt: number, at: number): number {
 	);
 	return weeks + 1;
 }
+
+/** The week `by` weeks after `week` (negative goes back). */
+export function shiftWeek(week: string, by: number): string {
+	return weekOf(weekStart(week) + by * WEEK_MS);
+}

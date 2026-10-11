@@ -3,7 +3,7 @@ import { api } from "../_generated/api";
 import { createTest, DAY } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import { addContributor, setUpStartup } from "../startups/startups.helpers";
-import { cycleNumber, weekOf, weekStart } from "./cycles.rules";
+import { cycleNumber, shiftWeek, weekOf, weekStart } from "./cycles.rules";
 
 describe("cycles", () => {
 	it("weeks run Monday to Sunday in IST", () => {
@@ -17,6 +17,12 @@ describe("cycles", () => {
 		expect(weekOf(Date.parse("2027-01-03T12:00:00Z"))).toBe("2026-W53");
 		expect(weekOf(Date.parse("2027-01-04T12:00:00Z"))).toBe("2027-W01");
 		expect(weekStart("2027-W01")).toBe(Date.parse("2027-01-03T18:30:00Z"));
+	});
+
+	it("shifting a week crosses year boundaries", () => {
+		expect(shiftWeek("2026-W01", -1)).toBe("2025-W52");
+		expect(shiftWeek("2026-W52", 1)).toBe("2026-W53");
+		expect(shiftWeek("2026-W42", 0)).toBe("2026-W42");
 	});
 
 	it("the first Cycle is the signup week", () => {

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "~/lib/utils";
+import { GitPullRequest } from "lucide-react";
 
 /** The Engin mark (a block E), linking to Home, or the landing page when signed out. */
 export function EnginLogo({
@@ -21,9 +22,7 @@ export function EnginLogo({
 				className,
 			)}
 		>
-			<svg viewBox="0 0 24 24" aria-hidden className="size-5">
-				<path d="M5 4h14v4H9.5v2H17v4H9.5v2H19v4H5z" fill="currentColor" />
-			</svg>
+			<GitPullRequest />
 		</Link>
 	);
 }
