@@ -1,3 +1,10 @@
+import { Badge } from "~/components/ui/badge";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 import { ratingChangeLabel } from "./record";
 
@@ -14,24 +21,40 @@ export function RatingBadge({
 	const change = ratingChangeLabel(ratingChange);
 
 	return (
-		<div className="flex items-baseline gap-2">
-			<span className="text-3xl font-semibold tracking-tight tabular-nums">
+		<div className="flex items-center gap-2.5">
+			<span className="text-4xl font-semibold tracking-tight tabular-nums">
 				{rating}
 			</span>
 			{change.text ? (
 				<span
 					className={cn(
-						"text-sm tabular-nums",
+						"text-sm font-medium tabular-nums",
 						change.direction === "up"
-							? "text-foreground/70"
+							? "text-success"
 							: "text-muted-foreground",
 					)}
 				>
 					{change.text}
+					<span className="sr-only"> this week</span>
 				</span>
 			) : null}
 			{isProvisional ? (
-				<span className="text-xs text-muted-foreground">Provisional</span>
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Badge
+								variant="outline"
+								tabIndex={0}
+								className="cursor-help text-muted-foreground"
+							>
+								Provisional
+							</Badge>
+						</TooltipTrigger>
+						<TooltipContent className="max-w-56">
+							Still settling. It firms up as more weeks are rated.
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
 			) : null}
 		</div>
 	);

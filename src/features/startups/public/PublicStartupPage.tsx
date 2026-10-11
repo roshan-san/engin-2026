@@ -35,7 +35,11 @@ export function PublicStartupPage() {
 	const { slug } = route.useParams();
 	const startup = usePublicStartup(slug);
 	const signals = useSignals(slug);
-	const { data: activity, showEarlier } = usePublicActivity(slug);
+	const {
+		data: activity,
+		showEarlier,
+		isLoadingEarlier,
+	} = usePublicActivity(slug);
 
 	if (startup === undefined) {
 		return <GlobalSpinner />;
@@ -119,6 +123,7 @@ export function PublicStartupPage() {
 						cycles={activity.cycles}
 						hasMore={activity.hasMore}
 						onShowEarlier={showEarlier}
+						isLoadingEarlier={isLoadingEarlier}
 						mode={activity.full ? "full" : "masked"}
 					/>
 				) : (

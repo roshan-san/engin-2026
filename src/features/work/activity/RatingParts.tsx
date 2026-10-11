@@ -17,9 +17,9 @@ export function RatingParts({
 			) : (
 				<>
 					<li>
-						{consistency.active} of {consistency.weeks} weeks
+						Active {consistency.active} of {consistency.weeks} weeks
 					</li>
-					<li>{volume.perWeek} a week</li>
+					<li>{volume.perWeek} verified a week</li>
 				</>
 			)}
 			{outcomes !== undefined ? <li>Hackathons {outcomes}</li> : null}
