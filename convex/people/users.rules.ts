@@ -30,9 +30,9 @@ export async function loadPublicUser(
 	return user ? toPublicUser(user) : null;
 }
 
-/** A Rating stays provisional until four rated weeks have counted. */
+/** Set weekly by the Rating run (`work/rating.rules.ts`). */
 export function isProvisional(user: Doc<"users">): boolean {
-	return (user.ratedWeeks ?? 0) < 4;
+	return user.provisional ?? true;
 }
 
 /** What anyone may see on a profile page. Never includes email. */
@@ -74,6 +74,7 @@ export async function onUserSignedIn(
 			rating: STARTING_RATING,
 			ratingChange: 0,
 			ratedWeeks: 0,
+			provisional: true,
 		});
 	}
 }

@@ -1,4 +1,12 @@
 // The pure section needs no Convex server imports.
+import type { Doc, Id } from "../_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import {
+	MAX_LISTED_HACKATHONS,
+	MAX_USER_APPLICATIONS,
+	STARTING_RATING,
+	WEEK_COUNT_CAP,
+} from "../lib/limits";
 import { shiftWeek, weekOf } from "./cycles.rules";
 
 export const RATING = {
@@ -110,4 +118,165 @@ export function toPartsView(parts: Parts) {
 		consistency: { active: parts.active, weeks: parts.weeks },
 		volume: { perWeek: parts.perWeek },
 	};
+}
+
+// Loaders and the weekly step.
+
+/** Verified Cards of the Startup per week, Self-verified included. */
+export async function loadStartupCounts(
+	ctx: QueryCtx,
+	startupId: Id<"startups">,
+	weeks: string[],
+): Promise<number[]> {
+	return await Promise.all(
+		weeks.map(
+			async (week) =>
+				(
+					await ctx.db
+						.query("activity")
+						.withIndex("by_startup_and_kind_and_week", (q) =>
+							q
+								.eq("startupId", startupId)
+								.eq("kind", "card_verified")
+								.eq("week", week),
+						)
+						.take(WEEK_COUNT_CAP)
+				).length,
+		),
+	);
+}
+
+/** A person's Cards verified by someone else per week, across every Startup. */
+export async function loadPersonCounts(
+	ctx: QueryCtx,
+	userId: Id<"users">,
+	weeks: string[],
+): Promise<number[]> {
+	return await Promise.all(
+		weeks.map(
+			async (week) =>
+				(
+					await ctx.db
+						.query("activity")
+						.withIndex("by_actor_and_kind_and_selfVerified_and_week", (q) =>
+							q
+								.eq("actorId", userId)
+								.eq("kind", "card_verified")
+								.eq("selfVerified", false)
+								.eq("week", week),
+						)
+						.take(WEEK_COUNT_CAP)
+				).length,
+		),
+	);
+}
+
+/** A person's finished Hackathon outcomes, newest end first. */
+export async function loadOutcomes(
+	ctx: QueryCtx,
+	userId: Id<"users">,
+): Promise<{ outcome: Outcome; hackathon: Doc<"hackathons"> }[]> {
+	const applications = await ctx.db
+		.query("applications")
+		.withIndex("by_user", (q) => q.eq("userId", userId))
+		.take(MAX_USER_APPLICATIONS);
+	const outcomes: { outcome: Outcome; hackathon: Doc<"hackathons"> }[] = [];
+	for (const application of applications) {
+		const outcome = outcomeOf(application);
+		if (!outcome) continue;
+		const hackathon = await ctx.db.get(application.hackathonId);
+		if (hackathon?.status !== "deciding" && hackathon?.status !== "done") {
+			continue;
+		}
+		outcomes.push({ outcome, hackathon });
+	}
+	return outcomes.sort((a, b) => b.hackathon.endsAt - a.hackathon.endsAt);
+}
+
+/** Outcomes of Hackathons that ended within the last 365 days. */
+export function recentOutcomes(
+	outcomes: { outcome: Outcome; hackathon: Doc<"hackathons"> }[],
+	now: number,
+): Outcome[] {
+	const since = now - RATING.outcomeDays * 24 * 3600_000;
+	return outcomes
+		.filter(({ hackathon }) => hackathon.endsAt >= since)
+		.map(({ outcome }) => outcome);
+}
+
+async function hasFinishedHackathon(
+	ctx: QueryCtx,
+	startupId: Id<"startups">,
+): Promise<boolean> {
+	const hackathons = await ctx.db
+		.query("hackathons")
+		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
+		.take(MAX_LISTED_HACKATHONS);
+	return hackathons.some((hackathon) => hackathon.status === "done");
+}
+
+/** Moves one Startup's Rating for `week`. A rerun of the same week does nothing. */
+export async function rateStartup(
+	ctx: MutationCtx,
+	startup: Doc<"startups">,
+	week: string,
+): Promise<void> {
+	if (startup.ratedThrough !== undefined && startup.ratedThrough >= week) {
+		return;
+	}
+	const weeks = countedWeeks(startup._creationTime, week);
+	if (weeks.length === 0) {
+		await ctx.db.patch(startup._id, { ratedThrough: week });
+		return;
+	}
+	const counts = await loadStartupCounts(ctx, startup._id, weeks);
+	const rating = nextRating(startup.rating, startupTarget(buildParts(counts)));
+	const ratedWeeks = startup.ratedWeeks + (counts.at(-1) ? 1 : 0);
+	const provisional =
+		ratedWeeks < RATING.provisionalWeeks &&
+		!(await hasFinishedHackathon(ctx, startup._id));
+
+	await ctx.db.patch(startup._id, {
+		rating,
+		ratingChange: rating - startup.rating,
+		ratedWeeks,
+		ratedThrough: week,
+		provisional,
+	});
+}
+
+/** Moves one person's Rating for `week`. A rerun of the same week does nothing. */
+export async function rateUser(
+	ctx: MutationCtx,
+	user: Doc<"users">,
+	week: string,
+	now: number,
+): Promise<void> {
+	if (user.ratedThrough !== undefined && user.ratedThrough >= week) {
+		return;
+	}
+	const weeks = countedWeeks(user._creationTime, week);
+	if (weeks.length === 0) {
+		await ctx.db.patch(user._id, { ratedThrough: week });
+		return;
+	}
+	const counts = await loadPersonCounts(ctx, user._id, weeks);
+	const outcomes = await loadOutcomes(ctx, user._id);
+	const current = user.rating ?? STARTING_RATING;
+	const rating = nextRating(
+		current,
+		personTarget(
+			buildParts(counts),
+			outcomeScore(recentOutcomes(outcomes, now)),
+		),
+	);
+	const ratedWeeks = (user.ratedWeeks ?? 0) + (counts.at(-1) ? 1 : 0);
+
+	await ctx.db.patch(user._id, {
+		rating,
+		ratingChange: rating - current,
+		ratedWeeks,
+		ratedThrough: week,
+		provisional: ratedWeeks < RATING.provisionalWeeks && outcomes.length === 0,
+	});
 }

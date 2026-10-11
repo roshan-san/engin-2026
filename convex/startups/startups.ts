@@ -94,6 +94,8 @@ export const create = mutation({
 			founderId: userId,
 			rating: STARTING_RATING,
 			ratingChange: 0,
+			ratedWeeks: 0,
+			provisional: true,
 		});
 		await ctx.db.insert("threads", { startupId, kind: "team" });
 

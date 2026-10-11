@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as chat_messages from "../chat/messages.js";
 import type * as chat_presence from "../chat/presence.js";
 import type * as chat_threads from "../chat/threads.js";
+import type * as crons from "../crons.js";
 import type * as files_files from "../files/files.js";
 import type * as hiring_applications from "../hiring/applications.js";
 import type * as hiring_hackathons from "../hiring/hackathons.js";
@@ -26,6 +27,7 @@ import type * as startups_startups from "../startups/startups.js";
 import type * as work_activity from "../work/activity.js";
 import type * as work_cards from "../work/cards.js";
 import type * as work_cycles from "../work/cycles.js";
+import type * as work_rating from "../work/rating.js";
 
 import type {
   ApiFromModules,
@@ -38,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   "chat/messages": typeof chat_messages;
   "chat/presence": typeof chat_presence;
   "chat/threads": typeof chat_threads;
+  crons: typeof crons;
   "files/files": typeof files_files;
   "hiring/applications": typeof hiring_applications;
   "hiring/hackathons": typeof hiring_hackathons;
@@ -52,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   "work/activity": typeof work_activity;
   "work/cards": typeof work_cards;
   "work/cycles": typeof work_cycles;
+  "work/rating": typeof work_rating;
 }>;
 
 /**
