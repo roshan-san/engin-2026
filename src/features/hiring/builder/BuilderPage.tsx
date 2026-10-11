@@ -21,7 +21,7 @@ import {
 	type BoardScope,
 	BoardScopeContext,
 } from "~/features/work/board/BoardScope";
-import { useMe } from "~/features/work/board/hooks/useMe";
+import { useMe } from "~/shell/hooks/useMe";
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";

@@ -1,12 +1,14 @@
-import { useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
+import { Compass } from "lucide-react";
 import { AccountMenu } from "~/shell/account/AccountMenu";
+import { InviteTray } from "~/shell/invites/InviteTray";
 import { currentPlace } from "~/shell/places/places";
 import { PlaceSwitcher } from "~/shell/places/PlaceSwitcher";
 import { EnginLogo } from "~/shell/topbar/EnginLogo";
 import { HackathonCrumb } from "~/shell/topbar/HackathonCrumb";
 import { PlaceTabs } from "~/shell/topbar/PlaceTabs";
 
-/** The signed-in bar: the logo, where you are, the tabs there and the account menu. */
+/** The signed-in bar: the logo, where you are, the tabs there, Explore, your Invites and the account menu. */
 export function TopBar() {
 	const inStartup = currentPlace(useLocation().pathname)?.kind === "startup";
 
@@ -20,6 +22,15 @@ export function TopBar() {
 					<HackathonCrumb />
 				</div>
 				<div className="flex-1" />
+				<Link
+					to="/explore"
+					aria-label="Explore"
+					className="flex h-8 shrink-0 items-center rounded-md px-2 text-sm text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+				>
+					<Compass aria-hidden className="size-4 md:hidden" />
+					<span className="hidden md:inline">Explore</span>
+				</Link>
+				<InviteTray />
 				<AccountMenu />
 			</div>
 			{inStartup ? (

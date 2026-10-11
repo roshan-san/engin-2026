@@ -1,7 +1,7 @@
 import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { BoardScopeContext } from "./BoardScope";
-import { useMe } from "./hooks/useMe";
+import { useMe } from "~/shell/hooks/useMe";
 import { useStartup } from "./hooks/useStartup";
 import { StartupContext } from "./StartupContext";
 

@@ -81,6 +81,23 @@ describe("users", () => {
 		});
 	});
 
+	it("a blank link and bio clear what was saved", async () => {
+		const t = createTest();
+		const fay = await signUp(t, "Fay");
+		await fay.as.mutation(api.people.users.updateProfile, {
+			bio: "Builds things",
+			githubUrl: "https://github.com/fay",
+		});
+
+		await fay.as.mutation(api.people.users.updateProfile, {
+			bio: "",
+			githubUrl: "",
+		});
+
+		const me = await fay.as.query(api.people.users.getMe, {});
+		expect(me).toMatchObject({ bio: null, links: { githubUrl: null } });
+	});
+
 	it("a link that is not a web address is refused", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");

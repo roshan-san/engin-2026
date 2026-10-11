@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 
 /** Your open Invites, with Join and Decline. Failures are toasted and resolve `false`. */
-export function useMyInvites() {
+export function useInvites() {
 	const invites = useQuery(api.startups.invites.listMine, {});
 	const acceptInvite = useMutation(api.startups.invites.accept);
 	const declineInvite = useMutation(api.startups.invites.decline);

@@ -21,6 +21,11 @@ const OUTCOMES = {
 	hired: "Hired",
 } as const satisfies Record<Outcome, string>;
 
+/** Every discipline as a chip, in the order shown. */
+export const DISCIPLINE_OPTIONS = (
+	Object.entries(DISCIPLINES) as [Discipline, string][]
+).map(([value, label]) => ({ value, label }));
+
 export function disciplineLabel(d: Discipline): string {
 	return DISCIPLINES[d];
 }

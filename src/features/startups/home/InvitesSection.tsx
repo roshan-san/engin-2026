@@ -2,11 +2,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { Row, RowList } from "~/components/shared/RowList";
 import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Button } from "~/components/ui/button";
-import { useMyInvites } from "./hooks/useMyInvites";
+import { useInvites } from "~/shell/invites/hooks/useInvites";
 
 /** Your open Invites, Join or Decline. A stopgap until the ✉ tray (phase 5). */
 export function InvitesSection() {
-	const { invites, join, decline } = useMyInvites();
+	const { invites, join, decline } = useInvites();
 	const navigate = useNavigate();
 	if (!invites || invites.length === 0) return null;
 
