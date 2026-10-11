@@ -42,6 +42,7 @@ export async function appendActivity(
 }
 
 export type EntryView = {
+	id: Id<"activity">;
 	kind: ActivityKind;
 	at: number;
 	actor: PublicUser | null;
@@ -98,6 +99,7 @@ async function toEntryView(
 	masked: boolean,
 ): Promise<EntryView> {
 	return {
+		id: row._id,
 		kind: row.kind,
 		at: row._creationTime,
 		actor: await loadPublicUser(ctx, row.actorId),

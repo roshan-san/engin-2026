@@ -15,6 +15,7 @@ import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/ro
 import { Route as ShellAuthedHomeRouteImport } from './routes/_shell/_authed/home'
 import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_authed/s/$slug/route'
 import { Route as ShellAuthedSSlugIndexRouteImport } from './routes/_shell/_authed/s/$slug/index'
+import { Route as ShellAuthedSSlugActivityRouteImport } from './routes/_shell/_authed/s/$slug/activity'
 import { Route as ShellAuthedSSlugBoardRouteImport } from './routes/_shell/_authed/s/$slug/board'
 
 const IndexRoute = IndexRouteImport.update({
@@ -45,6 +46,12 @@ const ShellAuthedSSlugIndexRoute = ShellAuthedSSlugIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShellAuthedSSlugRouteRoute,
 } as any)
+const ShellAuthedSSlugActivityRoute =
+  ShellAuthedSSlugActivityRouteImport.update({
+    id: '/activity',
+    path: '/activity',
+    getParentRoute: () => ShellAuthedSSlugRouteRoute,
+  } as any)
 const ShellAuthedSSlugBoardRoute = ShellAuthedSSlugBoardRouteImport.update({
   id: '/board',
   path: '/board',
@@ -55,12 +62,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof ShellAuthedHomeRoute
   '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
+  '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
   '/s/$slug/': typeof ShellAuthedSSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/home': typeof ShellAuthedHomeRoute
+  '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
   '/s/$slug': typeof ShellAuthedSSlugIndexRoute
 }
@@ -71,14 +80,21 @@ export interface FileRoutesById {
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
   '/_shell/_authed/home': typeof ShellAuthedHomeRoute
   '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
+  '/_shell/_authed/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/_shell/_authed/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
   '/_shell/_authed/s/$slug/': typeof ShellAuthedSSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/s/$slug' | '/s/$slug/board' | '/s/$slug/'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/s/$slug'
+    | '/s/$slug/activity'
+    | '/s/$slug/board'
+    | '/s/$slug/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/s/$slug/board' | '/s/$slug'
+  to: '/' | '/home' | '/s/$slug/activity' | '/s/$slug/board' | '/s/$slug'
   id:
     | '__root__'
     | '/'
@@ -86,6 +102,7 @@ export interface FileRouteTypes {
     | '/_shell/_authed'
     | '/_shell/_authed/home'
     | '/_shell/_authed/s/$slug'
+    | '/_shell/_authed/s/$slug/activity'
     | '/_shell/_authed/s/$slug/board'
     | '/_shell/_authed/s/$slug/'
   fileRoutesById: FileRoutesById
@@ -139,6 +156,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedSSlugIndexRouteImport
       parentRoute: typeof ShellAuthedSSlugRouteRoute
     }
+    '/_shell/_authed/s/$slug/activity': {
+      id: '/_shell/_authed/s/$slug/activity'
+      path: '/activity'
+      fullPath: '/s/$slug/activity'
+      preLoaderRoute: typeof ShellAuthedSSlugActivityRouteImport
+      parentRoute: typeof ShellAuthedSSlugRouteRoute
+    }
     '/_shell/_authed/s/$slug/board': {
       id: '/_shell/_authed/s/$slug/board'
       path: '/board'
@@ -150,11 +174,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface ShellAuthedSSlugRouteRouteChildren {
+  ShellAuthedSSlugActivityRoute: typeof ShellAuthedSSlugActivityRoute
   ShellAuthedSSlugBoardRoute: typeof ShellAuthedSSlugBoardRoute
   ShellAuthedSSlugIndexRoute: typeof ShellAuthedSSlugIndexRoute
 }
 
 const ShellAuthedSSlugRouteRouteChildren: ShellAuthedSSlugRouteRouteChildren = {
+  ShellAuthedSSlugActivityRoute: ShellAuthedSSlugActivityRoute,
   ShellAuthedSSlugBoardRoute: ShellAuthedSSlugBoardRoute,
   ShellAuthedSSlugIndexRoute: ShellAuthedSSlugIndexRoute,
 }
