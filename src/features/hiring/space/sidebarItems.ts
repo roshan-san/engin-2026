@@ -54,3 +54,14 @@ export function sidebarItems(input: SidebarInput) {
 		),
 	};
 }
+
+/** The space's view from the URL, or a sensible one when it's unset or gone (a screening id after the start, a removed Builder). */
+export function resolveView(
+	view: string | undefined,
+	builderIds: readonly string[],
+	status: "draft" | "open" | "building" | "deciding" | "done",
+): string {
+	if (view === "review" || view === "everyone") return view;
+	if (view && builderIds.includes(view)) return view;
+	return status === "building" ? "review" : (builderIds[0] ?? "review");
+}

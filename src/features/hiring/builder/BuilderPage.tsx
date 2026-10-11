@@ -28,7 +28,7 @@ import { useIsMobile } from "~/hooks/use-mobile";
 import { jobLine } from "../jobChips";
 import { useHackathon } from "../public/hooks/useHackathon";
 import { useHackathonThreads } from "../space/hooks/useSpace";
-import { builderHeaderLine } from "./decisionCopy";
+import { builderStatus } from "./builderStatus";
 import { DecisionBanner } from "./DecisionBanner";
 
 const route = getRouteApi("/_shell/_authed/h/$id");
@@ -70,7 +70,12 @@ function BuilderSpace({
 	const everyone = threads?.find((t) => t.kind === "everyone");
 	const founder = threads?.find((t) => t.kind === "private");
 	const current = thread === "founder" ? founder : everyone;
-	const isClosed = page.status !== "building";
+	const status = builderStatus(
+		page,
+		page.myApplication?.decision ?? null,
+		Date.now(),
+	);
+	const { isClosed } = status;
 	const isAnyUnread = (everyone?.unread ?? false) || (founder?.unread ?? false);
 
 	const scope = useMemo<BoardScope>(
@@ -168,7 +173,7 @@ function BuilderSpace({
 							</span>
 						</h1>
 						<span className="hidden shrink-0 text-sm text-muted-foreground sm:inline">
-							{builderHeaderLine(page, Date.now())}
+							{status.line}
 						</span>
 						<Button
 							variant="ghost"
@@ -187,6 +192,10 @@ function BuilderSpace({
 								decision: page.myApplication.decision,
 							}}
 						/>
+					) : status.note ? (
+						<p className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground md:px-6">
+							{status.note}
+						</p>
 					) : null}
 					<Board
 						openCardId={cardId}

@@ -19,7 +19,7 @@ import { useApplicants } from "./hooks/useApplicants";
 import { useReviewQueue } from "./hooks/useReviewQueue";
 import { useHackathonThreads } from "./hooks/useSpace";
 import { ReviewQueue } from "./ReviewQueue";
-import { sidebarItems } from "./sidebarItems";
+import { resolveView, sidebarItems } from "./sidebarItems";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
@@ -47,11 +47,11 @@ export function RunningView({
 		queue: queue ?? [],
 		threads: threads ?? [],
 	});
-	const fallback =
-		hackathon.status === "building"
-			? "review"
-			: (builders[0]?.user._id ?? "review");
-	const current = view ?? fallback;
+	const current = resolveView(
+		view,
+		builders.map((row) => row.user._id),
+		hackathon.status,
+	);
 	const builderRow = builders.find((row) => row.user._id === current);
 	const privateThread = threads?.find(
 		(thread) => thread.kind === "private" && thread.builder?._id === current,

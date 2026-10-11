@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type SidebarInput, sidebarItems } from "./sidebarItems";
+import { resolveView, type SidebarInput, sidebarItems } from "./sidebarItems";
 
 function builder(id: string, shortlisted = false) {
 	return {
@@ -48,5 +48,21 @@ describe("sidebarItems", () => {
 			["ana", false],
 			["ben", true],
 		]);
+	});
+});
+
+describe("resolveView", () => {
+	const builderIds = ["ana", "ben"];
+
+	it("keeps a view that still exists", () => {
+		expect(resolveView("everyone", builderIds, "building")).toBe("everyone");
+		expect(resolveView("ben", builderIds, "deciding")).toBe("ben");
+	});
+
+	it("falls back when the view is gone or was never set", () => {
+		expect(resolveView("app-123", builderIds, "building")).toBe("review");
+		expect(resolveView(undefined, builderIds, "building")).toBe("review");
+		expect(resolveView("zed", builderIds, "deciding")).toBe("ana");
+		expect(resolveView(undefined, [], "done")).toBe("review");
 	});
 });
