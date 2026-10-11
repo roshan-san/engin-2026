@@ -12,6 +12,13 @@ import {
 	weekStart,
 } from "./cycles.rules";
 import { loadGoal } from "./goals.rules";
+import {
+	buildParts,
+	countedWeeks,
+	loadStartupCounts,
+	RATING,
+	toPartsView,
+} from "./rating.rules";
 
 type ActivityKind = Infer<typeof activityKind>;
 type JobRole = Infer<typeof jobRole>;
@@ -156,5 +163,54 @@ export async function loadCycles(
 			weeks.map((w) => loadCycle(ctx, startup, w, opts.masked)),
 		),
 		hasMore: week >= firstWeek && count < MAX_LISTED_CYCLES,
+	};
+}
+
+export type SignalsView = {
+	rating: number;
+	ratingChange: number;
+	isProvisional: boolean;
+	parts: ReturnType<typeof toPartsView>;
+	/** 12 weeks ending with this one; `count` is null before signup. */
+	strip: { week: string; startsAt: number; count: number | null }[];
+	verifiedTotal12: number;
+};
+
+/** The Rating, its parts over finished weeks, and the 12-week rhythm strip. */
+export async function loadSignals(
+	ctx: QueryCtx,
+	startup: Doc<"startups">,
+	now: number,
+): Promise<SignalsView> {
+	const thisWeek = weekOf(now);
+	const firstWeek = weekOf(startup._creationTime);
+	// 13 weeks: the strip's 12 plus the one finished week before them that the parts count.
+	const span = Array.from({ length: RATING.weeks + 1 }, (_, i) =>
+		shiftWeek(thisWeek, i - RATING.weeks),
+	).filter((week) => week >= firstWeek);
+	const counted = await loadStartupCounts(ctx, startup._id, span);
+	const countOf = new Map(span.map((week, i) => [week, counted[i]]));
+
+	const strip = Array.from({ length: RATING.weeks }, (_, i) => {
+		const week = shiftWeek(thisWeek, i + 1 - RATING.weeks);
+		return {
+			week,
+			startsAt: weekStart(week),
+			count: countOf.get(week) ?? null,
+		};
+	});
+	const parts = buildParts(
+		countedWeeks(startup._creationTime, shiftWeek(thisWeek, -1)).map(
+			(week) => countOf.get(week) ?? 0,
+		),
+	);
+
+	return {
+		rating: startup.rating,
+		ratingChange: startup.ratingChange,
+		isProvisional: startup.provisional,
+		parts: toPartsView(parts),
+		strip,
+		verifiedTotal12: strip.reduce((sum, cell) => sum + (cell.count ?? 0), 0),
 	};
 }

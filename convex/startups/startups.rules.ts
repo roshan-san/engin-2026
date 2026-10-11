@@ -1,6 +1,7 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { slugify } from "../lib/text";
+import { loadPublicUser } from "../people/users.rules";
 
 export async function getStartupBySlug(
 	ctx: QueryCtx | MutationCtx,
@@ -25,12 +26,13 @@ export async function buildUniqueSlug(
 	return slug;
 }
 
-/** What anyone may see on a Startup's page. Never includes the Founder. */
+/** What anyone may see on a Startup's page. The Founder appears only as a public user. */
 export async function toPublicStartup(
 	ctx: QueryCtx | MutationCtx,
 	startup: Doc<"startups">,
 ) {
 	return {
+		createdAt: startup._creationTime,
 		name: startup.name,
 		slug: startup.slug,
 		oneLiner: startup.oneLiner ?? null,
@@ -41,5 +43,7 @@ export async function toPublicStartup(
 		city: startup.city,
 		rating: startup.rating,
 		ratingChange: startup.ratingChange,
+		isProvisional: startup.provisional,
+		founder: await loadPublicUser(ctx, startup.founderId),
 	};
 }
