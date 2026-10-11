@@ -226,7 +226,7 @@ export async function rateStartup(
 	}
 	const weeks = countedWeeks(startup._creationTime, week);
 	if (weeks.length === 0) {
-		await ctx.db.patch(startup._id, { ratedThrough: week });
+		await ctx.db.patch(startup._id, { ratedThrough: week, rhythm: [] });
 		return;
 	}
 	const counts = await loadStartupCounts(ctx, startup._id, weeks);
@@ -242,6 +242,7 @@ export async function rateStartup(
 		ratedWeeks,
 		ratedThrough: week,
 		provisional,
+		rhythm: counts.slice(-RATING.weeks),
 	});
 }
 

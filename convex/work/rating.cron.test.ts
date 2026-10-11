@@ -38,6 +38,18 @@ describe("rating", () => {
 		expect(startup.provisional).toBe(false);
 	});
 
+	it("a rating run writes the last 12 weeks of rhythm", async () => {
+		const setup = await setUpStartup(createTest());
+		await verifyCards(setup, setup.founder, 2);
+		await toNextWeek(setup.t);
+
+		await runRating(setup.t);
+
+		const startup = await startupRow(setup.t, setup.startupId);
+		expect(startup.rhythm.at(-1)).toBe(2);
+		expect(startup.rhythm.length).toBeLessThanOrEqual(12);
+	});
+
 	it("a quiet week pulls the Rating down slowly", async () => {
 		const setup = await setUpStartup(createTest());
 		await setup.t.run(

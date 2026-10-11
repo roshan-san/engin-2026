@@ -2,6 +2,8 @@ import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { slugify } from "../lib/text";
 import { loadPublicUser } from "../people/users.rules";
+import { shiftWeek, weekStart } from "../work/cycles.rules";
+import { RATING } from "../work/rating.rules";
 
 export async function getStartupBySlug(
 	ctx: QueryCtx | MutationCtx,
@@ -45,5 +47,61 @@ export async function toPublicStartup(
 		ratingChange: startup.ratingChange,
 		isProvisional: startup.provisional,
 		founder: await loadPublicUser(ctx, startup.founderId),
+	};
+}
+
+/**
+ * The Explore strip: 12 weeks ending at `endWeek`, oldest first. `rhythm` is
+ * the Startup's counts ending at `endWeek`; weeks before it are `null`.
+ */
+export function buildRhythmStrip(
+	rhythm: number[],
+	endWeek: string,
+): { week: string; startsAt: number; count: number | null }[] {
+	const firstCounted = RATING.weeks - rhythm.length;
+	return Array.from({ length: RATING.weeks }, (_, i) => {
+		const week = shiftWeek(endWeek, i + 1 - RATING.weeks);
+		return {
+			week,
+			startsAt: weekStart(week),
+			count: i >= firstCounted ? rhythm[i - firstCounted] : null,
+		};
+	});
+}
+
+/** Whether the Startup passes every chip that is set. */
+export function matchesExploreStartup(
+	startup: Doc<"startups">,
+	chips: {
+		stage?: Doc<"startups">["stage"];
+		category?: Doc<"startups">["category"];
+		city?: Doc<"startups">["city"];
+	},
+): boolean {
+	return (
+		(chips.stage === undefined || startup.stage === chips.stage) &&
+		(chips.category === undefined || startup.category === chips.category) &&
+		(chips.city === undefined || startup.city === chips.city)
+	);
+}
+
+/** One Explore row. `endWeek` is the week the strip ends at, normally the last finished week. */
+export async function toExploreStartup(
+	ctx: QueryCtx | MutationCtx,
+	startup: Doc<"startups">,
+	endWeek: string,
+) {
+	return {
+		slug: startup.slug,
+		name: startup.name,
+		oneLiner: startup.oneLiner ?? null,
+		stage: startup.stage,
+		category: startup.category,
+		city: startup.city,
+		rating: startup.rating,
+		ratingChange: startup.ratingChange,
+		isProvisional: startup.provisional,
+		logoUrl: startup.logo ? await ctx.storage.getUrl(startup.logo) : null,
+		strip: buildRhythmStrip(startup.rhythm, startup.ratedThrough ?? endWeek),
 	};
 }

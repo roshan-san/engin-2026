@@ -7,6 +7,10 @@ export const MAX_MESSAGE_IMAGES = 4;
 export const MAX_MESSAGE_MENTIONS = 10;
 export const MAX_BOARD_CARDS = 200;
 export const MAX_LISTED_HACKATHONS = 50;
+/** Startups scanned by Explore, highest Rating first. */
+export const EXPLORE_SCAN = 200;
+/** Rows Explore returns. */
+export const MAX_EXPLORE_ROWS = 50;
 export const MAX_APPLICATIONS = 500;
 export const MAX_USER_APPLICATIONS = 100;
 export const MAX_USER_STARTUPS = 50;

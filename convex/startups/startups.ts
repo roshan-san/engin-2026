@@ -4,13 +4,22 @@ import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { loadHiringRecord } from "../hiring/record.rules";
 import { requireUserId } from "../lib/auth";
-import { MAX_USER_STARTUPS, STARTING_RATING, TEXT } from "../lib/limits";
+import {
+	EXPLORE_SCAN,
+	MAX_EXPLORE_ROWS,
+	MAX_USER_STARTUPS,
+	STARTING_RATING,
+	TEXT,
+} from "../lib/limits";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import { startupCategory, startupCity, startupStage } from "../schema";
+import { shiftWeek, weekOf } from "../work/cycles.rules";
 import { getTeamRole, requireFounder } from "./access.rules";
 import {
 	buildUniqueSlug,
 	getStartupBySlug,
+	matchesExploreStartup,
+	toExploreStartup,
 	toPublicStartup,
 } from "./startups.rules";
 
@@ -38,6 +47,31 @@ export const getPublic = query({
 			...(await toPublicStartup(ctx, startup)),
 			hiringRecord: await loadHiringRecord(ctx, startup._id),
 		};
+	},
+});
+
+/** Startups for anyone, highest Rating first, narrowed by the chips. */
+export const explore = query({
+	args: {
+		stage: v.optional(startupStage),
+		category: v.optional(startupCategory),
+		city: v.optional(startupCity),
+	},
+	handler: async (ctx, args) => {
+		const startups = await ctx.db
+			.query("startups")
+			.withIndex("by_rating")
+			.order("desc")
+			.take(EXPLORE_SCAN);
+		// A Startup not yet rated has its strip end at the last finished week.
+		const lastWeek = shiftWeek(weekOf(Date.now()), -1);
+
+		return await Promise.all(
+			startups
+				.filter((startup) => matchesExploreStartup(startup, args))
+				.slice(0, MAX_EXPLORE_ROWS)
+				.map((startup) => toExploreStartup(ctx, startup, lastWeek)),
+		);
 	},
 });
 
@@ -103,6 +137,7 @@ export const create = mutation({
 			ratingChange: 0,
 			ratedWeeks: 0,
 			provisional: true,
+			rhythm: [],
 		});
 		await ctx.db.insert("threads", { startupId, kind: "team" });
 
