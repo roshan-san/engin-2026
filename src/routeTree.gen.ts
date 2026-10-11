@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
 import { Route as ShellAuthedHomeRouteImport } from './routes/_shell/_authed/home'
+import { Route as ShellAuthedOnboardingRouteImport } from './routes/_shell/_authed/onboarding'
 import { Route as ShellExploreIndexRouteImport } from './routes/_shell/explore/index'
 import { Route as ShellExploreHackathonsRouteImport } from './routes/_shell/explore/hackathons'
 import { Route as ShellExploreStartupsRouteImport } from './routes/_shell/explore/startups'
@@ -45,6 +46,11 @@ const ShellAuthedRouteRoute = ShellAuthedRouteRouteImport.update({
 const ShellAuthedHomeRoute = ShellAuthedHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => ShellAuthedRouteRoute,
+} as any)
+const ShellAuthedOnboardingRoute = ShellAuthedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => ShellAuthedRouteRoute,
 } as any)
 const ShellExploreIndexRoute = ShellExploreIndexRouteImport.update({
@@ -130,6 +136,7 @@ const ShellAuthedSSlugHiringNewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof ShellAuthedHomeRoute
+  '/onboarding': typeof ShellAuthedOnboardingRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/explore/startups': typeof ShellExploreStartupsRoute
   '/hackathons/$id': typeof ShellHackathonsIdRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/home': typeof ShellAuthedHomeRoute
+  '/onboarding': typeof ShellAuthedOnboardingRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/explore/startups': typeof ShellExploreStartupsRoute
   '/hackathons/$id': typeof ShellHackathonsIdRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
   '/_shell/_authed/home': typeof ShellAuthedHomeRoute
+  '/_shell/_authed/onboarding': typeof ShellAuthedOnboardingRoute
   '/_shell/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/_shell/explore/startups': typeof ShellExploreStartupsRoute
   '/_shell/hackathons/$id': typeof ShellHackathonsIdRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/home'
+    | '/onboarding'
     | '/explore/hackathons'
     | '/explore/startups'
     | '/hackathons/$id'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/home'
+    | '/onboarding'
     | '/explore/hackathons'
     | '/explore/startups'
     | '/hackathons/$id'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/_shell'
     | '/_shell/_authed'
     | '/_shell/_authed/home'
+    | '/_shell/_authed/onboarding'
     | '/_shell/explore/hackathons'
     | '/_shell/explore/startups'
     | '/_shell/hackathons/$id'
@@ -280,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof ShellAuthedHomeRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
+    }
+    '/_shell/_authed/onboarding': {
+      id: '/_shell/_authed/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof ShellAuthedOnboardingRouteImport
       parentRoute: typeof ShellAuthedRouteRoute
     }
     '/_shell/explore/': {
@@ -417,12 +436,14 @@ const ShellAuthedSSlugRouteRouteWithChildren =
 
 interface ShellAuthedRouteRouteChildren {
   ShellAuthedHomeRoute: typeof ShellAuthedHomeRoute
+  ShellAuthedOnboardingRoute: typeof ShellAuthedOnboardingRoute
   ShellAuthedSSlugRouteRoute: typeof ShellAuthedSSlugRouteRouteWithChildren
   ShellAuthedHIdRoute: typeof ShellAuthedHIdRoute
 }
 
 const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
   ShellAuthedHomeRoute: ShellAuthedHomeRoute,
+  ShellAuthedOnboardingRoute: ShellAuthedOnboardingRoute,
   ShellAuthedSSlugRouteRoute: ShellAuthedSSlugRouteRouteWithChildren,
   ShellAuthedHIdRoute: ShellAuthedHIdRoute,
 }

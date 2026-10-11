@@ -9,13 +9,14 @@ import { isSendKey } from "./keys";
 /** Adds a Card to To do: Enter creates and stays focused, Esc leaves. */
 export function NewCardInput({
 	onCreate,
-	hasOpenCards,
+	note,
 	inputRef,
 	placeholder = "What will you finish this week?",
 	shortcut = "C",
 }: {
 	readonly onCreate: (title: string) => Promise<boolean>;
-	readonly hasOpenCards: boolean;
+	/** One line of guidance under the input. */
+	readonly note?: string;
 	readonly inputRef?: Ref<HTMLTextAreaElement>;
 	readonly placeholder?: string;
 	/** The key that focuses it, hinted while it's empty; `null` where there is none. */
@@ -66,11 +67,11 @@ export function NewCardInput({
 					</Kbd>
 				) : null}
 			</div>
-			{hasOpenCards ? null : (
+			{note ? (
 				<div className="px-2.5">
-					<MentorNote>3 is a good week.</MentorNote>
+					<MentorNote>{note}</MentorNote>
 				</div>
-			)}
+			) : null}
 		</div>
 	);
 }

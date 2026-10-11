@@ -6,6 +6,8 @@ type ChipPickerProps<T extends string> = {
 	readonly options: readonly { value: T; label: string }[];
 	readonly value: T | null;
 	readonly onChange: (value: T) => void;
+	/** Arrow keys pick as they move. Turn off where picking has a side effect. */
+	readonly pickOnArrow?: boolean;
 };
 
 /** A radiogroup of pill buttons. Arrow keys move and pick; Space or Enter picks. */
@@ -14,6 +16,7 @@ export function ChipPicker<T extends string>({
 	options,
 	value,
 	onChange,
+	pickOnArrow = true,
 }: ChipPickerProps<T>) {
 	const refs = useRef<(HTMLButtonElement | null)[]>([]);
 	const focusable = value ?? options[0]?.value;
@@ -22,7 +25,7 @@ export function ChipPicker<T extends string>({
 		const target = (index + options.length) % options.length;
 		const next = options[target];
 		if (!next) return;
-		onChange(next.value);
+		if (pickOnArrow) onChange(next.value);
 		refs.current[target]?.focus();
 	}
 

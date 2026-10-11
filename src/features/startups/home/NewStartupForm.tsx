@@ -5,7 +5,7 @@ import { MentorNote } from "~/components/shared/MentorNote";
 import { Button } from "~/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { useCreateStartup } from "./hooks/useCreateStartup";
+import { useCreateStartup } from "../onboarding/hooks/useCreateStartup";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 
 type Choice<T extends readonly { value: string }[]> = T[number]["value"] | null;

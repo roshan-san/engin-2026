@@ -139,8 +139,6 @@ export function Board({
 		);
 	}
 
-	const hasOpenCards = cards.some((card) => card.status !== "done");
-
 	return (
 		<DndContext
 			sensors={sensors}
@@ -165,7 +163,7 @@ export function Board({
 						{column.id === "todo" && scope.kind === "startup" ? (
 							<NewCardInput
 								inputRef={newCardRef}
-								hasOpenCards={hasOpenCards}
+								note={cards.length === 0 ? "3 is a good week." : undefined}
 								onCreate={create}
 							/>
 						) : null}
