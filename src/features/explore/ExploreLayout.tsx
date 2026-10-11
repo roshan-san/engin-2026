@@ -2,9 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Page } from "~/components/shared/Page";
 import { PageHeader } from "~/components/shared/PageHeader";
-
-const TAB_CLASS =
-	"relative flex items-center px-2 py-2 text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:text-foreground aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground";
+import { TAB_CLASS } from "~/shell/topbar/PlaceTabs";
 
 /** Explore's frame: the two tabs on top, filters on the left, rows on the right. */
 export function ExploreLayout({

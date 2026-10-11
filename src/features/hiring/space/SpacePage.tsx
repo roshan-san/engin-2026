@@ -6,9 +6,7 @@ import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { PanelHeader } from "~/components/shared/PanelHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { useWorkspace } from "~/features/work/board/StartupContext";
-import { HiringCrumb } from "../HiringCrumb";
-import { roleLabel, termsLine } from "../jobChips";
+import { termsLine } from "../jobChips";
 import { STAGE, stageDate } from "../stage";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { DraftView } from "./DraftView";
@@ -46,9 +44,8 @@ export function SpacePage() {
 	);
 }
 
-/** Back to Hiring, the job, where the Hackathon is, and the way to the page Applicants see. */
+/** The terms, where the Hackathon is, and the way to the page Applicants see. The job is in the bar. */
 function SpaceHeader({ hackathon }: { readonly hackathon: Doc<"hackathons"> }) {
-	const { startup } = useWorkspace();
 	const applicants = useApplicants(hackathon._id);
 	const hires =
 		applicants?.filter((row) => row.application.decision === "hired").length ??
@@ -57,14 +54,9 @@ function SpaceHeader({ hackathon }: { readonly hackathon: Doc<"hackathons"> }) {
 
 	return (
 		<PanelHeader className="gap-3 md:px-6">
-			<HiringCrumb slug={startup.slug}>
-				<h1 className="flex min-w-0 items-baseline gap-2 truncate text-sm">
-					<span className="font-medium">{roleLabel(hackathon.job.role)}</span>
-					<span className="hidden truncate text-muted-foreground sm:inline">
-						{termsLine(hackathon.job)}
-					</span>
-				</h1>
-			</HiringCrumb>
+			<h1 className="min-w-0 truncate text-sm text-muted-foreground">
+				{termsLine(hackathon.job)}
+			</h1>
 			<Badge variant="status" tone={stage.tone} className="shrink-0">
 				{stage.label}
 			</Badge>
