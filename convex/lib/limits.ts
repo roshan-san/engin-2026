@@ -14,7 +14,10 @@ export const MAX_CONTRIBUTORS = 100;
 export const MAX_INVITES = 100;
 export const MAX_THREADS = 20;
 export const MAX_MESSAGES = 100;
-export const MAX_ACTIVITY = 200;
+/** Activity Cycles per page; Show earlier asks for this many more. */
+export const CYCLES_PAGE = 8;
+export const MAX_LISTED_CYCLES = 104;
+export const MAX_CYCLE_ENTRIES = 100;
 /** Verified Cards counted per week; more shows as "50+". */
 export const WEEK_COUNT_CAP = 50;
 /** Rows rated per scheduled run of the weekly Rating. */

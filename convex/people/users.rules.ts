@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { STARTING_RATING } from "../lib/limits";
 
-type PublicUser = {
+export type PublicUser = {
 	_id: Id<"users">;
 	name: string | null;
 	username: string | null;
