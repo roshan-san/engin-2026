@@ -11,6 +11,8 @@ import {
 	DialogTitle,
 } from "~/components/ui/dialog";
 import { useMyStartups } from "./hooks/useMyStartups";
+import { HackathonsSection } from "./HackathonsSection";
+import { InvitesSection } from "./InvitesSection";
 import { NewStartupForm } from "./NewStartupForm";
 
 export function HomePage() {
@@ -23,7 +25,8 @@ export function HomePage() {
 	return (
 		<>
 			<PageHeader title="Your startups" actions={newStartup} />
-			<Page>
+			<Page className="flex flex-col gap-10">
+				<InvitesSection />
 				{startups === undefined ? null : startups.length === 0 ? (
 					<EmptyState
 						title="Start one. Run your first Cycle."
@@ -42,6 +45,7 @@ export function HomePage() {
 						))}
 					</RowList>
 				)}
+				<HackathonsSection />
 			</Page>
 			<Dialog open={isCreating} onOpenChange={setIsCreating}>
 				<DialogContent>
