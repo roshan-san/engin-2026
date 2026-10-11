@@ -1,4 +1,4 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useLocation, useParams } from "@tanstack/react-router";
 import { useStartup } from "~/features/work/board/hooks/useStartup";
 
 const TAB_CLASS =
@@ -7,9 +7,11 @@ const TAB_CLASS =
 /** Inside a Startup: its name, then the places in it. Nothing elsewhere. */
 export function PlaceTabs() {
 	const { slug } = useParams({ strict: false });
-	const found = useStartup(slug);
+	// Workspace tabs live under `/s/`; `/startups/$slug` is the public page.
+	const inWorkspace = useLocation().pathname.startsWith("/s/");
+	const found = useStartup(inWorkspace ? slug : undefined);
 
-	if (!slug || !found) {
+	if (!inWorkspace || !slug || !found) {
 		return null;
 	}
 

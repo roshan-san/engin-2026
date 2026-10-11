@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Page } from "~/components/shared/Page";
 import { PageHeader } from "~/components/shared/PageHeader";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -19,12 +20,13 @@ export function ActivityPage() {
 				title="Activity"
 				width="narrow"
 				actions={
-					<a
-						href={`/startups/${startup.slug}`}
+					<Link
+						to="/startups/$slug"
+						params={{ slug: startup.slug }}
 						className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
 					>
 						How others see this ↗
-					</a>
+					</Link>
 				}
 			/>
 			<Page width="narrow" className="flex flex-col gap-10">
