@@ -8,7 +8,12 @@ import {
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
 } from "../lib/limits";
-import { requireFounder, requireTeam } from "../startups/access.rules";
+import {
+	getTeamRole,
+	requireFounder,
+	requireTeam,
+} from "../startups/access.rules";
+import { toPublicStartup } from "../startups/startups.rules";
 import { toMyApplicationView } from "./applications.rules";
 import {
 	copyTemplateCardsTo,
@@ -22,6 +27,7 @@ import {
 	requireHackathonFounder,
 	requireValidDraft,
 } from "./hackathons.rules";
+import { loadHiringRecord } from "./record.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -42,6 +48,12 @@ export const list = query({
 
 		return await Promise.all(
 			visible.map(async (hackathon) => {
+				const builders = await ctx.db
+					.query("applications")
+					.withIndex("by_hackathon_and_status", (q) =>
+						q.eq("hackathonId", hackathon._id).eq("status", "building"),
+					)
+					.take(MAX_BUILDERS);
 				const inReview = await ctx.db
 					.query("cards")
 					.withIndex("by_hackathon_and_status", (q) =>
@@ -52,6 +64,7 @@ export const list = query({
 					_id: hackathon._id,
 					job: hackathon.job,
 					status: hackathon.status,
+					weeks: hackathon.weeks,
 					startsAt: hackathon.startsAt,
 					endsAt: hackathon.endsAt,
 					decideBy: hackathon.decideBy,
@@ -62,21 +75,32 @@ export const list = query({
 						hackathon.status === "deciding"
 							? await countUndecidedBuilders(ctx, hackathon._id)
 							: 0,
+					hires: builders.filter((b) => b.decision === "hired").length,
+					promisesKept: builders.filter((b) => b.promiseKept === true).length,
+					promisesAnswered: builders.filter((b) => b.promiseKept !== undefined)
+						.length,
+					undecided:
+						hackathon.status === "done"
+							? builders.filter((b) => !b.decision).length
+							: 0,
 				};
 			}),
 		);
 	},
 });
 
+/** The Founder's Hackathon space; `null` for anyone else or a missing Hackathon. */
 export const get = query({
 	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const hackathon = await requireHackathonFounder(
-			ctx,
-			args.hackathonId,
-			userId,
-		);
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (
+			!hackathon ||
+			(await getTeamRole(ctx, hackathon.startupId, userId)) !== "founder"
+		) {
+			return null;
+		}
 
 		return { hackathon, cards: await loadTemplateCards(ctx, hackathon._id) };
 	},
@@ -104,20 +128,31 @@ export const getPublic = query({
 					.unique()
 			: null;
 
+		const publicStartup = await toPublicStartup(ctx, startup);
+
 		return {
 			_id: hackathon._id,
 			job: hackathon.job,
 			problem: hackathon.problem,
 			weeks: hackathon.weeks,
 			startsAt: hackathon.startsAt,
+			endsAt: hackathon.endsAt,
+			decideBy: hackathon.decideBy,
 			buildersGet: hackathon.buildersGet ?? null,
 			status: hackathon.status,
 			startup: {
-				name: startup.name,
-				slug: startup.slug,
-				rating: startup.rating,
+				name: publicStartup.name,
+				slug: publicStartup.slug,
+				oneLiner: publicStartup.oneLiner,
+				logo: publicStartup.logo,
+				rating: publicStartup.rating,
+				isProvisional: publicStartup.isProvisional,
 			},
+			hiringRecord: await loadHiringRecord(ctx, startup._id),
 			applicantCount: hackathon.applicantCount,
+			isTeam: userId
+				? (await getTeamRole(ctx, startup._id, userId)) !== null
+				: false,
 			myApplication: application ? toMyApplicationView(application) : null,
 		};
 	},

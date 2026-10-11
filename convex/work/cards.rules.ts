@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { isBuilder } from "../hiring/applications.rules";
 import {
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
@@ -7,7 +8,6 @@ import {
 	TEXT,
 } from "../lib/limits";
 import { assertUrl, requireLimitedText } from "../lib/text";
-import { isBuilder } from "../hiring/applications.rules";
 import { loadPublicUser } from "../people/users.rules";
 import {
 	getTeamRole,

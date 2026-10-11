@@ -397,6 +397,24 @@ describe("card mentions", () => {
 		expect(messages[0].mentions).toEqual([]);
 	});
 
+	it("a Card mention in Everyone stays plain text", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const threadId = await everyoneThreadId(setup, hackathonId);
+		const cardId = await cardOn(setup, setup.founder, "Secret roadmap");
+
+		await ana.as.mutation(api.chat.messages.send, {
+			threadId,
+			body: `what is ${mentionToken(cardId)}`,
+		});
+
+		const { messages } = await ana.as.query(api.chat.messages.list, {
+			threadId,
+		});
+		expect(messages[0].mentions).toEqual([]);
+	});
+
 	it("text that isn't a Card id stays plain text", async () => {
 		const setup = await setUpStartup(createTest());
 		const threadId = await teamThreadId(setup);

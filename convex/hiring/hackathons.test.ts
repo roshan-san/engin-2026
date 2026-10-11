@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { DAY, HOUR, advancePast, createTest } from "../lib/testing.helpers";
+import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import {
 	addContributor,
@@ -16,6 +16,17 @@ import {
 	publishedHackathon,
 } from "./hackathons.helpers";
 import { finishIfDecided } from "./hackathons.rules";
+
+/** The Founder's space, which must exist. */
+async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {
+	const space = await setup.founder.as.query(api.hiring.hackathons.get, {
+		hackathonId,
+	});
+	if (!space) {
+		throw new Error("No Hackathon space");
+	}
+	return space;
+}
 
 describe("drafts", () => {
 	it("a draft is private until published", async () => {
@@ -86,10 +97,7 @@ describe("drafts", () => {
 
 		const hackathonId = await draftHackathon(setup, { weeks: 2 });
 
-		const { hackathon, cards } = await setup.founder.as.query(
-			api.hiring.hackathons.get,
-			{ hackathonId },
-		);
+		const { hackathon, cards } = await spaceOf(setup, hackathonId);
 		expect(hackathon).toMatchObject({
 			status: "draft",
 			startsAt: nextMonday(),
@@ -118,10 +126,7 @@ describe("drafts", () => {
 			}),
 		});
 
-		const { hackathon, cards } = await setup.founder.as.query(
-			api.hiring.hackathons.get,
-			{ hackathonId },
-		);
+		const { hackathon, cards } = await spaceOf(setup, hackathonId);
 		expect(hackathon.problem).toBe("New problem");
 		expect(cards.map((card) => card.title)).toEqual(["One", "Two", "Three"]);
 	});
@@ -143,9 +148,50 @@ describe("drafts", () => {
 		const sam = await addContributor(setup, "Sam");
 		const hackathonId = await draftHackathon(setup);
 
-		const read = sam.as.query(api.hiring.hackathons.get, { hackathonId });
+		const forSam = await sam.as.query(api.hiring.hackathons.get, {
+			hackathonId,
+		});
+		const forFounder = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
+		});
 
-		await expect(read).rejects.toThrow("Only the Founder can do this");
+		expect(forSam).toBeNull();
+		expect(forFounder?.cards).toHaveLength(3);
+	});
+
+	it("a missing Hackathon's space is empty", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await draftHackathon(setup);
+		await setup.t.run(async (ctx) => await ctx.db.delete(hackathonId));
+
+		const read = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
+		});
+
+		expect(read).toBeNull();
+	});
+});
+
+describe("public page", () => {
+	it("the public page carries the hiring record and whether you're on the team", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+
+		const signedOut = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+		const forFounder = await setup.founder.as.query(
+			api.hiring.hackathons.getPublic,
+			{ hackathonId },
+		);
+
+		expect(signedOut).toMatchObject({
+			isTeam: false,
+			hiringRecord: { finished: 0, hires: 0 },
+			startup: { name: "Acme", slug: setup.slug, isProvisional: true },
+		});
+		expect(signedOut?.decideBy).toBe((signedOut?.endsAt ?? 0) + 7 * DAY);
+		expect(forFounder?.isTeam).toBe(true);
 	});
 });
 
@@ -262,10 +308,7 @@ describe("lifecycle", () => {
 
 		await advancePast(setup.t, nextMonday() - Date.now() + HOUR);
 
-		const { hackathon } = await setup.founder.as.query(
-			api.hiring.hackathons.get,
-			{ hackathonId },
-		);
+		const { hackathon } = await spaceOf(setup, hackathonId);
 		expect(hackathon.status).toBe("done");
 		const activity = await setup.t.run(
 			async (ctx) => await ctx.db.query("activity").take(10),
@@ -335,10 +378,7 @@ describe("lifecycle", () => {
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
 		await advancePast(setup.t, 0);
 
-		const { hackathon } = await setup.founder.as.query(
-			api.hiring.hackathons.get,
-			{ hackathonId },
-		);
+		const { hackathon } = await spaceOf(setup, hackathonId);
 		expect(hackathon.status).toBe("deciding");
 		expect(hackathon.decideBy).toBe(hackathon.endsAt + 7 * DAY);
 		const [row] = await setup.founder.as.query(api.hiring.hackathons.list, {
@@ -366,10 +406,7 @@ describe("lifecycle", () => {
 			async (ctx) => await ctx.db.query("cards").take(50),
 		);
 		expect(cards).toHaveLength(6);
-		const { hackathon } = await setup.founder.as.query(
-			api.hiring.hackathons.get,
-			{ hackathonId },
-		);
+		const { hackathon } = await spaceOf(setup, hackathonId);
 		expect(hackathon.status).toBe("deciding");
 	});
 
@@ -379,9 +416,7 @@ describe("lifecycle", () => {
 		const ana = await addBuilder(setup, hackathonId, "Ana");
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
 		await advancePast(setup.t, 0);
-		const before = await setup.founder.as.query(api.hiring.hackathons.get, {
-			hackathonId,
-		});
+		const before = await spaceOf(setup, hackathonId);
 
 		await setup.t.run(async (ctx) => {
 			const application = await ctx.db
@@ -400,10 +435,7 @@ describe("lifecycle", () => {
 		});
 
 		expect(before.hackathon.status).toBe("deciding");
-		const { hackathon } = await setup.founder.as.query(
-			api.hiring.hackathons.get,
-			{ hackathonId },
-		);
+		const { hackathon } = await spaceOf(setup, hackathonId);
 		expect(hackathon.status).toBe("done");
 		const activity = await setup.t.run(
 			async (ctx) => await ctx.db.query("activity").take(10),
@@ -467,5 +499,46 @@ describe("the decision deadline", () => {
 		});
 
 		await expect(decide).rejects.toThrow("This Hackathon has ended");
+	});
+});
+
+describe("hiring rows", () => {
+	it("Hiring rows count hires and promises", async () => {
+		const setup = await setUpStartup(createTest());
+		const { builders: decided } = await decidedHackathon(setup, [
+			{ name: "Ana", decision: "hired" },
+			{ name: "Ben", decision: "not_this_time" },
+		]);
+		for (const builder of decided) {
+			await builder.as.mutation(api.hiring.applications.keepPromise, {
+				applicationId: builder.applicationId,
+				kept: true,
+			});
+		}
+
+		const [row] = await setup.founder.as.query(api.hiring.hackathons.list, {
+			startupId: setup.startupId,
+		});
+
+		expect(row).toMatchObject({
+			status: "done",
+			weeks: 1,
+			hires: 1,
+			promisesKept: 2,
+			promisesAnswered: 2,
+			undecided: 0,
+		});
+	});
+
+	it("a closed Hackathon counts its undecided Builders", async () => {
+		const setup = await setUpStartup(createTest());
+		const { hackathonId } = await decidedHackathon(setup, [{ name: "Ben" }]);
+		await closeHackathon(setup, hackathonId);
+
+		const [row] = await setup.founder.as.query(api.hiring.hackathons.list, {
+			startupId: setup.startupId,
+		});
+
+		expect(row).toMatchObject({ status: "done", hires: 0, undecided: 1 });
 	});
 });
