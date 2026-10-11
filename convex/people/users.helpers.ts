@@ -20,14 +20,13 @@ export async function signUp(t: TestConvex, name: string): Promise<Person> {
 	return { userId, as: t.withIdentity({ subject: `${userId}|session` }) };
 }
 
-/** A first sign-in: the account is created without a Rating and `onUserSignedIn` starts it. */
+/** A first sign-in: the account is created without a username or Rating and `onUserSignedIn` starts it. */
 export async function signUpNew(t: TestConvex, name: string): Promise<Person> {
 	const userId = await t.run(
 		async (ctx) =>
 			await ctx.db.insert("users", {
 				name,
 				email: `${name.toLowerCase()}@example.com`,
-				username: name.toLowerCase(),
 			}),
 	);
 	await t.run(

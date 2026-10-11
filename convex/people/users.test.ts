@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { createTest } from "../lib/testing.helpers";
+import type { Id } from "../_generated/dataModel";
+import { createTest, type TestConvex } from "../lib/testing.helpers";
+import { onUserSignedIn } from "./users.rules";
 import { signUp, signUpNew } from "./users.helpers";
 
 describe("users", () => {
@@ -103,5 +105,71 @@ describe("users", () => {
 		const t = createTest();
 
 		expect(await t.query(api.people.users.getMe, {})).toBeNull();
+	});
+
+	describe("username on sign-in", () => {
+		async function signIn(
+			t: TestConvex,
+			name: string,
+			existing: Id<"users"> | null = null,
+		) {
+			const userId = await t.run(
+				async (ctx) => await ctx.db.insert("users", { name }),
+			);
+			await t.run(
+				async (ctx) =>
+					await onUserSignedIn(ctx, { userId, existingUserId: existing }),
+			);
+			return t.withIdentity({ subject: `${userId}|session` });
+		}
+
+		it("a new account gets a username from its name", async () => {
+			const t = createTest();
+
+			const priya = await signIn(t, "Priya Sharma");
+
+			const me = await priya.query(api.people.users.getMe, {});
+			expect(me?.username).toBe("priya_sharma");
+		});
+
+		it("a taken username gets a number", async () => {
+			const t = createTest();
+			await signIn(t, "Priya Sharma");
+
+			const second = await signIn(t, "Priya Sharma");
+
+			const me = await second.query(api.people.users.getMe, {});
+			expect(me?.username).toBe("priya_sharma_2");
+		});
+
+		it("a name with no usable letters still gets a username", async () => {
+			const t = createTest();
+
+			const first = await signIn(t, "李雷");
+			const second = await signIn(t, "007");
+
+			expect((await first.query(api.people.users.getMe, {}))?.username).toBe(
+				"builder",
+			);
+			expect((await second.query(api.people.users.getMe, {}))?.username).toBe(
+				"builder_2",
+			);
+		});
+
+		it("a returning sign-in keeps its username", async () => {
+			const t = createTest();
+			const fay = await signUp(t, "Fay");
+
+			await t.run(
+				async (ctx) =>
+					await onUserSignedIn(ctx, {
+						userId: fay.userId,
+						existingUserId: fay.userId,
+					}),
+			);
+
+			const me = await fay.as.query(api.people.users.getMe, {});
+			expect(me?.username).toBe("fay");
+		});
 	});
 });

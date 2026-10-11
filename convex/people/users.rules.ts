@@ -2,6 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_PROFILE_ROWS, STARTING_RATING } from "../lib/limits";
 import { shiftWeek, weekOf } from "../work/cycles.rules";
+import { buildUniqueUsername } from "./username.rules";
 import {
 	buildParts,
 	countedWeeks,
@@ -73,14 +74,16 @@ export function toOwnProfile(user: Doc<"users">) {
 
 /**
  * Runs after every sign-in (`convex/auth.ts`). `existingUserId` is null only
- * when the account was just created, which starts its Rating.
+ * when the account was just created, which gives it a username and starts its Rating.
  */
 export async function onUserSignedIn(
 	ctx: MutationCtx,
 	args: { userId: Id<"users">; existingUserId: Id<"users"> | null },
 ): Promise<void> {
 	if (args.existingUserId === null) {
+		const user = await ctx.db.get(args.userId);
 		await ctx.db.patch(args.userId, {
+			username: await buildUniqueUsername(ctx, user?.name, user?.email),
 			rating: STARTING_RATING,
 			ratingChange: 0,
 			ratedWeeks: 0,
