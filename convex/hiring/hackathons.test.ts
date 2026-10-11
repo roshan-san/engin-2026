@@ -159,6 +159,16 @@ describe("drafts", () => {
 		expect(forFounder?.cards).toHaveLength(3);
 	});
 
+	it("an id that isn't a Hackathon has no space", async () => {
+		const setup = await setUpStartup(createTest());
+
+		const read = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId: "not-a-hackathon",
+		});
+
+		expect(read).toBeNull();
+	});
+
 	it("a missing Hackathon's space is empty", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await draftHackathon(setup);

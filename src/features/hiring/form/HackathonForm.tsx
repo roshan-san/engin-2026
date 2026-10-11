@@ -52,13 +52,17 @@ export function HackathonForm({
 	initial,
 	submitLabel,
 	onSubmit,
-	extraActions,
+	secondary,
 }: {
 	readonly initial: HackathonDraft;
 	readonly submitLabel: string;
 	/** Resolves `false` when it didn't save (the error is shown already). */
 	readonly onSubmit: (draft: HackathonDraft) => Promise<boolean>;
-	readonly extraActions?: ReactNode;
+	/** A second way to submit, beside the first: Publish saves, then publishes. */
+	readonly secondary?: {
+		readonly label: string;
+		readonly onSubmit: (draft: HackathonDraft) => Promise<boolean>;
+	};
 }) {
 	const [draft, setDraft] = useState(initial);
 	const [isSaving, setIsSaving] = useState(false);
@@ -78,12 +82,16 @@ export function HackathonForm({
 		setDraft((current) => ({ ...current, [key]: value }));
 	}
 
-	async function submit(event: FormEvent) {
-		event.preventDefault();
+	async function run(action: (draft: HackathonDraft) => Promise<boolean>) {
 		if (!isReady) return;
 		setIsSaving(true);
-		await onSubmit(draft);
+		await action(draft);
 		setIsSaving(false);
+	}
+
+	function submit(event: FormEvent) {
+		event.preventDefault();
+		void run(onSubmit);
 	}
 
 	return (
@@ -179,11 +187,24 @@ export function HackathonForm({
 			</Part>
 
 			<FormFooter>
-				{extraActions}
-				<Button type="submit" disabled={!isReady || isSaving}>
-					{isSaving ? <Spinner /> : null}
+				<Button
+					type="submit"
+					variant={secondary ? "outline" : "default"}
+					disabled={!isReady || isSaving}
+				>
+					{isSaving && !secondary ? <Spinner /> : null}
 					{submitLabel}
 				</Button>
+				{secondary ? (
+					<Button
+						type="button"
+						disabled={!isReady || isSaving}
+						onClick={() => void run(secondary.onSubmit)}
+					>
+						{isSaving ? <Spinner /> : null}
+						{secondary.label}
+					</Button>
+				) : null}
 			</FormFooter>
 		</form>
 	);

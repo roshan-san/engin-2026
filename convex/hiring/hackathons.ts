@@ -89,12 +89,13 @@ export const list = query({
 	},
 });
 
-/** The Founder's Hackathon space; `null` for anyone else or a missing Hackathon. */
+/** The Founder's Hackathon space; `null` for anyone else, or when the id (from a link) isn't a Hackathon. */
 export const get = query({
-	args: { hackathonId: v.id("hackathons") },
+	args: { hackathonId: v.string() },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const hackathon = await ctx.db.get(args.hackathonId);
+		const hackathonId = ctx.db.normalizeId("hackathons", args.hackathonId);
+		const hackathon = hackathonId ? await ctx.db.get(hackathonId) : null;
 		if (
 			!hackathon ||
 			(await getTeamRole(ctx, hackathon.startupId, userId)) !== "founder"
