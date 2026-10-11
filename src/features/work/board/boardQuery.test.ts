@@ -12,7 +12,6 @@ const startupScope: BoardScope = {
 
 const builderScope: BoardScope = {
 	kind: "builder",
-	startupId: "s1" as Id<"startups">,
 	hackathonId: "h1" as Id<"hackathons">,
 	builderId: "u2" as Id<"users">,
 	userId: "u1" as Id<"users">,

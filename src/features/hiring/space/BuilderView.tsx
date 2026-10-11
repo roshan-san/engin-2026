@@ -58,14 +58,13 @@ export function BuilderView({
 	const scope = useMemo<BoardScope>(
 		() => ({
 			kind: "builder",
-			startupId: hackathon.startupId,
 			hackathonId: hackathon._id,
 			builderId,
 			userId,
 			isFounder: true,
 			isClosed,
 		}),
-		[hackathon.startupId, hackathon._id, builderId, userId, isClosed],
+		[hackathon._id, builderId, userId, isClosed],
 	);
 
 	function closeCard() {

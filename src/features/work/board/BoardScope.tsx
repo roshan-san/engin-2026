@@ -12,7 +12,6 @@ export type BoardScope =
 	  }
 	| {
 			readonly kind: "builder";
-			readonly startupId: Id<"startups">;
 			readonly hackathonId: Id<"hackathons">;
 			readonly builderId: Id<"users">;
 			readonly userId: Id<"users">;
