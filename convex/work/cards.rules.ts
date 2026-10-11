@@ -71,6 +71,9 @@ async function requireHackathonCardRole(
 		throw new Error("This Card doesn't exist");
 	}
 	if (startup.founderId === userId) {
+		if (hackathon.status === "done") {
+			throw new Error("This Hackathon has ended");
+		}
 		return { startup, role: "founder" };
 	}
 	if (card.ownerId === userId && (await isBuilder(ctx, hackathonId, userId))) {

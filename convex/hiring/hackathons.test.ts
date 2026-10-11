@@ -8,6 +8,7 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.helpers";
+import { closeHackathon, decidedHackathon } from "./applications.helpers";
 import {
 	draftHackathon,
 	hackathonInput,
@@ -332,7 +333,7 @@ describe("lifecycle", () => {
 		await addBuilder(setup, hackathonId, "Ana");
 
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
-		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+		await advancePast(setup.t, 0);
 
 		const { hackathon } = await setup.founder.as.query(
 			api.hiring.hackathons.get,
@@ -351,7 +352,7 @@ describe("lifecycle", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const ana = await addBuilder(setup, hackathonId, "Ana");
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
-		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+		await advancePast(setup.t, 0);
 
 		await setup.t.mutation(internal.hiring.hackathons.startBuilding, {
 			hackathonId,
@@ -377,7 +378,7 @@ describe("lifecycle", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const ana = await addBuilder(setup, hackathonId, "Ana");
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
-		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
+		await advancePast(setup.t, 0);
 		const before = await setup.founder.as.query(api.hiring.hackathons.get, {
 			hackathonId,
 		});
@@ -410,5 +411,61 @@ describe("lifecycle", () => {
 		expect(activity).toMatchObject([
 			{ kind: "hackathon_finished", hackathonId },
 		]);
+	});
+});
+
+describe("the decision deadline", () => {
+	async function finishedKinds(setup: Setup) {
+		const rows = await setup.t.run(
+			async (ctx) => await ctx.db.query("activity").take(20),
+		);
+		return rows.filter((row) => row.kind === "hackathon_finished");
+	}
+
+	it("decideBy finishes a Hackathon with undecided Builders", async () => {
+		const setup = await setUpStartup(createTest());
+		const { hackathonId } = await decidedHackathon(setup, [
+			{ name: "Ana", decision: "not_this_time" },
+			{ name: "Ben" },
+		]);
+
+		await closeHackathon(setup, hackathonId);
+
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		expect(hackathon?.status).toBe("done");
+		expect(await finishedKinds(setup)).toHaveLength(1);
+	});
+
+	it("a Hackathon decided before decideBy is finished once", async () => {
+		const setup = await setUpStartup(createTest());
+		const { hackathonId } = await decidedHackathon(setup, [
+			{ name: "Ana", decision: "not_this_time" },
+		]);
+
+		await closeHackathon(setup, hackathonId);
+
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		expect(hackathon?.status).toBe("done");
+		expect(await finishedKinds(setup)).toHaveLength(1);
+	});
+
+	it("a decision after decideBy is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		const {
+			hackathonId,
+			builders: [ben],
+		} = await decidedHackathon(setup, [{ name: "Ben" }]);
+		await closeHackathon(setup, hackathonId);
+
+		const decide = setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ben.applicationId,
+			decision: "not_this_time",
+		});
+
+		await expect(decide).rejects.toThrow("This Hackathon has ended");
 	});
 });

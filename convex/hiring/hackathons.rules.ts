@@ -203,7 +203,17 @@ export async function finishIfDecided(
 	if (builders.length === 0 || builders.some((builder) => !builder.decision)) {
 		return;
 	}
+	await finishHackathon(ctx, hackathon);
+}
 
+/** Marks the Hackathon done and logs it on the Startup's Activity, once. */
+export async function finishHackathon(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+): Promise<void> {
+	if (hackathon.status === "done") {
+		return;
+	}
 	await ctx.db.patch(hackathon._id, { status: "done" });
 	await appendActivity(ctx, {
 		startupId: hackathon.startupId,

@@ -7,7 +7,7 @@ export type HiringRecord = {
 	hires: number;
 	promisesKept: number;
 	promisesAnswered: number;
-	/** Builders still waiting on a decision after `decideBy`. */
+	/** Builders left without a decision when the Hackathon closed. */
 	undecided: number;
 };
 
@@ -15,7 +15,6 @@ export type HiringRecord = {
 export async function loadHiringRecord(
 	ctx: QueryCtx,
 	startupId: Id<"startups">,
-	now: number,
 ): Promise<HiringRecord> {
 	const record: HiringRecord = {
 		finished: 0,
@@ -49,7 +48,7 @@ export async function loadHiringRecord(
 			if (builder.promiseKept) {
 				record.promisesKept += 1;
 			}
-			if (!builder.decision && hackathon.decideBy < now) {
+			if (!builder.decision && hackathon.status === "done") {
 				record.undecided += 1;
 			}
 		}

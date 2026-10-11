@@ -221,6 +221,9 @@ export const decide = mutation({
 		if (application.decision) {
 			throw new Error("Already decided");
 		}
+		if (hackathon.status === "done") {
+			throw new Error("This Hackathon has ended");
+		}
 		const now = Date.now();
 		requireDecidable(hackathon, now);
 		const feedback = limitText(args.feedback, "Feedback", TEXT.feedback);

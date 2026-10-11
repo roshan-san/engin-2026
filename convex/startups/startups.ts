@@ -36,7 +36,7 @@ export const getPublic = query({
 		}
 		return {
 			...(await toPublicStartup(ctx, startup)),
-			hiringRecord: await loadHiringRecord(ctx, startup._id, Date.now()),
+			hiringRecord: await loadHiringRecord(ctx, startup._id),
 		};
 	},
 });

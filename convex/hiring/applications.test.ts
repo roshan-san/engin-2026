@@ -13,6 +13,7 @@ import {
 	type Applicant,
 	applicant,
 	builders,
+	closeHackathon,
 	endHackathon,
 	startHackathon,
 } from "./applications.helpers";
@@ -488,6 +489,25 @@ describe("deciding", () => {
 			notes: "Walked us through the signup fix",
 		});
 	}
+
+	it("the Founder can't work a Builder's Card after the Hackathon closes", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		const [card] = await boardOf(hackathonId, ana);
+		await ana.as.mutation(api.work.cards.submit, {
+			cardId: card._id,
+			shipped: SHIPPED,
+		});
+		await closeHackathon(setup, hackathonId);
+
+		const verify = setup.founder.as.mutation(api.work.cards.verify, {
+			cardId: card._id,
+		});
+
+		await expect(verify).rejects.toThrow("This Hackathon has ended");
+	});
 
 	it("decisions wait until the Hackathon ends", async () => {
 		const setup = await setUpStartup(createTest());

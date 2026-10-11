@@ -15,6 +15,7 @@ import {
 	countUndecidedBuilders,
 	declineAppliedBatch,
 	draftArgs,
+	finishHackathon,
 	insertTemplateCards,
 	loadTemplateCards,
 	replaceTemplateCards,
@@ -197,6 +198,11 @@ export const publish = mutation({
 			internal.hiring.hackathons.startDeciding,
 			{ hackathonId: hackathon._id },
 		);
+		await ctx.scheduler.runAt(
+			hackathon.decideBy,
+			internal.hiring.hackathons.closeDeciding,
+			{ hackathonId: hackathon._id },
+		);
 	},
 });
 
@@ -280,5 +286,17 @@ export const startDeciding = internalMutation({
 			return;
 		}
 		await ctx.db.patch(hackathon._id, { status: "deciding" });
+	},
+});
+
+/** At `decideBy` the Hackathon closes; Builders still undecided stay that way. */
+export const closeDeciding = internalMutation({
+	args: { hackathonId: v.id("hackathons") },
+	handler: async (ctx, args) => {
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (hackathon?.status !== "building" && hackathon?.status !== "deciding") {
+			return;
+		}
+		await finishHackathon(ctx, hackathon);
 	},
 });
