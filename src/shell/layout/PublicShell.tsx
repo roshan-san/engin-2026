@@ -1,15 +1,20 @@
 import { PublicHeader } from "~/components/shared/PublicHeader";
 
-/** Signed-out frame: the public header over the page. */
+/** Signed-out frame: the public header over the page, which fills the rest and scrolls inside it. */
 export function PublicShell({
 	children,
 }: {
 	readonly children: React.ReactNode;
 }) {
 	return (
-		<div className="flex min-h-dvh flex-col bg-background text-foreground">
+		<div className="flex h-dvh flex-col bg-background text-foreground">
 			<PublicHeader />
-			<main className="flex-1">{children}</main>
+			<main
+				data-scroll-restoration-id="main"
+				className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+			>
+				{children}
+			</main>
 		</div>
 	);
 }

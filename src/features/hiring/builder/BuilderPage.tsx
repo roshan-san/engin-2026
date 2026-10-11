@@ -44,7 +44,7 @@ export function BuilderPage() {
 	const me = useMe();
 
 	if (page === undefined || me === undefined) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 	if (page === null || me === null) {
 		return <GlobalNotFound />;

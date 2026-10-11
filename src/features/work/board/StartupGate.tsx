@@ -20,7 +20,7 @@ export function StartupGate({
 		return <GlobalNotFound />;
 	}
 	if (found === undefined || !me) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 
 	const isFounder = found.role === "founder";

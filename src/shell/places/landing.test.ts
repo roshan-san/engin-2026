@@ -1,6 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { describe, expect, it } from "vitest";
-import { pickLanding } from "./landing";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { pickLanding, readLastPlace, writeLastPlace } from "./landing";
 import type { Places } from "./places";
 
 const startupId = "startup" as Id<"startups">;
@@ -75,5 +75,37 @@ describe("pickLanding", () => {
 
 	it("nothing goes to onboarding", () => {
 		expect(pickLanding(places(), null)).toBe("/onboarding");
+	});
+});
+
+describe("remembered place with blocked storage", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("reads nothing and writes nothing instead of throwing", () => {
+		vi.stubGlobal("localStorage", {
+			getItem: () => {
+				throw new Error("SecurityError");
+			},
+			setItem: () => {
+				throw new Error("SecurityError");
+			},
+		});
+
+		expect(readLastPlace()).toBeNull();
+		expect(() => writeLastPlace("/s/acme/board")).not.toThrow();
+	});
+
+	it("reads back the place that was written", () => {
+		const store = new Map<string, string>();
+		vi.stubGlobal("localStorage", {
+			getItem: (key: string) => store.get(key) ?? null,
+			setItem: (key: string, value: string) => store.set(key, value),
+		});
+
+		writeLastPlace("/s/acme/board");
+
+		expect(readLastPlace()).toBe("/s/acme/board");
 	});
 });

@@ -23,7 +23,7 @@ export function SpacePage() {
 	const space = useSpace(id);
 
 	if (space === undefined) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 	if (space === null) {
 		return <GlobalNotFound />;

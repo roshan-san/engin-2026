@@ -20,7 +20,7 @@ export function ProfilePage() {
 	const profile = useProfile(username);
 
 	if (profile === undefined) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 	if (profile === null) {
 		return <GlobalNotFound />;

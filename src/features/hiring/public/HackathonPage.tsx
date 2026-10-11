@@ -25,7 +25,7 @@ export function HackathonPage() {
 	const page = useHackathon(id);
 
 	if (page === undefined) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 	if (page === null) {
 		return <GlobalNotFound />;

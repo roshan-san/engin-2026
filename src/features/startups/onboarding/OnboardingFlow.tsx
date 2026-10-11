@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { useCreateStartup } from "./hooks/useCreateStartup";
@@ -18,6 +18,7 @@ export function OnboardingFlow() {
 	const createStartup = useCreateStartup();
 	const [state, dispatch] = useReducer(onboardingReducer, INITIAL_STATE);
 	const [isPending, setIsPending] = useState(false);
+	const rootRef = useRef<HTMLDivElement>(null);
 	const isLast = state.step === "oneLiner";
 
 	async function submit(withOneLiner: boolean) {
@@ -41,6 +42,11 @@ export function OnboardingFlow() {
 	useEffect(() => {
 		function onKeyDown(event: KeyboardEvent) {
 			if (isPending || event.defaultPrevented || event.isComposing) return;
+			// Keys aimed at the bar or an open sheet are theirs, not the flow's.
+			const target = event.target as Node;
+			if (target !== document.body && !rootRef.current?.contains(target)) {
+				return;
+			}
 			if (event.key === "Escape") {
 				dispatch({ type: "back" });
 			} else if (
@@ -61,7 +67,10 @@ export function OnboardingFlow() {
 	const current = STEPS.indexOf(state.step);
 
 	return (
-		<div className="flex flex-1 flex-col items-center justify-center px-4 py-10">
+		<div
+			ref={rootRef}
+			className="flex flex-1 flex-col items-center justify-center px-4 py-10"
+		>
 			<div className="flex w-full max-w-xl flex-col gap-8">
 				<nav aria-label="Progress" className="flex items-center gap-1">
 					{STEPS.map((step, index) =>

@@ -167,6 +167,7 @@ export async function loadStartupSignals(
 	const hackathons = await ctx.db
 		.query("hackathons")
 		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
+		.order("desc")
 		.take(MAX_LISTED_HACKATHONS);
 	return {
 		teamUnread,

@@ -1,33 +1,48 @@
+import type { Id } from "@convex/_generated/dataModel";
 import { useNavigate } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "~/components/ui/popover";
 import { useInvites } from "~/shell/invites/hooks/useInvites";
 
 /** Your open Invites in the bar: Join or Decline. Nothing when there are none. */
 export function InviteTray() {
 	const { invites, join, decline } = useInvites();
 	const navigate = useNavigate();
+	const [answering, setAnswering] = useState<Id<"invites"> | null>(null);
 
 	if (!invites || invites.length === 0) {
 		return null;
 	}
 
+	/** Disables the row's buttons while its answer is in flight. */
+	async function answer(
+		inviteId: Id<"invites">,
+		action: () => Promise<boolean>,
+	) {
+		setAnswering(inviteId);
+		try {
+			return await action();
+		} finally {
+			setAnswering(null);
+		}
+	}
+
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger
+		<Popover>
+			<PopoverTrigger
 				aria-label="Invites"
 				className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 data-[state=open]:bg-muted"
 			>
 				<Mail aria-hidden className="size-4" />
 				{invites.length}
-			</DropdownMenuTrigger>
-			{/* Plain buttons, not menu items, so the tray stays open while an Invite is answered. */}
-			<DropdownMenuContent align="end" className="w-80 p-1">
+			</PopoverTrigger>
+			<PopoverContent align="end" className="w-80 p-1">
 				{invites.map((invite) => (
 					<div
 						key={invite.inviteId}
@@ -41,14 +56,20 @@ export function InviteTray() {
 						<Button
 							size="sm"
 							variant="ghost"
-							onClick={() => void decline(invite.inviteId)}
+							disabled={answering === invite.inviteId}
+							onClick={() =>
+								void answer(invite.inviteId, () => decline(invite.inviteId))
+							}
 						>
 							Decline
 						</Button>
 						<Button
 							size="sm"
+							disabled={answering === invite.inviteId}
 							onClick={async () => {
-								if (await join(invite.inviteId)) {
+								if (
+									await answer(invite.inviteId, () => join(invite.inviteId))
+								) {
 									await navigate({
 										to: "/s/$slug/board",
 										params: { slug: invite.slug },
@@ -60,7 +81,7 @@ export function InviteTray() {
 						</Button>
 					</div>
 				))}
-			</DropdownMenuContent>
-		</DropdownMenu>
+			</PopoverContent>
+		</Popover>
 	);
 }

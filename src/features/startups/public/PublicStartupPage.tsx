@@ -42,7 +42,7 @@ export function PublicStartupPage() {
 	} = usePublicActivity(slug);
 
 	if (startup === undefined) {
-		return <GlobalSpinner />;
+		return <GlobalSpinner fill />;
 	}
 	if (startup === null) {
 		return <GlobalNotFound />;
