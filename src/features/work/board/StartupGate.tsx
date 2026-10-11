@@ -1,5 +1,6 @@
 import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
+import { BoardScopeContext } from "./BoardScope";
 import { useMe } from "./hooks/useMe";
 import { useStartup } from "./hooks/useStartup";
 import { StartupContext } from "./StartupContext";
@@ -22,16 +23,27 @@ export function StartupGate({
 		return <GlobalSpinner />;
 	}
 
+	const isFounder = found.role === "founder";
 	return (
 		<StartupContext.Provider
 			value={{
 				startup: found.startup,
 				role: found.role,
-				isFounder: found.role === "founder",
+				isFounder,
 				userId: me._id,
 			}}
 		>
-			{children}
+			<BoardScopeContext.Provider
+				value={{
+					kind: "startup",
+					startupId: found.startup._id,
+					slug: found.startup.slug,
+					userId: me._id,
+					isFounder,
+				}}
+			>
+				{children}
+			</BoardScopeContext.Provider>
 		</StartupContext.Provider>
 	);
 }

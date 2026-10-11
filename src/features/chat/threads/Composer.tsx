@@ -9,11 +9,10 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { useUpload } from "~/features/shared/hooks/useUpload";
 import { pickImages } from "~/features/shared/images";
-import { useBoard } from "~/features/work/board/hooks/useBoard";
 import { isSendKey } from "~/features/work/board/keys";
-import { useWorkspace } from "~/features/work/board/StartupContext";
 import { errorMessage } from "~/lib/errors";
 import { cn } from "~/lib/utils";
+import { useMentionCards } from "./hooks/useMentionCards";
 import { MentionPicker } from "./MentionPicker";
 
 /** The most Cards the picker lists at once. */
@@ -33,14 +32,19 @@ function findTrigger(text: string, caret: number) {
 	return { start: caret - match[1].length - 1, query: match[1] };
 }
 
-/** Message Team: text, pasted or dropped images, and `#` to mention a Card. */
+/** Write a message: text, pasted or dropped images, and in Team `#` to mention a Card. */
 export function Composer({
 	onSend,
+	placeholder,
+	mentionStartupId,
 }: {
+	/** "Message Team", "Message Everyone". */
+	readonly placeholder: string;
 	readonly onSend: (body: string, images: Id<"_storage">[]) => Promise<boolean>;
+	/** The Board whose Cards `#` mentions. Team threads only. */
+	readonly mentionStartupId?: Id<"startups">;
 }) {
-	const { startup } = useWorkspace();
-	const { cards } = useBoard(startup._id);
+	const cards = useMentionCards(mentionStartupId);
 	const { upload } = useUpload();
 	const [text, setText] = useState("");
 	const [caret, setCaret] = useState(0);
@@ -271,7 +275,7 @@ export function Composer({
 					aria-haspopup="listbox"
 					aria-expanded={isPickerOpen}
 					aria-controls={isPickerOpen ? "mention-picker" : undefined}
-					placeholder="Message Team"
+					placeholder={placeholder}
 					rows={1}
 					maxLength={TEXT.message}
 					value={text}

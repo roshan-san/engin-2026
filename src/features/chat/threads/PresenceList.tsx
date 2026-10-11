@@ -1,3 +1,4 @@
+import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -6,16 +7,22 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { useWorkspace } from "~/features/work/board/StartupContext";
 import { displayName } from "~/features/work/cards/displayName";
 import { initials } from "~/lib/initials";
 import { useOnline } from "./hooks/useOnline";
 import { orderPresence, presenceLabel } from "./presence";
 
 /** Overlapping avatars of who is online, you first. Hover for what they're on. */
-export function PresenceList() {
-	const { startup, userId } = useWorkspace();
-	const online = useOnline(startup._id);
+export function PresenceList({
+	startupId,
+	slug,
+	userId,
+}: {
+	readonly startupId: Id<"startups">;
+	readonly slug: string;
+	readonly userId: Id<"users">;
+}) {
+	const online = useOnline(startupId);
 	if (!online || online.length === 0) return null;
 
 	return (
@@ -42,7 +49,7 @@ export function PresenceList() {
 									{workingOn ? (
 										<Link
 											to="/s/$slug/board"
-											params={{ slug: startup.slug }}
+											params={{ slug }}
 											search={{ card: workingOn.cardId }}
 											aria-label={presenceLabel(entry)}
 											className="block rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/60"

@@ -13,9 +13,12 @@ const IDLE_MS = 1000;
 export function NotesField({
 	card,
 	onSave,
+	isReadOnly = false,
 	isDiscarded,
 }: {
 	readonly card: CardView;
+	/** Shows the notes as text: nothing can change them any more. */
+	readonly isReadOnly?: boolean;
 	/** True while the Card is being deleted: nothing more is saved. */
 	readonly isDiscarded: RefObject<boolean>;
 	readonly onSave: (notes: string) => Promise<boolean>;
@@ -43,6 +46,25 @@ export function NotesField({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: save reads only refs
 	useEffect(() => () => void save(), []);
 
+	const edited =
+		card.notesEditedAt !== null && card.notesEditedBy ? (
+			<MentorNote>
+				edited {relativeTime(card.notesEditedAt, Date.now())} by{" "}
+				{displayName(card.notesEditedBy)}
+			</MentorNote>
+		) : null;
+
+	if (isReadOnly) {
+		return (
+			<div className="flex flex-col gap-1.5">
+				<p className="text-sm break-words whitespace-pre-wrap text-muted-foreground">
+					{card.notes || "No notes"}
+				</p>
+				{edited}
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex flex-col gap-1.5">
 			<Textarea
@@ -62,12 +84,7 @@ export function NotesField({
 					void save();
 				}}
 			/>
-			{card.notesEditedAt !== null && card.notesEditedBy ? (
-				<MentorNote>
-					edited {relativeTime(card.notesEditedAt, Date.now())} by{" "}
-					{displayName(card.notesEditedBy)}
-				</MentorNote>
-			) : null}
+			{edited}
 		</div>
 	);
 }

@@ -35,20 +35,23 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { ColumnIcon } from "../board/ColumnIcon";
 import { COLUMNS, type Column, dropAction } from "../board/dropRules";
+import { isReadOnly, useBoardScope } from "../board/BoardScope";
 import { useBoard } from "../board/hooks/useBoard";
-import { useWorkspace } from "../board/StartupContext";
 import type { CardView } from "../board/types";
 import { useCard } from "./hooks/useCard";
 import { useCardActions } from "./hooks/useCardActions";
 import { useDraft } from "./hooks/useDraft";
+import { displayName } from "./displayName";
 import { NotesField } from "./NotesField";
 import { GHOST_TRIGGER, OwnerPicker } from "./OwnerPicker";
 import { ShippedView } from "./ShippedView";
 
 type PanelProps = {
-	/** Whether Team has messages you haven't read, shown on the way back. */
-	readonly isTeamUnread: boolean;
-	/** Leaves the Card for Threads. */
+	/** Where Back goes: "Threads", "Thread". */
+	readonly backLabel: string;
+	/** Whether that place has messages you haven't read, shown on the way back. */
+	readonly isBackUnread: boolean;
+	/** Leaves the Card for the thread panel. */
 	readonly onBack: () => void;
 	/** On a phone, closes the sheet the panel sits in. */
 	readonly onClose?: () => void;
@@ -64,8 +67,7 @@ export function CardPanel({
 	/** Called when the owner picks Review; opens What shipped. */
 	readonly onShip: (card: CardView) => void;
 }) {
-	const { startup } = useWorkspace();
-	const card = useCard(startup._id, cardId);
+	const card = useCard(useBoardScope(), cardId);
 
 	if (card === undefined) {
 		return (
@@ -95,7 +97,8 @@ export function CardPanel({
 
 /** Back to Threads on the left; the Card's menu and, on a phone, close on the right. */
 function CardHeader({
-	isTeamUnread,
+	backLabel,
+	isBackUnread,
 	onBack,
 	onClose,
 	children,
@@ -105,12 +108,12 @@ function CardHeader({
 			<Button
 				variant="ghost"
 				size="sm"
-				aria-label="Back to Threads"
+				aria-label={`Back to ${backLabel}`}
 				onClick={onBack}
 			>
 				<ChevronLeftIcon />
-				Threads
-				{isTeamUnread ? <UnreadDot /> : null}
+				{backLabel}
+				{isBackUnread ? <UnreadDot /> : null}
 			</Button>
 			<div className="ml-auto flex items-center gap-1">
 				{children}
@@ -137,8 +140,10 @@ function OpenCard({
 	readonly card: CardView;
 	readonly onShip: (card: CardView) => void;
 }) {
-	const { startup, userId, isFounder } = useWorkspace();
-	const { move, verify } = useBoard(startup._id);
+	const scope = useBoardScope();
+	const { userId, isFounder } = scope;
+	const { move, verify } = useBoard(scope);
+	const isLocked = isReadOnly(scope);
 	const { update, remove } = useCardActions();
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [isVerifying, setIsVerifying] = useState(false);
@@ -146,13 +151,20 @@ function OpenCard({
 
 	const viewer = { userId, isFounder };
 	const isDone = card.status === "done";
-	const columns = COLUMNS.filter(
-		(column) =>
-			column.id === card.status || dropAction(card, column.id, viewer) !== null,
-	);
+	const columns = isLocked
+		? []
+		: COLUMNS.filter(
+				(column) =>
+					column.id === card.status ||
+					dropAction(card, column.id, viewer) !== null,
+			);
 	const current = COLUMNS.find((column) => column.id === card.status);
-	const canDelete = !isDone && (isFounder || card.owner?._id === userId);
-	const canVerify = isFounder && card.status === "review";
+	// Hackathon Cards stay with their Builder until the end.
+	const canDelete =
+		scope.kind === "startup" &&
+		!isDone &&
+		(isFounder || card.owner?._id === userId);
+	const canVerify = isFounder && !isLocked && card.status === "review";
 
 	function changeColumn(to: Column) {
 		const action = dropAction(card, to, viewer);
@@ -189,7 +201,7 @@ function OpenCard({
 			</CardHeader>
 
 			<div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pt-4 pb-6">
-				<TitleField card={card} isLocked={isDone} onSave={update} />
+				<TitleField card={card} isLocked={isDone || isLocked} onSave={update} />
 
 				<dl className="-mt-2 grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-x-2 gap-y-1 text-sm">
 					<dt className="text-muted-foreground">Column</dt>
@@ -224,11 +236,17 @@ function OpenCard({
 					</dd>
 					<dt className="text-muted-foreground">Owner</dt>
 					<dd className="min-w-0">
-						<OwnerPicker
-							startupId={startup._id}
-							card={card}
-							onPick={(ownerId) => void update(card._id, { ownerId })}
-						/>
+						{scope.kind === "startup" ? (
+							<OwnerPicker
+								startupId={scope.startupId}
+								card={card}
+								onPick={(ownerId) => void update(card._id, { ownerId })}
+							/>
+						) : (
+							<span className="flex h-8 items-center px-2">
+								{card.owner ? displayName(card.owner) : null}
+							</span>
+						)}
 					</dd>
 				</dl>
 
@@ -242,6 +260,7 @@ function OpenCard({
 					<SectionLabel as="h3">Notes</SectionLabel>
 					<NotesField
 						card={card}
+						isReadOnly={isLocked}
 						isDiscarded={isDeleting}
 						onSave={(notes) => update(card._id, { notes })}
 					/>

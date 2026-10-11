@@ -9,13 +9,14 @@ export type MessageView = FunctionReturnType<
 	typeof api.chat.messages.list
 >["messages"][number];
 
-/** A thread's latest messages (oldest first), sending and marking it read. */
+/** A thread's latest messages (oldest first) and its pinned ones; sending, pinning and marking it read. */
 export function useMessages(threadId: Id<"threads"> | undefined) {
 	const result = useQuery(
 		api.chat.messages.list,
 		threadId ? { threadId } : "skip",
 	);
 	const sendMessage = useMutation(api.chat.messages.send);
+	const pinMessage = useMutation(api.chat.messages.pin);
 	const markThreadRead = useMutation(api.chat.threads.markRead);
 
 	/** Resolves `false` when it wasn't sent (the error is toasted). */
@@ -37,5 +38,20 @@ export function useMessages(threadId: Id<"threads"> | undefined) {
 		});
 	}
 
-	return { messages: result?.messages, send, markRead };
+	/** Founder only, in Everyone. */
+	async function pin(messageId: MessageView["_id"], pinned: boolean) {
+		try {
+			await pinMessage({ messageId, pinned });
+		} catch (error) {
+			toast.error(errorMessage(error));
+		}
+	}
+
+	return {
+		messages: result?.messages,
+		pinned: result?.pinned,
+		send,
+		pin,
+		markRead,
+	};
 }

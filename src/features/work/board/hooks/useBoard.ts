@@ -1,36 +1,70 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import type { OptimisticLocalStore } from "convex/browser";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
+import { type BoardScope, boardQuery } from "../BoardScope";
+import type { CardView } from "../types";
 
-/** The Board's Cards: creating, moving between To do and In progress, and Verify. */
-export function useBoard(startupId: Id<"startups">) {
-	const cards = useQuery(api.work.cards.listBoard, { startupId });
+/** Rewrites the scope's cached Cards, for optimistic updates. */
+export function patchBoardCards(
+	store: OptimisticLocalStore,
+	scope: BoardScope,
+	patch: (cards: CardView[]) => CardView[],
+) {
+	const query = boardQuery(scope);
+	if (query.kind === "startup") {
+		const current = store.getQuery(api.work.cards.listBoard, query.args);
+		if (current) {
+			store.setQuery(api.work.cards.listBoard, query.args, patch(current));
+		}
+		return;
+	}
+	const current = store.getQuery(api.work.cards.listBuilderBoard, query.args);
+	if (current) {
+		store.setQuery(api.work.cards.listBuilderBoard, query.args, patch(current));
+	}
+}
+
+/** The scope's Cards; `undefined` while loading. */
+export function useBoardCards(scope: BoardScope): CardView[] | undefined {
+	const query = boardQuery(scope);
+	const startupCards = useQuery(
+		api.work.cards.listBoard,
+		query.kind === "startup" ? query.args : "skip",
+	);
+	const builderCards = useQuery(
+		api.work.cards.listBuilderBoard,
+		query.kind === "builder" ? query.args : "skip",
+	);
+	return query.kind === "startup" ? startupCards : builderCards;
+}
+
+/** The Board's Cards: creating (Startup Boards only), moving between To do and In progress, and Verify. */
+export function useBoard(scope: BoardScope) {
+	const cards = useBoardCards(scope);
 	const createCard = useMutation(api.work.cards.create);
 	const moveCard = useMutation(api.work.cards.move);
 	const verifyCard = useMutation(api.work.cards.verify);
 	const moveOptimistically = useMemo(
 		() =>
 			moveCard.withOptimisticUpdate((store, args) => {
-				const current = store.getQuery(api.work.cards.listBoard, { startupId });
-				if (!current) return;
-				store.setQuery(
-					api.work.cards.listBoard,
-					{ startupId },
+				patchBoardCards(store, scope, (current) =>
 					current.map((card) =>
 						card._id === args.cardId ? { ...card, status: args.to } : card,
 					),
 				);
 			}),
-		[moveCard, startupId],
+		[moveCard, scope],
 	);
 
 	/** Resolves `false` when the Card wasn't created (the error is toasted). */
 	async function create(title: string) {
+		if (scope.kind !== "startup") return false;
 		try {
-			await createCard({ startupId, title });
+			await createCard({ startupId: scope.startupId, title });
 			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));

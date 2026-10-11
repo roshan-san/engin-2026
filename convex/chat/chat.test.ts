@@ -189,6 +189,7 @@ describe("chat", () => {
 		expect(view.pinned.map((message) => message.body)).toEqual([
 			"Demo is on Friday",
 		]);
+		expect(view.messages[0].pinned).toBe(true);
 		await expect(
 			ada.as.mutation(api.chat.messages.pin, {
 				messageId: messages[0]._id,

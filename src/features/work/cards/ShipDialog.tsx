@@ -24,7 +24,7 @@ import { errorMessage } from "~/lib/errors";
 import { useUpload } from "../../shared/hooks/useUpload";
 import { pickImages } from "../../shared/images";
 import { isSendKey } from "../board/keys";
-import { useWorkspace } from "../board/StartupContext";
+import { useBoardScope } from "../board/BoardScope";
 import type { CardView } from "../board/types";
 import { useSubmit } from "./hooks/useSubmit";
 
@@ -56,8 +56,8 @@ export function ShipDialog({
 	readonly card: CardView;
 	readonly onClose: () => void;
 }) {
-	const { startup, userId, isFounder } = useWorkspace();
-	const { submit } = useSubmit(startup._id);
+	const { userId, isFounder } = useBoardScope();
+	const { submit } = useSubmit();
 	const { upload } = useUpload();
 	const [line, setLine] = useState("");
 	const [links, setLinks] = useState<string[]>([]);

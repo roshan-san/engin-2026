@@ -112,6 +112,7 @@ export async function buildMessageViews(
 			body: message.body,
 			mentions: await loadMentionedCards(ctx, thread, message.body),
 			imageUrls,
+			pinned: message.pinned,
 			at: message._creationTime,
 		});
 	}
