@@ -16,6 +16,7 @@ import { Route as ShellAuthedHomeRouteImport } from './routes/_shell/_authed/hom
 import { Route as ShellHackathonsIdRouteImport } from './routes/_shell/hackathons/$id'
 import { Route as ShellStartupsSlugRouteImport } from './routes/_shell/startups/$slug'
 import { Route as ShellUUsernameRouteImport } from './routes/_shell/u/$username'
+import { Route as ShellAuthedHIdRouteImport } from './routes/_shell/_authed/h/$id'
 import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_authed/s/$slug/route'
 import { Route as ShellAuthedSSlugIndexRouteImport } from './routes/_shell/_authed/s/$slug/index'
 import { Route as ShellAuthedSSlugActivityRouteImport } from './routes/_shell/_authed/s/$slug/activity'
@@ -56,6 +57,11 @@ const ShellUUsernameRoute = ShellUUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
   getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellAuthedHIdRoute = ShellAuthedHIdRouteImport.update({
+  id: '/h/$id',
+  path: '/h/$id',
+  getParentRoute: () => ShellAuthedRouteRoute,
 } as any)
 const ShellAuthedSSlugRouteRoute = ShellAuthedSSlugRouteRouteImport.update({
   id: '/s/$slug',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/startups/$slug': typeof ShellStartupsSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
   '/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
+  '/h/$id': typeof ShellAuthedHIdRoute
   '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
   '/s/$slug/': typeof ShellAuthedSSlugIndexRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/hackathons/$id': typeof ShellHackathonsIdRoute
   '/startups/$slug': typeof ShellStartupsSlugRoute
   '/u/$username': typeof ShellUUsernameRoute
+  '/h/$id': typeof ShellAuthedHIdRoute
   '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
   '/s/$slug': typeof ShellAuthedSSlugIndexRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/_shell/startups/$slug': typeof ShellStartupsSlugRoute
   '/_shell/u/$username': typeof ShellUUsernameRoute
   '/_shell/_authed/s/$slug': typeof ShellAuthedSSlugRouteRouteWithChildren
+  '/_shell/_authed/h/$id': typeof ShellAuthedHIdRoute
   '/_shell/_authed/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/_shell/_authed/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
   '/_shell/_authed/s/$slug/': typeof ShellAuthedSSlugIndexRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/startups/$slug'
     | '/u/$username'
     | '/s/$slug'
+    | '/h/$id'
     | '/s/$slug/activity'
     | '/s/$slug/board'
     | '/s/$slug/'
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/hackathons/$id'
     | '/startups/$slug'
     | '/u/$username'
+    | '/h/$id'
     | '/s/$slug/activity'
     | '/s/$slug/board'
     | '/s/$slug'
@@ -179,6 +190,7 @@ export interface FileRouteTypes {
     | '/_shell/startups/$slug'
     | '/_shell/u/$username'
     | '/_shell/_authed/s/$slug'
+    | '/_shell/_authed/h/$id'
     | '/_shell/_authed/s/$slug/activity'
     | '/_shell/_authed/s/$slug/board'
     | '/_shell/_authed/s/$slug/'
@@ -242,6 +254,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/u/$username'
       preLoaderRoute: typeof ShellUUsernameRouteImport
       parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/_authed/h/$id': {
+      id: '/_shell/_authed/h/$id'
+      path: '/h/$id'
+      fullPath: '/h/$id'
+      preLoaderRoute: typeof ShellAuthedHIdRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
     }
     '/_shell/_authed/s/$slug': {
       id: '/_shell/_authed/s/$slug'
@@ -321,11 +340,13 @@ const ShellAuthedSSlugRouteRouteWithChildren =
 interface ShellAuthedRouteRouteChildren {
   ShellAuthedHomeRoute: typeof ShellAuthedHomeRoute
   ShellAuthedSSlugRouteRoute: typeof ShellAuthedSSlugRouteRouteWithChildren
+  ShellAuthedHIdRoute: typeof ShellAuthedHIdRoute
 }
 
 const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
   ShellAuthedHomeRoute: ShellAuthedHomeRoute,
   ShellAuthedSSlugRouteRoute: ShellAuthedSSlugRouteRouteWithChildren,
+  ShellAuthedHIdRoute: ShellAuthedHIdRoute,
 }
 
 const ShellAuthedRouteRouteWithChildren =

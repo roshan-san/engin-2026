@@ -173,6 +173,16 @@ describe("drafts", () => {
 });
 
 describe("public page", () => {
+	it("an id that isn't a Hackathon reads as missing", async () => {
+		const setup = await setUpStartup(createTest());
+
+		const page = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId: "not-a-hackathon",
+		});
+
+		expect(page).toBeNull();
+	});
+
 	it("the public page carries the hiring record and whether you're on the team", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
@@ -188,7 +198,12 @@ describe("public page", () => {
 		expect(signedOut).toMatchObject({
 			isTeam: false,
 			hiringRecord: { finished: 0, hires: 0 },
-			startup: { name: "Acme", slug: setup.slug, isProvisional: true },
+			startup: {
+				name: "Acme",
+				slug: setup.slug,
+				ratingChange: 0,
+				isProvisional: true,
+			},
 		});
 		expect(signedOut?.decideBy).toBe((signedOut?.endsAt ?? 0) + 7 * DAY);
 		expect(forFounder?.isTeam).toBe(true);

@@ -106,10 +106,12 @@ export const get = query({
 	},
 });
 
+/** A published Hackathon for anyone, with your application. The id comes from a link, so anything that isn't one reads as missing. */
 export const getPublic = query({
-	args: { hackathonId: v.id("hackathons") },
+	args: { hackathonId: v.string() },
 	handler: async (ctx, args) => {
-		const hackathon = await ctx.db.get(args.hackathonId);
+		const hackathonId = ctx.db.normalizeId("hackathons", args.hackathonId);
+		const hackathon = hackathonId ? await ctx.db.get(hackathonId) : null;
 		if (!hackathon || hackathon.status === "draft") {
 			return null;
 		}
@@ -146,6 +148,7 @@ export const getPublic = query({
 				oneLiner: publicStartup.oneLiner,
 				logo: publicStartup.logo,
 				rating: publicStartup.rating,
+				ratingChange: publicStartup.ratingChange,
 				isProvisional: publicStartup.isProvisional,
 			},
 			hiringRecord: await loadHiringRecord(ctx, startup._id),
