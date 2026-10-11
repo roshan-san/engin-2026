@@ -70,6 +70,20 @@ export async function endHackathon(
 	await advancePast(setup.t, hackathon.endsAt - Date.now() + HOUR);
 }
 
+/** Moves time just past the decision deadline, so the Hackathon closes. */
+export async function closeHackathon(
+	setup: Setup,
+	hackathonId: Id<"hackathons">,
+) {
+	const hackathon = await setup.t.run(
+		async (ctx) => await ctx.db.get(hackathonId),
+	);
+	if (!hackathon) {
+		throw new Error("Hackathon not found");
+	}
+	await advancePast(setup.t, hackathon.decideBy - Date.now() + HOUR);
+}
+
 type BuilderPlan = {
 	name: string;
 	decision?: "hired" | "not_this_time";

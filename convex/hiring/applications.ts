@@ -8,7 +8,12 @@ import {
 	TEXT,
 } from "../lib/limits";
 import { limitText, requireLimitedText } from "../lib/text";
-import { isProvisional, toPublicUser } from "../people/users.rules";
+import {
+	isProvisional,
+	loadProfileRecord,
+	toPublicProfile,
+	toPublicUser,
+} from "../people/users.rules";
 import { decision } from "../schema";
 import { getTeamRole } from "../startups/access.rules";
 import { ensureHireInvite } from "../startups/invites.rules";
@@ -58,6 +63,29 @@ export const listForHackathon = query({
 	},
 });
 
+/** One Applicant for the Founder's screening: their answer, profile and Record. Works without a username. */
+export const getApplicant = query({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		const user = await ctx.db.get(application.userId);
+		if (!user) {
+			throw new Error("Application not found");
+		}
+
+		return {
+			application: toFounderApplicationView(application),
+			user: toPublicProfile(user),
+			record: await loadProfileRecord(ctx, user, Date.now()),
+		};
+	},
+});
+
 /** The signed-in person's applications, for the switcher's Applied group and Builder places. */
 export const listMine = query({
 	args: {},
@@ -77,6 +105,7 @@ export const listMine = query({
 					? {
 							hackathonId: hackathon._id,
 							startupName: startup.name,
+							startupSlug: startup.slug,
 							job: hackathon.job,
 							...toMyApplicationView(application),
 							hackathonStatus: hackathon.status,
@@ -220,6 +249,9 @@ export const decide = mutation({
 		requireBuilding(application);
 		if (application.decision) {
 			throw new Error("Already decided");
+		}
+		if (hackathon.status === "done") {
+			throw new Error("This Hackathon has ended");
 		}
 		const now = Date.now();
 		requireDecidable(hackathon, now);

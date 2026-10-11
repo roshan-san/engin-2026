@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MentorNote } from "~/components/shared/MentorNote";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog";
 import { Skeleton } from "~/components/ui/skeleton";
 import { displayName } from "~/features/work/cards/displayName";
@@ -36,9 +37,17 @@ function useNow() {
 export function MessageList({
 	messages,
 	userId,
+	slug,
+	emptyNote,
+	onPin,
 }: {
 	readonly messages: MessageView[] | undefined;
 	readonly userId: string;
+	/** The Startup whose Board Card mentions open; Team threads only. */
+	readonly slug?: string;
+	readonly emptyNote: string;
+	/** The Founder pins a message in Everyone. Absent where pinning isn't allowed. */
+	readonly onPin?: (messageId: MessageView["_id"]) => void;
 }) {
 	const scroller = useRef<HTMLDivElement>(null);
 	const isNearBottom = useRef(true);
@@ -70,7 +79,7 @@ export function MessageList({
 	if (messages.length === 0) {
 		return (
 			<div className="flex flex-1 items-center justify-center p-6 text-center">
-				<MentorNote>Talk here. Mention a Card with #.</MentorNote>
+				<MentorNote>{emptyNote}</MentorNote>
 			</div>
 		);
 	}
@@ -114,11 +123,25 @@ export function MessageList({
 								</time>
 							</div>
 							{group.messages.map((message) => (
-								<div key={message._id} className="flex flex-col gap-1.5">
+								<div
+									key={message._id}
+									className="group/message relative flex flex-col gap-1.5"
+								>
+									{onPin && !message.pinned ? (
+										<Button
+											variant="ghost"
+											size="sm"
+											className="absolute -top-1 right-0 h-6 px-2 text-xs opacity-0 group-hover/message:opacity-100 focus-visible:opacity-100"
+											onClick={() => onPin(message._id)}
+										>
+											Pin
+										</Button>
+									) : null}
 									{message.body ? (
 										<MessageBody
 											body={message.body}
 											mentions={message.mentions}
+											slug={slug}
 										/>
 									) : null}
 									{message.imageUrls.length > 0 ? (

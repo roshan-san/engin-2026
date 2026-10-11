@@ -1,8 +1,5 @@
-import { getRouteApi } from "@tanstack/react-router";
 import { type RefObject, useEffect } from "react";
 import { isTypingTarget } from "../keys";
-
-const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 
 const NEXT = new Set(["j", "ArrowDown"]);
 const PREVIOUS = new Set(["k", "ArrowUp"]);
@@ -22,20 +19,21 @@ function tilesIn(root: HTMLElement) {
 export function useBoardKeys({
 	rootRef,
 	newCardRef,
+	openCardId,
 	onOpen,
+	onClose,
 	onVerify,
 	isPaused,
 }: {
 	readonly rootRef: RefObject<HTMLElement | null>;
 	readonly newCardRef: RefObject<HTMLElement | null>;
+	readonly openCardId: string | undefined;
 	readonly onOpen: (cardId: string) => void;
+	readonly onClose: () => void;
 	readonly onVerify: (cardId: string) => void;
 	/** True while a drag is in progress, so arrows steer the drag instead. */
 	readonly isPaused: boolean;
 }) {
-	const navigate = boardRoute.useNavigate();
-	const openCardId = boardRoute.useSearch({ select: (search) => search.card });
-
 	useEffect(() => {
 		function onKeyDown(event: KeyboardEvent) {
 			const root = rootRef.current;
@@ -52,7 +50,7 @@ export function useBoardKeys({
 			}
 
 			if (event.key === "Escape") {
-				void navigate({ search: (prev) => ({ ...prev, card: undefined }) });
+				onClose();
 				return;
 			}
 
@@ -134,5 +132,5 @@ export function useBoardKeys({
 
 		document.addEventListener("keydown", onKeyDown);
 		return () => document.removeEventListener("keydown", onKeyDown);
-	}, [rootRef, newCardRef, onOpen, onVerify, openCardId, isPaused, navigate]);
+	}, [rootRef, newCardRef, onOpen, onClose, onVerify, openCardId, isPaused]);
 }

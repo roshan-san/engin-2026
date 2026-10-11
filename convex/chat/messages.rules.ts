@@ -54,13 +54,18 @@ export async function loadPinnedMessages(
 
 /**
  * The Startup Cards a message mentions, with titles. Ids that aren't Cards,
- * removed Cards, other Startups' Cards and Hackathon Cards stay plain text.
+ * removed Cards, other Startups' Cards, Hackathon Cards and any mention outside
+ * a Team thread stay plain text.
  */
 async function loadMentionedCards(
 	ctx: QueryCtx,
 	thread: Doc<"threads">,
 	body: string,
 ): Promise<{ cardId: Id<"cards">; title: string }[]> {
+	// Only the team shares a Board; elsewhere a token stays plain text.
+	if (thread.kind !== "team") {
+		return [];
+	}
 	const mentions = [];
 	for (const id of parseMentions(body).slice(0, MAX_MESSAGE_MENTIONS)) {
 		const cardId = ctx.db.normalizeId("cards", id);
@@ -107,6 +112,7 @@ export async function buildMessageViews(
 			body: message.body,
 			mentions: await loadMentionedCards(ctx, thread, message.body),
 			imageUrls,
+			pinned: message.pinned,
 			at: message._creationTime,
 		});
 	}

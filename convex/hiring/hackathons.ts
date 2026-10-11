@@ -8,19 +8,26 @@ import {
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
 } from "../lib/limits";
-import { requireFounder, requireTeam } from "../startups/access.rules";
+import {
+	getTeamRole,
+	requireFounder,
+	requireTeam,
+} from "../startups/access.rules";
+import { toPublicStartup } from "../startups/startups.rules";
 import { toMyApplicationView } from "./applications.rules";
 import {
 	copyTemplateCardsTo,
 	countUndecidedBuilders,
 	declineAppliedBatch,
 	draftArgs,
+	finishHackathon,
 	insertTemplateCards,
 	loadTemplateCards,
 	replaceTemplateCards,
 	requireHackathonFounder,
 	requireValidDraft,
 } from "./hackathons.rules";
+import { loadHiringRecord } from "./record.rules";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -41,6 +48,12 @@ export const list = query({
 
 		return await Promise.all(
 			visible.map(async (hackathon) => {
+				const builders = await ctx.db
+					.query("applications")
+					.withIndex("by_hackathon_and_status", (q) =>
+						q.eq("hackathonId", hackathon._id).eq("status", "building"),
+					)
+					.take(MAX_BUILDERS);
 				const inReview = await ctx.db
 					.query("cards")
 					.withIndex("by_hackathon_and_status", (q) =>
@@ -51,6 +64,7 @@ export const list = query({
 					_id: hackathon._id,
 					job: hackathon.job,
 					status: hackathon.status,
+					weeks: hackathon.weeks,
 					startsAt: hackathon.startsAt,
 					endsAt: hackathon.endsAt,
 					decideBy: hackathon.decideBy,
@@ -61,30 +75,44 @@ export const list = query({
 						hackathon.status === "deciding"
 							? await countUndecidedBuilders(ctx, hackathon._id)
 							: 0,
+					hires: builders.filter((b) => b.decision === "hired").length,
+					promisesKept: builders.filter((b) => b.promiseKept === true).length,
+					promisesAnswered: builders.filter((b) => b.promiseKept !== undefined)
+						.length,
+					undecided:
+						hackathon.status === "done"
+							? builders.filter((b) => !b.decision).length
+							: 0,
 				};
 			}),
 		);
 	},
 });
 
+/** The Founder's Hackathon space; `null` for anyone else, or when the id (from a link) isn't a Hackathon. */
 export const get = query({
-	args: { hackathonId: v.id("hackathons") },
+	args: { hackathonId: v.string() },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const hackathon = await requireHackathonFounder(
-			ctx,
-			args.hackathonId,
-			userId,
-		);
+		const hackathonId = ctx.db.normalizeId("hackathons", args.hackathonId);
+		const hackathon = hackathonId ? await ctx.db.get(hackathonId) : null;
+		if (
+			!hackathon ||
+			(await getTeamRole(ctx, hackathon.startupId, userId)) !== "founder"
+		) {
+			return null;
+		}
 
 		return { hackathon, cards: await loadTemplateCards(ctx, hackathon._id) };
 	},
 });
 
+/** A published Hackathon for anyone, with your application. The id comes from a link, so anything that isn't one reads as missing. */
 export const getPublic = query({
-	args: { hackathonId: v.id("hackathons") },
+	args: { hackathonId: v.string() },
 	handler: async (ctx, args) => {
-		const hackathon = await ctx.db.get(args.hackathonId);
+		const hackathonId = ctx.db.normalizeId("hackathons", args.hackathonId);
+		const hackathon = hackathonId ? await ctx.db.get(hackathonId) : null;
 		if (!hackathon || hackathon.status === "draft") {
 			return null;
 		}
@@ -103,20 +131,32 @@ export const getPublic = query({
 					.unique()
 			: null;
 
+		const publicStartup = await toPublicStartup(ctx, startup);
+
 		return {
 			_id: hackathon._id,
 			job: hackathon.job,
 			problem: hackathon.problem,
 			weeks: hackathon.weeks,
 			startsAt: hackathon.startsAt,
+			endsAt: hackathon.endsAt,
+			decideBy: hackathon.decideBy,
 			buildersGet: hackathon.buildersGet ?? null,
 			status: hackathon.status,
 			startup: {
-				name: startup.name,
-				slug: startup.slug,
-				rating: startup.rating,
+				name: publicStartup.name,
+				slug: publicStartup.slug,
+				oneLiner: publicStartup.oneLiner,
+				logo: publicStartup.logo,
+				rating: publicStartup.rating,
+				ratingChange: publicStartup.ratingChange,
+				isProvisional: publicStartup.isProvisional,
 			},
+			hiringRecord: await loadHiringRecord(ctx, startup._id),
 			applicantCount: hackathon.applicantCount,
+			isTeam: userId
+				? (await getTeamRole(ctx, startup._id, userId)) !== null
+				: false,
 			myApplication: application ? toMyApplicationView(application) : null,
 		};
 	},
@@ -195,6 +235,11 @@ export const publish = mutation({
 		await ctx.scheduler.runAt(
 			hackathon.endsAt,
 			internal.hiring.hackathons.startDeciding,
+			{ hackathonId: hackathon._id },
+		);
+		await ctx.scheduler.runAt(
+			hackathon.decideBy,
+			internal.hiring.hackathons.closeDeciding,
 			{ hackathonId: hackathon._id },
 		);
 	},
@@ -280,5 +325,17 @@ export const startDeciding = internalMutation({
 			return;
 		}
 		await ctx.db.patch(hackathon._id, { status: "deciding" });
+	},
+});
+
+/** At `decideBy` the Hackathon closes; Builders still undecided stay that way. */
+export const closeDeciding = internalMutation({
+	args: { hackathonId: v.id("hackathons") },
+	handler: async (ctx, args) => {
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (hackathon?.status !== "building" && hackathon?.status !== "deciding") {
+			return;
+		}
+		await finishHackathon(ctx, hackathon);
 	},
 });

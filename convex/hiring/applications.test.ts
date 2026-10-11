@@ -13,6 +13,7 @@ import {
 	type Applicant,
 	applicant,
 	builders,
+	closeHackathon,
 	endHackathon,
 	startHackathon,
 } from "./applications.helpers";
@@ -264,6 +265,7 @@ describe("applying", () => {
 			{
 				hackathonId,
 				startupName: "Acme",
+				startupSlug: "acme",
 				job: { role: "frontend", pay: "6_9l", mode: "remote" },
 				applicationId: ana.applicationId,
 				status: "applied",
@@ -301,6 +303,55 @@ describe("applying", () => {
 		]);
 		expect(JSON.stringify(list)).not.toContain("@example.com");
 		await expect(asApplicant).rejects.toThrow("You're not on this startup");
+	});
+});
+
+describe("screening", () => {
+	it("the Founder sees an Applicant's record without a username", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+		await setup.t.run(
+			async (ctx) => await ctx.db.patch(ana.userId, { username: undefined }),
+		);
+
+		const view = await setup.founder.as.query(
+			api.hiring.applications.getApplicant,
+			{ applicationId: ana.applicationId },
+		);
+
+		expect(view).toMatchObject({
+			application: { status: "applied", answer: "I'm Ana and I fix signups." },
+			user: { name: "Ana", username: null, rating: 1000 },
+			record: { hackathons: [], work: [] },
+		});
+	});
+
+	it("only the Founder can see an Applicant", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+
+		const forSam = sam.as.query(api.hiring.applications.getApplicant, {
+			applicationId: ana.applicationId,
+		});
+		const forAna = ana.as.query(api.hiring.applications.getApplicant, {
+			applicationId: ana.applicationId,
+		});
+
+		await expect(forSam).rejects.toThrow("Only the Founder can do this");
+		await expect(forAna).rejects.toThrow("You're not on this startup");
+	});
+
+	it("my applications link to the Startup", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+
+		const [row] = await ana.as.query(api.hiring.applications.listMine, {});
+
+		expect(row).toMatchObject({ startupName: "Acme", startupSlug: setup.slug });
 	});
 });
 
@@ -488,6 +539,25 @@ describe("deciding", () => {
 			notes: "Walked us through the signup fix",
 		});
 	}
+
+	it("the Founder can't work a Builder's Card after the Hackathon closes", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		const [card] = await boardOf(hackathonId, ana);
+		await ana.as.mutation(api.work.cards.submit, {
+			cardId: card._id,
+			shipped: SHIPPED,
+		});
+		await closeHackathon(setup, hackathonId);
+
+		const verify = setup.founder.as.mutation(api.work.cards.verify, {
+			cardId: card._id,
+		});
+
+		await expect(verify).rejects.toThrow("This Hackathon has ended");
+	});
 
 	it("decisions wait until the Hackathon ends", async () => {
 		const setup = await setUpStartup(createTest());

@@ -12,7 +12,7 @@ import {
 } from "~/components/ui/sheet";
 import { useHeartbeat } from "~/features/chat/threads/hooks/useHeartbeat";
 import { useTeamThread } from "~/features/chat/threads/hooks/useTeamThread";
-import { ThreadsPanel } from "~/features/chat/threads/ThreadsPanel";
+import { TeamPanel } from "~/features/chat/threads/TeamPanel";
 import { useIsMobile } from "~/hooks/use-mobile";
 import { CardPanel } from "../cards/CardPanel";
 import { ShipDialog } from "../cards/ShipDialog";
@@ -60,13 +60,14 @@ export function WorkspacePage() {
 		<CardPanel
 			key={cardId}
 			cardId={cardId}
-			isTeamUnread={isTeamUnread}
+			backLabel="Threads"
+			isBackUnread={isTeamUnread}
 			onBack={isMobile ? backToThreads : closeCard}
 			onClose={onClose}
 			onShip={setShipping}
 		/>
 	) : (
-		<ThreadsPanel onClose={onClose} />
+		<TeamPanel onClose={onClose} />
 	);
 
 	return (
@@ -92,6 +93,7 @@ export function WorkspacePage() {
 						openCardId={cardId}
 						onShip={setShipping}
 						onOpen={(id) => void navigate({ search: { card: id } })}
+						onClose={closeCard}
 					/>
 				</div>
 			</div>

@@ -19,7 +19,7 @@ import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
 import { useBoard } from "./hooks/useBoard";
 import { useBoardKeys } from "./hooks/useBoardKeys";
 import { NewCardInput } from "./NewCardInput";
-import { useWorkspace } from "./StartupContext";
+import { isReadOnly, useBoardScope } from "./BoardScope";
 import type { CardView } from "./types";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((column) => column.id));
@@ -39,15 +39,20 @@ export function Board({
 	openCardId,
 	onShip,
 	onOpen,
+	onClose,
 }: {
 	/** The Card open in the side panel, marked on the Board. */
 	readonly openCardId: string | undefined;
 	/** Called when the owner drops a Card on Review; opens What shipped. */
 	readonly onShip: (card: CardView) => void;
 	readonly onOpen: (cardId: string) => void;
+	/** Closes the open Card (Esc). */
+	readonly onClose: () => void;
 }) {
-	const { startup, userId, isFounder } = useWorkspace();
-	const { cards, create, move, verify } = useBoard(startup._id);
+	const scope = useBoardScope();
+	const { userId, isFounder } = scope;
+	const { cards, create, move, verify } = useBoard(scope);
+	const isLocked = isReadOnly(scope);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const newCardRef = useRef<HTMLTextAreaElement>(null);
@@ -68,7 +73,9 @@ export function Board({
 	const verifyLatest = useRef((_cardId: string) => {});
 	verifyLatest.current = (cardId) => {
 		const card = cards?.find((c) => c._id === cardId);
-		if (isFounder && card?.status === "review") void verify(card._id);
+		if (isFounder && !isLocked && card?.status === "review") {
+			void verify(card._id);
+		}
 	};
 	const onVerify = useCallback(
 		(cardId: string) => verifyLatest.current(cardId),
@@ -78,7 +85,9 @@ export function Board({
 	useBoardKeys({
 		rootRef,
 		newCardRef,
+		openCardId,
 		onOpen,
+		onClose,
 		onVerify,
 		isPaused: draggedId !== null,
 	});
@@ -89,12 +98,17 @@ export function Board({
 	/** Shown while dragging, so a refused column fades before the drop, not after. */
 	function dropStateOf(column: Column): DropState {
 		if (!dragged || dragged.status === column) return "idle";
+		if (isLocked) return "refuse";
 		return dropAction(dragged, column, viewer) ? "accept" : "refuse";
 	}
 
 	function handleDragEnd(overId: string | undefined) {
 		setDraggedId(null);
 		if (!dragged || !overId || !COLUMN_IDS.has(overId)) return;
+		if (isLocked) {
+			toast("This Hackathon has ended");
+			return;
+		}
 
 		const to = overId as Column;
 		const action = dropAction(dragged, to, viewer);
@@ -148,7 +162,7 @@ export function Board({
 						openCardId={openCardId}
 						onOpen={onOpen}
 					>
-						{column.id === "todo" ? (
+						{column.id === "todo" && scope.kind === "startup" ? (
 							<NewCardInput
 								inputRef={newCardRef}
 								hasOpenCards={hasOpenCards}

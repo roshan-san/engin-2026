@@ -1,25 +1,29 @@
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
 import { useQuery } from "convex/react";
-import { useBoard } from "../../board/hooks/useBoard";
+import type { BoardScope } from "../../board/BoardScope";
+import { useBoardCards } from "../../board/hooks/useBoard";
 import type { CardView } from "../../board/types";
 
 /**
  * One Card: taken from the Board's data when it's on the Board, else fetched
- * (a Card verified in an earlier Cycle). `null` when it isn't on this
- * Startup, `undefined` while loading.
+ * (a Card verified in an earlier Cycle). A Builder's Board holds all their
+ * Cards, so there a Card not in the list is missing. `null` when it isn't
+ * here, `undefined` while loading.
  */
 export function useCard(
-	startupId: Id<"startups">,
+	scope: BoardScope,
 	cardId: string,
 ): CardView | null | undefined {
-	const { cards } = useBoard(startupId);
+	const cards = useBoardCards(scope);
 	const onBoard = cards?.find((card) => card._id === cardId);
 	const fetched = useQuery(
 		api.work.cards.get,
-		cards && !onBoard ? { startupId, cardId } : "skip",
+		scope.kind === "startup" && cards && !onBoard
+			? { startupId: scope.startupId, cardId }
+			: "skip",
 	);
 
 	if (!cards) return undefined;
-	return onBoard ?? fetched;
+	if (onBoard) return onBoard;
+	return scope.kind === "startup" ? fetched : null;
 }

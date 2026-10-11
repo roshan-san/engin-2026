@@ -4,7 +4,8 @@ import { useMutation } from "convex/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
-import { useWorkspace } from "../../board/StartupContext";
+import { useBoardScope } from "../../board/BoardScope";
+import { patchBoardCards } from "../../board/hooks/useBoard";
 
 export type Shipped = {
 	line: string;
@@ -13,27 +14,24 @@ export type Shipped = {
 };
 
 /** Submitting a Card with What shipped: to Review, or Done when the Founder owns it. */
-export function useSubmit(startupId: Id<"startups">) {
-	const { userId, isFounder } = useWorkspace();
+export function useSubmit() {
+	const scope = useBoardScope();
 	const submitCard = useMutation(api.work.cards.submit);
 	const submitOptimistically = useMemo(
 		() =>
 			submitCard.withOptimisticUpdate((store, args) => {
-				const current = store.getQuery(api.work.cards.listBoard, { startupId });
-				if (!current) return;
-				store.setQuery(
-					api.work.cards.listBoard,
-					{ startupId },
+				patchBoardCards(store, scope, (current) =>
 					current.map((card) => {
 						if (card._id !== args.cardId) return card;
-						const goesStraightToDone = isFounder && card.owner?._id === userId;
+						const goesStraightToDone =
+							scope.isFounder && card.owner?._id === scope.userId;
 						return goesStraightToDone
 							? { ...card, status: "done" as const, selfVerified: true }
 							: { ...card, status: "review" as const };
 					}),
 				);
 			}),
-		[submitCard, startupId, userId, isFounder],
+		[submitCard, scope],
 	);
 
 	/** Resolves `false` when it wasn't submitted (the error is toasted). */

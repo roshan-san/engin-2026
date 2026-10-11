@@ -10,7 +10,7 @@ import { publishedHackathon } from "../hiring/hackathons.helpers";
 import { createTest, type TestConvex } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import { addContributor, setUpStartup } from "../startups/startups.helpers";
-import { verifyCards, runRating, toNextWeek } from "./rating.helpers";
+import { runRating, toNextWeek, verifyCards } from "./rating.helpers";
 
 async function startupRow(t: TestConvex, startupId: Id<"startups">) {
 	const startup = await t.run(async (ctx) => await ctx.db.get(startupId));
