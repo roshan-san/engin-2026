@@ -9,10 +9,14 @@ import {
 	MAX_EXPLORE_ROWS,
 	STARTING_RATING,
 	TEXT,
-} from "../lib/limits";
+} from "../shared/limits";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
-import { startupCategory, startupCity, startupStage } from "../schema";
-import { shiftWeek, weekOf } from "../work/cycles.rules";
+import {
+	startupCategory,
+	startupCity,
+	startupStage,
+} from "../shared/validators";
+import { shiftWeek, weekOf } from "../shared/cycles";
 import { getTeamRole, requireFounder } from "./access.rules";
 import {
 	buildUniqueSlug,

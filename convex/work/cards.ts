@@ -2,8 +2,8 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireHackathonFounder } from "../hiring/hackathons.rules";
 import { requireUserId } from "../lib/auth";
-import { MAX_BUILDERS, MAX_HACKATHON_CARDS } from "../lib/limits";
-import { shipped } from "../schema";
+import { MAX_BUILDERS, MAX_HACKATHON_CARDS } from "../shared/limits";
+import { shipped } from "../shared/validators";
 import { requireTeam } from "../startups/access.rules";
 import {
 	loadBoardCards,

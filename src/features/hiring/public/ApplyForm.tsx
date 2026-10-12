@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useState } from "react";
 import { Kbd } from "~/components/shared/Kbd";
 import { MentorNote } from "~/components/shared/MentorNote";

@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../lib/limits";
+import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../shared/limits";
 import { limitText, requireLimitedText } from "../lib/text";
 import {
 	isProvisional,
@@ -9,7 +9,7 @@ import {
 	toPublicProfile,
 	toPublicUser,
 } from "../people/users.rules";
-import { decision } from "../schema";
+import { decision } from "../shared/validators";
 import { getTeamRole } from "../startups/access.rules";
 import { ensureHireInvite } from "../startups/invites.rules";
 import { appendActivity } from "../work/activity.rules";

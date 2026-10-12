@@ -1,6 +1,6 @@
 import type { Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { MAX_BUILDERS, MAX_LISTED_HACKATHONS } from "../lib/limits";
+import { MAX_BUILDERS, MAX_LISTED_HACKATHONS } from "../shared/limits";
 
 export type HiringRecord = {
 	finished: number;

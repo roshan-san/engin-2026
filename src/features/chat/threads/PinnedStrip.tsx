@@ -1,4 +1,4 @@
-import { splitBody } from "@convex/chat/mentions.rules";
+import { splitBody } from "@convex/shared/mentions";
 import { PinIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";

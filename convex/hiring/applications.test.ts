@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { MAX_APPLICATIONS } from "../lib/limits";
+import { MAX_APPLICATIONS } from "../shared/limits";
 import { createTest } from "../lib/testing.helpers";
 import {
 	addContributor,

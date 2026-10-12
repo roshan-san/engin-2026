@@ -1,12 +1,12 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { STARTING_RATING, WEEK_COUNT_CAP } from "../lib/limits";
+import { STARTING_RATING, WEEK_COUNT_CAP } from "../shared/limits";
 import {
 	isProvisional,
 	type PublicUser,
 	toPublicUser,
 } from "../people/users.rules";
-import { weekOf } from "../work/cycles.rules";
+import { weekOf } from "../shared/cycles";
 
 export type TeamPerson = PublicUser & {
 	rating: number;

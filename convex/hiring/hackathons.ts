@@ -9,7 +9,7 @@ import {
 	MAX_EXPLORE_ROWS,
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
-} from "../lib/limits";
+} from "../shared/limits";
 import {
 	getTeamRole,
 	requireFounder,
@@ -32,7 +32,7 @@ import {
 	sortExplore,
 	toExploreHackathon,
 } from "./hackathons.rules";
-import { jobRole } from "./hiring.schema";
+import { jobRole } from "../shared/validators";
 import { type HiringRecord, loadHiringRecord } from "./record.rules";
 
 export const list = query({

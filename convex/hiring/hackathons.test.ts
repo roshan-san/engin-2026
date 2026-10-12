@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
-import { MAX_LISTED_HACKATHONS } from "../lib/limits";
+import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import { signUp } from "../people/users.helpers";
 import {
 	addContributor,

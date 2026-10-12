@@ -7,7 +7,7 @@ import {
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
 	TEXT,
-} from "../lib/limits";
+} from "../shared/limits";
 import { assertUrl, requireLimitedText } from "../lib/text";
 import { loadPublicUser } from "../people/users.rules";
 import {
@@ -16,7 +16,7 @@ import {
 	type TeamRole,
 } from "../startups/access.rules";
 import { appendActivity } from "./activity.rules";
-import { weekOf, weekStart } from "./cycles.rules";
+import { weekOf, weekStart } from "../shared/cycles";
 
 type Ctx = QueryCtx | MutationCtx;
 

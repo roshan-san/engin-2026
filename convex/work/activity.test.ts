@@ -6,7 +6,7 @@ import {
 	startHackathon,
 } from "../hiring/applications.helpers";
 import { publishedHackathon } from "../hiring/hackathons.helpers";
-import { MAX_LISTED_CYCLES } from "../lib/limits";
+import { MAX_LISTED_CYCLES } from "../shared/limits";
 import { advancePast, createTest, DAY } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import {

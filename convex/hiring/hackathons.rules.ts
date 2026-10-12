@@ -8,12 +8,12 @@ import {
 	MAX_HACKATHON_CARDS,
 	MIN_HACKATHON_CARDS,
 	TEXT,
-} from "../lib/limits";
+} from "../shared/limits";
 import { limitText, requireLimitedText } from "../lib/text";
 import { requireFounder } from "../startups/access.rules";
 import { appendActivity } from "../work/activity.rules";
-import { WEEK_MS, weekOf, weekStart } from "../work/cycles.rules";
-import { jobMode, jobPay, jobRole } from "./hiring.schema";
+import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
+import { jobMode, jobPay, jobRole } from "../shared/validators";
 import type { HiringRecord } from "./record.rules";
 
 /** What a Founder fills in to draft a Hackathon. */

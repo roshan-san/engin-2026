@@ -1,4 +1,4 @@
-import { MIN_HACKATHON_CARDS } from "@convex/lib/limits";
+import { MIN_HACKATHON_CARDS } from "@convex/shared/limits";
 import type { Job, JobMode, JobPay, JobRole } from "../jobChips";
 import { startOptions } from "./startOptions";
 

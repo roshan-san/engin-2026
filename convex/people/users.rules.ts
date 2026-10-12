@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_PROFILE_ROWS, STARTING_RATING } from "../lib/limits";
-import { shiftWeek, weekOf } from "../work/cycles.rules";
+import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
+import { shiftWeek, weekOf } from "../shared/cycles";
 import { buildUniqueUsername } from "./username.rules";
 import {
 	buildParts,

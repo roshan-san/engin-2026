@@ -1,4 +1,4 @@
-import { MAX_HACKATHON_CARDS, TEXT } from "@convex/lib/limits";
+import { MAX_HACKATHON_CARDS, TEXT } from "@convex/shared/limits";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
 import { MentorNote } from "~/components/shared/MentorNote";

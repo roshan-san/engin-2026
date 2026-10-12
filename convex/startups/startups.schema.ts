@@ -1,37 +1,12 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const startupStage = v.union(
-	v.literal("idea"),
-	v.literal("building"),
-	v.literal("launched"),
-	v.literal("earning"),
-);
-export const startupCategory = v.union(
-	v.literal("saas"),
-	v.literal("consumer"),
-	v.literal("fintech"),
-	v.literal("d2c"),
-	v.literal("ai"),
-	v.literal("marketplace"),
-	v.literal("other"),
-);
-export const startupCity = v.union(
-	v.literal("bengaluru"),
-	v.literal("delhi_ncr"),
-	v.literal("mumbai"),
-	v.literal("hyderabad"),
-	v.literal("pune"),
-	v.literal("chennai"),
-	v.literal("remote"),
-	v.literal("other"),
-);
-export const inviteStatus = v.union(
-	v.literal("pending"),
-	v.literal("accepted"),
-	v.literal("declined"),
-	v.literal("revoked"),
-);
+import {
+	inviteStatus,
+	startupCategory,
+	startupCity,
+	startupStage,
+} from "../shared/validators";
 
 export const startupsTables = {
 	startups: defineTable({

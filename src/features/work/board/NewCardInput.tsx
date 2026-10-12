@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { PlusIcon } from "lucide-react";
 import { type Ref, useState } from "react";
 import { Kbd } from "~/components/shared/Kbd";

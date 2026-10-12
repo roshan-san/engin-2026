@@ -1,5 +1,5 @@
-import { DECIDE_GRACE_MS } from "@convex/lib/limits";
-import { WEEK_MS } from "@convex/work/cycles.rules";
+import { DECIDE_GRACE_MS } from "@convex/shared/limits";
+import { WEEK_MS } from "@convex/shared/cycles";
 
 const DAY = new Intl.DateTimeFormat("en-US", {
 	timeZone: "Asia/Kolkata",

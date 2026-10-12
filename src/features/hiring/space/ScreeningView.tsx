@@ -1,5 +1,5 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
-import { MAX_BUILDERS } from "@convex/lib/limits";
+import { MAX_BUILDERS } from "@convex/shared/limits";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { EmptyState } from "~/components/shared/EmptyState";

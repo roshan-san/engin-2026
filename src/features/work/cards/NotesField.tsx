@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { type RefObject, useEffect, useRef } from "react";
 import { MentorNote } from "~/components/shared/MentorNote";
 import { Textarea } from "~/components/ui/textarea";

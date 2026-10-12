@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_INVITES } from "../lib/limits";
+import { MAX_INVITES } from "../shared/limits";
 import { appendActivity } from "../work/activity.rules";
 import { getTeamRole, requireFounder } from "./access.rules";
 import {

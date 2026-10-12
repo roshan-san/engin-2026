@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { CYCLES_PAGE } from "../lib/limits";
+import { CYCLES_PAGE } from "../shared/limits";
 import { requireTeam } from "../startups/access.rules";
 import { getStartupBySlug } from "../startups/startups.rules";
 import { loadCycles, loadSignals } from "./activity.rules";

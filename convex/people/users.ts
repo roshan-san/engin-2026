@@ -3,9 +3,9 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { TEXT } from "../lib/limits";
+import { TEXT } from "../shared/limits";
 import { assertUrl, limitText } from "../lib/text";
-import { discipline } from "../schema";
+import { discipline } from "../shared/validators";
 import { normalizeUsername, requireUsername } from "./username.rules";
 import {
 	loadProfileRecord,

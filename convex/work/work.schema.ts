@@ -1,27 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const cardStatus = v.union(
-	v.literal("todo"),
-	v.literal("in_progress"),
-	/** Submitted, waiting for the Founder to verify. */
-	v.literal("review"),
-	v.literal("done"),
-);
-
-/** What shipped: the line, proof links and images a Contributor submits. */
-export const shipped = v.object({
-	line: v.string(),
-	links: v.array(v.string()),
-	images: v.array(v.id("_storage")),
-});
-
-export const activityKind = v.union(
-	v.literal("card_verified"),
-	v.literal("contributor_joined"),
-	v.literal("hackathon_finished"),
-	v.literal("builder_hired"),
-);
+import { activityKind, cardStatus, shipped } from "../shared/validators";
 
 export const workTables = {
 	cards: defineTable({

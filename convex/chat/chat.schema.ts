@@ -1,11 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const threadKind = v.union(
-	v.literal("team"),
-	v.literal("everyone"),
-	v.literal("private"),
-);
+import { threadKind } from "../shared/validators";
 
 export const chatTables = {
 	threads: defineTable({

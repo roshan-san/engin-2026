@@ -1,42 +1,14 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const jobRole = v.union(
-	v.literal("frontend"),
-	v.literal("backend"),
-	v.literal("fullstack"),
-	v.literal("designer"),
-	v.literal("marketing"),
-	v.literal("sales"),
-	v.literal("ops"),
-	v.literal("other"),
-);
-export const jobPay = v.union(
-	v.literal("3_6l"),
-	v.literal("6_9l"),
-	v.literal("9_15l"),
-	v.literal("equity"),
-	v.literal("unpaid"),
-);
-export const jobMode = v.union(
-	v.literal("remote"),
-	v.literal("onsite"),
-	v.literal("hybrid"),
-);
-export const hackathonStatus = v.union(
-	v.literal("draft"),
-	v.literal("open"),
-	v.literal("building"),
-	v.literal("deciding"),
-	v.literal("done"),
-);
-export const applicationStatus = v.union(
-	v.literal("applied"),
-	v.literal("declined"),
-	v.literal("building"),
-	v.literal("left"),
-);
-export const decision = v.union(v.literal("hired"), v.literal("not_this_time"));
+import {
+	applicationStatus,
+	decision,
+	hackathonStatus,
+	jobMode,
+	jobPay,
+	jobRole,
+} from "../shared/validators";
 
 export const hiringTables = {
 	hackathons: defineTable({

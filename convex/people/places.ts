@@ -1,6 +1,6 @@
 import { query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_USER_APPLICATIONS, MAX_USER_STARTUPS } from "../lib/limits";
+import { MAX_USER_APPLICATIONS, MAX_USER_STARTUPS } from "../shared/limits";
 import {
 	builderWaiting,
 	loadBuilderSignals,

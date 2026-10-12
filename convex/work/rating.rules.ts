@@ -6,8 +6,8 @@ import {
 	MAX_USER_APPLICATIONS,
 	STARTING_RATING,
 	WEEK_COUNT_CAP,
-} from "../lib/limits";
-import { shiftWeek, weekOf } from "./cycles.rules";
+} from "../shared/limits";
+import { shiftWeek, weekOf } from "../shared/cycles";
 
 export const RATING = {
 	weeks: 12,

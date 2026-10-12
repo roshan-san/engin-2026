@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { requireFounder, requireTeam } from "../startups/access.rules";
-import { cycleNumber, WEEK_MS, weekOf, weekStart } from "./cycles.rules";
+import { cycleNumber, WEEK_MS, weekOf, weekStart } from "../shared/cycles";
 import { loadGoal, saveGoal } from "./goals.rules";
 
 export const getCurrent = query({

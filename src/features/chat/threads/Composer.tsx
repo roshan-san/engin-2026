@@ -1,6 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { mentionToken, parseMentions } from "@convex/chat/mentions.rules";
-import { MAX_MESSAGE_IMAGES, TEXT } from "@convex/lib/limits";
+import { mentionToken, parseMentions } from "@convex/shared/mentions";
+import { MAX_MESSAGE_IMAGES, TEXT } from "@convex/shared/limits";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";

@@ -1,5 +1,5 @@
-import { WEEK_COUNT_CAP } from "@convex/lib/limits";
-import { WEEK_MS, weekStart } from "@convex/work/cycles.rules";
+import { WEEK_COUNT_CAP } from "@convex/shared/limits";
+import { WEEK_MS, weekStart } from "@convex/shared/cycles";
 import { describe, expect, it } from "vitest";
 import {
 	buildFeed,

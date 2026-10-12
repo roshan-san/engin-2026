@@ -1,14 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const discipline = v.union(
-	v.literal("engineer"),
-	v.literal("designer"),
-	v.literal("marketing"),
-	v.literal("sales"),
-	v.literal("ops"),
-	v.literal("other"),
-);
+import { discipline } from "../shared/validators";
 
 export const peopleTables = {
 	users: defineTable({

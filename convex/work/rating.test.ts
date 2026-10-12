@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DAY } from "../lib/testing.helpers";
-import { shiftWeek, weekOf, weekStart } from "./cycles.rules";
+import { shiftWeek, weekOf, weekStart } from "../shared/cycles";
 import {
 	buildParts,
 	countedWeeks,

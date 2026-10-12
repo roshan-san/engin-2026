@@ -1,5 +1,3 @@
-// Pure: no Convex server imports, so the frontend can use it too.
-
 export const IST_OFFSET_MS = 5.5 * 3600_000;
 const DAY_MS = 24 * 3600_000;
 export const WEEK_MS = 7 * DAY_MS;

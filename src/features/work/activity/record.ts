@@ -1,6 +1,6 @@
 import type { api } from "@convex/_generated/api";
-import { WEEK_COUNT_CAP } from "@convex/lib/limits";
-import { WEEK_MS } from "@convex/work/cycles.rules";
+import { WEEK_COUNT_CAP } from "@convex/shared/limits";
+import { WEEK_MS } from "@convex/shared/cycles";
 import type { FunctionReturnType } from "convex/server";
 import { roleLabel } from "~/features/hiring/jobChips";
 import { cycleDates } from "../board/cycleDates";

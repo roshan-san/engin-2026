@@ -3,7 +3,7 @@ import {
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
 	TEXT,
-} from "@convex/lib/limits";
+} from "@convex/shared/limits";
 import { XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";

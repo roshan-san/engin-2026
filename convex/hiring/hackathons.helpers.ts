@@ -2,7 +2,7 @@ import type { FunctionArgs } from "convex/server";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { Setup } from "../startups/startups.helpers";
-import { WEEK_MS, weekOf, weekStart } from "../work/cycles.rules";
+import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
 
 /** The Monday 00:00 IST that starts next week. */
 export function nextMonday(): number {

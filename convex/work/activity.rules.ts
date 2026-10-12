@@ -1,16 +1,16 @@
 import type { Infer } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_CYCLE_ENTRIES, MAX_LISTED_CYCLES } from "../lib/limits";
+import { MAX_CYCLE_ENTRIES, MAX_LISTED_CYCLES } from "../shared/limits";
 import { loadPublicUser, type PublicUser } from "../people/users.rules";
-import type { activityKind, jobRole } from "../schema";
+import type { activityKind, jobRole } from "../shared/validators";
 import {
 	cycleNumber,
 	shiftWeek,
 	WEEK_MS,
 	weekOf,
 	weekStart,
-} from "./cycles.rules";
+} from "../shared/cycles";
 import { loadGoal } from "./goals.rules";
 import {
 	buildParts,

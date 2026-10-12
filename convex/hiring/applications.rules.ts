@@ -5,7 +5,7 @@ import {
 	MAX_APPLICATIONS,
 	MAX_BUILDERS,
 	MAX_HACKATHON_CARDS,
-} from "../lib/limits";
+} from "../shared/limits";
 import { requireHackathonFounder } from "./hackathons.rules";
 
 type Ctx = QueryCtx | MutationCtx;

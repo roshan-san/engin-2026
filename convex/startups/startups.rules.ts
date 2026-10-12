@@ -2,7 +2,7 @@ import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { slugify } from "../lib/text";
 import { loadPublicUser } from "../people/users.rules";
-import { shiftWeek, weekStart } from "../work/cycles.rules";
+import { shiftWeek, weekStart } from "../shared/cycles";
 import { RATING } from "../work/rating.rules";
 
 export async function getStartupBySlug(

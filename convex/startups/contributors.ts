@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { MAX_CONTRIBUTORS } from "../lib/limits";
+import { MAX_CONTRIBUTORS } from "../shared/limits";
 import { requireFounder, requireTeam } from "./access.rules";
 import { loadVerifiedThisCycle, toTeamPerson } from "./contributors.rules";
 

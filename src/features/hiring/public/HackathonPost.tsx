@@ -1,4 +1,4 @@
-import { MAX_BUILDERS } from "@convex/lib/limits";
+import { MAX_BUILDERS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
 import { SectionLabel } from "~/components/shared/SectionLabel";
 import { cn } from "~/lib/utils";

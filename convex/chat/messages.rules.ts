@@ -6,10 +6,10 @@ import {
 	MAX_MESSAGE_MENTIONS,
 	MAX_MESSAGES,
 	TEXT,
-} from "../lib/limits";
+} from "../shared/limits";
 import { limitText } from "../lib/text";
 import { loadPublicUser } from "../people/users.rules";
-import { parseMentions } from "./mentions.rules";
+import { parseMentions } from "../shared/mentions";
 
 /** A trimmed message that has text, images, or both. */
 export function parseMessage(

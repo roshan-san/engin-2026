@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { ChevronLeftIcon, MoreHorizontalIcon, XIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { Kbd } from "~/components/shared/Kbd";

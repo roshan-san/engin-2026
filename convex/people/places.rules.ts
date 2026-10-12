@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { MAX_BUILDERS, MAX_LISTED_HACKATHONS } from "../lib/limits";
-import type { hackathonStatus } from "../schema";
+import { MAX_BUILDERS, MAX_LISTED_HACKATHONS } from "../shared/limits";
+import type { hackathonStatus } from "../shared/validators";
 import {
 	isThreadUnread,
 	loadHackathonThreads,

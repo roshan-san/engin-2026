@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { ChipPicker } from "~/components/shared/ChipPicker";
 import { FormFooter } from "~/components/shared/FormFooter";

@@ -1,5 +1,3 @@
-// Pure: no Convex server imports, so the frontend can use it too.
-
 /** A Card mention in a message body: `#card:<cardId>`. Global: read it with matchAll. */
 export const CARD_MENTION = /#card:([a-z0-9]+)/g;
 
