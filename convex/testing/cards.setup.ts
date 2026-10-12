@@ -1,7 +1,7 @@
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import type { Person } from "../people/users.helpers";
-import type { Setup } from "../startups/startups.helpers";
+import type { Person } from "./users.setup";
+import type { Setup } from "./startups.setup";
 
 /** A valid What shipped: a line and one proof link. */
 export const SHIPPED = {

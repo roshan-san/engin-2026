@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { decidedHackathon } from "../hiring/applications.helpers";
-import { createTest } from "../lib/testing.helpers";
-import { signUp } from "../people/users.helpers";
+import { decidedHackathon } from "../testing/applications.setup";
+import { createTest } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
-} from "../startups/startups.helpers";
-import { verifyCards } from "./rating.helpers";
+} from "../testing/startups.setup";
+import { verifyCards } from "../testing/rating.setup";
 
 /** Acme with a goal, one verified Card, a joined Contributor and a hired Builder. */
 async function busyStartup(): Promise<Setup> {

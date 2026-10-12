@@ -1,5 +1,5 @@
 import type { Id } from "../_generated/dataModel";
-import type { Client, TestConvex } from "../lib/testing.helpers";
+import type { Client, TestConvex } from "./test.setup";
 import { onUserSignedIn } from "../model/users";
 
 export type Person = { userId: Id<"users">; as: Client };

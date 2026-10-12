@@ -5,12 +5,12 @@ import {
 	builders,
 	endHackathon,
 	startHackathon,
-} from "../hiring/applications.helpers";
-import { publishedHackathon } from "../hiring/hackathons.helpers";
-import { createTest, type TestConvex } from "../lib/testing.helpers";
-import { signUp } from "../people/users.helpers";
-import { addContributor, setUpStartup } from "../startups/startups.helpers";
-import { runRating, toNextWeek, verifyCards } from "./rating.helpers";
+} from "../testing/applications.setup";
+import { publishedHackathon } from "../testing/hackathons.setup";
+import { createTest, type TestConvex } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
+import { addContributor, setUpStartup } from "../testing/startups.setup";
+import { runRating, toNextWeek, verifyCards } from "../testing/rating.setup";
 
 async function startupRow(t: TestConvex, startupId: Id<"startups">) {
 	const startup = await t.run(async (ctx) => await ctx.db.get(startupId));

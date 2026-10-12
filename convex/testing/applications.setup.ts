@@ -1,9 +1,9 @@
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { advancePast, HOUR } from "../lib/testing.helpers";
-import { type Person, signUp } from "../people/users.helpers";
-import type { Setup } from "../startups/startups.helpers";
-import { publishedHackathon } from "./hackathons.helpers";
+import { advancePast, HOUR } from "./test.setup";
+import { type Person, signUp } from "./users.setup";
+import type { Setup } from "./startups.setup";
+import { publishedHackathon } from "./hackathons.setup";
 
 export type Applicant = Person & { applicationId: Id<"applications"> };
 

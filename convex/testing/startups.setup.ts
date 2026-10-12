@@ -1,7 +1,7 @@
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import type { TestConvex } from "../lib/testing.helpers";
-import { type Person, signUp } from "../people/users.helpers";
+import type { TestConvex } from "./test.setup";
+import { type Person, signUp } from "./users.setup";
 
 export type Setup = {
 	t: TestConvex;

@@ -4,17 +4,17 @@ import {
 	builders,
 	endHackathon,
 	startHackathon,
-} from "../hiring/applications.helpers";
-import { publishedHackathon } from "../hiring/hackathons.helpers";
+} from "../testing/applications.setup";
+import { publishedHackathon } from "../testing/hackathons.setup";
 import { MAX_LISTED_CYCLES } from "../shared/limits";
-import { advancePast, createTest, DAY } from "../lib/testing.helpers";
-import { signUp } from "../people/users.helpers";
+import { advancePast, createTest, DAY } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
-} from "../startups/startups.helpers";
-import { cardOn, SHIPPED } from "./cards.helpers";
+} from "../testing/startups.setup";
+import { cardOn, SHIPPED } from "../testing/cards.setup";
 
 async function verifiedCard(setup: Setup, title: string) {
 	const sam = await addContributor(setup, `Sam ${title}`);

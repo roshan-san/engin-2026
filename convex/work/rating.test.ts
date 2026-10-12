@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DAY } from "../lib/testing.helpers";
+import { DAY } from "../testing/test.setup";
 import { shiftWeek, weekOf, weekStart } from "../shared/cycles";
 import {
 	buildParts,

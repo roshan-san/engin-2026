@@ -1,10 +1,10 @@
 import { vi } from "vitest";
 import { api, internal } from "../_generated/api";
-import { nextMonday } from "../hiring/hackathons.helpers";
-import { advancePast, HOUR, type TestConvex } from "../lib/testing.helpers";
-import type { Person } from "../people/users.helpers";
-import type { Setup } from "../startups/startups.helpers";
-import { cardOn, SHIPPED } from "./cards.helpers";
+import { nextMonday } from "./hackathons.setup";
+import { advancePast, HOUR, type TestConvex } from "./test.setup";
+import type { Person } from "./users.setup";
+import type { Setup } from "./startups.setup";
+import { cardOn, SHIPPED } from "./cards.setup";
 
 /** n Cards owned by `person`, submitted and verified by the Founder (Self-verified when `person` is the Founder). */
 export async function verifyCards(

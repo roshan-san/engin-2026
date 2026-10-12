@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { createTest } from "../lib/testing.helpers";
-import { toNextWeek, verifyCards } from "../work/rating.helpers";
-import { addContributor, setUpStartup } from "./startups.helpers";
+import { createTest } from "../testing/test.setup";
+import { toNextWeek, verifyCards } from "../testing/rating.setup";
+import { addContributor, setUpStartup } from "../testing/startups.setup";
 
 describe("the team", () => {
 	it("people show their Rating", async () => {
