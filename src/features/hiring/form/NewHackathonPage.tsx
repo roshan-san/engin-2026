@@ -21,6 +21,7 @@ export function NewHackathonPage() {
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
+			<h1 className="sr-only">New hackathon</h1>
 			<PanelHeader className="gap-3 md:px-6">
 				<span className="truncate text-xs text-muted-foreground">
 					Saved as a draft. Publish it when it reads right.

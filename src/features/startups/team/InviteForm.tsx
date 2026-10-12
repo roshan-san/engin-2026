@@ -4,6 +4,7 @@ import { SectionLabel } from "~/components/shared/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { dayLabel } from "~/features/hiring/hackathonDates";
 import type { StartupInvite } from "./hooks/useStartupInvites";
 
@@ -45,7 +46,12 @@ export function InviteForm({
 					Invite
 				</Button>
 			</form>
-			{invites && invites.length > 0 ? (
+			{invites === undefined ? (
+				<div className="flex flex-col gap-2">
+					<Skeleton className="h-9" />
+					<Skeleton className="h-9" />
+				</div>
+			) : invites.length > 0 ? (
 				<RowList>
 					{invites.map((invite) => (
 						<Row

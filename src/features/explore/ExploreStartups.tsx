@@ -1,12 +1,12 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { RowList } from "~/components/shared/RowList";
-import { Skeleton } from "~/components/ui/skeleton";
 import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { FilterChips } from "./FilterChips";
 import { useExploreStartups } from "./hooks/useExploreStartups";
 import { StartupExploreRow } from "./StartupExploreRow";
+import { RowsSkeleton } from "./RowsSkeleton";
 
 const route = getRouteApi("/_shell/explore/startups");
 
@@ -48,7 +48,7 @@ export function ExploreStartups() {
 			}
 		>
 			{startups === undefined ? (
-				<RowsSkeleton />
+				<RowsSkeleton rowClassName="h-16" />
 			) : startups.length === 0 ? (
 				<EmptyState title="No startups match." />
 			) : (
@@ -59,15 +59,5 @@ export function ExploreStartups() {
 				</RowList>
 			)}
 		</ExploreLayout>
-	);
-}
-
-function RowsSkeleton() {
-	return (
-		<div className="flex flex-col gap-3" aria-hidden>
-			{[0, 1, 2, 3].map((n) => (
-				<Skeleton key={n} className="h-16" />
-			))}
-		</div>
 	);
 }
