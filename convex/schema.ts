@@ -1,10 +1,10 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema } from "convex/server";
-import { chatTables } from "./chat/chat.schema";
-import { hiringTables } from "./hiring/hiring.schema";
-import { peopleTables } from "./people/people.schema";
-import { startupsTables } from "./startups/startups.schema";
-import { workTables } from "./work/work.schema";
+import { chatTables } from "./tables/chat";
+import { hiringTables } from "./tables/hiring";
+import { peopleTables } from "./tables/people";
+import { startupsTables } from "./tables/startups";
+import { workTables } from "./tables/work";
 
 /**
  * Tables live in convex/tables/<domain>.ts; their enum validators in convex/shared/validators.ts.
