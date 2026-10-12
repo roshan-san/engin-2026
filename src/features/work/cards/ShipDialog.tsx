@@ -71,6 +71,8 @@ export function ShipDialog({
 
 	const marksDone = isFounder && card.owner?._id === userId;
 	const isUploading = pictures.some((picture) => picture.storageId === null);
+	// Closing mid-send or mid-upload would lose the proof and orphan its files.
+	const isBusy = isUploading || isSubmitting;
 	const hasProof = links.length > 0 || pictures.length > 0;
 	const canSubmit =
 		line.trim().length > 0 && hasProof && !isUploading && !isSubmitting;
@@ -146,8 +148,9 @@ export function ShipDialog({
 	}
 
 	return (
-		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
+		<Dialog open onOpenChange={(isOpen) => !isOpen && !isBusy && onClose()}>
 			<DialogContent
+				showCloseButton={!isBusy}
 				className={isDragOver ? "ring-2 ring-ring" : undefined}
 				onKeyDown={(e) => {
 					if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -296,7 +299,7 @@ export function ShipDialog({
 
 				<DialogFooter>
 					<Button disabled={!canSubmit} onClick={() => void handleSubmit()}>
-						{isUploading || isSubmitting ? <Spinner /> : null}
+						{isBusy ? <Spinner /> : null}
 						{marksDone ? "Mark done" : "Submit"}
 					</Button>
 				</DialogFooter>
