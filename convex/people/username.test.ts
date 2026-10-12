@@ -24,6 +24,11 @@ describe("buildUsernameBase", () => {
 			"bartholomew_mont",
 		));
 
+	test("a long name is cut without a trailing underscore", () =>
+		expect(buildUsernameBase("Abcdefghijklmno Pq", undefined)).toBe(
+			"abcdefghijklmno",
+		));
+
 	test("every base passes requireUsername", () => {
 		for (const name of ["李雷", "a", "Ab", "__x__", "Zoë Q"])
 			expect(() =>
