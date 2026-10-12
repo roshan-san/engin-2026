@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { requireThreadAccess } from "./access.rules";
+import { requireThreadAccess, requireThreadOpen } from "./access.rules";
 import {
 	buildMessageViews,
 	loadLatestMessages,
@@ -39,7 +39,8 @@ export const send = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireThreadAccess(ctx, args.threadId, userId);
+		const { thread } = await requireThreadAccess(ctx, args.threadId, userId);
+		await requireThreadOpen(ctx, thread);
 		const { body, images } = parseMessage(args.body, args.images);
 
 		await ctx.db.insert("messages", {
@@ -67,6 +68,7 @@ export const pin = mutation({
 			message.threadId,
 			userId,
 		);
+		await requireThreadOpen(ctx, thread);
 		if (!isFounder) {
 			throw new ConvexError("Only the Founder can do this");
 		}

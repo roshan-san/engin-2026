@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { builders } from "../hiring/applications.helpers";
+import {
+	builders,
+	closeHackathon,
+	endHackathon,
+	startHackathon,
+} from "../hiring/applications.helpers";
 import { publishedHackathon } from "../hiring/hackathons.helpers";
 import { MAX_MESSAGE_IMAGES, MAX_MESSAGE_MENTIONS, TEXT } from "../lib/limits";
 import { createTest } from "../lib/testing.helpers";
@@ -226,6 +231,83 @@ describe("chat", () => {
 				pinned: true,
 			}),
 		).rejects.toThrow("Only Everyone messages can be pinned");
+	});
+
+	it("nobody posts in a Hackathon's threads once it's done", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const hackathonId = await publishedHackathon(setup);
+		const [ada] = await builders(setup, hackathonId, ["Ada"]);
+		const [everyone, privateThread] = await ada.as.query(
+			api.chat.threads.list,
+			{ hackathonId },
+		);
+		await startHackathon(setup, hackathonId);
+		await endHackathon(setup, hackathonId);
+		await closeHackathon(setup, hackathonId);
+
+		await expect(
+			ada.as.mutation(api.chat.messages.send, {
+				threadId: everyone._id,
+				body: "hi",
+			}),
+		).rejects.toThrow("This Hackathon has ended.");
+		await expect(
+			setup.founder.as.mutation(api.chat.messages.send, {
+				threadId: privateThread._id,
+				body: "hi",
+			}),
+		).rejects.toThrow("This Hackathon has ended.");
+	});
+
+	it("the private thread stays open while deciding", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const hackathonId = await publishedHackathon(setup);
+		const [ada] = await builders(setup, hackathonId, ["Ada"]);
+		const threads = await ada.as.query(api.chat.threads.list, { hackathonId });
+		const privateId = threads[1]._id;
+		await startHackathon(setup, hackathonId);
+		await endHackathon(setup, hackathonId);
+
+		await setup.founder.as.mutation(api.chat.messages.send, {
+			threadId: privateId,
+			body: "Call at 5?",
+		});
+
+		const { messages } = await ada.as.query(api.chat.messages.list, {
+			threadId: privateId,
+		});
+		expect(messages.map((message) => message.body)).toEqual(["Call at 5?"]);
+	});
+
+	it("a done Hackathon's pins stay as they are", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const hackathonId = await publishedHackathon(setup);
+		await builders(setup, hackathonId, ["Ada"]);
+		const everyoneId = await everyoneThreadId(setup, hackathonId);
+		await startHackathon(setup, hackathonId);
+		await setup.founder.as.mutation(api.chat.messages.send, {
+			threadId: everyoneId,
+			body: "Demo is on Friday",
+		});
+		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+			threadId: everyoneId,
+		});
+		await setup.founder.as.mutation(api.chat.messages.pin, {
+			messageId: messages[0]._id,
+			pinned: true,
+		});
+		await endHackathon(setup, hackathonId);
+		await closeHackathon(setup, hackathonId);
+
+		await expect(
+			setup.founder.as.mutation(api.chat.messages.pin, {
+				messageId: messages[0]._id,
+				pinned: false,
+			}),
+		).rejects.toThrow("This Hackathon has ended.");
 	});
 
 	it("an empty message is refused", async () => {

@@ -59,3 +59,14 @@ export async function requireThreadAccess(
 	}
 	return access;
 }
+
+/** A done Hackathon's threads are read-only; Team threads never lock. */
+export async function requireThreadOpen(ctx: Ctx, thread: Doc<"threads">) {
+	if (!thread.hackathonId) {
+		return;
+	}
+	const hackathon = await ctx.db.get(thread.hackathonId);
+	if (hackathon?.status === "done") {
+		throw new ConvexError("This Hackathon has ended.");
+	}
+}
