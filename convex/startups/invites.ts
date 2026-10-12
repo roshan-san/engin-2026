@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { MAX_INVITES } from "../lib/limits";
@@ -92,11 +92,11 @@ export const revoke = mutation({
 		const userId = await requireUserId(ctx);
 		const invite = await ctx.db.get(args.inviteId);
 		if (!invite) {
-			throw new Error("Invite not found");
+			throw new ConvexError("Invite not found");
 		}
 		await requireFounder(ctx, invite.startupId, userId);
 		if (invite.status !== "pending") {
-			throw new Error("This invite is no longer open");
+			throw new ConvexError("This invite is no longer open");
 		}
 		await ctx.db.patch(invite._id, { status: "revoked" });
 	},
@@ -108,7 +108,7 @@ export const accept = mutation({
 		const userId = await requireUserId(ctx);
 		const invite = await requireOpenInviteFor(ctx, args.inviteId, userId);
 		if (await getTeamRole(ctx, invite.startupId, userId)) {
-			throw new Error("Already on this startup");
+			throw new ConvexError("Already on this startup");
 		}
 
 		await ctx.db.insert("contributors", {

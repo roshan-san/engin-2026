@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
@@ -40,7 +40,7 @@ export const remove = mutation({
 		const userId = await requireUserId(ctx);
 		const startup = await requireFounder(ctx, args.startupId, userId);
 		if (args.userId === startup.founderId) {
-			throw new Error("The Founder can't be removed");
+			throw new ConvexError("The Founder can't be removed");
 		}
 
 		const contributor = await ctx.db
@@ -50,7 +50,7 @@ export const remove = mutation({
 			)
 			.unique();
 		if (!contributor) {
-			throw new Error("That person isn't on this startup");
+			throw new ConvexError("That person isn't on this startup");
 		}
 		await ctx.db.delete(contributor._id);
 	},

@@ -1,5 +1,15 @@
+import { ConvexError } from "convex/values";
 import { expect, test } from "vitest";
 import { errorMessage } from "./errors";
+import { toErrorMessage } from "./validation";
+
+/** What a production deployment sends: the message is redacted, the data isn't. */
+function productionError(data: string) {
+	const error = new ConvexError(data);
+	error.message =
+		"[CONVEX M(work/cards:verify)] [Request ID: abc] Server Error";
+	return error;
+}
 
 test("a server error shows only the message the server threw", () => {
 	const error = new Error(
@@ -7,6 +17,18 @@ test("a server error shows only the message the server threw", () => {
 	);
 
 	expect(errorMessage(error)).toBe("Name is required.");
+});
+
+test("a production server error shows the message the server threw", () => {
+	expect(errorMessage(productionError("Only the Founder can do this"))).toBe(
+		"Only the Founder can do this",
+	);
+});
+
+test("the error page reads a production server error too", () => {
+	expect(
+		toErrorMessage(productionError("Only the Founder can do this"), "Oops"),
+	).toBe("Only the Founder can do this");
 });
 
 test("an error without the Convex wrapper keeps its message", () => {

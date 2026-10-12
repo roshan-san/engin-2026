@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
@@ -85,7 +85,7 @@ export const updateProfile = mutation({
 				.withIndex("by_username", (q) => q.eq("username", username))
 				.unique();
 			if (taken && taken._id !== userId) {
-				throw new Error("That username is taken");
+				throw new ConvexError("That username is taken");
 			}
 			patch.username = username;
 		}

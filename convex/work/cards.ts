@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireHackathonFounder } from "../hiring/hackathons.rules";
 import { requireUserId } from "../lib/auth";
@@ -136,11 +136,11 @@ export const update = mutation({
 		}
 		if (args.ownerId !== undefined) {
 			if (card.hackathonId) {
-				throw new Error("Hackathon Cards stay with their Builder");
+				throw new ConvexError("Hackathon Cards stay with their Builder");
 			}
 			// Verifying credits the owner, so the owner is fixed once submitted.
 			if (card.status === "review") {
-				throw new Error("This Card is in Review");
+				throw new ConvexError("This Card is in Review");
 			}
 			await requireTeamOwner(ctx, card.startupId, args.ownerId);
 			patch.ownerId = args.ownerId;
@@ -167,7 +167,7 @@ export const move = mutation({
 		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
 		requireNotVerified(card);
 		if (card.status === "review" && role !== "founder") {
-			throw new Error("Only the Founder can send a Card back");
+			throw new ConvexError("Only the Founder can send a Card back");
 		}
 
 		await ctx.db.patch(card._id, { status: args.to });
@@ -180,11 +180,11 @@ export const submit = mutation({
 		const userId = await requireUserId(ctx);
 		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
 		if (card.ownerId !== userId) {
-			throw new Error("Only the Card's owner can submit it");
+			throw new ConvexError("Only the Card's owner can submit it");
 		}
 		requireNotVerified(card);
 		if (card.status === "review") {
-			throw new Error("This Card is in Review");
+			throw new ConvexError("This Card is in Review");
 		}
 		const proof = parseShipped(args.shipped);
 
@@ -208,10 +208,10 @@ export const verify = mutation({
 		const userId = await requireUserId(ctx);
 		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
 		if (role !== "founder") {
-			throw new Error("Only the Founder can do this");
+			throw new ConvexError("Only the Founder can do this");
 		}
 		if (card.status !== "review" || !card.shipped) {
-			throw new Error("This Card isn't in Review");
+			throw new ConvexError("This Card isn't in Review");
 		}
 
 		await markVerified(ctx, card, card.shipped, userId, Date.now());
@@ -225,10 +225,12 @@ export const remove = mutation({
 		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
 		requireNotVerified(card);
 		if (role === "builder") {
-			throw new Error("Only the Founder can remove this Card");
+			throw new ConvexError("Only the Founder can remove this Card");
 		}
 		if (card.ownerId !== userId && role !== "founder") {
-			throw new Error("Only the owner or the Founder can remove this Card");
+			throw new ConvexError(
+				"Only the owner or the Founder can remove this Card",
+			);
 		}
 
 		await ctx.db.delete(card._id);

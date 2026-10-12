@@ -1,3 +1,5 @@
+import { ConvexError } from "convex/values";
+
 /**
  * Search indexes can only cover one field, so every searchable table keeps a
  * denormalised `searchText` built here. Always rebuild it on write.
@@ -23,7 +25,7 @@ export function slugify(value: string): string {
 export function requireText(value: string, field: string): string {
 	const trimmed = value.trim();
 	if (!trimmed) {
-		throw new Error(`${field} is required`);
+		throw new ConvexError(`${field} is required`);
 	}
 	return trimmed;
 }
@@ -42,7 +44,7 @@ export function assertUrl(
 		return undefined;
 	}
 	if (!/^https?:\/\/\S+\.\S+/.test(trimmed)) {
-		throw new Error(`${field} must start with http:// or https://`);
+		throw new ConvexError(`${field} must start with http:// or https://`);
 	}
 	return trimmed;
 }
@@ -55,7 +57,7 @@ export function limitText(
 ): string | undefined {
 	const text = optionalText(value);
 	if (text && text.length > max) {
-		throw new Error(`${field} must be under ${max} characters`);
+		throw new ConvexError(`${field} must be under ${max} characters`);
 	}
 	return text;
 }
@@ -68,7 +70,7 @@ export function requireLimitedText(
 ): string {
 	const text = requireText(value, field);
 	if (text.length > max) {
-		throw new Error(`${field} must be under ${max} characters`);
+		throw new ConvexError(`${field} must be under ${max} characters`);
 	}
 	return text;
 }

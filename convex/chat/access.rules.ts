@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { getTeamRole } from "../startups/access.rules";
@@ -54,7 +55,7 @@ export async function requireThreadAccess(
 	const thread = await ctx.db.get(threadId);
 	const access = thread ? await getThreadAccess(ctx, thread, userId) : null;
 	if (!access) {
-		throw new Error("You can't open this thread");
+		throw new ConvexError("You can't open this thread");
 	}
 	return access;
 }

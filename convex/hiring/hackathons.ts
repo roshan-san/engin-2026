@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
@@ -250,7 +250,7 @@ export const update = mutation({
 			userId,
 		);
 		if (hackathon.status !== "draft") {
-			throw new Error("Only drafts can be edited");
+			throw new ConvexError("Only drafts can be edited");
 		}
 		const { cards, ...draft } = requireValidDraft(args, Date.now());
 
@@ -270,10 +270,10 @@ export const publish = mutation({
 			userId,
 		);
 		if (hackathon.status !== "draft") {
-			throw new Error("Already published");
+			throw new ConvexError("Already published");
 		}
 		if (hackathon.startsAt <= Date.now()) {
-			throw new Error("Start on a coming Monday");
+			throw new ConvexError("Start on a coming Monday");
 		}
 
 		await ctx.db.patch(hackathon._id, { status: "open" });

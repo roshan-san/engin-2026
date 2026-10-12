@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
@@ -41,7 +42,7 @@ export async function requireApplicationFounder(
 ): Promise<{ application: Doc<"applications">; hackathon: Doc<"hackathons"> }> {
 	const application = await ctx.db.get(applicationId);
 	if (!application) {
-		throw new Error("Application not found");
+		throw new ConvexError("Application not found");
 	}
 	const hackathon = await requireHackathonFounder(
 		ctx,
@@ -53,19 +54,19 @@ export async function requireApplicationFounder(
 
 export function requireOpen(hackathon: Doc<"hackathons">): void {
 	if (hackathon.status !== "open") {
-		throw new Error("Applications are closed");
+		throw new ConvexError("Applications are closed");
 	}
 }
 
 export function requireRunning(hackathon: Doc<"hackathons">): void {
 	if (hackathon.status !== "building" && hackathon.status !== "deciding") {
-		throw new Error("This Hackathon isn't running");
+		throw new ConvexError("This Hackathon isn't running");
 	}
 }
 
 export function requireBuilding(application: Doc<"applications">): void {
 	if (application.status !== "building") {
-		throw new Error("They're not a Builder");
+		throw new ConvexError("They're not a Builder");
 	}
 }
 
@@ -78,7 +79,7 @@ export function requireDecidable(
 		hackathon.status === "deciding" ||
 		(hackathon.status === "building" && now >= hackathon.endsAt);
 	if (!ended) {
-		throw new Error("Decide after the Hackathon ends");
+		throw new ConvexError("Decide after the Hackathon ends");
 	}
 }
 

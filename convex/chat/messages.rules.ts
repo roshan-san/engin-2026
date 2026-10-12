@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import {
@@ -18,10 +19,10 @@ export function parseMessage(
 	const text = limitText(body, "Message", TEXT.message) ?? "";
 	const attached = images ?? [];
 	if (attached.length > MAX_MESSAGE_IMAGES) {
-		throw new Error(`Add up to ${MAX_MESSAGE_IMAGES} images`);
+		throw new ConvexError(`Add up to ${MAX_MESSAGE_IMAGES} images`);
 	}
 	if (!text && attached.length === 0) {
-		throw new Error("Write something or add an image");
+		throw new ConvexError("Write something or add an image");
 	}
 	return { body: text, images: attached };
 }
