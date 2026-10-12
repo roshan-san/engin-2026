@@ -76,7 +76,7 @@ describe("rating math", () => {
 				shortlisted: false,
 			}),
 		).toBe("built");
-		for (const status of ["left", "declined", "applied"]) {
+		for (const status of ["declined", "applied"]) {
 			expect(outcomeOf({ status, shortlisted: false })).toBeNull();
 		}
 	});

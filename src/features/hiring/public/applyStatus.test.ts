@@ -18,7 +18,7 @@ describe("applyState", () => {
 
 	it("an application shows its status, whatever the Hackathon's", () => {
 		const withStatus = (
-			status: "applied" | "building" | "declined" | "left",
+			status: "applied" | "building" | "declined",
 		) => ({
 			status: "building" as const,
 			isTeam: false,
@@ -28,7 +28,6 @@ describe("applyState", () => {
 		expect(applyState(withStatus("applied"), true)).toBe("applied");
 		expect(applyState(withStatus("building"), true)).toBe("building");
 		expect(applyState(withStatus("declined"), true)).toBe("declined");
-		expect(applyState(withStatus("left"), true)).toBe("declined");
 	});
 
 	it("a Hackathon that isn't open is closed to new applicants", () => {

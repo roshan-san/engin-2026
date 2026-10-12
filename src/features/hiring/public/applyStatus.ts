@@ -1,5 +1,5 @@
 type HackathonStatus = "draft" | "open" | "building" | "deciding" | "done";
-type ApplicationStatus = "applied" | "declined" | "building" | "left";
+type ApplicationStatus = "applied" | "declined" | "building";
 
 export type ApplyState =
 	| "sign_in"
@@ -20,8 +20,7 @@ export function applyState(
 	isSignedIn: boolean,
 ): ApplyState {
 	const mine = page.myApplication?.status;
-	if (mine === "applied" || mine === "building") return mine;
-	if (mine === "declined" || mine === "left") return "declined";
+	if (mine) return mine;
 	if (page.status !== "open") return "closed";
 	if (!isSignedIn) return "sign_in";
 	return page.isTeam ? "team" : "form";

@@ -33,10 +33,5 @@
     "source.organizeImports.biome": "explicit"
   },
   // use LF line endings
-	"files.eol": "\n",
-  "explorer.fileNesting.enabled": true,
-  "explorer.fileNesting.expand": false,
-  "explorer.fileNesting.patterns": {
-    "package.json": ".env*, *.config.js, *.config.ts, *.config.mjs, *.config.cjs, *.lock, .gitignore, .eslint*, .prettier*, tsconfig.json, tsr.config.json, pnpm-lock.yaml, pnpm-workspace.yaml, .npmrc, biome.json, .cta.json"
-  },
+	"files.eol": "\n"
 }

@@ -39,7 +39,6 @@ export const applicationStatus = v.union(
 	v.literal("applied"),
 	v.literal("declined"),
 	v.literal("building"),
-	v.literal("left"),
 );
 export const decision = v.union(v.literal("hired"), v.literal("not_this_time"));
 

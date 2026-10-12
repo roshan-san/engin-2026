@@ -129,7 +129,7 @@ export async function loadApplicationsForFounder(
 
 	const builders = await byStatus("building", MAX_BUILDERS);
 	const others: Doc<"applications">[] = [];
-	for (const status of ["applied", "declined", "left"] as const) {
+	for (const status of ["applied", "declined"] as const) {
 		others.push(...(await byStatus(status, MAX_APPLICATIONS - others.length)));
 	}
 	return [...builders, ...others];
