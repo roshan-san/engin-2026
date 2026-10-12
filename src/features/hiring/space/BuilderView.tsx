@@ -2,9 +2,9 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { PanelHeader } from "~/components/shared/PanelHeader";
-import { Segmented } from "~/components/shared/Segmented";
-import { UnreadDot } from "~/components/shared/UnreadDot";
+import { PanelHeader } from "~/components/PanelHeader";
+import { Segmented } from "~/components/Segmented";
+import { UnreadDot } from "~/components/UnreadDot";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -15,7 +15,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
-import { ThreadPanel } from "~/features/chat/threads/ThreadPanel";
+import { ThreadPanel } from "~/features/chat/ThreadPanel";
 import { Board } from "~/features/work/board/Board";
 import {
 	type BoardScope,
@@ -23,14 +23,14 @@ import {
 } from "~/features/work/board/BoardScope";
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
-import { displayName } from "~/features/work/cards/displayName";
+import { displayName } from "~/lib/displayName";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
-import { useIsMobile } from "~/hooks/use-mobile";
+import { useIsMobile } from "~/lib/use-mobile";
 import { initials } from "~/lib/initials";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";
-import { useDecide } from "./hooks/useDecide";
+import { useDecide } from "./useDecide";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

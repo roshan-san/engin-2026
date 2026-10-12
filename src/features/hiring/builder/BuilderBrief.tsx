@@ -1,10 +1,10 @@
 import { XIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { PanelHeader } from "~/components/shared/PanelHeader";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { PanelHeader } from "~/components/PanelHeader";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { useBoardScope } from "~/features/work/board/BoardScope";
-import { useBoardCards } from "~/features/work/board/hooks/useBoard";
+import { useBoardCards } from "~/features/work/board/useBoard";
 import { buildDaysLabel, dayLabel, lastDay } from "../hackathonDates";
 
 /**

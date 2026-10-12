@@ -2,25 +2,29 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
-import { loadHiringRecord } from "../hiring/record.rules";
-import { requireUserId } from "../lib/auth";
+import { loadHiringRecord } from "../model/hiringRecord";
+import { requireUserId } from "../model/auth";
 import {
 	EXPLORE_SCAN,
 	MAX_EXPLORE_ROWS,
 	STARTING_RATING,
 	TEXT,
-} from "../lib/limits";
-import { assertUrl, limitText, requireLimitedText } from "../lib/text";
-import { startupCategory, startupCity, startupStage } from "../schema";
-import { shiftWeek, weekOf } from "../work/cycles.rules";
-import { getTeamRole, requireFounder } from "./access.rules";
+} from "../shared/limits";
+import { assertUrl, limitText, requireLimitedText } from "../model/text";
+import {
+	startupCategory,
+	startupCity,
+	startupStage,
+} from "../shared/validators";
+import { shiftWeek, weekOf } from "../shared/cycles";
+import { getTeamRole, requireFounder } from "../model/teamAccess";
 import {
 	buildUniqueSlug,
 	getStartupBySlug,
 	matchesExploreStartup,
 	toExploreStartup,
 	toPublicStartup,
-} from "./startups.rules";
+} from "../model/startups";
 
 export const getBySlug = query({
 	args: { slug: v.string() },

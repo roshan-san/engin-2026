@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { createTest } from "../lib/testing.helpers";
-import { setUpStartup } from "../startups/startups.helpers";
-import { closeHackathon, decidedHackathon } from "./applications.helpers";
+import { createTest } from "../testing/test.setup";
+import { setUpStartup } from "../testing/startups.setup";
+import {
+	closeHackathon,
+	decidedHackathon,
+} from "../testing/applications.setup";
 
 describe("hiring record", () => {
 	it("the hiring record counts promises and hires", async () => {

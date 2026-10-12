@@ -1,12 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { Page } from "~/components/shared/Page";
-import { PanelHeader } from "~/components/shared/PanelHeader";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { Page } from "~/components/Page";
+import { PanelHeader } from "~/components/PanelHeader";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";
-import { useHackathonForm } from "./hooks/useHackathonForm";
+import { useHackathonForm } from "./useHackathonForm";
 
 /** Posting a Hackathon: saved as a draft, published from its space. Framed like the space it becomes. */
 export function NewHackathonPage() {

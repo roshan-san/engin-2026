@@ -1,4 +1,4 @@
-import { WEEK_MS, weekStart } from "@convex/work/cycles.rules";
+import { WEEK_MS, weekStart } from "@convex/shared/cycles";
 import { describe, expect, it } from "vitest";
 import { cycleDates } from "./cycleDates";
 

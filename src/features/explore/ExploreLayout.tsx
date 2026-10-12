@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Page } from "~/components/shared/Page";
-import { PageHeader } from "~/components/shared/PageHeader";
-import { TAB_CLASS } from "~/shell/topbar/PlaceTabs";
+import { Page } from "~/components/Page";
+import { PageHeader } from "~/components/PageHeader";
+import { TAB_CLASS } from "~/shell/PlaceTabs";
 
 /** Explore's frame: the two tabs on top, filters on the left, rows on the right. */
 export function ExploreLayout({

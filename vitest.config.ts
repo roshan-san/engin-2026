@@ -11,7 +11,7 @@ export default defineConfig({
 	test: {
 		environment: "edge-runtime",
 		include: ["convex/**/*.test.ts", "src/**/*.test.ts"],
-		setupFiles: ["convex/lib/timers.helpers.ts"],
+		setupFiles: ["convex/testing/timers.setup.ts"],
 		server: { deps: { inline: ["convex-test"] } },
 	},
 });

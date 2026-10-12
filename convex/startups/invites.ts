@@ -1,14 +1,14 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import { MAX_INVITES } from "../lib/limits";
-import { appendActivity } from "../work/activity.rules";
-import { getTeamRole, requireFounder } from "./access.rules";
+import { requireUserId } from "../model/auth";
+import { MAX_INVITES } from "../shared/limits";
+import { appendActivity } from "../model/activity";
+import { getTeamRole, requireFounder } from "../model/teamAccess";
 import {
 	createInvite,
 	normalizeEmail,
 	requireOpenInviteFor,
-} from "./invites.rules";
+} from "../model/invites";
 
 /** The Founder's pending, unexpired Invites for the Startup. */
 export const list = query({

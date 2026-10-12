@@ -52,6 +52,58 @@
 					"suspicious": { "noArrayIndexKey": "off" }
 				}
 			}
+		},
+		{
+			"includes": ["**/src/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/convex/shared/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"convex/server",
+											"../**",
+											"!../_generated/api",
+											"!../_generated/dataModel"
+										],
+										"message": "convex/shared/ is browser-safe: from the rest of convex/ it may import only _generated/api and _generated/dataModel."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
 		}
 	]
 }

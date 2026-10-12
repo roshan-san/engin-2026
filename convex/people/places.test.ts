@@ -8,15 +8,15 @@ import {
 	decidedHackathon,
 	endHackathon,
 	startHackathon,
-} from "../hiring/applications.helpers";
+} from "../testing/applications.setup";
 import {
 	draftHackathon,
 	publishedHackathon,
-} from "../hiring/hackathons.helpers";
-import { createTest } from "../lib/testing.helpers";
-import { addContributor, setUpStartup } from "../startups/startups.helpers";
-import { SHIPPED } from "../work/cards.helpers";
-import { type Person, signUp } from "./users.helpers";
+} from "../testing/hackathons.setup";
+import { createTest } from "../testing/test.setup";
+import { addContributor, setUpStartup } from "../testing/startups.setup";
+import { SHIPPED } from "../testing/cards.setup";
+import { type Person, signUp } from "../testing/users.setup";
 
 async function placesOf(person: Person) {
 	return await person.as.query(api.people.places.list, {});

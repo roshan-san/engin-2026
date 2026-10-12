@@ -2,7 +2,7 @@ import type {
 	startupCategory,
 	startupCity,
 	startupStage,
-} from "@convex/schema";
+} from "@convex/shared/validators";
 import type { Infer } from "convex/values";
 
 type Chip<T extends string> = { readonly value: T; readonly label: string };

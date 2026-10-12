@@ -1,10 +1,10 @@
 import type { FunctionArgs } from "convex/server";
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { createTest } from "../lib/testing.helpers";
-import { signUp } from "../people/users.helpers";
-import { runRating, toNextWeek, verifyCards } from "../work/rating.helpers";
-import { addContributor, setUpStartup } from "./startups.helpers";
+import { createTest } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
+import { runRating, toNextWeek, verifyCards } from "../testing/rating.setup";
+import { addContributor, setUpStartup } from "../testing/startups.setup";
 
 const acme = {
 	name: "Acme",

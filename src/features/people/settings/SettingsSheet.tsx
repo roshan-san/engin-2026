@@ -1,6 +1,6 @@
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useState } from "react";
-import { ChipPicker } from "~/components/shared/ChipPicker";
+import { ChipPicker } from "~/components/ChipPicker";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -15,8 +15,8 @@ import {
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
-import { useMe } from "~/shell/hooks/useMe";
-import { useUpdateProfile } from "./hooks/useUpdateProfile";
+import { useMe } from "~/shell/useMe";
+import { useUpdateProfile } from "./useUpdateProfile";
 import {
 	type ProfileDraft,
 	type ProfileSource,

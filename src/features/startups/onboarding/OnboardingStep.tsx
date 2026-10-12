@@ -1,7 +1,7 @@
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { type ReactNode, useEffect, useRef } from "react";
-import { ChipPicker } from "~/components/shared/ChipPicker";
-import { MentorNote } from "~/components/shared/MentorNote";
+import { ChipPicker } from "~/components/ChipPicker";
+import { MentorNote } from "~/components/MentorNote";
 import { Input } from "~/components/ui/input";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import type { OnboardingAction, OnboardingState, Step } from "./onboarding";

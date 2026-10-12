@@ -1,11 +1,11 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
-import { Page } from "~/components/shared/Page";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { Page } from "~/components/Page";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
+import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { hiringLine } from "~/features/startups/public/hiringLine";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { initials } from "~/lib/initials";
@@ -13,7 +13,7 @@ import { dayLabel, lastDay } from "../hackathonDates";
 import { ApplyForm } from "./ApplyForm";
 import { APPLY_COPY, applyState, closedLabel } from "./applyStatus";
 import { HackathonPost } from "./HackathonPost";
-import { useHackathon } from "./hooks/useHackathon";
+import { useHackathon } from "./useHackathon";
 
 const route = getRouteApi("/_shell/hackathons/$id");
 

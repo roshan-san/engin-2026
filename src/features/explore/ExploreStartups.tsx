@@ -1,10 +1,10 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { EmptyState } from "~/components/shared/EmptyState";
-import { RowList } from "~/components/shared/RowList";
+import { EmptyState } from "~/components/EmptyState";
+import { RowList } from "~/components/RowList";
 import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { FilterChips } from "./FilterChips";
-import { useExploreStartups } from "./hooks/useExploreStartups";
+import { useExploreStartups } from "./useExploreStartups";
 import { StartupExploreRow } from "./StartupExploreRow";
 import { RowsSkeleton } from "./RowsSkeleton";
 

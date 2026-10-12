@@ -1,19 +1,19 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
-import { Page } from "~/components/shared/Page";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { Page } from "~/components/Page";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Skeleton } from "~/components/ui/skeleton";
 import { ActivityFeed } from "~/features/work/activity/ActivityFeed";
-import { useSignals } from "~/features/work/activity/hooks/useSignals";
+import { useSignals } from "~/features/work/activity/useSignals";
 import { RecordSignals } from "~/features/work/activity/RecordSignals";
 import { initials } from "~/lib/initials";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import { hiringLine } from "./hiringLine";
-import { usePublicActivity } from "./hooks/usePublicActivity";
-import { usePublicStartup } from "./hooks/usePublicStartup";
+import { usePublicActivity } from "./usePublicActivity";
+import { usePublicStartup } from "./usePublicStartup";
 
 const route = getRouteApi("/_shell/startups/$slug");
 

@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { internal } from "../_generated/api";
-import { createTest, DAY } from "../lib/testing.helpers";
+import { createTest, DAY } from "../testing/test.setup";
 
 it("a dev reset deletes stored files and cancels pending jobs", async () => {
 	const t = createTest();

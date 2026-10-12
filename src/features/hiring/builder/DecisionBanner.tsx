@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "~/components/ui/button";
 import { decisionTitle } from "./decisionCopy";
-import { useKeepPromise } from "./hooks/useKeepPromise";
+import { useKeepPromise } from "./useKeepPromise";
 
 /** The Founder's decision, their note, and the one-tap promise question. */
 export function DecisionBanner({

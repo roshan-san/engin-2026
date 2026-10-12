@@ -3,20 +3,16 @@ import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
+import { requireUserId } from "../model/auth";
 import {
 	MAX_BUILDERS,
 	MAX_EXPLORE_ROWS,
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
-} from "../lib/limits";
-import {
-	getTeamRole,
-	requireFounder,
-	requireTeam,
-} from "../startups/access.rules";
-import { toPublicStartup } from "../startups/startups.rules";
-import { toMyApplicationView } from "./applications.rules";
+} from "../shared/limits";
+import { getTeamRole, requireFounder, requireTeam } from "../model/teamAccess";
+import { toPublicStartup } from "../model/startups";
+import { toMyApplicationView } from "../model/applications";
 import {
 	copyTemplateCardsTo,
 	countUndecidedBuilders,
@@ -31,9 +27,9 @@ import {
 	requireValidDraft,
 	sortExplore,
 	toExploreHackathon,
-} from "./hackathons.rules";
-import { jobRole } from "./hiring.schema";
-import { type HiringRecord, loadHiringRecord } from "./record.rules";
+} from "../model/hackathons";
+import { jobRole } from "../shared/validators";
+import { type HiringRecord, loadHiringRecord } from "../model/hiringRecord";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

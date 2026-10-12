@@ -6,18 +6,22 @@ import {
 	closeHackathon,
 	endHackathon,
 	startHackathon,
-} from "../hiring/applications.helpers";
-import { publishedHackathon } from "../hiring/hackathons.helpers";
-import { MAX_MESSAGE_IMAGES, MAX_MESSAGE_MENTIONS, TEXT } from "../lib/limits";
-import { createTest } from "../lib/testing.helpers";
-import { signUp } from "../people/users.helpers";
+} from "../testing/applications.setup";
+import { publishedHackathon } from "../testing/hackathons.setup";
+import {
+	MAX_MESSAGE_IMAGES,
+	MAX_MESSAGE_MENTIONS,
+	TEXT,
+} from "../shared/limits";
+import { createTest } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
-} from "../startups/startups.helpers";
-import { cardOn } from "../work/cards.helpers";
-import { mentionToken } from "./mentions.rules";
+} from "../testing/startups.setup";
+import { cardOn } from "../testing/cards.setup";
+import { mentionToken } from "../shared/mentions";
 
 async function teamThreadId(setup: Setup) {
 	const threads = await setup.founder.as.query(api.chat.threads.list, {

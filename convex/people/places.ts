@@ -1,12 +1,12 @@
 import { query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import { MAX_USER_APPLICATIONS, MAX_USER_STARTUPS } from "../lib/limits";
+import { requireUserId } from "../model/auth";
+import { MAX_USER_APPLICATIONS, MAX_USER_STARTUPS } from "../shared/limits";
 import {
 	builderWaiting,
 	loadBuilderSignals,
 	loadStartupSignals,
 	startupWaiting,
-} from "./places.rules";
+} from "../model/places";
 
 /** Every place the person can switch to, each with whether it's waiting on them. */
 export const list = query({

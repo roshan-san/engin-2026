@@ -1,4 +1,4 @@
-import type { discipline } from "@convex/schema";
+import type { discipline } from "@convex/shared/validators";
 import type { Infer } from "convex/values";
 
 type Discipline = Infer<typeof discipline>;

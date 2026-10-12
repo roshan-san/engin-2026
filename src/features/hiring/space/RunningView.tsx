@@ -1,8 +1,8 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
-import { SectionLabel } from "~/components/shared/SectionLabel";
-import { UnreadDot } from "~/components/shared/UnreadDot";
+import { SectionLabel } from "~/components/SectionLabel";
+import { UnreadDot } from "~/components/UnreadDot";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
 	Select,
@@ -16,9 +16,9 @@ import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import { BuilderView } from "./BuilderView";
 import { EveryonePanel } from "./EveryonePanel";
-import { useApplicants } from "./hooks/useApplicants";
-import { useReviewQueue } from "./hooks/useReviewQueue";
-import { useHackathonThreads } from "./hooks/useSpace";
+import { useApplicants } from "./useApplicants";
+import { useReviewQueue } from "./useReviewQueue";
+import { useHackathonThreads } from "./useSpace";
 import { ReviewQueue } from "./ReviewQueue";
 import { resolveView, type SidebarBuilder, sidebarItems } from "./sidebarItems";
 

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Row, RowList } from "~/components/shared/RowList";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { Row, RowList } from "~/components/RowList";
+import { SectionLabel } from "~/components/SectionLabel";
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -17,7 +17,7 @@ import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { initials } from "~/lib/initials";
-import type { TeamPeople, TeamPerson } from "./hooks/useTeamPeople";
+import type { TeamPeople, TeamPerson } from "./useTeamPeople";
 
 function displayName(person: TeamPerson) {
 	return person.name ?? person.username ?? "Someone";

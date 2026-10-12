@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { cn } from "~/lib/utils";
-import { displayName } from "../cards/displayName";
+import { displayName } from "../../../lib/displayName";
 import { ActorAvatar } from "./ActorAvatar";
 import { type EntryView, linkLabel } from "./record";
 

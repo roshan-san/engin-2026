@@ -1,7 +1,7 @@
-import { MAX_HACKATHON_CARDS, TEXT } from "@convex/lib/limits";
+import { MAX_HACKATHON_CARDS, TEXT } from "@convex/shared/limits";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
-import { MentorNote } from "~/components/shared/MentorNote";
+import { MentorNote } from "~/components/MentorNote";
 import { TILE_CLASS } from "~/features/work/board/CardTile";
 import { ColumnIcon } from "~/features/work/board/ColumnIcon";
 import { NewCardInput } from "~/features/work/board/NewCardInput";

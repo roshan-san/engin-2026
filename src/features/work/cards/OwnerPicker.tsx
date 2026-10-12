@@ -9,8 +9,8 @@ import {
 } from "~/components/ui/select";
 import { initials } from "~/lib/initials";
 import type { CardView } from "../board/types";
-import { displayName } from "./displayName";
-import { useTeam } from "./hooks/useTeam";
+import { displayName } from "../../../lib/displayName";
+import { useTeam } from "./useTeam";
 
 type Person = NonNullable<CardView["owner"]>;
 

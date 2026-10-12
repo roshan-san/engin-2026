@@ -17,8 +17,8 @@ import { BoardColumn, type DropState } from "./BoardColumn";
 import { isReadOnly, useBoardScope } from "./BoardScope";
 import { CardFace, TILE_CLASS } from "./CardTile";
 import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
-import { useBoard } from "./hooks/useBoard";
-import { useBoardKeys } from "./hooks/useBoardKeys";
+import { useBoard } from "./useBoard";
+import { useBoardKeys } from "./useBoardKeys";
 import { NewCardInput } from "./NewCardInput";
 import type { CardView } from "./types";
 

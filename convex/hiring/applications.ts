@@ -1,18 +1,18 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../lib/limits";
-import { limitText, requireLimitedText } from "../lib/text";
+import { requireUserId } from "../model/auth";
+import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../shared/limits";
+import { limitText, requireLimitedText } from "../model/text";
 import {
 	isProvisional,
 	loadProfileRecord,
 	toPublicProfile,
 	toPublicUser,
-} from "../people/users.rules";
-import { decision } from "../schema";
-import { getTeamRole } from "../startups/access.rules";
-import { ensureHireInvite } from "../startups/invites.rules";
-import { appendActivity } from "../work/activity.rules";
+} from "../model/users";
+import { decision } from "../shared/validators";
+import { getTeamRole } from "../model/teamAccess";
+import { ensureHireInvite } from "../model/invites";
+import { appendActivity } from "../model/activity";
 import {
 	ensurePrivateThread,
 	getApplication,
@@ -24,8 +24,8 @@ import {
 	requireOpen,
 	requireRunning,
 	toFounderApplicationView,
-} from "./applications.rules";
-import { finishIfDecided, requireHackathonFounder } from "./hackathons.rules";
+} from "../model/applications";
+import { finishIfDecided, requireHackathonFounder } from "../model/hackathons";
 
 /** Everyone who applied, for the Founder. Never includes email. */
 export const listForHackathon = query({

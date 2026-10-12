@@ -1,16 +1,16 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { Kbd } from "~/components/shared/Kbd";
-import { Row, RowList } from "~/components/shared/RowList";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { Kbd } from "~/components/Kbd";
+import { Row, RowList } from "~/components/RowList";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { hackathonLine, workLine } from "~/features/people/profile/profileText";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { RatingParts } from "~/features/work/activity/RatingParts";
-import { displayName } from "~/features/work/cards/displayName";
+import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
-import { useApplicant } from "./hooks/useApplicants";
+import { useApplicant } from "./useApplicants";
 
 /** One Applicant: their answer, their Rating and its parts, and what they've done. */
 export function ApplicantDetail({

@@ -1,27 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
-import { MAX_LISTED_HACKATHONS } from "../lib/limits";
-import { signUp } from "../people/users.helpers";
+import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
+import { MAX_LISTED_HACKATHONS } from "../shared/limits";
+import { signUp } from "../testing/users.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
-} from "../startups/startups.helpers";
+} from "../testing/startups.setup";
 import {
 	builders,
 	closeHackathon,
 	decidedHackathon,
 	startHackathon,
-} from "./applications.helpers";
+} from "../testing/applications.setup";
 import {
 	draftHackathon,
 	hackathonInput,
 	nextMonday,
 	publishedHackathon,
-} from "./hackathons.helpers";
-import { finishIfDecided } from "./hackathons.rules";
+} from "../testing/hackathons.setup";
+import { finishIfDecided } from "../model/hackathons";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {

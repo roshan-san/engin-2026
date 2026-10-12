@@ -2,16 +2,16 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import { TEXT } from "../lib/limits";
-import { assertUrl, limitText } from "../lib/text";
-import { discipline } from "../schema";
-import { normalizeUsername, requireUsername } from "./username.rules";
+import { requireUserId } from "../model/auth";
+import { TEXT } from "../shared/limits";
+import { assertUrl, limitText } from "../model/text";
+import { discipline } from "../shared/validators";
+import { normalizeUsername, requireUsername } from "../model/username";
 import {
 	loadProfileRecord,
 	toOwnProfile,
 	toPublicProfile,
-} from "./users.rules";
+} from "../model/users";
 
 export const getMe = query({
 	args: {},

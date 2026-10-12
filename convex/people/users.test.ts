@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { createTest, type TestConvex } from "../lib/testing.helpers";
-import { buildUniqueUsername } from "./username.rules";
-import { onUserSignedIn } from "./users.rules";
-import { signUp, signUpNew } from "./users.helpers";
+import { createTest, type TestConvex } from "../testing/test.setup";
+import { buildUniqueUsername } from "../model/username";
+import { onUserSignedIn } from "../model/users";
+import { signUp, signUpNew } from "../testing/users.setup";
 
 describe("users", () => {
 	it("a new account starts at 1000, provisional", async () => {

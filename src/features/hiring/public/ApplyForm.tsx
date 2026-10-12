@@ -1,14 +1,14 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { TEXT } from "@convex/lib/limits";
+import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useState } from "react";
-import { Kbd } from "~/components/shared/Kbd";
-import { MentorNote } from "~/components/shared/MentorNote";
+import { Kbd } from "~/components/Kbd";
+import { MentorNote } from "~/components/MentorNote";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { answerKey } from "./applyStatus";
-import { useApply } from "./hooks/useApply";
+import { useApply } from "./useApply";
 
 function readSaved(key: string): string {
 	try {

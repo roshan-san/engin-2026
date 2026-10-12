@@ -1,6 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { ThreadPanel } from "~/features/chat/threads/ThreadPanel";
-import { useHackathonThreads } from "./hooks/useSpace";
+import { ThreadPanel } from "~/features/chat/ThreadPanel";
+import { useHackathonThreads } from "./useSpace";
 
 /** # Everyone for the Founder: answer questions, pin what matters. */
 export function EveryonePanel({

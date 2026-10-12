@@ -1,12 +1,12 @@
 import { type FormEvent, useState } from "react";
-import { Row, RowList } from "~/components/shared/RowList";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { Row, RowList } from "~/components/RowList";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
 import { dayLabel } from "~/features/hiring/hackathonDates";
-import type { StartupInvite } from "./hooks/useStartupInvites";
+import type { StartupInvite } from "./useStartupInvites";
 
 /** The Founder invites by email; pending Invites sit below with Revoke. */
 export function InviteForm({

@@ -1,23 +1,17 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema } from "convex/server";
-import { chatTables } from "./chat/chat.schema";
-import { hiringTables } from "./hiring/hiring.schema";
-import { peopleTables } from "./people/people.schema";
-import { startupsTables } from "./startups/startups.schema";
-import { workTables } from "./work/work.schema";
+import { chatTables } from "./tables/chat";
+import { hiringTables } from "./tables/hiring";
+import { peopleTables } from "./tables/people";
+import { startupsTables } from "./tables/startups";
+import { workTables } from "./tables/work";
 
 /**
- * Tables and their enum validators live in each domain folder as `<domain>.schema.ts`.
+ * Tables live in convex/tables/<domain>.ts; their enum validators in convex/shared/validators.ts.
  *
  * Convention: `_creationTime` is used for "when was this made" everywhere.
  * Explicit timestamps only exist when they drive an indexed range query.
  */
-
-export * from "./chat/chat.schema";
-export * from "./hiring/hiring.schema";
-export * from "./people/people.schema";
-export * from "./startups/startups.schema";
-export * from "./work/work.schema";
 
 export default defineSchema({
 	...authTables,

@@ -1,7 +1,7 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
-import { PanelHeader } from "~/components/shared/PanelHeader";
+import { PanelHeader } from "~/components/PanelHeader";
 import { Button } from "~/components/ui/button";
 import {
 	Sheet,
@@ -11,12 +11,12 @@ import {
 	SheetTitle,
 } from "~/components/ui/sheet";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useIsMobile } from "~/hooks/use-mobile";
+import { useIsMobile } from "~/lib/use-mobile";
 import { useWorkspace } from "../board/StartupContext";
 import { ActivityFeed } from "./ActivityFeed";
 import { EntryPanel } from "./EntryPanel";
-import { useActivity } from "./hooks/useActivity";
-import { useSignals } from "./hooks/useSignals";
+import { useActivity } from "./useActivity";
+import { useSignals } from "./useSignals";
 import { RecordPanel } from "./RecordPanel";
 import { RecordSignals } from "./RecordSignals";
 import { findEntry } from "./record";

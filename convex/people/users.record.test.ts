@@ -4,16 +4,16 @@ import {
 	builders,
 	decidedHackathon,
 	startHackathon,
-} from "../hiring/applications.helpers";
-import { publishedHackathon } from "../hiring/hackathons.helpers";
-import { createTest } from "../lib/testing.helpers";
+} from "../testing/applications.setup";
+import { publishedHackathon } from "../testing/hackathons.setup";
+import { createTest } from "../testing/test.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
-} from "../startups/startups.helpers";
-import { verifyCards } from "../work/rating.helpers";
-import { signUp } from "./users.helpers";
+} from "../testing/startups.setup";
+import { verifyCards } from "../testing/rating.setup";
+import { signUp } from "../testing/users.setup";
 
 async function recordOf(setup: Setup, username: string) {
 	return await setup.t.query(api.people.users.getRecord, { username });

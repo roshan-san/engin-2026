@@ -3,11 +3,11 @@ import {
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
 	TEXT,
-} from "@convex/lib/limits";
+} from "@convex/shared/limits";
 import { XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { MentorNote } from "~/components/shared/MentorNote";
+import { MentorNote } from "~/components/MentorNote";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -21,12 +21,12 @@ import {
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { errorMessage } from "~/lib/errors";
-import { useUpload } from "../../shared/hooks/useUpload";
-import { pickImages } from "../../shared/images";
+import { useUpload } from "../../../lib/useUpload";
+import { pickImages } from "../../../lib/images";
 import { useBoardScope } from "../board/BoardScope";
 import { isSendKey } from "../board/keys";
 import type { CardView } from "../board/types";
-import { useSubmit } from "./hooks/useSubmit";
+import { useSubmit } from "./useSubmit";
 
 type Picture = {
 	readonly key: string;
