@@ -141,15 +141,24 @@ describe("invites", () => {
 		]);
 	});
 
-	it("revoked and expired Invites aren't listed", async () => {
+	it("a revoked Invite isn't listed", async () => {
 		const setup = await setUpStartup(createTest());
-		const revoked = await setup.founder.as.mutation(
+		const inviteId = await setup.founder.as.mutation(
 			api.startups.invites.create,
 			{ startupId: setup.startupId, email: "sam@example.com" },
 		);
-		await setup.founder.as.mutation(api.startups.invites.revoke, {
-			inviteId: revoked,
-		});
+
+		await setup.founder.as.mutation(api.startups.invites.revoke, { inviteId });
+
+		expect(
+			await setup.founder.as.query(api.startups.invites.list, {
+				startupId: setup.startupId,
+			}),
+		).toEqual([]);
+	});
+
+	it("an expired Invite isn't listed", async () => {
+		const setup = await setUpStartup(createTest());
 		await setup.founder.as.mutation(api.startups.invites.create, {
 			startupId: setup.startupId,
 			email: "lee@example.com",
