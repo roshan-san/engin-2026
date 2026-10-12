@@ -21,6 +21,8 @@ dist
 /server/build
 /public/build
 docs/
+CONTEXT.md
+.scratch/
 .tanstack
 .vercel
 .agents/
