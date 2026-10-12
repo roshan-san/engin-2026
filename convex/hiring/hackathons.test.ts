@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { advancePast, createTest, DAY, HOUR } from "../lib/testing.helpers";
+import { MAX_LISTED_HACKATHONS } from "../lib/limits";
 import { signUp } from "../people/users.helpers";
 import {
 	addContributor,
@@ -643,6 +644,29 @@ describe("explore", () => {
 			[laterId, "open"],
 			[buildingId, "building"],
 		]);
+	});
+
+	it("Explore shows the soonest-starting open Hackathons first", async () => {
+		const setup = await setUpStartup(createTest());
+		const zeta = await otherStartup(setup, "Zeta");
+		const laterId = await publishedHackathon(zeta, {
+			startsAt: nextMonday() + 7 * DAY,
+		});
+		await setup.t.run(async (ctx) => {
+			const later = await ctx.db.get(laterId);
+			if (!later) {
+				throw new Error("Hackathon not found");
+			}
+			const { _id, _creationTime, ...fields } = later;
+			for (let i = 1; i < MAX_LISTED_HACKATHONS; i++) {
+				await ctx.db.insert("hackathons", fields);
+			}
+		});
+		const soonestId = await publishedHackathon(setup);
+
+		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+
+		expect(rows[0].hackathonId).toBe(soonestId);
 	});
 
 	it("building Hackathons come latest start first", async () => {

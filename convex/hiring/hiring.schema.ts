@@ -54,7 +54,7 @@ export const hiringTables = {
 		applicantCount: v.number(),
 	})
 		.index("by_startup", ["startupId"])
-		.index("by_status", ["status"]),
+		.index("by_status_and_startsAt", ["status", "startsAt"]),
 
 	applications: defineTable({
 		hackathonId: v.id("hackathons"),

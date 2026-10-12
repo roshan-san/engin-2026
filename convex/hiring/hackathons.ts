@@ -179,11 +179,18 @@ export const explore = query({
 		paid: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
+		// Read each status in the order Explore shows it, so the bound keeps the first rows.
 		const [open, building] = await Promise.all(
-			(["open", "building"] as const).map((status) =>
+			(
+				[
+					["open", "asc"],
+					["building", "desc"],
+				] as const
+			).map(([status, order]) =>
 				ctx.db
 					.query("hackathons")
-					.withIndex("by_status", (q) => q.eq("status", status))
+					.withIndex("by_status_and_startsAt", (q) => q.eq("status", status))
+					.order(order)
 					.take(MAX_LISTED_HACKATHONS),
 			),
 		);
