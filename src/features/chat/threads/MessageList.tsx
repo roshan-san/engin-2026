@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { MentorNote } from "~/components/shared/MentorNote";
+import { MentorNote } from "~/components/MentorNote";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog";
 import { Skeleton } from "~/components/ui/skeleton";
-import { displayName } from "~/features/work/cards/displayName";
-import { relativeTime } from "~/features/work/cards/relativeTime";
+import { displayName } from "~/lib/displayName";
+import { relativeTime } from "~/lib/relativeTime";
 import { initials } from "~/lib/initials";
 import { groupMessages } from "./groupMessages";
 import type { MessageView } from "./hooks/useMessages";

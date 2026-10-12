@@ -1,8 +1,8 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
-import { Page } from "~/components/shared/Page";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { Page } from "~/components/Page";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { GoogleButton } from "~/features/people/auth/components/GoogleButton";

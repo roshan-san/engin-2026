@@ -1,9 +1,9 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
-import { Page } from "~/components/shared/Page";
-import { Row, RowList } from "~/components/shared/RowList";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { Page } from "~/components/Page";
+import { Row, RowList } from "~/components/RowList";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";

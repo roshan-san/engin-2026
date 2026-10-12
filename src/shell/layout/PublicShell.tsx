@@ -1,4 +1,4 @@
-import { PublicHeader } from "~/components/shared/PublicHeader";
+import { PublicHeader } from "~/components/PublicHeader";
 
 /** Signed-out frame: the public header over the page, which fills the rest and scrolls inside it. */
 export function PublicShell({

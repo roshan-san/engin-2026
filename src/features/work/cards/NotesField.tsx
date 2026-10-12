@@ -1,11 +1,11 @@
 import { TEXT } from "@convex/shared/limits";
 import { type RefObject, useEffect, useRef } from "react";
-import { MentorNote } from "~/components/shared/MentorNote";
+import { MentorNote } from "~/components/MentorNote";
 import { Textarea } from "~/components/ui/textarea";
 import type { CardView } from "../board/types";
-import { displayName } from "./displayName";
+import { displayName } from "../../../lib/displayName";
 import { useDraft } from "./hooks/useDraft";
-import { relativeTime } from "./relativeTime";
+import { relativeTime } from "../../../lib/relativeTime";
 
 const IDLE_MS = 1000;
 

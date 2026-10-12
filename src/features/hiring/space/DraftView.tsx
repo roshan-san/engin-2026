@@ -1,7 +1,7 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Page } from "~/components/shared/Page";
+import { Page } from "~/components/Page";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { draftCard, fromBuildersGet, type HackathonDraft } from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";

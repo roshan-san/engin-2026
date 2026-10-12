@@ -4,7 +4,7 @@ import { WEEK_MS } from "@convex/shared/cycles";
 import type { FunctionReturnType } from "convex/server";
 import { roleLabel } from "~/features/hiring/jobChips";
 import { cycleDates } from "../board/cycleDates";
-import { displayName } from "../cards/displayName";
+import { displayName } from "../../../lib/displayName";
 
 export type ActivityView = FunctionReturnType<typeof api.work.activity.list>;
 export type CycleView = ActivityView["cycles"][number];

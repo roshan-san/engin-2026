@@ -1,4 +1,4 @@
-import { displayName } from "~/features/work/cards/displayName";
+import { displayName } from "~/lib/displayName";
 
 type Person = { _id: string; name: string | null; username: string | null };
 

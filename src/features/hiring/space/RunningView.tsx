@@ -1,8 +1,8 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
-import { SectionLabel } from "~/components/shared/SectionLabel";
-import { UnreadDot } from "~/components/shared/UnreadDot";
+import { SectionLabel } from "~/components/SectionLabel";
+import { UnreadDot } from "~/components/UnreadDot";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
 	Select,

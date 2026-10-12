@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Row, RowList } from "~/components/shared/RowList";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { Row, RowList } from "~/components/RowList";
+import { SectionLabel } from "~/components/SectionLabel";
 import {
 	AlertDialog,
 	AlertDialogCancel,

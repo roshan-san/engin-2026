@@ -2,8 +2,8 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
 import { CheckIcon, StarIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { MentorNote } from "~/components/shared/MentorNote";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { MentorNote } from "~/components/MentorNote";
+import { SectionLabel } from "~/components/SectionLabel";
 import {
 	AlertDialog,
 	AlertDialogAction,

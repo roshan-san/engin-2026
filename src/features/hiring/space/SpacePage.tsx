@@ -1,9 +1,9 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
-import { PanelHeader } from "~/components/shared/PanelHeader";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { PanelHeader } from "~/components/PanelHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useWorkspace } from "~/features/work/board/StartupContext";

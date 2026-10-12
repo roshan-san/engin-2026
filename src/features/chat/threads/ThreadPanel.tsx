@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { XIcon } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
-import { PanelHeader } from "~/components/shared/PanelHeader";
+import { PanelHeader } from "~/components/PanelHeader";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Composer } from "./Composer";

@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { EmptyState } from "~/components/shared/EmptyState";
-import { Page } from "~/components/shared/Page";
-import { PageHeader } from "~/components/shared/PageHeader";
-import { RowList } from "~/components/shared/RowList";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { EmptyState } from "~/components/EmptyState";
+import { Page } from "~/components/Page";
+import { PageHeader } from "~/components/PageHeader";
+import { RowList } from "~/components/RowList";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/work/board/StartupContext";

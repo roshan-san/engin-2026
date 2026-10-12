@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
-import { UnreadDot } from "~/components/shared/UnreadDot";
+import { UnreadDot } from "~/components/UnreadDot";
 import {
 	DropdownMenu,
 	DropdownMenuContent,

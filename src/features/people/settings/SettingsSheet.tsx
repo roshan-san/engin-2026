@@ -1,6 +1,6 @@
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useState } from "react";
-import { ChipPicker } from "~/components/shared/ChipPicker";
+import { ChipPicker } from "~/components/ChipPicker";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";

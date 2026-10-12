@@ -1,6 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { EmptyState } from "~/components/shared/EmptyState";
-import { RowList } from "~/components/shared/RowList";
+import { EmptyState } from "~/components/EmptyState";
+import { RowList } from "~/components/RowList";
 import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { FilterChips } from "./FilterChips";

@@ -7,7 +7,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { displayName } from "~/features/work/cards/displayName";
+import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
 import { useOnline } from "./hooks/useOnline";
 import { orderPresence, presenceLabel } from "./presence";

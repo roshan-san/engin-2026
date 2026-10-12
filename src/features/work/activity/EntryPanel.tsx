@@ -1,8 +1,8 @@
 import { ChevronLeftIcon, XIcon } from "lucide-react";
-import { PanelHeader } from "~/components/shared/PanelHeader";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { PanelHeader } from "~/components/PanelHeader";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Button } from "~/components/ui/button";
-import { displayName } from "../cards/displayName";
+import { displayName } from "../../../lib/displayName";
 import { ActorAvatar } from "./ActorAvatar";
 import { EntryProof } from "./EntryProof";
 import { type CycleView, type EntryView, entryDate } from "./record";

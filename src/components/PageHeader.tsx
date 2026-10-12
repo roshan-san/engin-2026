@@ -1,9 +1,5 @@
 import type { ReactNode } from "react";
-import {
-	PAGE_GUTTER,
-	PAGE_WIDTH,
-	type PageWidth,
-} from "~/components/shared/Page";
+import { PAGE_GUTTER, PAGE_WIDTH, type PageWidth } from "~/components/Page";
 import { cn } from "~/lib/utils";
 
 type PageHeaderProps = {

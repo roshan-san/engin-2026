@@ -1,4 +1,4 @@
-import { PanelHeader } from "~/components/shared/PanelHeader";
+import { PanelHeader } from "~/components/PanelHeader";
 import { Skeleton } from "~/components/ui/skeleton";
 import { RecordSignals } from "./RecordSignals";
 import type { SignalsView } from "./record";

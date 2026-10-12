@@ -1,5 +1,5 @@
-import { Page } from "~/components/shared/Page";
-import { PageHeader } from "~/components/shared/PageHeader";
+import { Page } from "~/components/Page";
+import { PageHeader } from "~/components/PageHeader";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { useStartupInvites } from "./hooks/useStartupInvites";
 import { useTeamPeople } from "./hooks/useTeamPeople";

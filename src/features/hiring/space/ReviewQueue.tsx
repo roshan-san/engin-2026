@@ -1,11 +1,11 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useState } from "react";
-import { EmptyState } from "~/components/shared/EmptyState";
-import { Kbd } from "~/components/shared/Kbd";
+import { EmptyState } from "~/components/EmptyState";
+import { Kbd } from "~/components/Kbd";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { displayName } from "~/features/work/cards/displayName";
+import { displayName } from "~/lib/displayName";
 import { ShippedView } from "~/features/work/cards/ShippedView";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";

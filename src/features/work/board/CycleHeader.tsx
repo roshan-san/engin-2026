@@ -1,6 +1,6 @@
 import { TEXT } from "@convex/shared/limits";
 import { useRef, useState } from "react";
-import { MentorNote } from "~/components/shared/MentorNote";
+import { MentorNote } from "~/components/MentorNote";
 import { Input } from "~/components/ui/input";
 import { cycleDates } from "./cycleDates";
 import { useCycle } from "./hooks/useCycle";

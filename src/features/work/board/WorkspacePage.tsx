@@ -1,7 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
-import { PanelHeader } from "~/components/shared/PanelHeader";
-import { UnreadDot } from "~/components/shared/UnreadDot";
+import { PanelHeader } from "~/components/PanelHeader";
+import { UnreadDot } from "~/components/UnreadDot";
 import { Button } from "~/components/ui/button";
 import {
 	Sheet,
@@ -13,7 +13,7 @@ import {
 import { useHeartbeat } from "~/features/chat/threads/hooks/useHeartbeat";
 import { useTeamThread } from "~/features/chat/threads/hooks/useTeamThread";
 import { TeamPanel } from "~/features/chat/threads/TeamPanel";
-import { useIsMobile } from "~/hooks/use-mobile";
+import { useIsMobile } from "~/lib/use-mobile";
 import { CardPanel } from "../cards/CardPanel";
 import { ShipDialog } from "../cards/ShipDialog";
 import { Board } from "./Board";

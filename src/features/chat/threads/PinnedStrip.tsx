@@ -2,7 +2,7 @@ import { splitBody } from "@convex/shared/mentions";
 import { PinIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import { displayName } from "~/features/work/cards/displayName";
+import { displayName } from "~/lib/displayName";
 import type { MessageView } from "./hooks/useMessages";
 
 /** The Founder's pinned messages on top of the thread: the newest, or all of them. */

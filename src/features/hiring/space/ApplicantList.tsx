@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { displayName } from "~/features/work/cards/displayName";
+import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import type { ApplicantRow } from "./applicantSort";

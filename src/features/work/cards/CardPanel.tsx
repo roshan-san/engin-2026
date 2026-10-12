@@ -1,10 +1,10 @@
 import { TEXT } from "@convex/shared/limits";
 import { ChevronLeftIcon, MoreHorizontalIcon, XIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
-import { Kbd } from "~/components/shared/Kbd";
-import { PanelHeader } from "~/components/shared/PanelHeader";
-import { SectionLabel } from "~/components/shared/SectionLabel";
-import { UnreadDot } from "~/components/shared/UnreadDot";
+import { Kbd } from "~/components/Kbd";
+import { PanelHeader } from "~/components/PanelHeader";
+import { SectionLabel } from "~/components/SectionLabel";
+import { UnreadDot } from "~/components/UnreadDot";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -38,7 +38,7 @@ import { ColumnIcon } from "../board/ColumnIcon";
 import { COLUMNS, type Column, dropAction } from "../board/dropRules";
 import { useBoard } from "../board/hooks/useBoard";
 import type { CardView } from "../board/types";
-import { displayName } from "./displayName";
+import { displayName } from "../../../lib/displayName";
 import { useCard } from "./hooks/useCard";
 import { useCardActions } from "./hooks/useCardActions";
 import { useDraft } from "./hooks/useDraft";

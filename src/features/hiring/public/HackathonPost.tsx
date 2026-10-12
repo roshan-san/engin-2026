@@ -1,6 +1,6 @@
 import { MAX_BUILDERS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { SectionLabel } from "~/components/SectionLabel";
 import { cn } from "~/lib/utils";
 import {
 	buildDaysLabel,

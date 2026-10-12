@@ -1,9 +1,9 @@
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useRef, useState } from "react";
-import { ChipPicker } from "~/components/shared/ChipPicker";
-import { FormFooter } from "~/components/shared/FormFooter";
-import { MentorNote } from "~/components/shared/MentorNote";
-import { SectionLabel } from "~/components/shared/SectionLabel";
+import { ChipPicker } from "~/components/ChipPicker";
+import { FormFooter } from "~/components/FormFooter";
+import { MentorNote } from "~/components/MentorNote";
+import { SectionLabel } from "~/components/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";

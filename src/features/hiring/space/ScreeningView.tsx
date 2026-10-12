@@ -2,10 +2,10 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { MAX_BUILDERS } from "@convex/shared/limits";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
-import { EmptyState } from "~/components/shared/EmptyState";
-import { Kbd } from "~/components/shared/Kbd";
-import { PanelHeader } from "~/components/shared/PanelHeader";
-import { Segmented } from "~/components/shared/Segmented";
+import { EmptyState } from "~/components/EmptyState";
+import { Kbd } from "~/components/Kbd";
+import { PanelHeader } from "~/components/PanelHeader";
+import { Segmented } from "~/components/Segmented";
 import { Button } from "~/components/ui/button";
 import {
 	Sheet,
@@ -16,7 +16,7 @@ import {
 } from "~/components/ui/sheet";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/work/board/StartupContext";
-import { useIsMobile } from "~/hooks/use-mobile";
+import { useIsMobile } from "~/lib/use-mobile";
 import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";

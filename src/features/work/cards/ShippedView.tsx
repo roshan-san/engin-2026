@@ -1,6 +1,6 @@
 import type { CardView } from "../board/types";
-import { displayName } from "./displayName";
-import { relativeTime } from "./relativeTime";
+import { displayName } from "../../../lib/displayName";
+import { relativeTime } from "../../../lib/relativeTime";
 
 /** What shipped: the line, its links and images, and who verified it. */
 export function ShippedView({ card }: { readonly card: CardView }) {

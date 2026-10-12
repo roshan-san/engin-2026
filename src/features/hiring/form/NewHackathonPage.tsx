@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { Page } from "~/components/shared/Page";
-import { PanelHeader } from "~/components/shared/PanelHeader";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { Page } from "~/components/Page";
+import { PanelHeader } from "~/components/PanelHeader";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";

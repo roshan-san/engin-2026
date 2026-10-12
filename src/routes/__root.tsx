@@ -1,7 +1,7 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { GlobalError } from "~/components/globals/GlobalError";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
+import { GlobalError } from "~/components/GlobalError";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Toaster } from "~/components/ui/sonner";
 import { AppProviders } from "~/features/people/auth/providers/AppProviders";
 

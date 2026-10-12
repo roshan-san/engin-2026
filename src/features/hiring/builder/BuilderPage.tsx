@@ -1,11 +1,11 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { getRouteApi, Link, Navigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
-import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
-import { PanelHeader } from "~/components/shared/PanelHeader";
-import { Segmented } from "~/components/shared/Segmented";
-import { UnreadDot } from "~/components/shared/UnreadDot";
+import { GlobalNotFound } from "~/components/GlobalNotFound";
+import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { PanelHeader } from "~/components/PanelHeader";
+import { Segmented } from "~/components/Segmented";
+import { UnreadDot } from "~/components/UnreadDot";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -25,7 +25,7 @@ import { useMe } from "~/shell/hooks/useMe";
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
-import { useIsMobile } from "~/hooks/use-mobile";
+import { useIsMobile } from "~/lib/use-mobile";
 import { roleLabel } from "../jobChips";
 import { useHackathon } from "../public/hooks/useHackathon";
 import { useHackathonThreads } from "../space/hooks/useSpace";
