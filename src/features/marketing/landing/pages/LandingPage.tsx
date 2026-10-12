@@ -3,9 +3,9 @@ import { Navigate } from "@tanstack/react-router";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { GlowHero } from "~/components/GlowHero";
 import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
-import { PublicShell } from "~/shell/layout/PublicShell";
-import { usePlaces } from "~/shell/places/hooks/usePlaces";
-import { pickLanding, readLastPlace } from "~/shell/places/landing";
+import { PublicShell } from "~/shell/PublicShell";
+import { usePlaces } from "~/shell/usePlaces";
+import { pickLanding, readLastPlace } from "~/shell/landing";
 
 /** Sends a signed-in visitor to the place they were last in, else their first. */
 function LandingRedirect() {

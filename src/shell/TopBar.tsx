@@ -1,12 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Compass } from "lucide-react";
-import { AccountMenu } from "~/shell/account/AccountMenu";
-import { InviteTray } from "~/shell/invites/InviteTray";
-import { currentPlace } from "~/shell/places/places";
-import { PlaceSwitcher } from "~/shell/places/PlaceSwitcher";
-import { EnginLogo } from "~/shell/topbar/EnginLogo";
-import { HackathonCrumb } from "~/shell/topbar/HackathonCrumb";
-import { PlaceTabs } from "~/shell/topbar/PlaceTabs";
+import { AccountMenu } from "~/shell/AccountMenu";
+import { InviteTray } from "~/shell/InviteTray";
+import { currentPlace } from "~/shell/places";
+import { PlaceSwitcher } from "~/shell/PlaceSwitcher";
+import { EnginLogo } from "~/shell/EnginLogo";
+import { HackathonCrumb } from "~/shell/HackathonCrumb";
+import { PlaceTabs } from "~/shell/PlaceTabs";
 
 /** The signed-in bar: the logo, where you are, the tabs there, Explore, your Invites and the account menu. */
 export function TopBar() {

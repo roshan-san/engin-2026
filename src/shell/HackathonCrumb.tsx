@@ -2,7 +2,7 @@ import { useLocation } from "@tanstack/react-router";
 import { ChevronRightIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { roleLabel } from "~/features/hiring/jobChips";
-import { useCrumbHackathon } from "~/shell/topbar/hooks/useCrumbHackathon";
+import { useCrumbHackathon } from "~/shell/useCrumbHackathon";
 
 /** "› Frontend" inside a Hackathon's space, "› New hackathon" on the form; nothing elsewhere. */
 export function HackathonCrumb() {

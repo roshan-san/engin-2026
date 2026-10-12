@@ -8,7 +8,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "~/components/ui/popover";
-import { useInvites } from "~/shell/invites/hooks/useInvites";
+import { useInvites } from "~/shell/useInvites";
 
 /** Your open Invites in the bar: Join or Decline. Nothing when there are none. */
 export function InviteTray() {

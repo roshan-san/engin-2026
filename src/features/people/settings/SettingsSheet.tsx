@@ -15,7 +15,7 @@ import {
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
-import { useMe } from "~/shell/hooks/useMe";
+import { useMe } from "~/shell/useMe";
 import { useUpdateProfile } from "./hooks/useUpdateProfile";
 import {
 	type ProfileDraft,

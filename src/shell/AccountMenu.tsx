@@ -10,7 +10,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { SettingsSheet } from "~/features/people/settings/SettingsSheet";
 import { initials } from "~/lib/initials";
-import { useMe } from "~/shell/hooks/useMe";
+import { useMe } from "~/shell/useMe";
 
 /** Your avatar, with your Profile, Settings and Sign out. */
 export function AccountMenu() {

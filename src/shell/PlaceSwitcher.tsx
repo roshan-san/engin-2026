@@ -10,8 +10,8 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { roleLabel } from "~/features/hiring/jobChips";
-import { usePlaces } from "~/shell/places/hooks/usePlaces";
-import { currentPlace, othersWaiting, placeLabel } from "~/shell/places/places";
+import { usePlaces } from "~/shell/usePlaces";
+import { currentPlace, othersWaiting, placeLabel } from "~/shell/places";
 
 /** The place you're in, and the way to every other: your Startups, the Hackathons you build and applied to. */
 export function PlaceSwitcher() {
