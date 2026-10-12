@@ -9,7 +9,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { HackathonRow } from "./HackathonRow";
 import { groupHackathons, type HiringRow } from "./hiringGroups";
-import { useHackathons } from "./hooks/useHackathons";
+import { useHackathons } from "./useHackathons";
 
 /** The Startup's Hackathons: Now, Drafts (Founder only) and Past. */
 export function HiringPage() {

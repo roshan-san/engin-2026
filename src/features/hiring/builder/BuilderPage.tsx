@@ -15,7 +15,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
-import { ThreadPanel } from "~/features/chat/threads/ThreadPanel";
+import { ThreadPanel } from "~/features/chat/ThreadPanel";
 import { Board } from "~/features/work/board/Board";
 import {
 	type BoardScope,
@@ -27,8 +27,8 @@ import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
 import { useIsMobile } from "~/lib/use-mobile";
 import { roleLabel } from "../jobChips";
-import { useHackathon } from "../public/hooks/useHackathon";
-import { useHackathonThreads } from "../space/hooks/useSpace";
+import { useHackathon } from "../public/useHackathon";
+import { useHackathonThreads } from "../space/useSpace";
 import { BuilderBrief } from "./BuilderBrief";
 import { builderStatus } from "./builderStatus";
 import { DecisionBanner } from "./DecisionBanner";

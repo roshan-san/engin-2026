@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import { useCreateStartup } from "./hooks/useCreateStartup";
+import { useCreateStartup } from "./useCreateStartup";
 import {
 	canAdvance,
 	INITIAL_STATE,

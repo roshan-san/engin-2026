@@ -7,13 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Skeleton } from "~/components/ui/skeleton";
 import { ActivityFeed } from "~/features/work/activity/ActivityFeed";
-import { useSignals } from "~/features/work/activity/hooks/useSignals";
+import { useSignals } from "~/features/work/activity/useSignals";
 import { RecordSignals } from "~/features/work/activity/RecordSignals";
 import { initials } from "~/lib/initials";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import { hiringLine } from "./hiringLine";
-import { usePublicActivity } from "./hooks/usePublicActivity";
-import { usePublicStartup } from "./hooks/usePublicStartup";
+import { usePublicActivity } from "./usePublicActivity";
+import { usePublicStartup } from "./usePublicStartup";
 
 const route = getRouteApi("/_shell/startups/$slug");
 

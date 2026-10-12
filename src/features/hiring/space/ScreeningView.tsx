@@ -23,8 +23,8 @@ import { ApplicantList } from "./ApplicantList";
 import { sortApplicants } from "./applicantSort";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { EveryonePanel } from "./EveryonePanel";
-import { useApplicants, useScreening } from "./hooks/useApplicants";
-import { useListKeys } from "./hooks/useListKeys";
+import { useApplicants, useScreening } from "./useApplicants";
+import { useListKeys } from "./useListKeys";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

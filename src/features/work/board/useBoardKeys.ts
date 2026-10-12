@@ -1,5 +1,5 @@
 import { type RefObject, useEffect } from "react";
-import { isTypingTarget } from "../keys";
+import { isTypingTarget } from "./keys";
 
 const NEXT = new Set(["j", "ArrowDown"]);
 const PREVIOUS = new Set(["k", "ArrowUp"]);

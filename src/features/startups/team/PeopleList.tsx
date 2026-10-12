@@ -17,7 +17,7 @@ import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { initials } from "~/lib/initials";
-import type { TeamPeople, TeamPerson } from "./hooks/useTeamPeople";
+import type { TeamPeople, TeamPerson } from "./useTeamPeople";
 
 function displayName(person: TeamPerson) {
 	return person.name ?? person.username ?? "Someone";

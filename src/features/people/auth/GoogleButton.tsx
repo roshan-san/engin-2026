@@ -1,6 +1,6 @@
 import { FaGoogle } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { useGoogleSignIn } from "~/features/people/auth/hooks/useGoogleSignIn";
+import { useGoogleSignIn } from "~/features/people/auth/useGoogleSignIn";
 
 type GoogleButtonProps = {
 	readonly label?: string;

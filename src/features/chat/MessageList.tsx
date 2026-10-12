@@ -8,7 +8,7 @@ import { displayName } from "~/lib/displayName";
 import { relativeTime } from "~/lib/relativeTime";
 import { initials } from "~/lib/initials";
 import { groupMessages } from "./groupMessages";
-import type { MessageView } from "./hooks/useMessages";
+import type { MessageView } from "./useMessages";
 import { MessageBody } from "./MessageBody";
 
 /** How close to the bottom still counts as reading the latest. */

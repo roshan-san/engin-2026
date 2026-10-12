@@ -5,8 +5,8 @@ import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
-import { type BoardScope, boardQuery } from "../BoardScope";
-import type { CardView } from "../types";
+import { type BoardScope, boardQuery } from "./BoardScope";
+import type { CardView } from "./types";
 
 /** Rewrites the scope's cached Cards, for optimistic updates. */
 export function patchBoardCards(

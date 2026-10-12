@@ -4,8 +4,8 @@ import { useMutation } from "convex/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
-import { useBoardScope } from "../../board/BoardScope";
-import { patchBoardCards } from "../../board/hooks/useBoard";
+import { useBoardScope } from "../board/BoardScope";
+import { patchBoardCards } from "../board/useBoard";
 
 export type Shipped = {
 	line: string;

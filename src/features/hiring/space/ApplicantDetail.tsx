@@ -10,7 +10,7 @@ import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { RatingParts } from "~/features/work/activity/RatingParts";
 import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
-import { useApplicant } from "./hooks/useApplicants";
+import { useApplicant } from "./useApplicants";
 
 /** One Applicant: their answer, their Rating and its parts, and what they've done. */
 export function ApplicantDetail({

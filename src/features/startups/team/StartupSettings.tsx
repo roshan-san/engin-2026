@@ -12,7 +12,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { initials } from "~/lib/initials";
 import { CITIES, KINDS, STAGES } from "../startupChips";
-import { useStartupSettings } from "./hooks/useStartupSettings";
+import { useStartupSettings } from "./useStartupSettings";
 import {
 	type SettingsDraft,
 	toSettingsDraft,

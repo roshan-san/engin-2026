@@ -6,7 +6,7 @@ import { PanelHeader } from "~/components/PanelHeader";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";
-import { useHackathonForm } from "./hooks/useHackathonForm";
+import { useHackathonForm } from "./useHackathonForm";
 
 /** Posting a Hackathon: saved as a draft, published from its space. Framed like the space it becomes. */
 export function NewHackathonPage() {

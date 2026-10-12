@@ -16,9 +16,9 @@ import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import { BuilderView } from "./BuilderView";
 import { EveryonePanel } from "./EveryonePanel";
-import { useApplicants } from "./hooks/useApplicants";
-import { useReviewQueue } from "./hooks/useReviewQueue";
-import { useHackathonThreads } from "./hooks/useSpace";
+import { useApplicants } from "./useApplicants";
+import { useReviewQueue } from "./useReviewQueue";
+import { useHackathonThreads } from "./useSpace";
 import { ReviewQueue } from "./ReviewQueue";
 import { resolveView, type SidebarBuilder, sidebarItems } from "./sidebarItems";
 

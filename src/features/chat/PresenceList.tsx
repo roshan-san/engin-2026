@@ -9,7 +9,7 @@ import {
 } from "~/components/ui/tooltip";
 import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
-import { useOnline } from "./hooks/useOnline";
+import { useOnline } from "./useOnline";
 import { orderPresence, presenceLabel } from "./presence";
 
 /** Overlapping avatars of who is online, you first. Hover for what they're on. */

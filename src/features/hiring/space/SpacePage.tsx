@@ -11,8 +11,8 @@ import { roleLabel, termsLine } from "../jobChips";
 import { STAGE, stageDate } from "../stage";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { DraftView } from "./DraftView";
-import { useApplicants } from "./hooks/useApplicants";
-import { useSpace } from "./hooks/useSpace";
+import { useApplicants } from "./useApplicants";
+import { useSpace } from "./useSpace";
 import { RunningView } from "./RunningView";
 import { ScreeningView } from "./ScreeningView";
 

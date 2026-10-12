@@ -8,7 +8,7 @@ import { Label } from "~/components/ui/label";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { answerKey } from "./applyStatus";
-import { useApply } from "./hooks/useApply";
+import { useApply } from "./useApply";
 
 function readSaved(key: string): string {
 	try {

@@ -9,8 +9,8 @@ import { displayName } from "~/lib/displayName";
 import { ShippedView } from "~/features/work/cards/ShippedView";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
-import { useListKeys } from "./hooks/useListKeys";
-import { useReviewQueue } from "./hooks/useReviewQueue";
+import { useListKeys } from "./useListKeys";
+import { useReviewQueue } from "./useReviewQueue";
 
 /** Every Card waiting for you, across all Builders. J/K move, V verifies, Enter opens. */
 export function ReviewQueue({

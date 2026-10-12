@@ -4,7 +4,7 @@ import { MentorNote } from "~/components/MentorNote";
 import { Textarea } from "~/components/ui/textarea";
 import type { CardView } from "../board/types";
 import { displayName } from "../../../lib/displayName";
-import { useDraft } from "./hooks/useDraft";
+import { useDraft } from "./useDraft";
 import { relativeTime } from "../../../lib/relativeTime";
 
 const IDLE_MS = 1000;

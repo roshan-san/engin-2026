@@ -15,7 +15,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
-import { ThreadPanel } from "~/features/chat/threads/ThreadPanel";
+import { ThreadPanel } from "~/features/chat/ThreadPanel";
 import { Board } from "~/features/work/board/Board";
 import {
 	type BoardScope,
@@ -30,7 +30,7 @@ import { initials } from "~/lib/initials";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";
-import { useDecide } from "./hooks/useDecide";
+import { useDecide } from "./useDecide";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

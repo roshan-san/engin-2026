@@ -26,7 +26,7 @@ import { pickImages } from "../../../lib/images";
 import { useBoardScope } from "../board/BoardScope";
 import { isSendKey } from "../board/keys";
 import type { CardView } from "../board/types";
-import { useSubmit } from "./hooks/useSubmit";
+import { useSubmit } from "./useSubmit";
 
 type Picture = {
 	readonly key: string;

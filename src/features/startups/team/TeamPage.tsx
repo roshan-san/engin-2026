@@ -1,8 +1,8 @@
 import { Page } from "~/components/Page";
 import { PageHeader } from "~/components/PageHeader";
 import { useWorkspace } from "~/features/work/board/StartupContext";
-import { useStartupInvites } from "./hooks/useStartupInvites";
-import { useTeamPeople } from "./hooks/useTeamPeople";
+import { useStartupInvites } from "./useStartupInvites";
+import { useTeamPeople } from "./useTeamPeople";
 import { InviteForm } from "./InviteForm";
 import { PeopleList } from "./PeopleList";
 import { StartupSettings } from "./StartupSettings";

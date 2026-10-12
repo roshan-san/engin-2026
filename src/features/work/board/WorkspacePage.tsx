@@ -10,9 +10,9 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "~/components/ui/sheet";
-import { useHeartbeat } from "~/features/chat/threads/hooks/useHeartbeat";
-import { useTeamThread } from "~/features/chat/threads/hooks/useTeamThread";
-import { TeamPanel } from "~/features/chat/threads/TeamPanel";
+import { useHeartbeat } from "~/features/chat/useHeartbeat";
+import { useTeamThread } from "~/features/chat/useTeamThread";
+import { TeamPanel } from "~/features/chat/TeamPanel";
 import { useIsMobile } from "~/lib/use-mobile";
 import { CardPanel } from "../cards/CardPanel";
 import { ShipDialog } from "../cards/ShipDialog";

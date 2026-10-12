@@ -9,7 +9,7 @@ import { Badge } from "~/components/ui/badge";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { RatingParts } from "~/features/work/activity/RatingParts";
 import { initials } from "~/lib/initials";
-import { useProfile } from "./hooks/useProfile";
+import { useProfile } from "./useProfile";
 import { disciplineLabel, hackathonLine, workLine } from "./profileText";
 
 const route = getRouteApi("/_shell/u/$username");

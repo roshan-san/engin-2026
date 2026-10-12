@@ -2,7 +2,7 @@ import { useConvexAuth } from "@convex-dev/auth/react";
 import { Navigate } from "@tanstack/react-router";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { GlowHero } from "~/components/GlowHero";
-import { GoogleButton } from "~/features/people/auth/components/GoogleButton";
+import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { PublicShell } from "~/shell/PublicShell";
 import { usePlaces } from "~/shell/usePlaces";
 import { pickLanding, readLastPlace } from "~/shell/landing";

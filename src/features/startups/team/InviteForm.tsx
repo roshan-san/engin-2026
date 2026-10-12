@@ -6,7 +6,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
 import { dayLabel } from "~/features/hiring/hackathonDates";
-import type { StartupInvite } from "./hooks/useStartupInvites";
+import type { StartupInvite } from "./useStartupInvites";
 
 /** The Founder invites by email; pending Invites sit below with Revoke. */
 export function InviteForm({

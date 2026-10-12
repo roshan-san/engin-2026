@@ -10,7 +10,7 @@ import {
 import { initials } from "~/lib/initials";
 import type { CardView } from "../board/types";
 import { displayName } from "../../../lib/displayName";
-import { useTeam } from "./hooks/useTeam";
+import { useTeam } from "./useTeam";
 
 type Person = NonNullable<CardView["owner"]>;
 

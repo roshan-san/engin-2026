@@ -21,7 +21,7 @@ import { cn } from "~/lib/utils";
 import { dayLabel, lastDay } from "../hackathonDates";
 import type { ApplicantRow } from "./applicantSort";
 import { decideState } from "./decideSteps";
-import { useDecide } from "./hooks/useDecide";
+import { useDecide } from "./useDecide";
 
 type Decision = "hired" | "not_this_time";
 

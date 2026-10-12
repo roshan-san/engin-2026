@@ -12,7 +12,7 @@ import { pickImages } from "~/lib/images";
 import { isSendKey } from "~/features/work/board/keys";
 import { errorMessage } from "~/lib/errors";
 import { cn } from "~/lib/utils";
-import { useMentionCards } from "./hooks/useMentionCards";
+import { useMentionCards } from "./useMentionCards";
 import { MentionPicker } from "./MentionPicker";
 
 /** The most Cards the picker lists at once. */

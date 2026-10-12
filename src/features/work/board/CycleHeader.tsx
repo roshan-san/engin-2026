@@ -3,8 +3,8 @@ import { useRef, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
 import { Input } from "~/components/ui/input";
 import { cycleDates } from "./cycleDates";
-import { useCycle } from "./hooks/useCycle";
-import { useSetGoal } from "./hooks/useSetGoal";
+import { useCycle } from "./useCycle";
+import { useSetGoal } from "./useSetGoal";
 import { useWorkspace } from "./StartupContext";
 
 /** "Cycle 3 · Oct 12 – 18", then the week's goal; the Founder edits it in place. */

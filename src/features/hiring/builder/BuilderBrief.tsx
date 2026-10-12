@@ -4,7 +4,7 @@ import { PanelHeader } from "~/components/PanelHeader";
 import { SectionLabel } from "~/components/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { useBoardScope } from "~/features/work/board/BoardScope";
-import { useBoardCards } from "~/features/work/board/hooks/useBoard";
+import { useBoardCards } from "~/features/work/board/useBoard";
 import { buildDaysLabel, dayLabel, lastDay } from "../hackathonDates";
 
 /**

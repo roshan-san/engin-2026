@@ -3,7 +3,7 @@ import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { BoardScopeContext } from "./BoardScope";
 import { useMe } from "~/shell/useMe";
-import { useStartup } from "./hooks/useStartup";
+import { useStartup } from "./useStartup";
 import { StartupContext } from "./StartupContext";
 
 /** Loads the Startup at `slug` and gives its page the workspace; 404s for non-team. */

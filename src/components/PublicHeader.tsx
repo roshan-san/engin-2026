@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
-import { useGoogleSignIn } from "~/features/people/auth/hooks/useGoogleSignIn";
+import { useGoogleSignIn } from "~/features/people/auth/useGoogleSignIn";
 import { EnginLogo } from "~/shell/EnginLogo";
 
 /** The signed-out bar: the logo, Explore and a sign-in button. */
