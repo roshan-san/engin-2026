@@ -2,7 +2,7 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { INVITE_TTL_MS, MAX_INVITES } from "../shared/limits";
-import { getTeamRole } from "./access.rules";
+import { getTeamRole } from "./teamAccess";
 
 export function normalizeEmail(email: string): string {
 	return email.trim().toLowerCase();

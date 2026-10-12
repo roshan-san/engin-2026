@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
 import { shiftWeek, weekOf } from "../shared/cycles";
-import { buildUniqueUsername } from "./username.rules";
+import { buildUniqueUsername } from "./username";
 import {
 	buildParts,
 	countedWeeks,
@@ -11,7 +11,7 @@ import {
 	outcomeScore,
 	recentOutcomes,
 	toPartsView,
-} from "../work/rating.rules";
+} from "./rating";
 
 export type PublicUser = {
 	_id: Id<"users">;
@@ -41,7 +41,7 @@ export async function loadPublicUser(
 	return user ? toPublicUser(user) : null;
 }
 
-/** Set weekly by the Rating run (`work/rating.rules.ts`). */
+/** Set weekly by the Rating run (`model/rating.ts`). */
 export function isProvisional(user: Doc<"users">): boolean {
 	return user.provisional ?? true;
 }

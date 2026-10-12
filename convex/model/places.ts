@@ -7,7 +7,7 @@ import {
 	loadHackathonThreads,
 	loadTeamThreads,
 	loadThreadRead,
-} from "../chat/threads.rules";
+} from "./threads";
 import type { Infer } from "convex/values";
 
 type HackathonStatus = Infer<typeof hackathonStatus>;

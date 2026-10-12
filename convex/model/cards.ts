@@ -1,21 +1,17 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { isBuilder } from "../hiring/applications.rules";
+import { isBuilder } from "./applications";
 import {
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
 	TEXT,
 } from "../shared/limits";
-import { assertUrl, requireLimitedText } from "../lib/text";
-import { loadPublicUser } from "../people/users.rules";
-import {
-	getTeamRole,
-	requireTeam,
-	type TeamRole,
-} from "../startups/access.rules";
-import { appendActivity } from "./activity.rules";
+import { assertUrl, requireLimitedText } from "./text";
+import { loadPublicUser } from "./users";
+import { getTeamRole, requireTeam, type TeamRole } from "./teamAccess";
+import { appendActivity } from "./activity";
 import { weekOf, weekStart } from "../shared/cycles";
 
 type Ctx = QueryCtx | MutationCtx;

@@ -21,7 +21,7 @@ import {
 	nextMonday,
 	publishedHackathon,
 } from "./hackathons.helpers";
-import { finishIfDecided } from "./hackathons.rules";
+import { finishIfDecided } from "../model/hackathons";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {

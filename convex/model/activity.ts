@@ -2,7 +2,7 @@ import type { Infer } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_CYCLE_ENTRIES, MAX_LISTED_CYCLES } from "../shared/limits";
-import { loadPublicUser, type PublicUser } from "../people/users.rules";
+import { loadPublicUser, type PublicUser } from "./users";
 import type { activityKind, jobRole } from "../shared/validators";
 import {
 	cycleNumber,
@@ -11,14 +11,14 @@ import {
 	weekOf,
 	weekStart,
 } from "../shared/cycles";
-import { loadGoal } from "./goals.rules";
+import { loadGoal } from "./goals";
 import {
 	buildParts,
 	countedWeeks,
 	loadStartupCounts,
 	RATING,
 	toPartsView,
-} from "./rating.rules";
+} from "./rating";
 
 type ActivityKind = Infer<typeof activityKind>;
 type JobRole = Infer<typeof jobRole>;

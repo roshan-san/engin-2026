@@ -9,7 +9,7 @@ import {
 	MIN_PRESENCE_INTERVAL_MS,
 	TEXT,
 } from "../shared/limits";
-import { requireLimitedText } from "../lib/text";
+import { requireLimitedText } from "./text";
 
 export const presence = new Presence(components.presence);
 

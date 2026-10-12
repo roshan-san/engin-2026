@@ -10,7 +10,7 @@ import {
 	personTarget,
 	startupTarget,
 	weekVolume,
-} from "./rating.rules";
+} from "../model/rating";
 
 describe("rating math", () => {
 	it("each Card counts fully up to 5 a week, and barely after", () => {

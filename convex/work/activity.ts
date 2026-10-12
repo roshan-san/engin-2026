@@ -1,11 +1,11 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
+import { requireUserId } from "../model/auth";
 import { CYCLES_PAGE } from "../shared/limits";
-import { requireTeam } from "../startups/access.rules";
-import { getStartupBySlug } from "../startups/startups.rules";
-import { loadCycles, loadSignals } from "./activity.rules";
+import { requireTeam } from "../model/teamAccess";
+import { getStartupBySlug } from "../model/startups";
+import { loadCycles, loadSignals } from "../model/activity";
 
 /** The team's full Activity: the newest `count` Cycles. */
 export const list = query({

@@ -7,8 +7,8 @@ import {
 	MAX_MESSAGES,
 	TEXT,
 } from "../shared/limits";
-import { limitText } from "../lib/text";
-import { loadPublicUser } from "../people/users.rules";
+import { limitText } from "./text";
+import { loadPublicUser } from "./users";
 import { parseMentions } from "../shared/mentions";
 
 /** A trimmed message that has text, images, or both. */

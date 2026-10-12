@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { buildUsernameBase, requireUsername } from "./username.rules";
+import { buildUsernameBase, requireUsername } from "./username";
 
 describe("buildUsernameBase", () => {
 	test("a name becomes a lowercase handle", () =>

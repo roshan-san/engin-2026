@@ -9,12 +9,12 @@ import {
 	MIN_HACKATHON_CARDS,
 	TEXT,
 } from "../shared/limits";
-import { limitText, requireLimitedText } from "../lib/text";
-import { requireFounder } from "../startups/access.rules";
-import { appendActivity } from "../work/activity.rules";
+import { limitText, requireLimitedText } from "./text";
+import { requireFounder } from "./teamAccess";
+import { appendActivity } from "./activity";
 import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
 import { jobMode, jobPay, jobRole } from "../shared/validators";
-import type { HiringRecord } from "./record.rules";
+import type { HiringRecord } from "./hiringRecord";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {

@@ -1,13 +1,13 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import { requireThreadAccess } from "./access.rules";
+import { requireUserId } from "../model/auth";
+import { requireThreadAccess } from "../model/threadAccess";
 import {
 	buildThreadViews,
 	loadHackathonThreads,
 	loadTeamThreads,
 	markThreadRead,
-} from "./threads.rules";
+} from "../model/threads";
 
 export const list = query({
 	args: {
