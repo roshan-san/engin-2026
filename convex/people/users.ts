@@ -69,7 +69,8 @@ export const updateProfile = mutation({
 	args: {
 		username: v.optional(v.string()),
 		bio: v.optional(v.string()),
-		discipline: v.optional(discipline),
+		/** `null` clears it. */
+		discipline: v.optional(v.union(discipline, v.null())),
 		linkedinUrl: v.optional(v.string()),
 		portfolioUrl: v.optional(v.string()),
 		githubUrl: v.optional(v.string()),
@@ -93,7 +94,7 @@ export const updateProfile = mutation({
 			patch.bio = limitText(args.bio, "Bio", TEXT.bio);
 		}
 		if (args.discipline !== undefined) {
-			patch.discipline = args.discipline;
+			patch.discipline = args.discipline ?? undefined;
 		}
 		if (args.linkedinUrl !== undefined) {
 			patch.linkedinUrl = assertUrl(args.linkedinUrl, "LinkedIn");

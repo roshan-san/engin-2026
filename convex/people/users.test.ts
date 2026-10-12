@@ -82,6 +82,21 @@ describe("users", () => {
 		});
 	});
 
+	it("a person clears their discipline", async () => {
+		const t = createTest();
+		const fay = await signUp(t, "Fay");
+		await fay.as.mutation(api.people.users.updateProfile, {
+			discipline: "designer",
+		});
+
+		await fay.as.mutation(api.people.users.updateProfile, {
+			discipline: null,
+		});
+
+		const me = await fay.as.query(api.people.users.getMe, {});
+		expect(me?.discipline).toBeNull();
+	});
+
 	it("a blank link and bio clear what was saved", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");
