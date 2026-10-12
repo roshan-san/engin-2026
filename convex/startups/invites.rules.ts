@@ -89,18 +89,13 @@ async function loadOpenInvite(
 	startupId: Id<"startups">,
 	email: string,
 ): Promise<Doc<"invites"> | null> {
-	const now = Date.now();
 	const pending = await ctx.db
 		.query("invites")
-		.withIndex("by_email_and_status", (q) =>
-			q.eq("email", email).eq("status", "pending"),
+		.withIndex("by_email_and_status_and_expiresAt", (q) =>
+			q.eq("email", email).eq("status", "pending").gt("expiresAt", Date.now()),
 		)
 		.take(MAX_INVITES);
-	return (
-		pending.find(
-			(invite) => invite.startupId === startupId && invite.expiresAt > now,
-		) ?? null
-	);
+	return pending.find((invite) => invite.startupId === startupId) ?? null;
 }
 
 /** The invite, when it is still open and addressed to this person's email. */
