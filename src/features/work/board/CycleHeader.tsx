@@ -36,8 +36,8 @@ export function CycleHeader() {
 		setIsFocused(false);
 		if (draft === null) return;
 		const next = draft.trim();
-		if (next !== goal) await setGoal(next);
-		setDraft(null);
+		// A failed save keeps what was typed; the toast says why.
+		if (next === goal || (await setGoal(next))) setDraft(null);
 	}
 
 	if (!isFounder) {
@@ -68,7 +68,7 @@ export function CycleHeader() {
 					className="h-8 truncate border-transparent bg-transparent px-2 hover:border-transparent hover:bg-accent/50 focus-visible:border-input focus-visible:bg-background"
 					onFocus={() => {
 						setIsFocused(true);
-						setDraft(goal);
+						setDraft((current) => current ?? goal);
 					}}
 					onChange={(event) => setDraft(event.target.value)}
 					onKeyDown={(event) => {

@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../lib/limits";
@@ -78,7 +78,7 @@ export const getApplicant = query({
 		);
 		const user = await ctx.db.get(application.userId);
 		if (!user) {
-			throw new Error("Application not found");
+			throw new ConvexError("Application not found");
 		}
 
 		return {
@@ -95,14 +95,14 @@ export const apply = mutation({
 		const userId = await requireUserId(ctx);
 		const hackathon = await ctx.db.get(args.hackathonId);
 		if (!hackathon || hackathon.status === "draft") {
-			throw new Error("Hackathon not found");
+			throw new ConvexError("Hackathon not found");
 		}
 		requireOpen(hackathon);
 		if (await getTeamRole(ctx, hackathon.startupId, userId)) {
-			throw new Error("You're on this startup");
+			throw new ConvexError("You're on this startup");
 		}
 		if (await getApplication(ctx, hackathon._id, userId)) {
-			throw new Error("You've already applied");
+			throw new ConvexError("You've already applied");
 		}
 		const answer = requireLimitedText(args.answer, "Answer", TEXT.answer);
 
@@ -135,7 +135,7 @@ export const accept = mutation({
 			return;
 		}
 		if (hackathon.builderCount >= MAX_BUILDERS) {
-			throw new Error(`${MAX_BUILDERS} Builders is the limit`);
+			throw new ConvexError(`${MAX_BUILDERS} Builders is the limit`);
 		}
 
 		await ctx.db.patch(application._id, { status: "building" });
@@ -194,7 +194,7 @@ export const markWalkthrough = mutation({
 		requireRunning(hackathon);
 		requireBuilding(application);
 		if (!application.shortlisted) {
-			throw new Error("Shortlist them first");
+			throw new ConvexError("Shortlist them first");
 		}
 		const notes = limitText(args.notes, "Notes", TEXT.walkthroughNotes);
 
@@ -220,23 +220,23 @@ export const decide = mutation({
 		);
 		requireBuilding(application);
 		if (application.decision) {
-			throw new Error("Already decided");
+			throw new ConvexError("Already decided");
 		}
 		if (hackathon.status === "done") {
-			throw new Error("This Hackathon has ended");
+			throw new ConvexError("This Hackathon has ended");
 		}
 		const now = Date.now();
 		requireDecidable(hackathon, now);
 		const feedback = limitText(args.feedback, "Feedback", TEXT.feedback);
 		if (args.decision === "hired" && application.walkthroughAt === undefined) {
-			throw new Error("Do the Walkthrough first");
+			throw new ConvexError("Do the Walkthrough first");
 		}
 
 		await ctx.db.patch(application._id, { decision: args.decision, feedback });
 		if (args.decision === "hired") {
 			const builder = await ctx.db.get(application.userId);
 			if (!builder?.email) {
-				throw new Error("This Builder has no email to invite");
+				throw new ConvexError("This Builder has no email to invite");
 			}
 			await ensureHireInvite(ctx, {
 				startupId: hackathon.startupId,
@@ -264,13 +264,13 @@ export const keepPromise = mutation({
 		const userId = await requireUserId(ctx);
 		const application = await ctx.db.get(args.applicationId);
 		if (!application || application.userId !== userId) {
-			throw new Error("This isn't your application");
+			throw new ConvexError("This isn't your application");
 		}
 		if (!application.decision) {
-			throw new Error("Wait for the decision");
+			throw new ConvexError("Wait for the decision");
 		}
 		if (application.promiseKept !== undefined) {
-			throw new Error("Already answered");
+			throw new ConvexError("Already answered");
 		}
 
 		await ctx.db.patch(application._id, { promiseKept: args.kept });

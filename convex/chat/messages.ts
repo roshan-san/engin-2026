@@ -1,7 +1,7 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
-import { requireThreadAccess } from "./access.rules";
+import { requireThreadAccess, requireThreadOpen } from "./access.rules";
 import {
 	buildMessageViews,
 	loadLatestMessages,
@@ -39,7 +39,8 @@ export const send = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireThreadAccess(ctx, args.threadId, userId);
+		const { thread } = await requireThreadAccess(ctx, args.threadId, userId);
+		await requireThreadOpen(ctx, thread);
 		const { body, images } = parseMessage(args.body, args.images);
 
 		await ctx.db.insert("messages", {
@@ -60,18 +61,19 @@ export const pin = mutation({
 		const userId = await requireUserId(ctx);
 		const message = await ctx.db.get(args.messageId);
 		if (!message) {
-			throw new Error("Message not found");
+			throw new ConvexError("Message not found");
 		}
 		const { thread, isFounder } = await requireThreadAccess(
 			ctx,
 			message.threadId,
 			userId,
 		);
+		await requireThreadOpen(ctx, thread);
 		if (!isFounder) {
-			throw new Error("Only the Founder can do this");
+			throw new ConvexError("Only the Founder can do this");
 		}
 		if (thread.kind !== "everyone") {
-			throw new Error("Only Everyone messages can be pinned");
+			throw new ConvexError("Only Everyone messages can be pinned");
 		}
 
 		await ctx.db.patch(message._id, { pinned: args.pinned });

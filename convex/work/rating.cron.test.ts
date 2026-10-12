@@ -50,6 +50,29 @@ describe("rating", () => {
 		expect(startup.rhythm.length).toBeLessThanOrEqual(12);
 	});
 
+	it("the rhythm keeps only the last 12 weeks", async () => {
+		const setup = await setUpStartup(createTest());
+		await toNextWeek(setup.t);
+		for (let week = 0; week < 14; week++) {
+			await verifyCards(setup, setup.founder, week === 13 ? 3 : 1);
+			await toNextWeek(setup.t);
+			await runRating(setup.t);
+		}
+
+		const startup = await startupRow(setup.t, setup.startupId);
+
+		expect(startup.rhythm).toHaveLength(12);
+		expect(startup.rhythm.at(-1)).toBe(3);
+	});
+
+	it("a Startup rated no weeks has an empty rhythm", async () => {
+		const setup = await setUpStartup(createTest());
+
+		await runRating(setup.t);
+
+		expect((await startupRow(setup.t, setup.startupId)).rhythm).toEqual([]);
+	});
+
 	it("a quiet week pulls the Rating down slowly", async () => {
 		const setup = await setUpStartup(createTest());
 		await setup.t.run(

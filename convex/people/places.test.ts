@@ -9,7 +9,10 @@ import {
 	endHackathon,
 	startHackathon,
 } from "../hiring/applications.helpers";
-import { publishedHackathon } from "../hiring/hackathons.helpers";
+import {
+	draftHackathon,
+	publishedHackathon,
+} from "../hiring/hackathons.helpers";
 import { createTest } from "../lib/testing.helpers";
 import { addContributor, setUpStartup } from "../startups/startups.helpers";
 import { SHIPPED } from "../work/cards.helpers";
@@ -271,6 +274,32 @@ describe("waiting", () => {
 		expect(read.startups[0].waiting).toBe(false);
 	});
 
+	it("the Founder's Startup lights when Everyone has an unread message", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		const threadId = await threadOf(ana, { hackathonId }, "everyone");
+
+		await say(ana, threadId);
+
+		expect((await placesOf(setup.founder)).startups[0].waiting).toBe(true);
+	});
+
+	it("a draft or done Hackathon never lights the Startup", async () => {
+		const setup = await setUpStartup(createTest());
+		await draftHackathon(setup);
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		await say(ana, await threadOf(ana, { hackathonId }, "everyone"));
+		await endHackathon(setup, hackathonId);
+
+		await closeHackathon(setup, hackathonId);
+
+		expect((await placesOf(setup.founder)).startups[0].waiting).toBe(false);
+	});
+
 	it("an undecided Builder while deciding lights it", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
@@ -338,5 +367,7 @@ describe("waiting", () => {
 it("places need sign-in", async () => {
 	const t = createTest();
 
-	await expect(t.query(api.people.places.list, {})).rejects.toThrow();
+	await expect(t.query(api.people.places.list, {})).rejects.toThrow(
+		"Not authenticated",
+	);
 });

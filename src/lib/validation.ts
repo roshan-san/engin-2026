@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { convexErrorData } from "./errors";
 
 export type ValidationResult<T> =
 	| { ok: true; data: T }
@@ -26,6 +27,8 @@ export function validate<Schema extends z.ZodType>(
 
 /** Convex and network failures both surface to the user as plain text. */
 export function toErrorMessage(error: unknown, fallback: string): string {
+	const data = convexErrorData(error);
+	if (data) return data;
 	if (error instanceof Error) {
 		// Convex wraps server errors as "[CONVEX …] [Request ID: …] Server Error
 		// Uncaught Error: <message>", once more for a mutation run inside an

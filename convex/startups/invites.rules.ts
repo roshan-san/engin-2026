@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { INVITE_TTL_MS, MAX_INVITES } from "../lib/limits";
@@ -23,7 +24,7 @@ export async function createInvite(
 ): Promise<Id<"invites">> {
 	const email = normalizeEmail(args.email);
 	if (!/^\S+@\S+\.\S+$/.test(email)) {
-		throw new Error("Enter a valid email");
+		throw new ConvexError("Enter a valid email");
 	}
 
 	const account = await ctx.db
@@ -31,11 +32,11 @@ export async function createInvite(
 		.withIndex("email", (q) => q.eq("email", email))
 		.first();
 	if (account && (await getTeamRole(ctx, args.startupId, account._id))) {
-		throw new Error("Already on this startup");
+		throw new ConvexError("Already on this startup");
 	}
 
 	if (await loadOpenInvite(ctx, args.startupId, email)) {
-		throw new Error("Already invited");
+		throw new ConvexError("Already invited");
 	}
 
 	return await ctx.db.insert("invites", {
@@ -88,18 +89,13 @@ async function loadOpenInvite(
 	startupId: Id<"startups">,
 	email: string,
 ): Promise<Doc<"invites"> | null> {
-	const now = Date.now();
 	const pending = await ctx.db
 		.query("invites")
-		.withIndex("by_email_and_status", (q) =>
-			q.eq("email", email).eq("status", "pending"),
+		.withIndex("by_email_and_status_and_expiresAt", (q) =>
+			q.eq("email", email).eq("status", "pending").gt("expiresAt", Date.now()),
 		)
 		.take(MAX_INVITES);
-	return (
-		pending.find(
-			(invite) => invite.startupId === startupId && invite.expiresAt > now,
-		) ?? null
-	);
+	return pending.find((invite) => invite.startupId === startupId) ?? null;
 }
 
 /** The invite, when it is still open and addressed to this person's email. */
@@ -110,17 +106,17 @@ export async function requireOpenInviteFor(
 ): Promise<Doc<"invites">> {
 	const invite = await ctx.db.get(inviteId);
 	if (!invite) {
-		throw new Error("Invite not found");
+		throw new ConvexError("Invite not found");
 	}
 	const user = await ctx.db.get(userId);
 	if (!user?.email || normalizeEmail(user.email) !== invite.email) {
-		throw new Error("This invite isn't for you");
+		throw new ConvexError("This invite isn't for you");
 	}
 	if (invite.status !== "pending") {
-		throw new Error("This invite is no longer open");
+		throw new ConvexError("This invite is no longer open");
 	}
 	if (invite.expiresAt <= Date.now()) {
-		throw new Error("This invite has expired");
+		throw new ConvexError("This invite has expired");
 	}
 	return invite;
 }

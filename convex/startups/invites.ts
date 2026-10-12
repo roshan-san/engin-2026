@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { MAX_INVITES } from "../lib/limits";
@@ -17,22 +17,22 @@ export const list = query({
 		const userId = await requireUserId(ctx);
 		await requireFounder(ctx, args.startupId, userId);
 
-		const now = Date.now();
 		const pending = await ctx.db
 			.query("invites")
-			.withIndex("by_startup_and_status", (q) =>
-				q.eq("startupId", args.startupId).eq("status", "pending"),
+			.withIndex("by_startup_and_status_and_expiresAt", (q) =>
+				q
+					.eq("startupId", args.startupId)
+					.eq("status", "pending")
+					.gt("expiresAt", Date.now()),
 			)
 			.take(MAX_INVITES);
 
-		return pending
-			.filter((invite) => invite.expiresAt > now)
-			.map((invite) => ({
-				inviteId: invite._id,
-				email: invite.email,
-				expiresAt: invite.expiresAt,
-				fromHackathon: invite.hackathonId !== undefined,
-			}));
+		return pending.map((invite) => ({
+			inviteId: invite._id,
+			email: invite.email,
+			expiresAt: invite.expiresAt,
+			fromHackathon: invite.hackathonId !== undefined,
+		}));
 	},
 });
 
@@ -46,28 +46,28 @@ export const listMine = query({
 			return [];
 		}
 
-		const now = Date.now();
 		const pending = await ctx.db
 			.query("invites")
-			.withIndex("by_email_and_status", (q) =>
-				q.eq("email", normalizeEmail(user.email ?? "")).eq("status", "pending"),
+			.withIndex("by_email_and_status_and_expiresAt", (q) =>
+				q
+					.eq("email", normalizeEmail(user.email ?? ""))
+					.eq("status", "pending")
+					.gt("expiresAt", Date.now()),
 			)
 			.take(MAX_INVITES);
 
 		const open = await Promise.all(
-			pending
-				.filter((invite) => invite.expiresAt > now)
-				.map(async (invite) => {
-					const startup = await ctx.db.get(invite.startupId);
-					return startup
-						? {
-								inviteId: invite._id,
-								startupName: startup.name,
-								slug: startup.slug,
-								fromHackathon: invite.hackathonId !== undefined,
-							}
-						: null;
-				}),
+			pending.map(async (invite) => {
+				const startup = await ctx.db.get(invite.startupId);
+				return startup
+					? {
+							inviteId: invite._id,
+							startupName: startup.name,
+							slug: startup.slug,
+							fromHackathon: invite.hackathonId !== undefined,
+						}
+					: null;
+			}),
 		);
 		return open.filter((invite) => invite !== null);
 	},
@@ -92,11 +92,11 @@ export const revoke = mutation({
 		const userId = await requireUserId(ctx);
 		const invite = await ctx.db.get(args.inviteId);
 		if (!invite) {
-			throw new Error("Invite not found");
+			throw new ConvexError("Invite not found");
 		}
 		await requireFounder(ctx, invite.startupId, userId);
 		if (invite.status !== "pending") {
-			throw new Error("This invite is no longer open");
+			throw new ConvexError("This invite is no longer open");
 		}
 		await ctx.db.patch(invite._id, { status: "revoked" });
 	},
@@ -108,7 +108,7 @@ export const accept = mutation({
 		const userId = await requireUserId(ctx);
 		const invite = await requireOpenInviteFor(ctx, args.inviteId, userId);
 		if (await getTeamRole(ctx, invite.startupId, userId)) {
-			throw new Error("Already on this startup");
+			throw new ConvexError("Already on this startup");
 		}
 
 		await ctx.db.insert("contributors", {

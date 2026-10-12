@@ -75,6 +75,14 @@ export const startupsTables = {
 		/** Set when the Invite brings a hired Builder onto the Startup. */
 		hackathonId: v.optional(v.id("hackathons")),
 	})
-		.index("by_startup_and_status", ["startupId", "status"])
-		.index("by_email_and_status", ["email", "status"]),
+		.index("by_startup_and_status_and_expiresAt", [
+			"startupId",
+			"status",
+			"expiresAt",
+		])
+		.index("by_email_and_status_and_expiresAt", [
+			"email",
+			"status",
+			"expiresAt",
+		]),
 };

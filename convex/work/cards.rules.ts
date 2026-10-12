@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { isBuilder } from "../hiring/applications.rules";
@@ -38,7 +39,7 @@ export async function requireCardAccess(
 }> {
 	const card = await ctx.db.get(cardId);
 	if (!card) {
-		throw new Error("This Card doesn't exist");
+		throw new ConvexError("This Card doesn't exist");
 	}
 	if (card.hackathonId) {
 		const { startup, role } = await requireHackathonCardRole(
@@ -68,21 +69,21 @@ async function requireHackathonCardRole(
 		ctx.db.get(card.startupId),
 	]);
 	if (!hackathon || !startup) {
-		throw new Error("This Card doesn't exist");
+		throw new ConvexError("This Card doesn't exist");
 	}
 	if (startup.founderId === userId) {
 		if (hackathon.status === "done") {
-			throw new Error("This Hackathon has ended");
+			throw new ConvexError("This Hackathon has ended");
 		}
 		return { startup, role: "founder" };
 	}
 	if (card.ownerId === userId && (await isBuilder(ctx, hackathonId, userId))) {
 		if (hackathon.status !== "building") {
-			throw new Error("This Hackathon isn't running");
+			throw new ConvexError("This Hackathon isn't running");
 		}
 		return { startup, role: "builder" };
 	}
-	throw new Error("This Card isn't yours");
+	throw new ConvexError("This Card isn't yours");
 }
 
 /** Who may see a Builder's Cards: the Founder, or that Builder. */
@@ -94,14 +95,14 @@ export async function requireBuilderBoardAccess(
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
 	if (!hackathon) {
-		throw new Error("Hackathon not found");
+		throw new ConvexError("Hackathon not found");
 	}
 	const startup = await ctx.db.get(hackathon.startupId);
 	if (startup?.founderId === userId) {
 		return;
 	}
 	if (builderId !== userId || !(await isBuilder(ctx, hackathonId, userId))) {
-		throw new Error("This Card isn't yours");
+		throw new ConvexError("This Card isn't yours");
 	}
 }
 
@@ -115,7 +116,7 @@ export function isChangesAsked(card: Doc<"cards">): boolean {
 
 export function requireNotVerified(card: Doc<"cards">): void {
 	if (card.status === "done") {
-		throw new Error("This Card is verified");
+		throw new ConvexError("This Card is verified");
 	}
 }
 
@@ -126,7 +127,7 @@ export async function requireTeamOwner(
 	ownerId: Id<"users">,
 ): Promise<void> {
 	if (!(await getTeamRole(ctx, startupId, ownerId))) {
-		throw new Error("They're not on this startup");
+		throw new ConvexError("They're not on this startup");
 	}
 }
 
@@ -137,7 +138,7 @@ export function normalizeTitle(title: string): string {
 export function normalizeNotes(notes: string): string {
 	const trimmed = notes.trim();
 	if (trimmed.length > TEXT.notes) {
-		throw new Error(`Notes must be under ${TEXT.notes} characters`);
+		throw new ConvexError(`Notes must be under ${TEXT.notes} characters`);
 	}
 	return trimmed;
 }
@@ -146,23 +147,23 @@ export function normalizeNotes(notes: string): string {
 export function parseShipped(input: Shipped): Shipped {
 	const line = input.line.trim();
 	if (!line) {
-		throw new Error("Say what shipped");
+		throw new ConvexError("Say what shipped");
 	}
 	if (line.length > TEXT.shippedLine) {
-		throw new Error(`Say it in under ${TEXT.shippedLine} characters`);
+		throw new ConvexError(`Say it in under ${TEXT.shippedLine} characters`);
 	}
 	if (input.links.length > MAX_SHIPPED_LINKS) {
-		throw new Error(`Add up to ${MAX_SHIPPED_LINKS} links`);
+		throw new ConvexError(`Add up to ${MAX_SHIPPED_LINKS} links`);
 	}
 	if (input.images.length > MAX_SHIPPED_IMAGES) {
-		throw new Error(`Add up to ${MAX_SHIPPED_IMAGES} images`);
+		throw new ConvexError(`Add up to ${MAX_SHIPPED_IMAGES} images`);
 	}
 	const links = input.links.map((link) => assertUrl(link, "Links") ?? "");
 	if (links.some((link) => !link)) {
-		throw new Error("Links must start with http:// or https://");
+		throw new ConvexError("Links must start with http:// or https://");
 	}
 	if (links.length === 0 && input.images.length === 0) {
-		throw new Error("Add a link or image");
+		throw new ConvexError("Add a link or image");
 	}
 	return { line, links, images: input.images };
 }

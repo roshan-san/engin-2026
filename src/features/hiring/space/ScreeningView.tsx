@@ -6,6 +6,7 @@ import { EmptyState } from "~/components/shared/EmptyState";
 import { Kbd } from "~/components/shared/Kbd";
 import { PanelHeader } from "~/components/shared/PanelHeader";
 import { Segmented } from "~/components/shared/Segmented";
+import { Button } from "~/components/ui/button";
 import {
 	Sheet,
 	SheetContent,
@@ -53,6 +54,8 @@ export function ScreeningView({
 	const [pane, setPane] = useState<"applicant" | "everyone" | "post">(
 		"applicant",
 	);
+	// On a phone, # Everyone opens in the sheet the Applicant uses.
+	const [isEveryoneOpen, setIsEveryoneOpen] = useState(false);
 	const view = route.useSearch({ select: (search) => search.view });
 	const navigate = route.useNavigate();
 	const isMobile = useIsMobile();
@@ -122,6 +125,14 @@ export function ScreeningView({
 						onChange={setSort}
 						className="ml-auto"
 					/>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="md:hidden"
+						onClick={() => setIsEveryoneOpen(true)}
+					>
+						# Everyone
+					</Button>
 				</PanelHeader>
 				<div className="min-h-0 flex-1 overflow-y-auto">
 					{applicants === undefined ? (
@@ -142,6 +153,7 @@ export function ScreeningView({
 							onSelect={(id) => {
 								select(id);
 								setPane("applicant");
+								setIsEveryoneOpen(false);
 							}}
 						/>
 					)}
@@ -189,19 +201,28 @@ export function ScreeningView({
 			</section>
 
 			<Sheet
-				open={isMobile === true && view !== undefined}
+				open={isMobile === true && (view !== undefined || isEveryoneOpen)}
 				onOpenChange={(isOpen) => {
 					if (!isOpen) {
+						setIsEveryoneOpen(false);
 						void navigate({ search: (prev) => ({ ...prev, view: undefined }) });
 					}
 				}}
 			>
 				<SheetContent side="bottom" className="h-[85dvh] gap-0">
 					<SheetHeader className="sr-only">
-						<SheetTitle>Applicant</SheetTitle>
-						<SheetDescription>Accept or decline.</SheetDescription>
+						<SheetTitle>
+							{isEveryoneOpen ? "# Everyone" : "Applicant"}
+						</SheetTitle>
+						<SheetDescription>
+							{isEveryoneOpen ? "Talk to every Builder." : "Accept or decline."}
+						</SheetDescription>
 					</SheetHeader>
-					{isMobile === true ? detail : null}
+					{isMobile !== true ? null : isEveryoneOpen ? (
+						<EveryonePanel hackathonId={hackathon._id} userId={userId} />
+					) : (
+						detail
+					)}
 				</SheetContent>
 			</Sheet>
 		</div>

@@ -6,7 +6,8 @@ import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { PanelHeader } from "~/components/shared/PanelHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { termsLine } from "../jobChips";
+import { useWorkspace } from "~/features/work/board/StartupContext";
+import { roleLabel, termsLine } from "../jobChips";
 import { STAGE, stageDate } from "../stage";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { DraftView } from "./DraftView";
@@ -20,12 +21,14 @@ const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 /** The Founder's Hackathon space; what it shows follows the Hackathon's status. */
 export function SpacePage() {
 	const { id } = route.useParams();
+	const { startup } = useWorkspace();
 	const space = useSpace(id);
 
 	if (space === undefined) {
 		return <GlobalSpinner fill />;
 	}
-	if (space === null) {
+	// Another of your Startups' Hackathons isn't found under this one's slug.
+	if (space === null || space.hackathon.startupId !== startup._id) {
 		return <GlobalNotFound />;
 	}
 
@@ -54,9 +57,10 @@ function SpaceHeader({ hackathon }: { readonly hackathon: Doc<"hackathons"> }) {
 
 	return (
 		<PanelHeader className="gap-3 md:px-6">
-			<h1 className="min-w-0 truncate text-sm text-muted-foreground">
+			<h1 className="sr-only">{roleLabel(hackathon.job.role)} hackathon</h1>
+			<p className="min-w-0 truncate text-sm text-muted-foreground">
 				{termsLine(hackathon.job)}
-			</h1>
+			</p>
 			<Badge variant="status" tone={stage.tone} className="shrink-0">
 				{stage.label}
 			</Badge>

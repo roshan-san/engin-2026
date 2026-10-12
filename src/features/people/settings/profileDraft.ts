@@ -39,14 +39,12 @@ export function toProfileDraft(me: ProfileSource): ProfileDraft {
 /**
  * The fields that differ from the saved profile, for `users.updateProfile`.
  * Text is trimmed and the username lowercased; a blank bio or link is sent as
- * `""`, which the server turns into "removed". A discipline can be changed, not cleared.
+ * `""`, which the server turns into "removed"; a cleared discipline is sent as `null`.
  */
 export function toProfileArgs(
 	draft: ProfileDraft,
 	me: ProfileSource,
-): Partial<Omit<ProfileDraft, "discipline">> & {
-	discipline?: Discipline;
-} {
+): Partial<ProfileDraft> {
 	const saved = toProfileDraft(me);
 	const next: ProfileDraft = {
 		...draft,
@@ -59,7 +57,7 @@ export function toProfileArgs(
 
 	const changed: ReturnType<typeof toProfileArgs> = {};
 	for (const key of Object.keys(next) as (keyof ProfileDraft)[]) {
-		if (next[key] !== saved[key] && next[key] !== null) {
+		if (next[key] !== saved[key]) {
 			Object.assign(changed, { [key]: next[key] });
 		}
 	}

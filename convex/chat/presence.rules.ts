@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import { Presence } from "@convex-dev/presence";
 import { components } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
@@ -24,7 +25,7 @@ export function parseHeartbeat(args: { sessionId: string; interval: number }) {
 		args.interval < MIN_PRESENCE_INTERVAL_MS ||
 		args.interval > MAX_PRESENCE_INTERVAL_MS
 	) {
-		throw new Error("Heartbeat interval is out of range");
+		throw new ConvexError("Heartbeat interval is out of range");
 	}
 	return { sessionId, interval: args.interval };
 }

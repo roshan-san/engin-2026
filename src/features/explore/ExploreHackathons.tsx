@@ -1,12 +1,12 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { EmptyState } from "~/components/shared/EmptyState";
 import { RowList } from "~/components/shared/RowList";
-import { Skeleton } from "~/components/ui/skeleton";
 import { ROLES } from "~/features/hiring/jobChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { FilterChips } from "./FilterChips";
 import { HackathonExploreRow } from "./HackathonExploreRow";
 import { useExploreHackathons } from "./hooks/useExploreHackathons";
+import { RowsSkeleton } from "./RowsSkeleton";
 
 const route = getRouteApi("/_shell/explore/hackathons");
 
@@ -57,7 +57,7 @@ export function ExploreHackathons() {
 			}
 		>
 			{hackathons === undefined ? (
-				<RowsSkeleton />
+				<RowsSkeleton rowClassName="h-20" />
 			) : hackathons.length === 0 ? (
 				<EmptyState title="No open hackathons yet." />
 			) : (
@@ -71,15 +71,5 @@ export function ExploreHackathons() {
 				</RowList>
 			)}
 		</ExploreLayout>
-	);
-}
-
-function RowsSkeleton() {
-	return (
-		<div className="flex flex-col gap-3" aria-hidden>
-			{[0, 1, 2, 3].map((n) => (
-				<Skeleton key={n} className="h-20" />
-			))}
-		</div>
 	);
 }

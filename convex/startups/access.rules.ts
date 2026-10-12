@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
@@ -35,7 +36,7 @@ export async function requireTeam(
 	const startup = await ctx.db.get(startupId);
 	const role = startup ? await getTeamRole(ctx, startupId, userId) : null;
 	if (!startup || !role) {
-		throw new Error("You're not on this startup");
+		throw new ConvexError("You're not on this startup");
 	}
 	return { startup, role };
 }
@@ -47,7 +48,7 @@ export async function requireFounder(
 ): Promise<Doc<"startups">> {
 	const { startup, role } = await requireTeam(ctx, startupId, userId);
 	if (role !== "founder") {
-		throw new Error("Only the Founder can do this");
+		throw new ConvexError("Only the Founder can do this");
 	}
 	return startup;
 }

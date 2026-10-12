@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
@@ -179,11 +179,18 @@ export const explore = query({
 		paid: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
+		// Read each status in the order Explore shows it, so the bound keeps the first rows.
 		const [open, building] = await Promise.all(
-			(["open", "building"] as const).map((status) =>
+			(
+				[
+					["open", "asc"],
+					["building", "desc"],
+				] as const
+			).map(([status, order]) =>
 				ctx.db
 					.query("hackathons")
-					.withIndex("by_status", (q) => q.eq("status", status))
+					.withIndex("by_status_and_startsAt", (q) => q.eq("status", status))
+					.order(order)
 					.take(MAX_LISTED_HACKATHONS),
 			),
 		);
@@ -250,7 +257,7 @@ export const update = mutation({
 			userId,
 		);
 		if (hackathon.status !== "draft") {
-			throw new Error("Only drafts can be edited");
+			throw new ConvexError("Only drafts can be edited");
 		}
 		const { cards, ...draft } = requireValidDraft(args, Date.now());
 
@@ -270,10 +277,10 @@ export const publish = mutation({
 			userId,
 		);
 		if (hackathon.status !== "draft") {
-			throw new Error("Already published");
+			throw new ConvexError("Already published");
 		}
 		if (hackathon.startsAt <= Date.now()) {
-			throw new Error("Start on a coming Monday");
+			throw new ConvexError("Start on a coming Monday");
 		}
 
 		await ctx.db.patch(hackathon._id, { status: "open" });

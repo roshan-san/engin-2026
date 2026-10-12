@@ -95,7 +95,20 @@ function SettingsForm({
 			</div>
 
 			<div className="flex flex-col gap-1.5">
-				<span className="text-sm font-medium">Discipline</span>
+				<div className="flex h-6 items-center justify-between">
+					<span className="text-sm font-medium">Discipline</span>
+					{draft.discipline ? (
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="h-6 px-2 text-xs"
+							onClick={() => set("discipline", null)}
+						>
+							Clear
+						</Button>
+					) : null}
+				</div>
 				<ChipPicker
 					label="Discipline"
 					options={DISCIPLINE_OPTIONS}

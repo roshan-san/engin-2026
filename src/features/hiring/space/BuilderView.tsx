@@ -88,6 +88,12 @@ export function BuilderView({
 			}
 		: undefined;
 
+	// On a phone the sheet stays open and switches back to the panel.
+	function backToPanel() {
+		setIsPanelOpen(true);
+		closeCard();
+	}
+
 	const name = row.user.name ?? row.user.username ?? "them";
 	const switcher = (
 		<Segmented label="Show" options={PANES} value={pane} onChange={setPane} />
@@ -99,7 +105,7 @@ export function BuilderView({
 			cardId={cardId}
 			backLabel={pane === "decide" ? "Decide" : "Thread"}
 			isBackUnread={pane === "thread" && isThreadUnread}
-			onBack={closeCard}
+			onBack={isMobile ? backToPanel : closeCard}
 			onClose={onClose}
 			onShip={setShipping}
 		/>

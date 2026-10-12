@@ -28,7 +28,9 @@ function Crumb({ children }: { readonly children: ReactNode }) {
 				aria-hidden
 				className="size-4 shrink-0 text-subtle-foreground"
 			/>
-			<span className="font-medium">{children}</span>
+			<span aria-current="page" className="font-medium">
+				{children}
+			</span>
 		</span>
 	);
 }

@@ -36,6 +36,18 @@ describe("profile settings draft", () => {
 		});
 	});
 
+	test("clearing the discipline sends null", () => {
+		const draft = { ...toProfileDraft(me), discipline: null };
+
+		expect(toProfileArgs(draft, me)).toEqual({ discipline: null });
+	});
+
+	test("no discipline, still none, sends nothing", () => {
+		const none = { ...me, discipline: null };
+
+		expect(toProfileArgs(toProfileDraft(none), none)).toEqual({});
+	});
+
 	test("a username is sent lowercased and trimmed", () => {
 		const draft = { ...toProfileDraft(me), username: "  Fay_Designs " };
 

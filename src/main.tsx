@@ -11,7 +11,7 @@ import "~/styles/globals.css";
 const router = createRouter({
 	routeTree,
 	defaultPreload: "intent",
-	defaultPendingComponent: GlobalSpinner,
+	defaultPendingComponent: () => <GlobalSpinner fill />,
 	defaultNotFoundComponent: GlobalNotFound,
 	scrollRestoration: true,
 	scrollToTopSelectors: ["[data-scroll-restoration-id=main]"],

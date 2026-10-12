@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
@@ -43,17 +43,19 @@ export function requireValidDraft(input: DraftInput, now: number) {
 		input.startsAt !== weekStart(weekOf(input.startsAt)) ||
 		input.startsAt <= now
 	) {
-		throw new Error("Start on a coming Monday");
+		throw new ConvexError("Start on a coming Monday");
 	}
 	if (input.weeks !== 1 && input.weeks !== 2) {
-		throw new Error("Run it for 1 or 2 weeks");
+		throw new ConvexError("Run it for 1 or 2 weeks");
 	}
 	const weeks: 1 | 2 = input.weeks;
 	if (
 		input.cards.length < MIN_HACKATHON_CARDS ||
 		input.cards.length > MAX_HACKATHON_CARDS
 	) {
-		throw new Error(`Add ${MIN_HACKATHON_CARDS}–${MAX_HACKATHON_CARDS} Cards`);
+		throw new ConvexError(
+			`Add ${MIN_HACKATHON_CARDS}–${MAX_HACKATHON_CARDS} Cards`,
+		);
 	}
 
 	const endsAt = input.startsAt + weeks * WEEK_MS;
@@ -80,7 +82,7 @@ export async function requireHackathonFounder(
 ): Promise<Doc<"hackathons">> {
 	const hackathon = await ctx.db.get(hackathonId);
 	if (!hackathon) {
-		throw new Error("Hackathon not found");
+		throw new ConvexError("Hackathon not found");
 	}
 	await requireFounder(ctx, hackathon.startupId, userId);
 	return hackathon;

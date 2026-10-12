@@ -1,3 +1,4 @@
+import { ConvexError } from "convex/values";
 import type { MutationCtx } from "../_generated/server";
 
 const USERNAME_PATTERN = /^[a-z][a-z0-9_]{2,19}$/;
@@ -31,13 +32,13 @@ export function requireUsername(value: string): string {
 	const username = normalizeUsername(value);
 
 	if (!USERNAME_PATTERN.test(username)) {
-		throw new Error(
+		throw new ConvexError(
 			"Username must be 3–20 characters, start with a letter, and use only lowercase letters, numbers, or underscores",
 		);
 	}
 
 	if (RESERVED_USERNAMES.has(username)) {
-		throw new Error("This username is not available");
+		throw new ConvexError("This username is not available");
 	}
 
 	return username;
@@ -46,6 +47,7 @@ export function requireUsername(value: string): string {
 const FALLBACK_USERNAME = "builder";
 const BASE_MAX_LENGTH = 16;
 const MAX_NUMBERED_TRIES = 9;
+const MAX_RANDOM_TRIES = 20;
 
 /** A valid, unreserved handle from the account's name, else its email's local part. */
 export function buildUsernameBase(
@@ -76,7 +78,7 @@ async function isUsernameTaken(
 	return found !== null;
 }
 
-/** The base, else `base_2` … `base_9`, else `base_` plus 4 random digits. */
+/** The base, else `base_2` … `base_9`, else `base_` plus 4 random digits (20 tries). */
 export async function buildUniqueUsername(
 	ctx: MutationCtx,
 	name?: string,
@@ -95,11 +97,12 @@ export async function buildUniqueUsername(
 	}
 	// Leave room so the longest base still fits the 20-character limit.
 	const stem = base.slice(0, 15);
-	for (;;) {
+	for (let n = 0; n < MAX_RANDOM_TRIES; n++) {
 		const digits = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
 		const candidate = `${stem}_${digits}`;
 		if (!(await isUsernameTaken(ctx, candidate))) {
 			return candidate;
 		}
 	}
+	throw new ConvexError("Couldn't pick a username");
 }

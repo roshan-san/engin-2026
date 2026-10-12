@@ -18,6 +18,8 @@ export function OnboardingFlow() {
 	const createStartup = useCreateStartup();
 	const [state, dispatch] = useReducer(onboardingReducer, INITIAL_STATE);
 	const [isPending, setIsPending] = useState(false);
+	// State lags a render behind, so a fast double Enter would create twice.
+	const isSubmittingRef = useRef(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const isLast = state.step === "oneLiner";
 
@@ -25,23 +27,33 @@ export function OnboardingFlow() {
 		const args = toCreateArgs(
 			withOneLiner ? state : { ...state, oneLiner: "" },
 		);
-		if (!args || isPending) return;
+		if (!args || isSubmittingRef.current) return;
+		isSubmittingRef.current = true;
 		setIsPending(true);
-		const slug = await createStartup(args);
-		if (!slug) {
-			setIsPending(false);
-			return;
+		try {
+			const slug = await createStartup(args);
+			if (!slug) return;
+			await navigate({
+				to: "/s/$slug/board",
+				params: { slug },
+				replace: true,
+			});
+		} finally {
+			// Unmounted once the Board opens; only a failure gets here still on the page.
+			isSubmittingRef.current = false;
+			if (rootRef.current) setIsPending(false);
 		}
-		await navigate({
-			to: "/s/$slug/board",
-			params: { slug },
-			replace: true,
-		});
 	}
 
 	useEffect(() => {
 		function onKeyDown(event: KeyboardEvent) {
-			if (isPending || event.defaultPrevented || event.isComposing) return;
+			if (
+				isSubmittingRef.current ||
+				event.defaultPrevented ||
+				event.isComposing
+			) {
+				return;
+			}
 			// Keys aimed at the bar or an open sheet are theirs, not the flow's.
 			const target = event.target as Node;
 			if (target !== document.body && !rootRef.current?.contains(target)) {

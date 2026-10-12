@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { decidedHackathon } from "../hiring/applications.helpers";
-import { INVITE_TTL_MS } from "../lib/limits";
+import { INVITE_TTL_MS, MAX_INVITES } from "../lib/limits";
 import { advancePast, createTest } from "../lib/testing.helpers";
 import { signUp } from "../people/users.helpers";
 import { addContributor, setUpStartup } from "./startups.helpers";
@@ -141,15 +141,24 @@ describe("invites", () => {
 		]);
 	});
 
-	it("revoked and expired Invites aren't listed", async () => {
+	it("a revoked Invite isn't listed", async () => {
 		const setup = await setUpStartup(createTest());
-		const revoked = await setup.founder.as.mutation(
+		const inviteId = await setup.founder.as.mutation(
 			api.startups.invites.create,
 			{ startupId: setup.startupId, email: "sam@example.com" },
 		);
-		await setup.founder.as.mutation(api.startups.invites.revoke, {
-			inviteId: revoked,
-		});
+
+		await setup.founder.as.mutation(api.startups.invites.revoke, { inviteId });
+
+		expect(
+			await setup.founder.as.query(api.startups.invites.list, {
+				startupId: setup.startupId,
+			}),
+		).toEqual([]);
+	});
+
+	it("an expired Invite isn't listed", async () => {
+		const setup = await setUpStartup(createTest());
 		await setup.founder.as.mutation(api.startups.invites.create, {
 			startupId: setup.startupId,
 			email: "lee@example.com",
@@ -162,6 +171,51 @@ describe("invites", () => {
 				startupId: setup.startupId,
 			}),
 		).toEqual([]);
+	});
+
+	it("a fresh Invite shows past a pile of expired ones", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const gus = await signUp(t, "Gus");
+		const { startupId: otherStartupId } = await gus.as.mutation(
+			api.startups.startups.create,
+			{ name: "Bolt", stage: "idea", category: "saas", city: "pune" },
+		);
+		const sam = await signUp(t, "Sam");
+		await t.run(async (ctx) => {
+			for (let i = 0; i < MAX_INVITES; i++) {
+				await ctx.db.insert("invites", {
+					startupId: otherStartupId,
+					email: "sam@example.com",
+					invitedBy: gus.userId,
+					status: "pending",
+					expiresAt: Date.now() - 1,
+				});
+				await ctx.db.insert("invites", {
+					startupId: setup.startupId,
+					email: `old${i}@example.com`,
+					invitedBy: setup.founder.userId,
+					status: "pending",
+					expiresAt: Date.now() - 1,
+				});
+			}
+		});
+
+		await setup.founder.as.mutation(api.startups.invites.create, {
+			startupId: setup.startupId,
+			email: "sam@example.com",
+		});
+
+		expect(await sam.as.query(api.startups.invites.listMine, {})).toMatchObject(
+			[{ startupName: "Acme" }],
+		);
+		const startupInvites = await setup.founder.as.query(
+			api.startups.invites.list,
+			{ startupId: setup.startupId },
+		);
+		expect(startupInvites.map((invite) => invite.email)).toEqual([
+			"sam@example.com",
+		]);
 	});
 
 	it("a Hired Invite says so", async () => {

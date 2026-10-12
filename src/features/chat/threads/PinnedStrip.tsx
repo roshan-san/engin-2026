@@ -1,3 +1,4 @@
+import { splitBody } from "@convex/chat/mentions.rules";
 import { PinIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -28,7 +29,20 @@ export function PinnedStrip({
 					<PinIcon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
 					<p className="min-w-0 flex-1 break-words whitespace-pre-wrap">
 						<span className="font-medium">{displayName(message.author)}</span>{" "}
-						{message.body || "Image"}
+						{message.body
+							? splitBody(message.body).map((part, index) =>
+									// Only Everyone pins; its mentions never resolve, so they read as plain #card.
+									part.kind === "text" ? (
+										// biome-ignore lint/suspicious/noArrayIndexKey: parts never reorder
+										<span key={index}>{part.text}</span>
+									) : (
+										// biome-ignore lint/suspicious/noArrayIndexKey: parts never reorder
+										<span key={index} className="text-muted-foreground">
+											#card
+										</span>
+									),
+								)
+							: "Image"}
 					</p>
 					{onUnpin ? (
 						<Button

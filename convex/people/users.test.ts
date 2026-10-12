@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { createTest, type TestConvex } from "../lib/testing.helpers";
+import { buildUniqueUsername } from "./username.rules";
 import { onUserSignedIn } from "./users.rules";
 import { signUp, signUpNew } from "./users.helpers";
 
@@ -79,6 +80,21 @@ describe("users", () => {
 			discipline: "designer",
 			links: { githubUrl: "https://github.com/fay" },
 		});
+	});
+
+	it("a person clears their discipline", async () => {
+		const t = createTest();
+		const fay = await signUp(t, "Fay");
+		await fay.as.mutation(api.people.users.updateProfile, {
+			discipline: "designer",
+		});
+
+		await fay.as.mutation(api.people.users.updateProfile, {
+			discipline: null,
+		});
+
+		const me = await fay.as.query(api.people.users.getMe, {});
+		expect(me?.discipline).toBeNull();
 	});
 
 	it("a blank link and bio clear what was saved", async () => {
@@ -171,6 +187,56 @@ describe("users", () => {
 			expect((await second.query(api.people.users.getMe, {}))?.username).toBe(
 				"builder_2",
 			);
+		});
+
+		/** Accounts already holding `sam`, `sam_2` … `sam_9`, plus any extra handles. */
+		async function takeSamNames(t: TestConvex, extra: string[] = []) {
+			const taken = ["sam", ...[2, 3, 4, 5, 6, 7, 8, 9].map((n) => `sam_${n}`)];
+			await t.run(async (ctx) => {
+				for (const username of [...taken, ...extra]) {
+					await ctx.db.insert("users", { name: "Sam", username });
+				}
+			});
+		}
+
+		it("after nine taken names it adds four random digits", async () => {
+			const t = createTest();
+			await takeSamNames(t);
+
+			const sam = await signIn(t, "Sam");
+
+			const me = await sam.query(api.people.users.getMe, {});
+			expect(me?.username).toMatch(/^sam_\d{4}$/);
+		});
+
+		it("a reserved email local part falls back to builder", async () => {
+			const t = createTest();
+			const userId = await t.run(
+				async (ctx) =>
+					await ctx.db.insert("users", { email: "admin@example.com" }),
+			);
+
+			await t.run(
+				async (ctx) =>
+					await onUserSignedIn(ctx, { userId, existingUserId: null }),
+			);
+
+			const me = await t
+				.withIdentity({ subject: `${userId}|session` })
+				.query(api.people.users.getMe, {});
+			expect(me?.username).toBe("builder");
+		});
+
+		it("it gives up after twenty random tries", { timeout: 2000 }, async () => {
+			const t = createTest();
+			await takeSamNames(t, ["sam_0000"]);
+			vi.spyOn(Math, "random").mockReturnValue(0);
+
+			await expect(
+				t.run(async (ctx) => await buildUniqueUsername(ctx, "Sam")),
+			).rejects.toThrow("Couldn't pick a username");
+
+			vi.restoreAllMocks();
 		});
 
 		it("a returning sign-in keeps its username", async () => {

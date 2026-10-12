@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { requireThreadAccess } from "./access.rules";
@@ -26,7 +26,7 @@ export const list = query({
 			const threads = await loadHackathonThreads(ctx, hackathonId);
 			return await buildThreadViews(ctx, threads, userId);
 		}
-		throw new Error("Pick a startup or a Hackathon");
+		throw new ConvexError("Pick a startup or a Hackathon");
 	},
 });
 

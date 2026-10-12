@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { GlobalNotFound } from "~/components/globals/GlobalNotFound";
 import { GlobalSpinner } from "~/components/globals/GlobalSpinner";
 import { BoardScopeContext } from "./BoardScope";
@@ -15,33 +16,38 @@ export function StartupGate({
 }) {
 	const found = useStartup(slug);
 	const me = useMe();
+	const userId = me?._id;
+	// Stable values, so every consumer's memos survive a re-render.
+	const contexts = useMemo(() => {
+		if (!found || !userId) return null;
+		const isFounder = found.role === "founder";
+		return {
+			workspace: {
+				startup: found.startup,
+				role: found.role,
+				isFounder,
+				userId,
+			},
+			scope: {
+				kind: "startup" as const,
+				startupId: found.startup._id,
+				slug: found.startup.slug,
+				userId,
+				isFounder,
+			},
+		};
+	}, [found, userId]);
 
 	if (found === null) {
 		return <GlobalNotFound />;
 	}
-	if (found === undefined || !me) {
+	if (!contexts) {
 		return <GlobalSpinner fill />;
 	}
 
-	const isFounder = found.role === "founder";
 	return (
-		<StartupContext.Provider
-			value={{
-				startup: found.startup,
-				role: found.role,
-				isFounder,
-				userId: me._id,
-			}}
-		>
-			<BoardScopeContext.Provider
-				value={{
-					kind: "startup",
-					startupId: found.startup._id,
-					slug: found.startup.slug,
-					userId: me._id,
-					isFounder,
-				}}
-			>
+		<StartupContext.Provider value={contexts.workspace}>
+			<BoardScopeContext.Provider value={contexts.scope}>
 				{children}
 			</BoardScopeContext.Provider>
 		</StartupContext.Provider>
