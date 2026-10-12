@@ -103,6 +103,12 @@ function BuilderSpace({
 			}
 		: undefined;
 
+	// On a phone the sheet stays open and switches back to the panel.
+	function backToPanel() {
+		setIsPanelOpen(true);
+		closeCard();
+	}
+
 	const switcher = (
 		<Segmented
 			label="Panel"
@@ -140,7 +146,7 @@ function BuilderSpace({
 			cardId={cardId}
 			backLabel={panel === "brief" ? "Brief" : "Threads"}
 			isBackUnread={isAnyUnread}
-			onBack={closeCard}
+			onBack={isMobile ? backToPanel : closeCard}
 			onClose={onClose}
 			onShip={setShipping}
 		/>
