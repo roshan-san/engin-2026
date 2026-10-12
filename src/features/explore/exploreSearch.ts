@@ -40,7 +40,7 @@ function parseWeeks(raw: unknown): 1 | 2 | undefined {
 	return weeks === 1 || weeks === 2 ? weeks : undefined;
 }
 
-/** Hackathon filters from the URL. Unknown values are dropped, so a bad link shows everything. */
+/** Hackathon filters from the URL. Unknown values become `undefined`, so a bad link shows everything. */
 export function parseHackathonSearch(
 	raw: Record<string, unknown>,
 ): HackathonSearch {
@@ -49,14 +49,11 @@ export function parseHackathonSearch(
 	// The router decodes `?paid=true` to a boolean; a hand-typed value may stay text.
 	const paid = raw.paid === true || raw.paid === "true";
 
-	return {
-		...(role && { role }),
-		...(weeks && { weeks }),
-		...(paid && { paid: true as const }),
-	};
+	// Every key is set, so a dropped value overrides the raw one the parent route passes down.
+	return { role, weeks, paid: paid ? true : undefined };
 }
 
-/** Startup filters from the URL. Unknown values are dropped. */
+/** Startup filters from the URL. Unknown values become `undefined`. */
 export function parseStartupSearch(
 	raw: Record<string, unknown>,
 ): StartupSearch {
@@ -64,9 +61,5 @@ export function parseStartupSearch(
 	const category = pickChip(KINDS, raw.category);
 	const city = pickChip(CITIES, raw.city);
 
-	return {
-		...(stage && { stage }),
-		...(category && { category }),
-		...(city && { city }),
-	};
+	return { stage, category, city };
 }

@@ -1,5 +1,10 @@
-import { isRedirect } from "@tanstack/react-router";
+import {
+	createMemoryHistory,
+	createRouter,
+	isRedirect,
+} from "@tanstack/react-router";
 import { describe, expect, it } from "vitest";
+import { routeTree } from "~/routeTree.gen";
 import { Route as ExploreRoute } from "~/routes/_shell/explore/index";
 import { Route as HackathonsRoute } from "~/routes/_shell/explore/hackathons";
 import { Route as StartupsRoute } from "~/routes/_shell/explore/startups";
@@ -27,5 +32,22 @@ describe("explore routes", () => {
 		}
 
 		expect(isRedirect(thrown)).toBe(true);
+	});
+
+	it.each([
+		"/explore/startups?stage=bogus&city=mars&category=x",
+		"/explore/hackathons?role=wizard&weeks=3&paid=yes",
+	])("a bad filter in %s reaches the page as no filter", async (url) => {
+		const router = createRouter({
+			routeTree,
+			history: createMemoryHistory({ initialEntries: [url] }),
+		});
+
+		await router.load();
+
+		const search = router.state.matches.at(-1)?.search ?? {};
+		expect(
+			Object.values(search).filter((value) => value !== undefined),
+		).toEqual([]);
 	});
 });
