@@ -66,7 +66,10 @@
 										"group": [
 											"@convex/**",
 											"!@convex/_generated/**",
-											"!@convex/shared/**"
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
 										],
 										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
 									}
@@ -89,11 +92,11 @@
 									{
 										"group": [
 											"convex/server",
-											"../_generated/server",
-											"../model/**",
-											"../tables/**"
+											"../**",
+											"!../_generated/api",
+											"!../_generated/dataModel"
 										],
-										"message": "convex/shared/ is browser-safe: no server, model or table imports."
+										"message": "convex/shared/ is browser-safe: from the rest of convex/ it may import only _generated/api and _generated/dataModel."
 									}
 								]
 							}
