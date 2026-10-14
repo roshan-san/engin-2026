@@ -3,6 +3,7 @@ import {
 	Activity,
 	Briefcase,
 	Building2,
+	FileText,
 	Settings,
 	SquareKanban,
 	Trophy,
@@ -114,6 +115,14 @@ function BuilderTabs({ hackathonId }: { readonly hackathonId: string }) {
 			>
 				<SquareKanban aria-hidden />
 				Board
+			</Link>
+			<Link
+				to="/h/$id/brief"
+				params={{ id: hackathonId }}
+				className={TAB_CLASS}
+			>
+				<FileText aria-hidden />
+				Brief
 			</Link>
 		</TabRowFrame>
 	);
