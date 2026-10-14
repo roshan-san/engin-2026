@@ -30,6 +30,7 @@ CONTEXT.md
 .cursorrules
 .env.local
 scripts/.jwt_private_key.txt
+.env.prod
 scripts/.jwks.txt
 # Playwright
 /test-results/
