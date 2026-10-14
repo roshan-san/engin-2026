@@ -18,6 +18,8 @@ export type PublicUser = {
 	name: string | null;
 	username: string | null;
 	image: string | null;
+	/** Sent with every name, so the client can colour it by Tier. */
+	rating: number;
 };
 
 /** Safe to send to any client, including public pages. Never includes email. */
@@ -27,6 +29,7 @@ export function toPublicUser(user: Doc<"users">): PublicUser {
 		name: user.name ?? null,
 		username: user.username ?? null,
 		image: user.image ?? null,
+		rating: user.rating ?? STARTING_RATING,
 	};
 }
 
@@ -57,7 +60,6 @@ export function toPublicProfile(user: Doc<"users">) {
 			portfolioUrl: user.portfolioUrl ?? null,
 			githubUrl: user.githubUrl ?? null,
 		},
-		rating: user.rating ?? STARTING_RATING,
 		ratingChange: user.ratingChange ?? 0,
 		isProvisional: isProvisional(user),
 	};

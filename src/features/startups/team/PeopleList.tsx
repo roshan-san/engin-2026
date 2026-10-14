@@ -3,8 +3,8 @@ import { Row, RowList } from "~/components/RowList";
 import { SectionLabel } from "~/components/SectionLabel";
 import {
 	AlertDialog,
-	AlertDialogCancel,
 	AlertDialogAction,
+	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
 	AlertDialogFooter,
@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
+import { PersonName } from "~/features/people/PersonName";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { initials } from "~/lib/initials";
 import type { TeamPeople, TeamPerson } from "./useTeamPeople";
@@ -76,8 +77,6 @@ function PersonRow({
 	readonly position: "Founder" | "Contributor";
 	readonly remove?: React.ReactNode;
 }) {
-	const name = displayName(person);
-
 	return (
 		<Row
 			leading={
@@ -95,10 +94,10 @@ function PersonRow({
 						params={{ username: person.username }}
 						className="hover:underline"
 					>
-						{name}
+						<PersonName person={person} />
 					</Link>
 				) : (
-					name
+					<PersonName person={person} />
 				)
 			}
 			meta={

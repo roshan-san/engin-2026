@@ -2,7 +2,7 @@ import { ChevronLeftIcon, XIcon } from "lucide-react";
 import { PanelHeader } from "~/components/PanelHeader";
 import { SectionLabel } from "~/components/SectionLabel";
 import { Button } from "~/components/ui/button";
-import { displayName } from "../../../lib/displayName";
+import { PersonName } from "~/features/people/PersonName";
 import { ActorAvatar } from "./ActorAvatar";
 import { EntryProof } from "./EntryProof";
 import { type CycleView, type EntryView, entryDate } from "./record";
@@ -53,7 +53,7 @@ export function EntryPanel({
 				<div className="flex flex-col gap-3">
 					<div className="flex items-center gap-2 text-sm">
 						<ActorAvatar person={entry.actor} />
-						<span className="font-medium">{displayName(entry.actor)}</span>
+						<PersonName person={entry.actor} className="font-medium" />
 					</div>
 					<p className="text-base font-medium break-words">
 						{entry.line ?? card?.title}

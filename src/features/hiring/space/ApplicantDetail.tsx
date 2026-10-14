@@ -5,10 +5,10 @@ import { SectionLabel } from "~/components/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
+import { PersonName } from "~/features/people/PersonName";
 import { hackathonLine, workLine } from "~/features/people/profile/profileText";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { RatingParts } from "~/features/work/activity/RatingParts";
-import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
 import { useApplicant } from "./useApplicants";
 
@@ -47,7 +47,9 @@ export function ApplicantDetail({
 						</AvatarFallback>
 					</Avatar>
 					<div className="flex min-w-0 flex-col">
-						<h2 className="truncate font-medium">{displayName(user)}</h2>
+						<h2 className="truncate font-medium">
+							<PersonName person={user} />
+						</h2>
 						{user.username ? (
 							<span className="text-xs text-muted-foreground">
 								@{user.username}

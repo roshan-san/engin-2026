@@ -2,7 +2,7 @@ import { splitBody } from "@convex/shared/mentions";
 import { PinIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import { displayName } from "~/lib/displayName";
+import { PersonName } from "~/features/people/PersonName";
 import type { MessageView } from "./useMessages";
 
 /** The Founder's pinned messages on top of the thread: the newest, or all of them. */
@@ -28,7 +28,7 @@ export function PinnedStrip({
 				<div key={message._id} className="flex items-start gap-2 text-sm">
 					<PinIcon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
 					<p className="min-w-0 flex-1 break-words whitespace-pre-wrap">
-						<span className="font-medium">{displayName(message.author)}</span>{" "}
+						<PersonName person={message.author} className="font-medium" />{" "}
 						{message.body
 							? splitBody(message.body).map((part, index) =>
 									// Only Everyone pins; its mentions never resolve, so they read as plain #card.

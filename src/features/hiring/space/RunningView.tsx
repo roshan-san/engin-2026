@@ -11,16 +11,17 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
+import { tierText } from "~/features/work/activity/tierText";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import { BuilderView } from "./BuilderView";
 import { EveryonePanel } from "./EveryonePanel";
+import { ReviewQueue } from "./ReviewQueue";
+import { resolveView, type SidebarBuilder, sidebarItems } from "./sidebarItems";
 import { useApplicants } from "./useApplicants";
 import { useReviewQueue } from "./useReviewQueue";
 import { useHackathonThreads } from "./useSpace";
-import { ReviewQueue } from "./ReviewQueue";
-import { resolveView, type SidebarBuilder, sidebarItems } from "./sidebarItems";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
@@ -126,7 +127,12 @@ export function RunningView({
 									</Avatar>
 									<span className="flex min-w-0 flex-1 flex-col gap-1">
 										<span className="flex items-center gap-1.5">
-											<span className="min-w-0 flex-1 truncate">
+											<span
+												className={cn(
+													"min-w-0 flex-1 truncate",
+													tierText(builder.rating),
+												)}
+											>
 												{builder.name}
 											</span>
 											{builder.shortlisted ? (

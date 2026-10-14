@@ -7,9 +7,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
+import { PersonName } from "~/features/people/PersonName";
 import { initials } from "~/lib/initials";
 import type { CardView } from "../board/types";
-import { displayName } from "../../../lib/displayName";
 import { useTeam } from "./useTeam";
 
 type Person = NonNullable<CardView["owner"]>;
@@ -27,7 +27,7 @@ function PersonLabel({ person }: { readonly person: Person }) {
 					{initials(person.name, person.username)}
 				</AvatarFallback>
 			</Avatar>
-			{displayName(person)}
+			<PersonName person={person} />
 		</span>
 	);
 }

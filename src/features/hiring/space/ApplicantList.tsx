@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { displayName } from "~/lib/displayName";
+import { PersonName } from "~/features/people/PersonName";
+import { tierText } from "~/features/work/activity/tierText";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import type { ApplicantRow } from "./applicantSort";
@@ -46,15 +47,21 @@ export function ApplicantList({
 									{initials(user.name, user.username)}
 								</AvatarFallback>
 							</Avatar>
-							<span className="min-w-0 flex-1 truncate text-sm">
-								{displayName(user)}
-							</span>
+							<PersonName
+								person={user}
+								className="min-w-0 flex-1 truncate text-sm"
+							/>
 							{status ? (
 								<span className="shrink-0 text-xs text-muted-foreground">
 									{status}
 								</span>
 							) : null}
-							<span className="w-12 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+							<span
+								className={cn(
+									"w-12 shrink-0 text-right text-xs tabular-nums",
+									tierText(user.rating),
+								)}
+							>
 								{user.rating}
 							</span>
 						</button>

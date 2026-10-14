@@ -11,6 +11,8 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useDetailPanel } from "~/components/useDetailPanel";
 import { ThreadPanel } from "~/features/chat/ThreadPanel";
+import { PersonName } from "~/features/people/PersonName";
+import { tierText } from "~/features/work/activity/tierText";
 import { Board } from "~/features/work/board/Board";
 import {
 	type BoardScope,
@@ -19,7 +21,6 @@ import {
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
-import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
@@ -171,9 +172,11 @@ function BuilderHeader({
 					{initials(user.name, user.username)}
 				</AvatarFallback>
 			</Avatar>
-			<h2 className="truncate text-sm font-medium">{displayName(user)}</h2>
+			<h2 className="truncate text-sm font-medium">
+				<PersonName person={user} />
+			</h2>
 			<span className="hidden shrink-0 text-xs text-muted-foreground tabular-nums sm:inline">
-				Rating {user.rating}
+				Rating <span className={tierText(user.rating)}>{user.rating}</span>
 				{progress ? ` · ${progress.done} of ${progress.total} done` : null}
 			</span>
 			{application.decision ? (

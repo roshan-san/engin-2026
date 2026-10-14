@@ -7,8 +7,9 @@ import {
 } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 import { ratingChangeLabel } from "./record";
+import { tierText } from "./tierText";
 
-/** "1184 ▲ 12": the Rating, its last move, and Provisional while it settles. */
+/** "1184 ▲ 12": the Rating in its Tier colour, its last move, and Provisional while it settles. */
 export function RatingBadge({
 	rating,
 	ratingChange,
@@ -28,6 +29,7 @@ export function RatingBadge({
 			<span
 				className={cn(
 					"font-semibold tracking-tight tabular-nums",
+					tierText(rating),
 					size === "lg" ? "text-4xl" : "text-xl",
 				)}
 			>

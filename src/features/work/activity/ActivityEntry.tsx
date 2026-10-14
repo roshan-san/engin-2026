@@ -14,6 +14,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "~/components/ui/collapsible";
+import { tierText } from "~/features/work/activity/tierText";
 import { cn } from "~/lib/utils";
 import { ActorAvatar } from "./ActorAvatar";
 import { EntryProof } from "./EntryProof";
@@ -128,7 +129,14 @@ function EntryLine({
 			<span className="min-w-0 flex-1 truncate">
 				{actor ? (
 					<>
-						<span className="font-medium">{actor}</span>
+						<span
+							className={cn(
+								"font-medium",
+								entry.actor && tierText(entry.actor.rating),
+							)}
+						>
+							{actor}
+						</span>
 						<span className="text-muted-foreground">
 							{entry.kind === "card_verified" ? " · " : " "}
 						</span>

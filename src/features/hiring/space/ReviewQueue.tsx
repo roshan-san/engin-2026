@@ -5,7 +5,7 @@ import { Kbd } from "~/components/Kbd";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { displayName } from "~/lib/displayName";
+import { PersonName } from "~/features/people/PersonName";
 import { ShippedView } from "~/features/work/cards/ShippedView";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
@@ -97,9 +97,7 @@ export function ReviewQueue({
 											)}
 										</AvatarFallback>
 									</Avatar>
-									<span className="text-sm text-muted-foreground">
-										{displayName(card.owner)}
-									</span>
+									<PersonName person={card.owner} className="text-sm" />
 									<button
 										type="button"
 										className="min-w-0 truncate text-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/60"

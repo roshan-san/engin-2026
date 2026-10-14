@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
+import { PersonName } from "~/features/people/PersonName";
 import { cn } from "~/lib/utils";
-import { displayName } from "../../../lib/displayName";
 import { ActorAvatar } from "./ActorAvatar";
 import { type EntryView, linkLabel } from "./record";
 
@@ -77,9 +77,7 @@ export function EntryProof({
 					<>
 						Verified by
 						<ActorAvatar person={card.verifier} className="size-4" />
-						<span className="text-foreground">
-							{displayName(card.verifier)}
-						</span>
+						<PersonName person={card.verifier} />
 					</>
 				)}
 			</p>

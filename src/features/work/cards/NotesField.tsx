@@ -2,10 +2,10 @@ import { TEXT } from "@convex/shared/limits";
 import { type RefObject, useEffect, useRef } from "react";
 import { MentorNote } from "~/components/MentorNote";
 import { Textarea } from "~/components/ui/textarea";
-import type { CardView } from "../board/types";
-import { displayName } from "../../../lib/displayName";
-import { useDraft } from "./useDraft";
+import { PersonName } from "~/features/people/PersonName";
 import { relativeTime } from "../../../lib/relativeTime";
+import type { CardView } from "../board/types";
+import { useDraft } from "./useDraft";
 
 const IDLE_MS = 1000;
 
@@ -50,7 +50,7 @@ export function NotesField({
 		card.notesEditedAt !== null && card.notesEditedBy ? (
 			<MentorNote>
 				edited {relativeTime(card.notesEditedAt, Date.now())} by{" "}
-				{displayName(card.notesEditedBy)}
+				<PersonName person={card.notesEditedBy} />
 			</MentorNote>
 		) : null;
 

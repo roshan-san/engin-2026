@@ -4,12 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog";
 import { Skeleton } from "~/components/ui/skeleton";
-import { displayName } from "~/lib/displayName";
-import { relativeTime } from "~/lib/relativeTime";
+import { PersonName } from "~/features/people/PersonName";
 import { initials } from "~/lib/initials";
+import { relativeTime } from "~/lib/relativeTime";
 import { groupMessages } from "./groupMessages";
-import type { MessageView } from "./useMessages";
 import { MessageBody } from "./MessageBody";
+import type { MessageView } from "./useMessages";
 
 /** How close to the bottom still counts as reading the latest. */
 const STICK_DISTANCE = 80;
@@ -111,9 +111,10 @@ export function MessageList({
 						</Avatar>
 						<div className="flex min-w-0 flex-1 flex-col gap-1">
 							<div className="flex items-baseline gap-2">
-								<span className="truncate text-sm font-medium">
-									{displayName(group.author)}
-								</span>
+								<PersonName
+									person={group.author}
+									className="truncate text-sm font-medium"
+								/>
 								<time
 									dateTime={new Date(group.at).toISOString()}
 									title={FULL_TIME.format(group.at)}

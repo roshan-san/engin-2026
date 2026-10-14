@@ -33,18 +33,18 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { PersonName } from "~/features/people/PersonName";
 import { isReadOnly, useBoardScope } from "../board/BoardScope";
 import { ColumnIcon } from "../board/ColumnIcon";
 import { COLUMNS, type Column, dropAction } from "../board/dropRules";
-import { useBoard } from "../board/useBoard";
 import type { CardView } from "../board/types";
-import { displayName } from "../../../lib/displayName";
-import { useCard } from "./useCard";
-import { useCardActions } from "./useCardActions";
-import { useDraft } from "./useDraft";
+import { useBoard } from "../board/useBoard";
 import { NotesField } from "./NotesField";
 import { GHOST_TRIGGER, OwnerPicker } from "./OwnerPicker";
 import { ShippedView } from "./ShippedView";
+import { useCard } from "./useCard";
+import { useCardActions } from "./useCardActions";
+import { useDraft } from "./useDraft";
 
 type PanelProps = {
 	/** Where Back goes: "Threads", "Thread". */
@@ -244,7 +244,7 @@ function OpenCard({
 							/>
 						) : (
 							<span className="flex h-8 items-center px-2">
-								{card.owner ? displayName(card.owner) : null}
+								{card.owner ? <PersonName person={card.owner} /> : null}
 							</span>
 						)}
 					</dd>

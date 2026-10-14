@@ -1,11 +1,10 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { STARTING_RATING, WEEK_COUNT_CAP } from "../shared/limits";
+import { WEEK_COUNT_CAP } from "../shared/limits";
 import { isProvisional, type PublicUser, toPublicUser } from "./users";
 import { weekOf } from "../shared/cycles";
 
 export type TeamPerson = PublicUser & {
-	rating: number;
 	ratingChange: number;
 	isProvisional: boolean;
 	verifiedThisCycle: number;
@@ -18,7 +17,6 @@ export function toTeamPerson(
 ): TeamPerson {
 	return {
 		...toPublicUser(user),
-		rating: user.rating ?? STARTING_RATING,
 		ratingChange: user.ratingChange ?? 0,
 		isProvisional: isProvisional(user),
 		verifiedThisCycle,

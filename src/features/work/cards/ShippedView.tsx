@@ -1,6 +1,6 @@
-import type { CardView } from "../board/types";
-import { displayName } from "../../../lib/displayName";
+import { PersonName } from "~/features/people/PersonName";
 import { relativeTime } from "../../../lib/relativeTime";
+import type { CardView } from "../board/types";
 
 /** What shipped: the line, its links and images, and who verified it. */
 export function ShippedView({ card }: { readonly card: CardView }) {
@@ -43,13 +43,16 @@ export function ShippedView({ card }: { readonly card: CardView }) {
 			) : null}
 			{card.status === "done" ? (
 				<p className="text-xs text-muted-foreground">
-					{card.selfVerified
-						? "Self-verified"
-						: `Verified by ${displayName(card.verifiedBy)}${
-								card.verifiedAt !== null
-									? ` · ${relativeTime(card.verifiedAt, Date.now())}`
-									: ""
-							}`}
+					{card.selfVerified ? (
+						"Self-verified"
+					) : (
+						<>
+							Verified by <PersonName person={card.verifiedBy} />
+							{card.verifiedAt !== null
+								? ` · ${relativeTime(card.verifiedAt, Date.now())}`
+								: null}
+						</>
+					)}
 				</p>
 			) : null}
 		</div>
