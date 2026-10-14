@@ -1,5 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronDownIcon, PlusIcon } from "lucide-react";
+import {
+	CheckIcon,
+	ChevronsUpDownIcon,
+	Compass,
+	HomeIcon,
+	PlusIcon,
+} from "lucide-react";
+import { useState } from "react";
+import { PlaceLogo } from "~/components/PlaceLogo";
 import { UnreadDot } from "~/components/UnreadDot";
 import {
 	DropdownMenu,
@@ -9,114 +17,172 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import { roleLabel } from "~/features/hiring/jobChips";
 import {
 	type CurrentPlace,
+	currentPlaceView,
+	filterPlaces,
+	isSamePlace,
 	isWaiting,
 	othersWaiting,
-	placeLabel,
 } from "~/shell/places";
 import { usePlaces } from "~/shell/usePlaces";
 
-/** The place you're in, and the way to every other: your Startups, the Hackathons you build and applied to. */
+/** Above this many places the menu gets a search box. */
+const SEARCH_FROM = 6;
+
+/** A shortcut between the places you work in; Home explains them all. */
 export function PlaceSwitcher({
 	place: current,
 }: {
 	readonly place: CurrentPlace;
 }) {
 	const places = usePlaces();
-	const label = places ? placeLabel(places, current) : "Places";
+	const [query, setQuery] = useState("");
+	const view = places ? currentPlaceView(places, current) : null;
+	const count = places ? places.startups.length + places.building.length : 0;
+	const shown = places ? filterPlaces(places, query) : null;
 
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger className="flex h-8 min-w-0 max-w-48 items-center gap-1.5 rounded-md px-2 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 data-[state=open]:bg-muted">
-				<span className="truncate">{label}</span>
-				<ChevronDownIcon
-					aria-hidden
-					className="size-4 shrink-0 text-muted-foreground"
-				/>
-				{places && othersWaiting(places, current) ? <UnreadDot /> : null}
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="start" className="w-64">
-				{places?.startups.length ? (
+		<DropdownMenu
+			onOpenChange={(isOpen) => {
+				if (!isOpen) {
+					setQuery("");
+				}
+			}}
+		>
+			<DropdownMenuTrigger className="flex h-9 min-w-0 max-w-64 items-center gap-2 rounded-md px-1.5 text-left outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 data-[state=open]:bg-muted">
+				{view ? (
 					<>
-						<DropdownMenuLabel>Startups</DropdownMenuLabel>
-						{places.startups.map((startup) => (
+						<PlaceLogo name={view.name} url={view.logoUrl} size="sm" />
+						<span className="flex min-w-0 flex-col leading-tight">
+							<span className="truncate text-sm font-medium">{view.name}</span>
+							<span className="hidden truncate text-[11px] text-muted-foreground sm:block">
+								{view.role}
+							</span>
+						</span>
+					</>
+				) : (
+					<>
+						<HomeIcon aria-hidden className="size-4 text-muted-foreground" />
+						<span className="text-sm font-medium">Home</span>
+					</>
+				)}
+				{places && othersWaiting(places, current) ? <UnreadDot /> : null}
+				<ChevronsUpDownIcon
+					aria-hidden
+					className="size-3.5 shrink-0 text-muted-foreground"
+				/>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="start" className="w-72">
+				{count >= SEARCH_FROM ? (
+					<div className="p-1">
+						<Input
+							autoFocus
+							aria-label="Find a place"
+							placeholder="Find a place…"
+							value={query}
+							className="h-8"
+							onChange={(event) => setQuery(event.target.value)}
+							// Radix typeahead would steal the letters.
+							onKeyDown={(event) => event.stopPropagation()}
+						/>
+					</div>
+				) : null}
+				{shown?.startups.length ? (
+					<>
+						<DropdownMenuLabel className="text-xs text-muted-foreground">
+							Your startups
+						</DropdownMenuLabel>
+						{shown.startups.map((startup) => (
 							<DropdownMenuItem
 								key={startup.startupId}
 								asChild
-								className="cursor-pointer"
+								className="cursor-pointer gap-2"
 							>
 								<Link to="/s/$slug/board" params={{ slug: startup.slug }}>
+									<PlaceLogo
+										name={startup.name}
+										url={startup.logoUrl}
+										size="sm"
+									/>
 									<span className="truncate">{startup.name}</span>
-									<span className="ml-auto flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-										{startup.role === "founder" ? "Founder" : "Contributor"}
+									<span className="ml-auto flex shrink-0 items-center gap-2">
 										{isWaiting(startup) ? <UnreadDot /> : null}
+										{isSamePlace(
+											{ kind: "startup", slug: startup.slug },
+											current,
+										) ? (
+											<CheckIcon aria-hidden className="size-4" />
+										) : null}
 									</span>
 								</Link>
 							</DropdownMenuItem>
 						))}
 					</>
 				) : null}
-				{places?.building.length ? (
+				{shown?.building.length ? (
 					<>
-						<DropdownMenuLabel>Building</DropdownMenuLabel>
-						{places.building.map((hackathon) => (
+						<DropdownMenuLabel className="text-xs text-muted-foreground">
+							Building in
+						</DropdownMenuLabel>
+						{shown.building.map((hackathon) => (
 							<DropdownMenuItem
 								key={hackathon.hackathonId}
 								asChild
-								className="cursor-pointer"
+								className="cursor-pointer gap-2"
 							>
 								<Link to="/h/$id" params={{ id: hackathon.hackathonId }}>
+									<PlaceLogo
+										name={hackathon.startupName}
+										url={hackathon.startupLogoUrl}
+										size="sm"
+									/>
 									<span className="truncate">
 										{roleLabel(hackathon.job.role)} · {hackathon.startupName}
 									</span>
-									{isWaiting(hackathon) ? (
-										<span className="ml-auto flex shrink-0">
-											<UnreadDot />
-										</span>
-									) : null}
-								</Link>
-							</DropdownMenuItem>
-						))}
-					</>
-				) : null}
-				{places?.applied.length ? (
-					<>
-						<DropdownMenuLabel>Applied</DropdownMenuLabel>
-						{places.applied.map((hackathon) => (
-							<DropdownMenuItem
-								key={hackathon.hackathonId}
-								asChild
-								className="cursor-pointer"
-							>
-								<Link
-									to="/hackathons/$id"
-									params={{ id: hackathon.hackathonId }}
-								>
-									<span className="truncate">
-										{roleLabel(hackathon.job.role)} · {hackathon.startupName}
-									</span>
-									<span className="ml-auto shrink-0 text-xs text-muted-foreground">
-										{hackathon.status === "applied"
-											? "Applied"
-											: "Not this time"}
+									<span className="ml-auto flex shrink-0 items-center gap-2">
+										{isWaiting(hackathon) ? <UnreadDot /> : null}
+										{isSamePlace(
+											{
+												kind: "hackathon",
+												hackathonId: hackathon.hackathonId,
+											},
+											current,
+										) ? (
+											<CheckIcon aria-hidden className="size-4" />
+										) : null}
 									</span>
 								</Link>
 							</DropdownMenuItem>
 						))}
 					</>
 				) : null}
-				{places &&
-				(places.startups.length ||
-					places.building.length ||
-					places.applied.length) ? (
-					<DropdownMenuSeparator />
+				{query &&
+				shown &&
+				shown.startups.length + shown.building.length === 0 ? (
+					<p className="px-2 py-3 text-sm text-muted-foreground">
+						No place matches.
+					</p>
 				) : null}
+				{count > 0 ? <DropdownMenuSeparator /> : null}
+				<DropdownMenuItem asChild className="cursor-pointer">
+					<Link to="/home">
+						<HomeIcon aria-hidden />
+						Home
+					</Link>
+				</DropdownMenuItem>
 				<DropdownMenuItem asChild className="cursor-pointer">
 					<Link to="/onboarding">
 						<PlusIcon aria-hidden />
 						New startup
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild className="cursor-pointer">
+					<Link to="/explore/hackathons">
+						<Compass aria-hidden />
+						Find a hackathon
 					</Link>
 				</DropdownMenuItem>
 			</DropdownMenuContent>

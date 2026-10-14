@@ -3,12 +3,13 @@ import type { WaitingReason } from "@convex/shared/places";
 import { describe, expect, it } from "vitest";
 import {
 	canSeeSettings,
+	currentPlaceView,
+	filterPlaces,
 	isSamePlace,
 	isWaiting,
 	othersWaiting,
 	type Places,
 	placeFromRoute,
-	placeLabel,
 	reasonLine,
 	tabsFromRoute,
 } from "./places";
@@ -40,6 +41,21 @@ function building(role: "frontend" | "fullstack", waiting: WaitingReason[]) {
 		endsAt: 1,
 		decision: null,
 		waiting,
+	};
+}
+
+function buildingRow(id: string, startupName: string) {
+	return {
+		hackathonId: id as Id<"hackathons">,
+		job: { role: "frontend", pay: "6_9l", mode: "remote" } as const,
+		startupName,
+		startupSlug: startupName.toLowerCase(),
+		startupLogoUrl: null,
+		status: "building" as const,
+		startsAt: 0,
+		endsAt: 0,
+		decision: null,
+		waiting: [],
 	};
 }
 
@@ -199,23 +215,54 @@ describe("isSamePlace", () => {
 	});
 });
 
-describe("placeLabel", () => {
-	it("the label is the Startup name, else Places", () => {
-		const all = places({ startups: [startup("acme", "Acme", [])] });
-
-		expect(placeLabel(all, { kind: "startup", slug: "acme" })).toBe("Acme");
-		expect(placeLabel(all, null)).toBe("Places");
-		expect(placeLabel(all, { kind: "startup", slug: "gone" })).toBe("Places");
+describe("currentPlaceView", () => {
+	it("a Startup shows its name, logo and your role", () => {
+		expect(
+			currentPlaceView(places({ startups: [startup("acme", "Acme", [])] }), {
+				kind: "startup",
+				slug: "acme",
+			}),
+		).toEqual({ name: "Acme", logoUrl: null, role: "Founder" });
 	});
 
-	it("a Hackathon Board is labelled by its job", () => {
+	it("a Builder's Hackathon shows the job and the Startup", () => {
+		const view = currentPlaceView(
+			places({ building: [buildingRow("h1", "Zest")] }),
+			{ kind: "hackathon", hackathonId: "h1" },
+		);
+
+		expect(view).toEqual({
+			name: "Frontend",
+			logoUrl: null,
+			role: "Builder · Zest",
+		});
+	});
+
+	it("outside a place, or a place you've left, is no place", () => {
+		expect(currentPlaceView(places(), null)).toBeNull();
+		expect(
+			currentPlaceView(places(), { kind: "startup", slug: "gone" }),
+		).toBeNull();
+	});
+});
+
+describe("filterPlaces", () => {
+	it("keeps Startups and Hackathons whose name matches, ignoring case", () => {
 		const all = places({
-			building: [building("fullstack", [])],
+			startups: [startup("acme", "Acme", []), startup("kite", "Kitebase", [])],
+			building: [buildingRow("h1", "Zest")],
 		});
 
-		expect(placeLabel(all, { kind: "hackathon", hackathonId })).toBe(
-			"Full-stack",
-		);
+		const found = filterPlaces(all, "KI");
+
+		expect(found.startups.map((s) => s.name)).toEqual(["Kitebase"]);
+		expect(found.building).toEqual([]);
+	});
+
+	it("an empty query keeps everything", () => {
+		const all = places({ startups: [startup("acme", "Acme", [])] });
+
+		expect(filterPlaces(all, "  ")).toEqual(all);
 	});
 });
 

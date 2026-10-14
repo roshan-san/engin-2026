@@ -95,18 +95,49 @@ export function othersWaiting(places: Places, current: CurrentPlace): boolean {
 	);
 }
 
-/** What the switcher's trigger says: the Startup, the job you're building, or "Places". */
-export function placeLabel(places: Places, current: CurrentPlace): string {
+/** The switcher's trigger: what you're in, its logo, and who you are there. */
+export function currentPlaceView(
+	places: Places,
+	current: CurrentPlace,
+): { name: string; logoUrl: string | null; role: string } | null {
 	if (current?.kind === "startup") {
 		const slug = current.slug;
-		return places.startups.find((s) => s.slug === slug)?.name ?? "Places";
+		const startup = places.startups.find((s) => s.slug === slug);
+		return startup
+			? {
+					name: startup.name,
+					logoUrl: startup.logoUrl,
+					role: startup.role === "founder" ? "Founder" : "Contributor",
+				}
+			: null;
 	}
 	if (current?.kind === "hackathon") {
 		const id = current.hackathonId;
-		const found = places.building.find((h) => h.hackathonId === id);
-		return found ? roleLabel(found.job.role) : "Places";
+		const hackathon = places.building.find((h) => h.hackathonId === id);
+		return hackathon
+			? {
+					name: roleLabel(hackathon.job.role),
+					logoUrl: hackathon.startupLogoUrl,
+					role: `Builder · ${hackathon.startupName}`,
+				}
+			: null;
 	}
-	return "Places";
+	return null;
+}
+
+/** Places whose name matches the search; blank keeps all. */
+export function filterPlaces(places: Places, query: string): Places {
+	const q = query.trim().toLowerCase();
+	if (!q) {
+		return places;
+	}
+	return {
+		...places,
+		startups: places.startups.filter((s) => s.name.toLowerCase().includes(q)),
+		building: places.building.filter((h) =>
+			`${roleLabel(h.job.role)} ${h.startupName}`.toLowerCase().includes(q),
+		),
+	};
 }
 
 /** Which tab row the shell shows under the top bar. */
