@@ -1,14 +1,13 @@
 import { query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
-import { MAX_USER_APPLICATIONS, MAX_USER_STARTUPS } from "../shared/limits";
 import {
-	builderWaiting,
-	loadBuilderSignals,
-	loadStartupSignals,
-	startupWaiting,
+	builderReasons,
+	isPromisePending,
+	startupReasons,
 } from "../model/places";
+import { MAX_USER_APPLICATIONS, MAX_USER_STARTUPS } from "../shared/limits";
 
-/** Every place the person can switch to, each with whether it's waiting on them. */
+/** Every place the person can switch to, each with what is waiting on them. */
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
@@ -40,13 +39,13 @@ export const list = query({
 				slug: startup.slug,
 				name: startup.name,
 				role,
-				waiting: startupWaiting(
-					await loadStartupSignals(
-						ctx,
-						startup._id,
-						userId,
-						role === "founder",
-					),
+				logoUrl: startup.logo ? await ctx.storage.getUrl(startup.logo) : null,
+				rating: startup.rating,
+				waiting: await startupReasons(
+					ctx,
+					startup._id,
+					userId,
+					role === "founder",
 				),
 			})),
 		);
@@ -68,13 +67,23 @@ export const list = query({
 				hackathonId: hackathon._id,
 				job: hackathon.job,
 				startupName: startup.name,
+				startupSlug: startup.slug,
+				startupLogoUrl: startup.logo
+					? await ctx.storage.getUrl(startup.logo)
+					: null,
 			};
 
 			if (application.status === "building") {
-				const signals = await loadBuilderSignals(ctx, application);
 				// A finished Hackathon stays until the promise question is answered.
-				if (hackathon.status !== "done" || signals.promisePending) {
-					building.push({ ...place, waiting: builderWaiting(signals) });
+				if (hackathon.status !== "done" || isPromisePending(application)) {
+					building.push({
+						...place,
+						status: hackathon.status,
+						startsAt: hackathon.startsAt,
+						endsAt: hackathon.endsAt,
+						decision: application.decision ?? null,
+						waiting: await builderReasons(ctx, application),
+					});
 				}
 			} else if (
 				(application.status === "applied" ||

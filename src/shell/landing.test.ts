@@ -18,12 +18,25 @@ function startup(slug: string) {
 		slug,
 		name: slug,
 		role: "founder" as const,
-		waiting: false,
+		logoUrl: null,
+		rating: 1000,
+		waiting: [],
 	};
 }
 
 function building(id: Id<"hackathons">) {
-	return { hackathonId: id, job, startupName: "Acme", waiting: false };
+	return {
+		hackathonId: id,
+		job,
+		startupName: "Acme",
+		startupSlug: "acme",
+		startupLogoUrl: null,
+		status: "building" as const,
+		startsAt: 0,
+		endsAt: 1,
+		decision: null,
+		waiting: [],
+	};
 }
 
 function inStartup(slug: string, path: string) {
@@ -114,7 +127,16 @@ describe("pickLanding", () => {
 
 	it("only an application goes to its Hackathon page", () => {
 		const all = places({
-			applied: [{ hackathonId, job, startupName: "Acme", status: "applied" }],
+			applied: [
+				{
+					hackathonId,
+					job,
+					startupName: "Acme",
+					startupSlug: "acme",
+					startupLogoUrl: null,
+					status: "applied",
+				},
+			],
 		});
 
 		expect(pickLanding(all, null)).toBe(`/hackathons/${hackathonId}`);

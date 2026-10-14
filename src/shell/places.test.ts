@@ -1,20 +1,46 @@
 import type { Id } from "@convex/_generated/dataModel";
+import type { WaitingReason } from "@convex/shared/places";
 import { describe, expect, it } from "vitest";
 import {
 	canSeeSettings,
 	isSamePlace,
+	isWaiting,
 	othersWaiting,
 	type Places,
 	placeFromRoute,
 	placeLabel,
+	reasonLine,
 	tabsFromRoute,
 } from "./places";
 
 const startupId = "startup" as Id<"startups">;
 const hackathonId = "hackathon" as Id<"hackathons">;
 
-function startup(slug: string, name: string, waiting: boolean) {
-	return { startupId, slug, name, role: "founder" as const, waiting };
+function startup(slug: string, name: string, waiting: WaitingReason[]) {
+	return {
+		startupId,
+		slug,
+		name,
+		role: "founder" as const,
+		logoUrl: null,
+		rating: 1000,
+		waiting,
+	};
+}
+
+function building(role: "frontend" | "fullstack", waiting: WaitingReason[]) {
+	return {
+		hackathonId,
+		job: { role, pay: "equity", mode: "remote" } as const,
+		startupName: "Acme",
+		startupSlug: "acme",
+		startupLogoUrl: null,
+		status: "building" as const,
+		startsAt: 0,
+		endsAt: 1,
+		decision: null,
+		waiting,
+	};
 }
 
 function places(overrides: Partial<Places> = {}): Places {
@@ -75,7 +101,10 @@ describe("placeFromRoute", () => {
 
 describe("othersWaiting", () => {
 	const all = places({
-		startups: [startup("acme", "Acme", true), startup("beta", "Beta", false)],
+		startups: [
+			startup("acme", "Acme", [{ kind: "team_unread" }]),
+			startup("beta", "Beta", []),
+		],
 	});
 
 	it("the current place's own dot doesn't count", () => {
@@ -91,24 +120,64 @@ describe("othersWaiting", () => {
 		expect(othersWaiting(places(), null)).toBe(false);
 	});
 
-	it("a waiting Hackathon Board counts from a Startup", () => {
-		const building = places({
-			building: [
-				{
-					hackathonId,
-					job: { role: "frontend", pay: "equity", mode: "remote" },
-					startupName: "Acme",
-					waiting: true,
-				},
-			],
+	it("places with nothing waiting never count, even an empty list", () => {
+		const quiet = places({
+			startups: [startup("acme", "Acme", [])],
+			building: [building("frontend", [])],
 		});
 
-		expect(othersWaiting(building, { kind: "startup", slug: "acme" })).toBe(
+		expect(othersWaiting(quiet, null)).toBe(false);
+	});
+
+	it("a waiting Hackathon Board counts from a Startup", () => {
+		const onBoard = places({
+			building: [building("frontend", [{ kind: "promise_pending" }])],
+		});
+
+		expect(othersWaiting(onBoard, { kind: "startup", slug: "acme" })).toBe(
 			true,
 		);
 		expect(
-			othersWaiting(building, { kind: "hackathon", hackathonId: hackathonId }),
+			othersWaiting(onBoard, { kind: "hackathon", hackathonId: hackathonId }),
 		).toBe(false);
+	});
+});
+
+describe("isWaiting", () => {
+	it("an empty list is not waiting", () => {
+		expect(isWaiting({ waiting: [] })).toBe(false);
+	});
+
+	it("any reason is waiting", () => {
+		expect(isWaiting({ waiting: [{ kind: "team_unread" }] })).toBe(true);
+	});
+});
+
+describe("reasonLine", () => {
+	it.each([
+		[{ kind: "team_unread" }, "Unread team messages"],
+		[{ kind: "cards_to_verify", count: 1 }, "1 Card to verify"],
+		[{ kind: "cards_to_verify", count: 2 }, "2 Cards to verify"],
+		[
+			{ kind: "new_applicants", role: "frontend", count: 3 },
+			"3 new applicants on Frontend",
+		],
+		[
+			{ kind: "builder_cards_to_review", role: "frontend", count: 1 },
+			"1 Builder Card to review on Frontend",
+		],
+		[
+			{ kind: "hackathon_unread", role: "frontend" },
+			"Unread messages on Frontend",
+		],
+		[
+			{ kind: "builders_to_decide", role: "frontend", count: 2 },
+			"2 Builders to decide on Frontend",
+		],
+		[{ kind: "messages_unread" }, "Unread messages"],
+		[{ kind: "promise_pending" }, "Did they keep their promise?"],
+	] as const)("%o reads %s", (reason, line) => {
+		expect(reasonLine(reason)).toBe(line);
 	});
 });
 
@@ -132,7 +201,7 @@ describe("isSamePlace", () => {
 
 describe("placeLabel", () => {
 	it("the label is the Startup name, else Places", () => {
-		const all = places({ startups: [startup("acme", "Acme", false)] });
+		const all = places({ startups: [startup("acme", "Acme", [])] });
 
 		expect(placeLabel(all, { kind: "startup", slug: "acme" })).toBe("Acme");
 		expect(placeLabel(all, null)).toBe("Places");
@@ -141,14 +210,7 @@ describe("placeLabel", () => {
 
 	it("a Hackathon Board is labelled by its job", () => {
 		const all = places({
-			building: [
-				{
-					hackathonId,
-					job: { role: "fullstack", pay: "equity", mode: "remote" },
-					startupName: "Acme",
-					waiting: false,
-				},
-			],
+			building: [building("fullstack", [])],
 		});
 
 		expect(placeLabel(all, { kind: "hackathon", hackathonId })).toBe(
@@ -211,7 +273,7 @@ describe("canSeeSettings", () => {
 	it("the Founder sees the gear", () => {
 		expect(
 			canSeeSettings(
-				places({ startups: [startup("acme", "Acme", false)] }),
+				places({ startups: [startup("acme", "Acme", [])] }),
 				"acme",
 			),
 		).toBe(true);
@@ -219,7 +281,7 @@ describe("canSeeSettings", () => {
 
 	it("a Contributor doesn't", () => {
 		const contributor = {
-			...startup("acme", "Acme", false),
+			...startup("acme", "Acme", []),
 			role: "contributor" as const,
 		};
 

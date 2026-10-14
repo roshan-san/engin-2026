@@ -1,67 +1,18 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { MAX_BUILDERS, MAX_LISTED_HACKATHONS } from "../shared/limits";
-import type { hackathonStatus } from "../shared/validators";
+import {
+	MAX_APPLICATIONS,
+	MAX_BOARD_CARDS,
+	MAX_BUILDERS,
+	MAX_LISTED_HACKATHONS,
+} from "../shared/limits";
+import type { WaitingReason } from "../shared/places";
 import {
 	isThreadUnread,
 	loadHackathonThreads,
 	loadTeamThreads,
 	loadThreadRead,
 } from "./threads";
-import type { Infer } from "convex/values";
-
-type HackathonStatus = Infer<typeof hackathonStatus>;
-
-/** What a Founder may owe one of their Hackathons right now. */
-export type HackathonSignals = {
-	status: HackathonStatus;
-	hasApplicant: boolean;
-	hasReview: boolean;
-	threadUnread: boolean;
-	hasUndecided: boolean;
-};
-
-export type StartupSignals = {
-	teamUnread: boolean;
-	isFounder: boolean;
-	boardReview: boolean;
-	hackathons: HackathonSignals[];
-};
-
-export type BuilderSignals = {
-	threadUnread: boolean;
-	promisePending: boolean;
-};
-
-/** Whether a Startup place has something for this person. */
-export function startupWaiting(startup: StartupSignals): boolean {
-	if (startup.teamUnread) {
-		return true;
-	}
-	if (!startup.isFounder) {
-		return false;
-	}
-	return (
-		startup.boardReview ||
-		startup.hackathons.some((hackathon) => {
-			switch (hackathon.status) {
-				case "open":
-					return hackathon.hasApplicant;
-				case "building":
-					return hackathon.hasReview || hackathon.threadUnread;
-				case "deciding":
-					return hackathon.hasUndecided;
-				default:
-					return false;
-			}
-		})
-	);
-}
-
-/** Whether a Hackathon the person builds in has something for them. */
-export function builderWaiting(builder: BuilderSignals): boolean {
-	return builder.threadUnread || builder.promisePending;
-}
 
 /** A decision is in, and the Builder hasn't said whether the promise was kept. */
 export function isPromisePending(application: Doc<"applications">): boolean {
@@ -84,11 +35,11 @@ async function anyUnread(
 	return false;
 }
 
-async function hasCardInReview(
+async function countCardsInReview(
 	ctx: QueryCtx,
 	startupId: Id<"startups">,
 	hackathonId: Id<"hackathons"> | undefined,
-): Promise<boolean> {
+): Promise<number> {
 	const cards = await ctx.db
 		.query("cards")
 		.withIndex("by_startup_and_hackathon_and_status", (q) =>
@@ -97,42 +48,47 @@ async function hasCardInReview(
 				.eq("hackathonId", hackathonId)
 				.eq("status", "review"),
 		)
-		.take(1);
-	return cards.length > 0;
+		.take(MAX_BOARD_CARDS);
+	return cards.length;
 }
 
-async function loadHackathonSignals(
+/** What one of a Founder's Hackathons is waiting on them for, by its status. */
+async function hackathonReasons(
 	ctx: QueryCtx,
 	hackathon: Doc<"hackathons">,
 	userId: Id<"users">,
-): Promise<HackathonSignals> {
-	const signals: HackathonSignals = {
-		status: hackathon.status,
-		hasApplicant: false,
-		hasReview: false,
-		threadUnread: false,
-		hasUndecided: false,
-	};
+): Promise<WaitingReason[]> {
+	const role = hackathon.job.role;
+	const reasons: WaitingReason[] = [];
 	if (hackathon.status === "open") {
-		const applicants = await ctx.db
+		const applied = await ctx.db
 			.query("applications")
 			.withIndex("by_hackathon_and_status", (q) =>
 				q.eq("hackathonId", hackathon._id).eq("status", "applied"),
 			)
-			.take(1);
-		signals.hasApplicant = applicants.length > 0;
+			.take(MAX_APPLICATIONS);
+		if (applied.length > 0) {
+			reasons.push({ kind: "new_applicants", role, count: applied.length });
+		}
 	}
 	if (hackathon.status === "building") {
-		signals.hasReview = await hasCardInReview(
+		const count = await countCardsInReview(
 			ctx,
 			hackathon.startupId,
 			hackathon._id,
 		);
-		signals.threadUnread = await anyUnread(
-			ctx,
-			await loadHackathonThreads(ctx, hackathon._id),
-			userId,
-		);
+		if (count > 0) {
+			reasons.push({ kind: "builder_cards_to_review", role, count });
+		}
+		if (
+			await anyUnread(
+				ctx,
+				await loadHackathonThreads(ctx, hackathon._id),
+				userId,
+			)
+		) {
+			reasons.push({ kind: "hackathon_unread", role });
+		}
 	}
 	if (hackathon.status === "deciding") {
 		const building = await ctx.db
@@ -141,54 +97,56 @@ async function loadHackathonSignals(
 				q.eq("hackathonId", hackathon._id).eq("status", "building"),
 			)
 			.take(MAX_BUILDERS);
-		signals.hasUndecided = building.some(
+		const count = building.filter(
 			(application) => application.decision === undefined,
-		);
+		).length;
+		if (count > 0) {
+			reasons.push({ kind: "builders_to_decide", role, count });
+		}
 	}
-	return signals;
+	return reasons;
 }
 
-/** Gathers the booleans `startupWaiting` decides on. Only a Founder reads the Board and Hackathons. */
-export async function loadStartupSignals(
+/** Why a Startup place is waiting on this person. Only a Founder is owed the Board and Hackathons. */
+export async function startupReasons(
 	ctx: QueryCtx,
 	startupId: Id<"startups">,
 	userId: Id<"users">,
 	isFounder: boolean,
-): Promise<StartupSignals> {
-	const teamUnread = await anyUnread(
-		ctx,
-		await loadTeamThreads(ctx, startupId),
-		userId,
-	);
+): Promise<WaitingReason[]> {
+	const reasons: WaitingReason[] = [];
+	if (await anyUnread(ctx, await loadTeamThreads(ctx, startupId), userId)) {
+		reasons.push({ kind: "team_unread" });
+	}
 	if (!isFounder) {
-		return { teamUnread, isFounder, boardReview: false, hackathons: [] };
+		return reasons;
 	}
 
+	const toVerify = await countCardsInReview(ctx, startupId, undefined);
+	if (toVerify > 0) {
+		reasons.push({ kind: "cards_to_verify", count: toVerify });
+	}
 	const hackathons = await ctx.db
 		.query("hackathons")
 		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
 		.order("desc")
 		.take(MAX_LISTED_HACKATHONS);
-	return {
-		teamUnread,
-		isFounder,
-		boardReview: await hasCardInReview(ctx, startupId, undefined),
-		hackathons: await Promise.all(
-			hackathons
-				.filter(
-					(hackathon) =>
-						hackathon.status !== "draft" && hackathon.status !== "done",
-				)
-				.map((hackathon) => loadHackathonSignals(ctx, hackathon, userId)),
-		),
-	};
+	const perHackathon = await Promise.all(
+		hackathons
+			.filter(
+				(hackathon) =>
+					hackathon.status !== "draft" && hackathon.status !== "done",
+			)
+			.map((hackathon) => hackathonReasons(ctx, hackathon, userId)),
+	);
+	return [...reasons, ...perHackathon.flat()];
 }
 
-/** Gathers the booleans `builderWaiting` decides on: Everyone, then this Builder's private thread. */
-export async function loadBuilderSignals(
+/** Why a Hackathon the person builds in is waiting on them: Everyone, then their private thread, then the promise. */
+export async function builderReasons(
 	ctx: QueryCtx,
 	application: Doc<"applications">,
-): Promise<BuilderSignals> {
+): Promise<WaitingReason[]> {
 	const { hackathonId, userId } = application;
 	const everyone = await ctx.db
 		.query("threads")
@@ -202,8 +160,12 @@ export async function loadBuilderSignals(
 			q.eq("hackathonId", hackathonId).eq("builderId", userId),
 		)
 		.take(1);
-	return {
-		threadUnread: await anyUnread(ctx, [...everyone, ...priv], userId),
-		promisePending: isPromisePending(application),
-	};
+	const reasons: WaitingReason[] = [];
+	if (await anyUnread(ctx, [...everyone, ...priv], userId)) {
+		reasons.push({ kind: "messages_unread" });
+	}
+	if (isPromisePending(application)) {
+		reasons.push({ kind: "promise_pending" });
+	}
+	return reasons;
 }

@@ -10,7 +10,12 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { roleLabel } from "~/features/hiring/jobChips";
-import { type CurrentPlace, othersWaiting, placeLabel } from "~/shell/places";
+import {
+	type CurrentPlace,
+	isWaiting,
+	othersWaiting,
+	placeLabel,
+} from "~/shell/places";
 import { usePlaces } from "~/shell/usePlaces";
 
 /** The place you're in, and the way to every other: your Startups, the Hackathons you build and applied to. */
@@ -46,7 +51,7 @@ export function PlaceSwitcher({
 									<span className="truncate">{startup.name}</span>
 									<span className="ml-auto flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
 										{startup.role === "founder" ? "Founder" : "Contributor"}
-										{startup.waiting ? <UnreadDot /> : null}
+										{isWaiting(startup) ? <UnreadDot /> : null}
 									</span>
 								</Link>
 							</DropdownMenuItem>
@@ -66,7 +71,7 @@ export function PlaceSwitcher({
 									<span className="truncate">
 										{roleLabel(hackathon.job.role)} · {hackathon.startupName}
 									</span>
-									{hackathon.waiting ? (
+									{isWaiting(hackathon) ? (
 										<span className="ml-auto flex shrink-0">
 											<UnreadDot />
 										</span>

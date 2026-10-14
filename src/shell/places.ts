@@ -1,4 +1,5 @@
 import type { api } from "@convex/_generated/api";
+import type { WaitingReason } from "@convex/shared/places";
 import type { FunctionReturnType } from "convex/server";
 import { roleLabel } from "~/features/hiring/jobChips";
 
@@ -42,17 +43,50 @@ export function isSamePlace(a: CurrentPlace, b: CurrentPlace): boolean {
 	return false;
 }
 
+/** Whether anything is waiting on you there. An empty list is truthy; always ask this. */
+export function isWaiting(place: {
+	readonly waiting: readonly WaitingReason[];
+}): boolean {
+	return place.waiting.length > 0;
+}
+
+function plural(count: number, one: string, many: string): string {
+	return `${count} ${count === 1 ? one : many}`;
+}
+
+/** One reason in plain words, for Home. */
+export function reasonLine(reason: WaitingReason): string {
+	switch (reason.kind) {
+		case "team_unread":
+			return "Unread team messages";
+		case "cards_to_verify":
+			return `${plural(reason.count, "Card", "Cards")} to verify`;
+		case "new_applicants":
+			return `${plural(reason.count, "new applicant", "new applicants")} on ${roleLabel(reason.role)}`;
+		case "builder_cards_to_review":
+			return `${plural(reason.count, "Builder Card", "Builder Cards")} to review on ${roleLabel(reason.role)}`;
+		case "hackathon_unread":
+			return `Unread messages on ${roleLabel(reason.role)}`;
+		case "builders_to_decide":
+			return `${plural(reason.count, "Builder", "Builders")} to decide on ${roleLabel(reason.role)}`;
+		case "messages_unread":
+			return "Unread messages";
+		case "promise_pending":
+			return "Did they keep their promise?";
+	}
+}
+
 /** Whether a place other than the one you're in is waiting on you. */
 export function othersWaiting(places: Places, current: CurrentPlace): boolean {
 	return (
 		places.startups.some(
 			(startup) =>
-				startup.waiting &&
+				isWaiting(startup) &&
 				!isSamePlace({ kind: "startup", slug: startup.slug }, current),
 		) ||
 		places.building.some(
 			(hackathon) =>
-				hackathon.waiting &&
+				isWaiting(hackathon) &&
 				!isSamePlace(
 					{ kind: "hackathon", hackathonId: hackathon.hackathonId },
 					current,

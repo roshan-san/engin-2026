@@ -9,13 +9,13 @@ import {
 	endHackathon,
 	startHackathon,
 } from "../testing/applications.setup";
+import { SHIPPED } from "../testing/cards.setup";
 import {
 	draftHackathon,
 	publishedHackathon,
 } from "../testing/hackathons.setup";
-import { createTest } from "../testing/test.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
-import { SHIPPED } from "../testing/cards.setup";
+import { createTest } from "../testing/test.setup";
 import { type Person, signUp } from "../testing/users.setup";
 
 async function placesOf(person: Person) {
@@ -73,14 +73,18 @@ describe("groups", () => {
 				slug: setup.slug,
 				name: "Acme",
 				role: "founder",
-				waiting: false,
+				logoUrl: null,
+				rating: 1000,
+				waiting: [],
 			},
 			{
 				startupId: zeta.startupId,
 				slug: zeta.slug,
 				name: "Zeta",
 				role: "contributor",
-				waiting: false,
+				logoUrl: null,
+				rating: 1000,
+				waiting: [],
 			},
 		]);
 	});
@@ -92,12 +96,16 @@ describe("groups", () => {
 
 		const places = await placesOf(ana);
 
-		expect(places.building).toEqual([
+		expect(places.building).toMatchObject([
 			{
 				hackathonId,
 				job: { role: "frontend", pay: "6_9l", mode: "remote" },
 				startupName: "Acme",
-				waiting: false,
+				startupSlug: setup.slug,
+				startupLogoUrl: null,
+				status: "open",
+				decision: null,
+				waiting: [],
 			},
 		]);
 		expect(places.applied).toEqual([]);
@@ -120,6 +128,8 @@ describe("groups", () => {
 				hackathonId,
 				job: { role: "frontend", pay: "6_9l", mode: "remote" },
 				startupName: "Acme",
+				startupSlug: setup.slug,
+				startupLogoUrl: null,
 				status: "applied",
 			},
 		]);
@@ -178,8 +188,8 @@ describe("waiting", () => {
 		await setup.founder.as.mutation(api.chat.threads.markRead, { threadId });
 		const read = await placesOf(setup.founder);
 
-		expect(lit.startups[0].waiting).toBe(true);
-		expect(read.startups[0].waiting).toBe(false);
+		expect(lit.startups[0].waiting).not.toEqual([]);
+		expect(read.startups[0].waiting).toEqual([]);
 	});
 
 	it("your own message doesn't light it", async () => {
@@ -194,7 +204,7 @@ describe("waiting", () => {
 		await say(setup.founder, threadId);
 		const places = await placesOf(setup.founder);
 
-		expect(places.startups[0].waiting).toBe(false);
+		expect(places.startups[0].waiting).toEqual([]);
 	});
 
 	it("a Board Card in Review lights it for the Founder only", async () => {
@@ -214,9 +224,9 @@ describe("waiting", () => {
 		await setup.founder.as.mutation(api.work.cards.verify, { cardId: card });
 		const founderClear = await placesOf(setup.founder);
 
-		expect(founderLit.startups[0].waiting).toBe(true);
-		expect(contributor.startups[0].waiting).toBe(false);
-		expect(founderClear.startups[0].waiting).toBe(false);
+		expect(founderLit.startups[0].waiting).not.toEqual([]);
+		expect(contributor.startups[0].waiting).toEqual([]);
+		expect(founderClear.startups[0].waiting).toEqual([]);
 	});
 
 	it("an Applicant to screen lights it", async () => {
@@ -230,8 +240,8 @@ describe("waiting", () => {
 		});
 		const screened = await placesOf(setup.founder);
 
-		expect(lit.startups[0].waiting).toBe(true);
-		expect(screened.startups[0].waiting).toBe(false);
+		expect(lit.startups[0].waiting).not.toEqual([]);
+		expect(screened.startups[0].waiting).toEqual([]);
 	});
 
 	it("a Builder's Card in Review lights it", async () => {
@@ -253,9 +263,9 @@ describe("waiting", () => {
 		});
 		const clear = await placesOf(setup.founder);
 
-		expect(lit.startups[0].waiting).toBe(true);
-		expect(contributor.startups[0].waiting).toBe(false);
-		expect(clear.startups[0].waiting).toBe(false);
+		expect(lit.startups[0].waiting).not.toEqual([]);
+		expect(contributor.startups[0].waiting).toEqual([]);
+		expect(clear.startups[0].waiting).toEqual([]);
 	});
 
 	it("an unread Builder thread lights it for the Founder", async () => {
@@ -270,8 +280,8 @@ describe("waiting", () => {
 		await setup.founder.as.mutation(api.chat.threads.markRead, { threadId });
 		const read = await placesOf(setup.founder);
 
-		expect(lit.startups[0].waiting).toBe(true);
-		expect(read.startups[0].waiting).toBe(false);
+		expect(lit.startups[0].waiting).not.toEqual([]);
+		expect(read.startups[0].waiting).toEqual([]);
 	});
 
 	it("the Founder's Startup lights when Everyone has an unread message", async () => {
@@ -283,7 +293,7 @@ describe("waiting", () => {
 
 		await say(ana, threadId);
 
-		expect((await placesOf(setup.founder)).startups[0].waiting).toBe(true);
+		expect((await placesOf(setup.founder)).startups[0].waiting).not.toEqual([]);
 	});
 
 	it("a draft or done Hackathon never lights the Startup", async () => {
@@ -297,7 +307,7 @@ describe("waiting", () => {
 
 		await closeHackathon(setup, hackathonId);
 
-		expect((await placesOf(setup.founder)).startups[0].waiting).toBe(false);
+		expect((await placesOf(setup.founder)).startups[0].waiting).toEqual([]);
 	});
 
 	it("an undecided Builder while deciding lights it", async () => {
@@ -317,9 +327,9 @@ describe("waiting", () => {
 		}
 		const decided = await placesOf(setup.founder);
 
-		expect(building.startups[0].waiting).toBe(false);
-		expect(lit.startups[0].waiting).toBe(true);
-		expect(decided.startups[0].waiting).toBe(false);
+		expect(building.startups[0].waiting).toEqual([]);
+		expect(lit.startups[0].waiting).not.toEqual([]);
+		expect(decided.startups[0].waiting).toEqual([]);
 	});
 
 	it("an unread Everyone message lights the Builder's Hackathon", async () => {
@@ -333,8 +343,8 @@ describe("waiting", () => {
 		await ana.as.mutation(api.chat.threads.markRead, { threadId });
 		const read = await placesOf(ana);
 
-		expect(lit.building[0].waiting).toBe(true);
-		expect(read.building[0].waiting).toBe(false);
+		expect(lit.building[0].waiting).not.toEqual([]);
+		expect(read.building[0].waiting).toEqual([]);
 	});
 
 	it("a decision waiting on the promise lights the Builder's Hackathon", async () => {
@@ -345,7 +355,50 @@ describe("waiting", () => {
 
 		const places = await placesOf(ana);
 
-		expect(places.building[0].waiting).toBe(true);
+		expect(places.building[0].waiting).not.toEqual([]);
+	});
+
+	it("a decision waiting on the promise reads as the promise question", async () => {
+		const setup = await setUpStartup(createTest());
+		const {
+			builders: [ana],
+		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+
+		const places = await placesOf(ana);
+
+		expect(places.building[0].waiting).toEqual([{ kind: "promise_pending" }]);
+	});
+
+	it("an Applicant reads as new applicants on the job", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await applicant(setup, hackathonId, "Ana");
+		await applicant(setup, hackathonId, "Bo");
+
+		const places = await placesOf(setup.founder);
+
+		expect(places.startups[0].waiting).toEqual([
+			{ kind: "new_applicants", role: "frontend", count: 2 },
+		]);
+	});
+
+	it("a Card in Review reads as Cards to verify", async () => {
+		const setup = await setUpStartup(createTest());
+		const cal = await addContributor(setup, "Cal");
+		const card = await cal.as.mutation(api.work.cards.create, {
+			startupId: setup.startupId,
+			title: "Welcome emails",
+		});
+		await cal.as.mutation(api.work.cards.submit, {
+			cardId: card,
+			shipped: SHIPPED,
+		});
+
+		const places = await placesOf(setup.founder);
+
+		expect(places.startups[0].waiting).toEqual([
+			{ kind: "cards_to_verify", count: 1 },
+		]);
 	});
 
 	it("nothing pending leaves every dot off", async () => {
@@ -358,8 +411,12 @@ describe("waiting", () => {
 		const places = [setup.founder, cal, ana].map(placesOf);
 
 		for (const place of await Promise.all(places)) {
-			expect(place.startups.map((row) => row.waiting)).not.toContain(true);
-			expect(place.building.map((row) => row.waiting)).not.toContain(true);
+			expect(place.startups.map((row) => row.waiting)).toEqual(
+				place.startups.map(() => []),
+			);
+			expect(place.building.map((row) => row.waiting)).toEqual(
+				place.building.map(() => []),
+			);
 		}
 	});
 });
