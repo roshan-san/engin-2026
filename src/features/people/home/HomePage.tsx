@@ -15,6 +15,7 @@ import { isWaiting, type Places, reasonLine } from "~/shell/places";
 import { useMe } from "~/shell/useMe";
 import { usePlaces } from "~/shell/usePlaces";
 import { greeting } from "./greeting";
+import { homeSections } from "./homeSections";
 
 const CARD =
 	"flex flex-col gap-3 rounded-xl border border-border bg-card p-4 outline-none transition-colors hover:border-foreground/20 hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/60";
@@ -27,24 +28,34 @@ export function HomePage() {
 	if (places === undefined || me === undefined) {
 		return <GlobalSpinner fill />;
 	}
-	const isNew = places.startups.length === 0 && places.building.length === 0;
+	const now = Date.now();
+	const { welcome, applications } = homeSections(places);
 
 	return (
 		<AppPage
 			bar={{
 				title: (
 					<h1 className="truncate text-sm font-medium">
-						{greeting(Date.now(), me?.name ?? null)}
+						{greeting(now, me?.name ?? null)}
 					</h1>
 				),
 			}}
 		>
-			{isNew ? <TwoWaysIn /> : <YourPlaces places={places} />}
+			<div className="flex flex-col gap-10">
+				{welcome ? <TwoWaysIn /> : <YourPlaces places={places} now={now} />}
+				{applications ? <Applications applied={places.applied} /> : null}
+			</div>
 		</AppPage>
 	);
 }
 
-function YourPlaces({ places }: { readonly places: Places }) {
+function YourPlaces({
+	places,
+	now,
+}: {
+	readonly places: Places;
+	readonly now: number;
+}) {
 	return (
 		<div className="flex flex-col gap-10">
 			<Section label="Your startups">
@@ -110,7 +121,7 @@ function YourPlaces({ places }: { readonly places: Places }) {
 									</p>
 								</div>
 								<span className="shrink-0 text-xs text-muted-foreground">
-									{builderStatusText(hackathon, hackathon.decision, Date.now())}
+									{builderStatusText(hackathon, hackathon.decision, now)}
 								</span>
 							</div>
 							<Waiting place={hackathon} />
@@ -118,37 +129,39 @@ function YourPlaces({ places }: { readonly places: Places }) {
 					))
 				)}
 			</Section>
-			{places.applied.length > 0 ? (
-				<section className="flex flex-col gap-2">
-					<SectionLabel>Your applications</SectionLabel>
-					<ul className="divide-y divide-border rounded-xl border border-border">
-						{places.applied.map((hackathon) => (
-							<li key={hackathon.hackathonId}>
-								<Link
-									to="/hackathons/$id"
-									params={{ id: hackathon.hackathonId }}
-									className="flex items-center gap-3 px-4 py-3 text-sm outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60"
-								>
-									<PlaceLogo
-										name={hackathon.startupName}
-										url={hackathon.startupLogoUrl}
-										size="sm"
-									/>
-									<span className="min-w-0 flex-1 truncate">
-										{roleLabel(hackathon.job.role)} · {hackathon.startupName}
-									</span>
-									<span className="shrink-0 text-xs text-muted-foreground">
-										{hackathon.status === "applied"
-											? "Applied"
-											: "Not this time"}
-									</span>
-								</Link>
-							</li>
-						))}
-					</ul>
-				</section>
-			) : null}
 		</div>
+	);
+}
+
+/** Hackathons you applied to and haven't started building in. */
+function Applications({ applied }: { readonly applied: Places["applied"] }) {
+	return (
+		<section className="flex flex-col gap-2">
+			<SectionLabel>Your applications</SectionLabel>
+			<ul className="divide-y divide-border rounded-xl border border-border">
+				{applied.map((hackathon) => (
+					<li key={hackathon.hackathonId}>
+						<Link
+							to="/hackathons/$id"
+							params={{ id: hackathon.hackathonId }}
+							className="flex items-center gap-3 px-4 py-3 text-sm outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60"
+						>
+							<PlaceLogo
+								name={hackathon.startupName}
+								url={hackathon.startupLogoUrl}
+								size="sm"
+							/>
+							<span className="min-w-0 flex-1 truncate">
+								{roleLabel(hackathon.job.role)} · {hackathon.startupName}
+							</span>
+							<span className="shrink-0 text-xs text-muted-foreground">
+								{hackathon.status === "applied" ? "Applied" : "Not this time"}
+							</span>
+						</Link>
+					</li>
+				))}
+			</ul>
+		</section>
 	);
 }
 
