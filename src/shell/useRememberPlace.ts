@@ -1,16 +1,16 @@
-import { useLocation } from "@tanstack/react-router";
+import { useMatches } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { writeLastPlace } from "~/shell/landing";
-import { useCurrentPlace } from "~/shell/useCurrentPlace";
+import { rememberedFrom, writeLastPlace } from "~/shell/landing";
 
 /** Remembers the last Startup or Hackathon Board you were in, for the next landing. */
 export function useRememberPlace() {
-	const place = useCurrentPlace();
-	const path = useLocation({ select: (location) => location.pathname });
+	// A string, so the effect runs when the page changes, not on every new object.
+	const remembered = useMatches({
+		select: (matches) => JSON.stringify(rememberedFrom(matches)),
+	});
 
 	useEffect(() => {
-		if (place) {
-			writeLastPlace({ place, path });
-		}
-	}, [place, path]);
+		const parsed = JSON.parse(remembered);
+		if (parsed) writeLastPlace(parsed);
+	}, [remembered]);
 }

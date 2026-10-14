@@ -1,5 +1,10 @@
 import { z } from "zod";
-import type { CurrentPlace, Places } from "./places";
+import {
+	type CurrentPlace,
+	type Places,
+	placeFromRoute,
+	type RouteMatch,
+} from "./places";
 
 export const LAST_PLACE_KEY = "engin:lastPlace";
 
@@ -29,6 +34,15 @@ export function readLastPlace(): RememberedPlace | null {
 	} catch {
 		return null;
 	}
+}
+
+/** The place and page to remember, both read from the same route matches so they can't disagree mid-navigation. */
+export function rememberedFrom(
+	matches: readonly (RouteMatch & { readonly pathname: string })[],
+): RememberedPlace | null {
+	const place = placeFromRoute(matches);
+	const path = matches.at(-1)?.pathname;
+	return place && path ? { place, path } : null;
 }
 
 /** Remembers a place; does nothing when storage is blocked. */

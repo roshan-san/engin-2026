@@ -1,6 +1,11 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { pickLanding, readLastPlace, writeLastPlace } from "./landing";
+import {
+	pickLanding,
+	readLastPlace,
+	rememberedFrom,
+	writeLastPlace,
+} from "./landing";
 import type { Places } from "./places";
 
 const startupId = "startup" as Id<"startups">;
@@ -35,6 +40,37 @@ function inHackathon(id: string) {
 function places(overrides: Partial<Places> = {}): Places {
 	return { startups: [], building: [], applied: [], ...overrides };
 }
+
+describe("rememberedFrom", () => {
+	it("remembers the page you're on, taken from the same route as its place", () => {
+		const matches = [
+			{ routeId: "__root__", params: {}, pathname: "/" },
+			{
+				routeId: "/_shell/_authed/s/$slug",
+				params: { slug: "acme" },
+				pathname: "/s/acme",
+			},
+			{
+				routeId: "/_shell/_authed/s/$slug/activity",
+				params: { slug: "acme" },
+				pathname: "/s/acme/activity",
+			},
+		];
+
+		expect(rememberedFrom(matches)).toEqual(
+			inStartup("acme", "/s/acme/activity"),
+		);
+	});
+
+	it("a page outside any place is not remembered", () => {
+		const matches = [
+			{ routeId: "__root__", params: {}, pathname: "/" },
+			{ routeId: "/", params: {}, pathname: "/" },
+		];
+
+		expect(rememberedFrom(matches)).toBeNull();
+	});
+});
 
 describe("pickLanding", () => {
 	it("the last place wins while you still belong", () => {

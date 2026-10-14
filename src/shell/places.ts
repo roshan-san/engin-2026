@@ -12,7 +12,7 @@ export type CurrentPlace =
 /** The part of a route match that says where you are. */
 export type RouteMatch = {
 	readonly routeId: string;
-	readonly params: Readonly<Record<string, string>>;
+	readonly params: Readonly<Record<string, string | undefined>>;
 };
 
 /** The place the current route is in: a page under `/s/$slug` is that Startup, `/h/$id` is that Hackathon. */
