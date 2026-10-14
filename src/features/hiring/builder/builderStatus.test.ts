@@ -55,10 +55,10 @@ describe("builderStatus", () => {
 describe("builderStatusText", () => {
 	const hackathon = (status: "open" | "building" | "deciding" | "done") => ({
 		status,
-		startsAt: Date.UTC(2026, 9, 19),
-		endsAt: Date.UTC(2026, 9, 26),
+		startsAt: ist(19),
+		endsAt: ist(26),
 	});
-	const midway = Date.UTC(2026, 9, 21);
+	const midway = ist(21);
 
 	it("a decision is the status once it's in", () => {
 		expect(builderStatusText(hackathon("done"), "hired", midway)).toBe("Hired");
@@ -67,15 +67,25 @@ describe("builderStatusText", () => {
 		).toBe("Not this time");
 	});
 
+	it("before it starts, when it starts", () => {
+		expect(builderStatusText(hackathon("open"), null, ist(14))).toBe(
+			"Starts Mon, Oct 19",
+		);
+	});
+
 	it("while building, when it ends", () => {
 		expect(builderStatusText(hackathon("building"), null, midway)).toBe(
-			builderStatus(hackathon("building"), null, midway).line,
+			"Ends Sun, Oct 25",
 		);
 	});
 
 	it("after the end without a decision, Deciding", () => {
-		expect(
-			builderStatusText(hackathon("deciding"), null, Date.UTC(2026, 9, 28)),
-		).toBe("Deciding");
+		expect(builderStatusText(hackathon("deciding"), null, ist(28))).toBe(
+			"Deciding",
+		);
+	});
+
+	it("closed without a decision, Closed", () => {
+		expect(builderStatusText(hackathon("done"), null, ist(40))).toBe("Closed");
 	});
 });

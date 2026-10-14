@@ -15,7 +15,7 @@ import { tabsFromRoute } from "~/shell/places";
 export const TAB_CLASS =
 	"relative flex shrink-0 items-center gap-1.5 px-2 py-2 text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:text-foreground aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground [&_svg]:size-4 [&_svg]:shrink-0";
 
-/** The second row: tabs that scroll sideways on a phone, and one thing pinned on the right. */
+/** The second row: tabs that scroll sideways on a phone, and one thing pinned on the right. Its top rule is dropped right after a header that has its own bottom rule, so there is one line, not two. */
 export function TabRowFrame({
 	label,
 	end,
@@ -28,7 +28,7 @@ export function TabRowFrame({
 	return (
 		<nav
 			aria-label={label}
-			className="flex h-10 shrink-0 items-stretch border-t border-border bg-background px-2 md:px-4"
+			className="flex h-10 shrink-0 items-stretch border-t border-border bg-background px-2 md:px-4 [header+&]:border-t-0"
 		>
 			<div className="flex min-w-0 flex-1 items-stretch overflow-x-auto whitespace-nowrap">
 				{children}

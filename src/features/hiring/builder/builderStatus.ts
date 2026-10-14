@@ -44,7 +44,7 @@ export function builderStatus(
 	};
 }
 
-/** The Builder tab row's right end: the Decision once it's in, else where the Hackathon stands. */
+/** The Builder tab row's right end: the Decision once it's in, else where the Hackathon stands ("Deciding" while the Founder decides, "Closed" if it ended without a Decision). */
 export function builderStatusText(
 	hackathon: { status: HackathonStatus; startsAt: number; endsAt: number },
 	decision: "hired" | "not_this_time" | null,
@@ -53,5 +53,6 @@ export function builderStatusText(
 	if (decision === "hired") return "Hired";
 	if (decision === "not_this_time") return "Not this time";
 	const { line } = builderStatus(hackathon, decision, now);
-	return line === "Ended" ? "Deciding" : line;
+	if (line !== "Ended") return line;
+	return hackathon.status === "done" ? "Closed" : "Deciding";
 }
