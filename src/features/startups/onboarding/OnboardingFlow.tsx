@@ -1,8 +1,10 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { XIcon } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
+import { AppPage } from "~/components/AppPage";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import { useCreateStartup } from "./useCreateStartup";
+import { OnboardingStep, STEP_LABELS } from "./OnboardingStep";
 import {
 	canAdvance,
 	INITIAL_STATE,
@@ -10,7 +12,7 @@ import {
 	STEPS,
 	toCreateArgs,
 } from "./onboarding";
-import { OnboardingStep, STEP_LABELS } from "./OnboardingStep";
+import { useCreateStartup } from "./useCreateStartup";
 
 /** Founder onboarding: one question per screen, then the new Startup's Board. */
 export function OnboardingFlow() {
@@ -79,11 +81,27 @@ export function OnboardingFlow() {
 	const current = STEPS.indexOf(state.step);
 
 	return (
-		<div
-			ref={rootRef}
-			className="flex flex-1 flex-col items-center justify-center px-4 py-10"
+		<AppPage
+			bar={{
+				title: <h1 className="truncate text-sm font-medium">New startup</h1>,
+				badge: (
+					<span className="text-sm text-muted-foreground">
+						Step {current + 1} of {STEPS.length}
+					</span>
+				),
+				actions: (
+					<Button asChild variant="ghost" size="icon-sm" aria-label="Leave">
+						<Link to="/home">
+							<XIcon />
+						</Link>
+					</Button>
+				),
+			}}
 		>
-			<div className="flex w-full max-w-xl flex-col gap-8">
+			<div
+				ref={rootRef}
+				className="mx-auto flex w-full max-w-xl flex-col gap-8 py-4 md:py-10"
+			>
 				<nav aria-label="Progress" className="flex items-center gap-1">
 					{STEPS.map((step, index) =>
 						index < current ? (
@@ -131,6 +149,6 @@ export function OnboardingFlow() {
 					</div>
 				) : null}
 			</div>
-		</div>
+		</AppPage>
 	);
 }
