@@ -3,15 +3,16 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
-import { TEXT } from "../shared/limits";
 import { assertUrl, limitText } from "../model/text";
-import { discipline } from "../shared/validators";
 import { normalizeUsername, requireUsername } from "../model/username";
 import {
 	loadProfileRecord,
 	toOwnProfile,
+	toProfileAbout,
 	toPublicProfile,
 } from "../model/users";
+import { TEXT } from "../shared/limits";
+import { discipline } from "../shared/validators";
 
 export const getMe = query({
 	args: {},
@@ -22,19 +23,10 @@ export const getMe = query({
 	},
 });
 
-export const getByUsername = query({
-	args: { username: v.string() },
-	handler: async (ctx, args) => {
-		const username = normalizeUsername(args.username);
-		const user = await ctx.db
-			.query("users")
-			.withIndex("by_username", (q) => q.eq("username", username))
-			.unique();
-		return user ? toPublicProfile(user) : null;
-	},
-});
-
-/** A profile and its Record, for anyone. */
+/**
+ * A profile, for anyone. Signed out, it's only the name, Discipline and Rating
+ * (`details` is null); signed in, `details` adds the bio, links and the Record.
+ */
 export const getRecord = query({
 	args: { username: v.string() },
 	handler: async (ctx, args) => {
@@ -46,9 +38,15 @@ export const getRecord = query({
 		if (!user) {
 			return null;
 		}
+		const viewerId = await getAuthUserId(ctx);
 		return {
 			...toPublicProfile(user),
-			...(await loadProfileRecord(ctx, user, Date.now())),
+			details: viewerId
+				? {
+						...toProfileAbout(user),
+						...(await loadProfileRecord(ctx, user, Date.now())),
+					}
+				: null,
 		};
 	},
 });

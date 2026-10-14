@@ -1,12 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Button } from "~/components/ui/button";
-import { useGoogleSignIn } from "~/features/people/auth/useGoogleSignIn";
+import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { EnginLogo } from "~/shell/EnginLogo";
 
 /** The signed-out bar: the logo, Explore and a sign-in button. */
 export function PublicHeader() {
-	const { signInWithGoogle, isPending } = useGoogleSignIn();
-
 	return (
 		<header className="shrink-0 border-b border-border bg-background">
 			<div className="flex h-14 items-center gap-1 px-4 md:px-6">
@@ -18,14 +15,11 @@ export function PublicHeader() {
 				>
 					Explore
 				</Link>
-				<Button
+				<GoogleButton
+					variant="default"
 					size="sm"
 					className="ml-2 whitespace-nowrap"
-					disabled={isPending}
-					onClick={() => void signInWithGoogle()}
-				>
-					Sign in
-				</Button>
+				/>
 			</div>
 		</header>
 	);

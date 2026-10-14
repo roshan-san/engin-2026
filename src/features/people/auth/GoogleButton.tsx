@@ -1,4 +1,4 @@
-import { FaGoogle } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { Button } from "~/components/ui/button";
 import { useGoogleSignIn } from "~/features/people/auth/useGoogleSignIn";
 
@@ -11,8 +11,9 @@ type GoogleButtonProps = {
 	readonly className?: string;
 };
 
+/** Signs in with Google: the Google G and, by default, "Sign in". */
 export function GoogleButton({
-	label = "Join Engin",
+	label = "Sign in",
 	returnTo,
 	variant = "outline",
 	size = "default",
@@ -29,7 +30,7 @@ export function GoogleButton({
 			disabled={isPending}
 			onClick={signInWithGoogle}
 		>
-			<FaGoogle className="size-4" />
+			<FcGoogle aria-hidden className="size-4" />
 			{isPending ? "Signing in..." : label}
 		</Button>
 	);

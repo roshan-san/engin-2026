@@ -1,8 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
 import { shiftWeek, weekOf } from "../shared/cycles";
-import { buildUniqueUsername } from "./username";
+import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
 import {
 	buildParts,
 	countedWeeks,
@@ -12,6 +11,7 @@ import {
 	recentOutcomes,
 	toPartsView,
 } from "./rating";
+import { buildUniqueUsername } from "./username";
 
 export type PublicUser = {
 	_id: Id<"users">;
@@ -49,26 +49,33 @@ export function isProvisional(user: Doc<"users">): boolean {
 	return user.provisional ?? true;
 }
 
-/** What anyone may see on a profile page. Never includes email. */
+/** What anyone, signed out included, sees of a profile: who they are, their Discipline and Rating. Never includes email. */
 export function toPublicProfile(user: Doc<"users">) {
 	return {
 		...toPublicUser(user),
-		bio: user.bio ?? null,
 		discipline: user.discipline ?? null,
-		links: {
-			linkedinUrl: user.linkedinUrl ?? null,
-			portfolioUrl: user.portfolioUrl ?? null,
-			githubUrl: user.githubUrl ?? null,
-		},
 		ratingChange: user.ratingChange ?? 0,
 		isProvisional: isProvisional(user),
 	};
 }
 
-/** The signed-in person's own account: the public profile plus email and Investor Pro. */
+/** A profile's bio and links, shown only to people who are signed in. */
+export function toProfileAbout(user: Doc<"users">) {
+	return {
+		bio: user.bio ?? null,
+		links: {
+			linkedinUrl: user.linkedinUrl ?? null,
+			portfolioUrl: user.portfolioUrl ?? null,
+			githubUrl: user.githubUrl ?? null,
+		},
+	};
+}
+
+/** The signed-in person's own account: their whole profile plus email and Investor Pro. */
 export function toOwnProfile(user: Doc<"users">) {
 	return {
 		...toPublicProfile(user),
+		...toProfileAbout(user),
 		email: user.email ?? null,
 		isInvestorPro: user.investorVerifiedAt !== undefined,
 	};

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { createTest, type TestConvex } from "../testing/test.setup";
 import { buildUniqueUsername } from "../model/username";
 import { onUserSignedIn } from "../model/users";
+import { createTest, type TestConvex } from "../testing/test.setup";
 import { signUp, signUpNew } from "../testing/users.setup";
 
 describe("users", () => {
@@ -25,7 +25,7 @@ describe("users", () => {
 		const t = createTest();
 		await signUp(t, "Fay");
 
-		const profile = await t.query(api.people.users.getByUsername, {
+		const profile = await t.query(api.people.users.getRecord, {
 			username: "fay",
 		});
 
@@ -72,9 +72,7 @@ describe("users", () => {
 			githubUrl: "https://github.com/fay",
 		});
 
-		const profile = await t.query(api.people.users.getByUsername, {
-			username: "fay",
-		});
+		const profile = await fay.as.query(api.people.users.getMe);
 		expect(profile).toMatchObject({
 			bio: "Builds things",
 			discipline: "designer",

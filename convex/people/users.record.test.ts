@@ -6,17 +6,21 @@ import {
 	startHackathon,
 } from "../testing/applications.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import { createTest } from "../testing/test.setup";
+import { verifyCards } from "../testing/rating.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
 } from "../testing/startups.setup";
-import { verifyCards } from "../testing/rating.setup";
+import { createTest } from "../testing/test.setup";
 import { signUp } from "../testing/users.setup";
 
+/** The Record as a signed-in person (the Founder) sees it. */
 async function recordOf(setup: Setup, username: string) {
-	return await setup.t.query(api.people.users.getRecord, { username });
+	const profile = await setup.founder.as.query(api.people.users.getRecord, {
+		username,
+	});
+	return profile?.details;
 }
 
 describe("profile record", () => {
@@ -81,24 +85,54 @@ describe("profile record", () => {
 		expect(record?.parts.outcomes).toBe(0);
 	});
 
-	it("the profile needs no sign-in", async () => {
+	it("a signed-in person sees the whole Record", async () => {
 		const setup = await setUpStartup(createTest());
 		await addContributor(setup, "Sam");
 
 		const sam = await recordOf(setup, "sam");
-		const nobody = await recordOf(setup, "nobody");
 
 		expect(sam).toMatchObject({
-			name: "Sam",
-			username: "sam",
-			rating: 1000,
+			links: { linkedinUrl: null, githubUrl: null, portfolioUrl: null },
 			parts: {
 				consistency: { active: 0, weeks: 0 },
 				volume: { perWeek: 0 },
 				outcomes: 0,
 			},
+			hackathons: [],
+			work: [],
 		});
-		expect(sam).not.toHaveProperty("email");
+	});
+
+	it("signed out, a profile shows only the name, Discipline and Rating", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await sam.as.mutation(api.people.users.updateProfile, {
+			discipline: "engineer",
+			githubUrl: "https://github.com/sam",
+		});
+
+		const profile = await setup.t.query(api.people.users.getRecord, {
+			username: "sam",
+		});
+
+		expect(profile).toMatchObject({
+			name: "Sam",
+			username: "sam",
+			discipline: "engineer",
+			rating: 1000,
+			details: null,
+		});
+		expect(JSON.stringify(profile)).not.toContain("github.com/sam");
+		expect(profile).not.toHaveProperty("email");
+	});
+
+	it("an unknown username has no profile", async () => {
+		const setup = await setUpStartup(createTest());
+
+		const nobody = await setup.t.query(api.people.users.getRecord, {
+			username: "nobody",
+		});
+
 		expect(nobody).toBeNull();
 	});
 });
