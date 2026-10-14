@@ -3,7 +3,6 @@ import { type FormEvent, useRef, useState } from "react";
 import { ChipPicker } from "~/components/ChipPicker";
 import { FormFooter } from "~/components/FormFooter";
 import { MentorNote } from "~/components/MentorNote";
-import { SectionLabel } from "~/components/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -12,14 +11,14 @@ import { Spinner } from "~/components/ui/spinner";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { initials } from "~/lib/initials";
 import { CITIES, KINDS, STAGES } from "../startupChips";
-import { useStartupSettings } from "./useStartupSettings";
 import {
 	type SettingsDraft,
 	toSettingsDraft,
 	toUpdateArgs,
 } from "./settingsDraft";
+import { useStartupSettings } from "./useStartupSettings";
 
-/** The Founder's settings for the Startup. One Save sends only what changed; the logo saves on pick. */
+/** The Founder's settings for the Startup, in the Team page's detail panel. One Save sends only what changed; the logo saves on pick. */
 export function StartupSettings() {
 	const { startup } = useWorkspace();
 	const { logoUrl, save, saveLogo } = useStartupSettings(
@@ -55,8 +54,6 @@ export function StartupSettings() {
 
 	return (
 		<form onSubmit={submit} className="flex flex-col gap-5">
-			<SectionLabel>Startup settings</SectionLabel>
-
 			<div className="flex items-center gap-3">
 				<Avatar className="size-12 rounded-lg">
 					{logoUrl ? <AvatarImage src={logoUrl} alt="" /> : null}
