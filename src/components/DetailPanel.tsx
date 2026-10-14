@@ -16,6 +16,7 @@ export function DetailPanel({
 	title,
 	description,
 	onClose,
+	hasCloseButton = false,
 }: {
 	readonly shows: PanelShows;
 	/** The open item (a Card, an entry). */
@@ -26,6 +27,8 @@ export function DetailPanel({
 	readonly title: string;
 	readonly description: string;
 	readonly onClose: () => void;
+	/** For panels without their own close button: the sheet adds one. */
+	readonly hasCloseButton?: boolean;
 }) {
 	const content = shows?.what === "item" ? item : fallback;
 
@@ -43,7 +46,7 @@ export function DetailPanel({
 				<SheetContent
 					side="bottom"
 					className="h-dvh gap-0"
-					showCloseButton={false}
+					showCloseButton={hasCloseButton}
 				>
 					<SheetHeader className="sr-only">
 						<SheetTitle>{title}</SheetTitle>

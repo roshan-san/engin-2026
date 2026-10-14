@@ -2,21 +2,15 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { MAX_BUILDERS } from "@convex/shared/limits";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
+import { DetailPanel } from "~/components/DetailPanel";
 import { EmptyState } from "~/components/EmptyState";
 import { Kbd } from "~/components/Kbd";
 import { PanelHeader } from "~/components/PanelHeader";
 import { Segmented } from "~/components/Segmented";
 import { Button } from "~/components/ui/button";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "~/components/ui/sheet";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useDetailPanel } from "~/components/useDetailPanel";
 import { useWorkspace } from "~/features/work/board/StartupContext";
-import { useIsMobile } from "~/lib/use-mobile";
 import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";
@@ -54,11 +48,14 @@ export function ScreeningView({
 	const [pane, setPane] = useState<"applicant" | "everyone" | "post">(
 		"applicant",
 	);
-	// On a phone, # Everyone opens in the sheet the Applicant uses.
-	const [isEveryoneOpen, setIsEveryoneOpen] = useState(false);
 	const view = route.useSearch({ select: (search) => search.view });
 	const navigate = route.useNavigate();
-	const isMobile = useIsMobile();
+	// On a phone, an Applicant opens in the sheet; # Everyone is the sheet's own panel.
+	const panel = useDetailPanel(
+		view !== undefined,
+		() => void navigate({ search: (prev) => ({ ...prev, view: undefined }) }),
+	);
+	const isMobile = panel.isMobile;
 
 	const rows = applicants ? sortApplicants(applicants, sort) : [];
 	const ids = rows.map((row) => row.application._id);
@@ -105,11 +102,44 @@ export function ScreeningView({
 		/>
 	) : null;
 
+	// On desktop the panel switches between the Applicant, # Everyone and the post.
+	const panes = (
+		<div className="flex min-h-0 flex-1 flex-col">
+			<PanelHeader>
+				<Segmented
+					label="Show"
+					options={PANES}
+					value={shownPane}
+					onChange={setPane}
+				/>
+			</PanelHeader>
+			{shownPane === "everyone" ? (
+				<EveryonePanel hackathonId={hackathon._id} userId={userId} />
+			) : shownPane === "post" ? (
+				<div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
+					<HackathonPost
+						post={{
+							startupName: startup.name,
+							job: hackathon.job,
+							problem: hackathon.problem,
+							cards: cards.map((card) => card.title),
+							weeks: hackathon.weeks,
+							startsAt: hackathon.startsAt,
+							buildersGet: hackathon.buildersGet ?? null,
+						}}
+					/>
+				</div>
+			) : (
+				detail
+			)}
+		</div>
+	);
+
 	return (
 		<div className="flex min-h-0 flex-1">
 			<section
 				aria-label="Applicants"
-				className="flex min-h-0 w-full flex-col border-border md:w-[360px] md:shrink-0 md:border-r"
+				className="flex min-h-0 min-w-0 flex-1 flex-col"
 			>
 				<PanelHeader className="gap-2">
 					<span className="text-sm">
@@ -129,7 +159,7 @@ export function ScreeningView({
 						variant="ghost"
 						size="sm"
 						className="md:hidden"
-						onClick={() => setIsEveryoneOpen(true)}
+						onClick={panel.open}
 					>
 						# Everyone
 					</Button>
@@ -153,7 +183,6 @@ export function ScreeningView({
 							onSelect={(id) => {
 								select(id);
 								setPane("applicant");
-								setIsEveryoneOpen(false);
 							}}
 						/>
 					)}
@@ -166,65 +195,23 @@ export function ScreeningView({
 				) : null}
 			</section>
 
-			<section className="hidden min-h-0 min-w-0 flex-1 flex-col md:flex">
-				<PanelHeader>
-					<Segmented
-						label="Show"
-						options={PANES}
-						value={shownPane}
-						onChange={setPane}
-					/>
-				</PanelHeader>
-				{isMobile === false ? (
-					shownPane === "everyone" ? (
+			<DetailPanel
+				shows={panel.shows}
+				title={view !== undefined ? "Applicant" : "# Everyone"}
+				description={
+					view !== undefined ? "Accept or decline." : "Talk to every Builder."
+				}
+				onClose={panel.close}
+				hasCloseButton
+				item={isMobile ? detail : panes}
+				fallback={
+					isMobile ? (
 						<EveryonePanel hackathonId={hackathon._id} userId={userId} />
-					) : shownPane === "post" ? (
-						<div className="min-h-0 flex-1 overflow-y-auto">
-							<div className="mx-auto w-full max-w-2xl px-6 py-8">
-								<HackathonPost
-									post={{
-										startupName: startup.name,
-										job: hackathon.job,
-										problem: hackathon.problem,
-										cards: cards.map((card) => card.title),
-										weeks: hackathon.weeks,
-										startsAt: hackathon.startsAt,
-										buildersGet: hackathon.buildersGet ?? null,
-									}}
-								/>
-							</div>
-						</div>
 					) : (
-						detail
+						panes
 					)
-				) : null}
-			</section>
-
-			<Sheet
-				open={isMobile === true && (view !== undefined || isEveryoneOpen)}
-				onOpenChange={(isOpen) => {
-					if (!isOpen) {
-						setIsEveryoneOpen(false);
-						void navigate({ search: (prev) => ({ ...prev, view: undefined }) });
-					}
-				}}
-			>
-				<SheetContent side="bottom" className="h-[85dvh] gap-0">
-					<SheetHeader className="sr-only">
-						<SheetTitle>
-							{isEveryoneOpen ? "# Everyone" : "Applicant"}
-						</SheetTitle>
-						<SheetDescription>
-							{isEveryoneOpen ? "Talk to every Builder." : "Accept or decline."}
-						</SheetDescription>
-					</SheetHeader>
-					{isMobile !== true ? null : isEveryoneOpen ? (
-						<EveryonePanel hackathonId={hackathon._id} userId={userId} />
-					) : (
-						detail
-					)}
-				</SheetContent>
-			</Sheet>
+				}
+			/>
 		</div>
 	);
 }

@@ -2,8 +2,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { Page } from "~/components/Page";
-import { PanelHeader } from "~/components/PanelHeader";
+import { PageBar } from "~/components/PageBar";
 import { useWorkspace } from "~/features/work/board/StartupContext";
+import { HiringBackLink } from "../HiringBackLink";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";
 import { useHackathonForm } from "./useHackathonForm";
@@ -21,14 +22,15 @@ export function NewHackathonPage() {
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
-			<h1 className="sr-only">New hackathon</h1>
-			<PanelHeader className="gap-3 md:px-6">
-				<span className="truncate text-xs text-muted-foreground">
-					Saved as a draft. Publish it when it reads right.
-				</span>
-			</PanelHeader>
+			<PageBar
+				back={<HiringBackLink slug={startup.slug} />}
+				title={<h1 className="truncate text-sm font-medium">New hackathon</h1>}
+			/>
 			<div className="min-h-0 flex-1 overflow-y-auto">
 				<Page>
+					<p className="mb-6 text-sm text-muted-foreground">
+						Saved as a draft. Publish it when it reads right.
+					</p>
 					<HackathonForm
 						startupName={startup.name}
 						initial={initial}

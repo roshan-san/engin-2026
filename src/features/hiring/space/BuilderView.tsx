@@ -2,19 +2,14 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { DetailPanel } from "~/components/DetailPanel";
 import { PanelHeader } from "~/components/PanelHeader";
 import { Segmented } from "~/components/Segmented";
 import { UnreadDot } from "~/components/UnreadDot";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "~/components/ui/sheet";
+import { useDetailPanel } from "~/components/useDetailPanel";
 import { ThreadPanel } from "~/features/chat/ThreadPanel";
 import { Board } from "~/features/work/board/Board";
 import {
@@ -23,9 +18,8 @@ import {
 } from "~/features/work/board/BoardScope";
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
-import { displayName } from "~/lib/displayName";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
-import { useIsMobile } from "~/lib/use-mobile";
+import { displayName } from "~/lib/displayName";
 import { initials } from "~/lib/initials";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
@@ -57,11 +51,9 @@ export function BuilderView({
 	const [pane, setPane] = useState<"thread" | "decide">(
 		hackathon.status === "deciding" ? "decide" : "thread",
 	);
-	const [isPanelOpen, setIsPanelOpen] = useState(false);
 	const [shipping, setShipping] = useState<CardView | null>(null);
 	const cardId = route.useSearch({ select: (search) => search.card });
 	const navigate = route.useNavigate();
-	const isMobile = useIsMobile();
 	const builderId = row.user._id;
 	const isClosed = hackathon.status === "done";
 
@@ -81,50 +73,42 @@ export function BuilderView({
 		void navigate({ search: (prev) => ({ ...prev, card: undefined }) });
 	}
 
-	const onClose = isMobile
-		? () => {
-				setIsPanelOpen(false);
-				if (cardId) closeCard();
-			}
-		: undefined;
-
-	// On a phone the sheet stays open and switches back to the panel.
-	function backToPanel() {
-		setIsPanelOpen(true);
-		closeCard();
-	}
+	const detail = useDetailPanel(cardId !== undefined, closeCard);
+	const onClose = detail.isMobile ? detail.close : undefined;
 
 	const name = row.user.name ?? row.user.username ?? "them";
 	const switcher = (
 		<Segmented label="Show" options={PANES} value={pane} onChange={setPane} />
 	);
 
-	const panel = cardId ? (
+	const card = cardId ? (
 		<CardPanel
 			key={cardId}
 			cardId={cardId}
 			backLabel={pane === "decide" ? "Decide" : "Thread"}
 			isBackUnread={pane === "thread" && isThreadUnread}
-			onBack={isMobile ? backToPanel : closeCard}
+			onBack={detail.back}
 			onClose={onClose}
 			onShip={setShipping}
 		/>
-	) : pane === "thread" ? (
-		<ThreadPanel
-			threadId={threadId}
-			title={switcher}
-			userId={userId}
-			placeholder={`Message ${name}`}
-			emptyNote="Only you two see this."
-			isReadOnly={isClosed}
-			onClose={onClose}
-		/>
-	) : (
-		<div className="flex min-h-0 flex-1 flex-col">
-			<PanelHeader>{switcher}</PanelHeader>
-			<DecideSheet row={row} hackathon={hackathon} />
-		</div>
-	);
+	) : null;
+	const own =
+		pane === "thread" ? (
+			<ThreadPanel
+				threadId={threadId}
+				title={switcher}
+				userId={userId}
+				placeholder={`Message ${name}`}
+				emptyNote="Only you two see this."
+				isReadOnly={isClosed}
+				onClose={onClose}
+			/>
+		) : (
+			<div className="flex min-h-0 flex-1 flex-col">
+				<PanelHeader>{switcher}</PanelHeader>
+				<DecideSheet row={row} hackathon={hackathon} />
+			</div>
+		);
 
 	return (
 		<BoardScopeContext.Provider value={scope}>
@@ -136,7 +120,7 @@ export function BuilderView({
 							variant="ghost"
 							size="sm"
 							className="ml-auto md:hidden"
-							onClick={() => setIsPanelOpen(true)}
+							onClick={detail.open}
 						>
 							Thread and Decide
 							{isThreadUnread ? <UnreadDot /> : null}
@@ -151,30 +135,17 @@ export function BuilderView({
 						onClose={closeCard}
 					/>
 				</div>
-				<aside className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex">
-					{isMobile === false ? panel : null}
-				</aside>
+				<DetailPanel
+					shows={detail.shows}
+					title={row.user.name ?? "Builder"}
+					description="Thread, Decide and Cards."
+					onClose={detail.close}
+					item={card}
+					fallback={own}
+				/>
 				{shipping ? (
 					<ShipDialog card={shipping} onClose={() => setShipping(null)} />
 				) : null}
-				<Sheet
-					open={isMobile === true && (isPanelOpen || cardId !== undefined)}
-					onOpenChange={(isOpen) => {
-						if (!isOpen) onClose?.();
-					}}
-				>
-					<SheetContent
-						side="bottom"
-						className="h-[85dvh] gap-0"
-						showCloseButton={false}
-					>
-						<SheetHeader className="sr-only">
-							<SheetTitle>{row.user.name ?? "Builder"}</SheetTitle>
-							<SheetDescription>Thread, Decide and Cards.</SheetDescription>
-						</SheetHeader>
-						{isMobile === true ? panel : null}
-					</SheetContent>
-				</Sheet>
 			</div>
 		</BoardScopeContext.Provider>
 	);

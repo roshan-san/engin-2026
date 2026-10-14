@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { EmptyState } from "~/components/EmptyState";
 import { Page } from "~/components/Page";
-import { PageHeader } from "~/components/PageHeader";
+import { PageBar } from "~/components/PageBar";
 import { RowList } from "~/components/RowList";
 import { SectionLabel } from "~/components/SectionLabel";
 import { Button } from "~/components/ui/button";
@@ -16,7 +16,7 @@ export function HiringPage() {
 	const { startup, isFounder } = useWorkspace();
 	const rows = useHackathons(startup._id);
 	const newHackathon = isFounder ? (
-		<Button asChild>
+		<Button asChild size="sm">
 			<Link to="/s/$slug/hiring/new" params={{ slug: startup.slug }}>
 				New hackathon
 			</Link>
@@ -26,12 +26,11 @@ export function HiringPage() {
 
 	return (
 		<>
-			<PageHeader
-				title="Hiring"
-				meta={isFounder && hasRows ? "Hire by watching people build." : null}
+			<PageBar
+				title={<h1 className="text-sm font-medium">Hiring</h1>}
 				actions={hasRows ? newHackathon : null}
 			/>
-			<Page>
+			<Page width="narrow">
 				{rows === undefined ? (
 					<div className="flex flex-col gap-3">
 						<Skeleton className="h-12" />
