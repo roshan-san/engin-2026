@@ -74,3 +74,25 @@ export function placeLabel(places: Places, current: CurrentPlace): string {
 	}
 	return "Places";
 }
+
+/** Which tab row the shell shows under the top bar. */
+export type TabsKind =
+	| { kind: "startup"; slug: string }
+	| { kind: "builder"; hackathonId: string }
+	| { kind: "explore" }
+	| null;
+
+/** A Startup's tabs inside it, the Builder's tabs in their Hackathon, Explore's on Explore; nothing elsewhere. */
+export function tabsFromRoute(matches: readonly RouteMatch[]): TabsKind {
+	const place = placeFromRoute(matches);
+	if (place?.kind === "startup") {
+		return place;
+	}
+	if (place?.kind === "hackathon") {
+		return { kind: "builder", hackathonId: place.hackathonId };
+	}
+	if (matches.some(({ routeId }) => routeId.startsWith("/_shell/explore/"))) {
+		return { kind: "explore" };
+	}
+	return null;
+}

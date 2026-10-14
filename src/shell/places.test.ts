@@ -6,6 +6,7 @@ import {
 	type Places,
 	placeFromRoute,
 	placeLabel,
+	tabsFromRoute,
 } from "./places";
 
 const startupId = "startup" as Id<"startups">;
@@ -152,5 +153,55 @@ describe("placeLabel", () => {
 		expect(placeLabel(all, { kind: "hackathon", hackathonId })).toBe(
 			"Full-stack",
 		);
+	});
+});
+
+describe("tabsFromRoute", () => {
+	const shell = [match("__root__"), match("/_shell")];
+
+	it("inside a Startup shows its tabs", () => {
+		expect(
+			tabsFromRoute([
+				...shell,
+				match("/_shell/_authed"),
+				match("/_shell/_authed/s/$slug", { slug: "acme" }),
+				match("/_shell/_authed/s/$slug/team", { slug: "acme" }),
+			]),
+		).toEqual({ kind: "startup", slug: "acme" });
+	});
+
+	it("a Builder's Hackathon shows the Builder tabs", () => {
+		expect(
+			tabsFromRoute([
+				...shell,
+				match("/_shell/_authed"),
+				match("/_shell/_authed/h/$id", { id: "x" }),
+			]),
+		).toEqual({ kind: "builder", hackathonId: "x" });
+	});
+
+	it("Explore shows its tabs, signed in or out", () => {
+		expect(
+			tabsFromRoute([...shell, match("/_shell/explore/startups")]),
+		).toEqual({ kind: "explore" });
+	});
+
+	it("a Profile, a public page or Home has no tab row", () => {
+		expect(
+			tabsFromRoute([
+				...shell,
+				match("/_shell/u/$username", { username: "a" }),
+			]),
+		).toBeNull();
+		expect(
+			tabsFromRoute([...shell, match("/_shell/startups/$slug", { slug: "a" })]),
+		).toBeNull();
+		expect(
+			tabsFromRoute([
+				...shell,
+				match("/_shell/_authed"),
+				match("/_shell/_authed/home"),
+			]),
+		).toBeNull();
 	});
 });

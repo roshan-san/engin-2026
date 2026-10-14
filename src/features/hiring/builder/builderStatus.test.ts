@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { builderStatus } from "./builderStatus";
+import { builderStatus, builderStatusText } from "./builderStatus";
 
 /** A moment in IST, as a timestamp. */
 function ist(day: number, hour = 0) {
@@ -49,5 +49,33 @@ describe("builderStatus", () => {
 		expect(
 			builderStatus({ ...hackathon, status: "done" }, "hired", ist(40)).note,
 		).toBeNull();
+	});
+});
+
+describe("builderStatusText", () => {
+	const hackathon = (status: "open" | "building" | "deciding" | "done") => ({
+		status,
+		startsAt: Date.UTC(2026, 9, 19),
+		endsAt: Date.UTC(2026, 9, 26),
+	});
+	const midway = Date.UTC(2026, 9, 21);
+
+	it("a decision is the status once it's in", () => {
+		expect(builderStatusText(hackathon("done"), "hired", midway)).toBe("Hired");
+		expect(
+			builderStatusText(hackathon("deciding"), "not_this_time", midway),
+		).toBe("Not this time");
+	});
+
+	it("while building, when it ends", () => {
+		expect(builderStatusText(hackathon("building"), null, midway)).toBe(
+			builderStatus(hackathon("building"), null, midway).line,
+		);
+	});
+
+	it("after the end without a decision, Deciding", () => {
+		expect(
+			builderStatusText(hackathon("deciding"), null, Date.UTC(2026, 9, 28)),
+		).toBe("Deciding");
 	});
 });

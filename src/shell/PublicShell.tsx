@@ -1,6 +1,7 @@
 import { PublicHeader } from "~/components/PublicHeader";
+import { TabRow } from "~/shell/TabRow";
 
-/** Signed-out frame: the public header over the page, which fills the rest and scrolls inside it. */
+/** Signed-out frame: the public header and tab row over the page, which fills the rest and scrolls inside it. */
 export function PublicShell({
 	children,
 }: {
@@ -9,6 +10,7 @@ export function PublicShell({
 	return (
 		<div className="flex h-dvh flex-col bg-background text-foreground">
 			<PublicHeader />
+			<TabRow />
 			<main
 				data-scroll-restoration-id="main"
 				className="flex min-h-0 flex-1 flex-col overflow-y-auto"

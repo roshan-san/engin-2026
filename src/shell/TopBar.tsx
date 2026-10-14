@@ -5,10 +5,10 @@ import { EnginLogo } from "~/shell/EnginLogo";
 import { InviteTray } from "~/shell/InviteTray";
 import { MyRating } from "~/shell/MyRating";
 import { PlaceSwitcher } from "~/shell/PlaceSwitcher";
-import { StartupTabs } from "~/shell/StartupTabs";
+import { TabRow } from "~/shell/TabRow";
 import { useCurrentPlace } from "~/shell/useCurrentPlace";
 
-/** The signed-in bar: the logo, the place switcher, Explore, your Invites, your Rating and the account menu; inside a Startup, its tabs below. */
+/** The signed-in bar: the logo, the place switcher, Explore, your Invites, your Rating and the account menu; the tab row below. */
 export function TopBar() {
 	const place = useCurrentPlace();
 
@@ -30,7 +30,7 @@ export function TopBar() {
 				<MyRating />
 				<AccountMenu />
 			</div>
-			{place?.kind === "startup" ? <StartupTabs slug={place.slug} /> : null}
+			<TabRow />
 		</header>
 	);
 }
