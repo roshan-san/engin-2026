@@ -50,3 +50,19 @@ export function promiseLine(row: HiringRow): string | null {
 		? `promises kept ${row.promisesKept}/${row.promisesAnswered}`
 		: null;
 }
+
+/** The Hiring bar: "2 running · 1 draft · 1 past"; `null` with no Hackathons. */
+export function hiringSummary(
+	rows: HiringRow[],
+	isFounder: boolean,
+): string | null {
+	const groups = groupHackathons(rows, isFounder);
+	const parts = [
+		groups.now.length > 0 ? `${groups.now.length} running` : null,
+		groups.drafts.length > 0
+			? `${groups.drafts.length} ${groups.drafts.length === 1 ? "draft" : "drafts"}`
+			: null,
+		groups.past.length > 0 ? `${groups.past.length} past` : null,
+	].filter((part) => part !== null);
+	return parts.length > 0 ? parts.join(" · ") : null;
+}

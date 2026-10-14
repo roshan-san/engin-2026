@@ -1,10 +1,10 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { getRouteApi, Link, Navigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { AppPage } from "~/components/AppPage";
 import { DetailPanel } from "~/components/DetailPanel";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
-import { PageBar } from "~/components/PageBar";
 import { Segmented } from "~/components/Segmented";
 import { UnreadDot } from "~/components/UnreadDot";
 import { Badge } from "~/components/ui/badge";
@@ -157,43 +157,44 @@ function BuilderSpace({
 
 	return (
 		<BoardScopeContext.Provider value={scope}>
-			<div className="flex h-full min-h-0">
-				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-					<PageBar
-						title={
-							<h1 className="flex min-w-0 items-baseline gap-2 truncate text-sm">
-								<span className="font-medium">{roleLabel(page.job.role)}</span>
-								<Link
-									to="/hackathons/$id"
-									params={{ id: page._id }}
-									className="truncate text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
-								>
-									at {page.startup.name}
-								</Link>
-							</h1>
-						}
-						badge={
-							<Badge
-								variant="status"
-								tone={status.isClosed ? "neutral" : "success"}
-								className="hidden shrink-0 sm:inline-flex"
+			<AppPage
+				width="full"
+				bar={{
+					title: (
+						<h1 className="flex min-w-0 items-baseline gap-2 truncate text-sm">
+							<span className="font-medium">{roleLabel(page.job.role)}</span>
+							<Link
+								to="/hackathons/$id"
+								params={{ id: page._id }}
+								className="truncate text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
 							>
-								{status.line}
-							</Badge>
-						}
-						actions={
-							<Button
-								variant="ghost"
-								size="sm"
-								className="md:hidden"
-								onClick={detail.open}
-							>
-								Brief and threads
-								{isAnyUnread ? <UnreadDot /> : null}
-							</Button>
-						}
-					/>
-					{page.myApplication?.decision ? (
+								at {page.startup.name}
+							</Link>
+						</h1>
+					),
+					badge: (
+						<Badge
+							variant="status"
+							tone={status.isClosed ? "neutral" : "success"}
+							className="hidden shrink-0 sm:inline-flex"
+						>
+							{status.line}
+						</Badge>
+					),
+					actions: (
+						<Button
+							variant="ghost"
+							size="sm"
+							className="md:hidden"
+							onClick={detail.open}
+						>
+							Brief and threads
+							{isAnyUnread ? <UnreadDot /> : null}
+						</Button>
+					),
+				}}
+				notice={
+					page.myApplication?.decision ? (
 						<DecisionBanner
 							application={{
 								...page.myApplication,
@@ -204,28 +205,31 @@ function BuilderSpace({
 						<p className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground md:px-6">
 							{status.note}
 						</p>
-					) : null}
-					<Board
-						openCardId={cardId}
-						onShip={setShipping}
-						onOpen={(id) =>
-							void navigate({ search: (prev) => ({ ...prev, card: id }) })
-						}
-						onClose={closeCard}
+					) : null
+				}
+				panel={
+					<DetailPanel
+						shows={detail.shows}
+						title={cardId ? "Card" : "Brief and threads"}
+						description="Talk with the Founder."
+						onClose={detail.close}
+						item={card}
+						fallback={own}
 					/>
-				</div>
-				<DetailPanel
-					shows={detail.shows}
-					title={cardId ? "Card" : "Brief and threads"}
-					description="Talk with the Founder."
-					onClose={detail.close}
-					item={card}
-					fallback={own}
+				}
+			>
+				<Board
+					openCardId={cardId}
+					onShip={setShipping}
+					onOpen={(id) =>
+						void navigate({ search: (prev) => ({ ...prev, card: id }) })
+					}
+					onClose={closeCard}
 				/>
 				{shipping ? (
 					<ShipDialog card={shipping} onClose={() => setShipping(null)} />
 				) : null}
-			</div>
+			</AppPage>
 		</BoardScopeContext.Provider>
 	);
 }

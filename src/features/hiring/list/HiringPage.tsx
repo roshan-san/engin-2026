@@ -1,14 +1,13 @@
 import { Link } from "@tanstack/react-router";
+import { AppPage, PageTitle } from "~/components/AppPage";
 import { EmptyState } from "~/components/EmptyState";
-import { Page } from "~/components/Page";
-import { PageBar } from "~/components/PageBar";
 import { RowList } from "~/components/RowList";
 import { SectionLabel } from "~/components/SectionLabel";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { HackathonRow } from "./HackathonRow";
-import { groupHackathons, type HiringRow } from "./hiringGroups";
+import { groupHackathons, type HiringRow, hiringSummary } from "./hiringGroups";
 import { useHackathons } from "./useHackathons";
 
 /** The Startup's Hackathons: Now, Drafts (Founder only) and Past. */
@@ -25,36 +24,38 @@ export function HiringPage() {
 	const hasRows = rows !== undefined && rows.length > 0;
 
 	return (
-		<>
-			<PageBar
-				title={<h1 className="text-sm font-medium">Hiring</h1>}
-				actions={hasRows ? newHackathon : null}
-			/>
-			<Page width="narrow">
-				{rows === undefined ? (
-					<div className="flex flex-col gap-3">
-						<Skeleton className="h-12" />
-						<Skeleton className="h-12" />
-					</div>
-				) : rows.length === 0 ? (
-					<EmptyState
-						title={
-							isFounder
-								? "Hire by watching people build."
-								: "No hackathons yet."
-						}
-						body={
-							isFounder
-								? "Post a real problem. Up to 10 Builders work it for a week on their own Boards. Hire on what they ship."
-								: null
-						}
-						action={newHackathon}
+		<AppPage
+			bar={{
+				title: (
+					<PageTitle
+						name="Hiring"
+						context={rows ? hiringSummary(rows, isFounder) : null}
 					/>
-				) : (
-					<Groups rows={rows} slug={startup.slug} isFounder={isFounder} />
-				)}
-			</Page>
-		</>
+				),
+				actions: hasRows ? newHackathon : null,
+			}}
+		>
+			{rows === undefined ? (
+				<div className="flex flex-col gap-3">
+					<Skeleton className="h-12" />
+					<Skeleton className="h-12" />
+				</div>
+			) : rows.length === 0 ? (
+				<EmptyState
+					title={
+						isFounder ? "Hire by watching people build." : "No hackathons yet."
+					}
+					body={
+						isFounder
+							? "Post a real problem. Up to 10 Builders work it for a week on their own Boards. Hire on what they ship."
+							: null
+					}
+					action={newHackathon}
+				/>
+			) : (
+				<Groups rows={rows} slug={startup.slug} isFounder={isFounder} />
+			)}
+		</AppPage>
 	);
 }
 

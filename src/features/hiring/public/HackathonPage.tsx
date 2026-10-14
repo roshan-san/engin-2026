@@ -1,10 +1,10 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
+import { AppPage } from "~/components/AppPage";
 import { DetailPanel } from "~/components/DetailPanel";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Page } from "~/components/Page";
-import { PageBar } from "~/components/PageBar";
 import { PanelHeader } from "~/components/PanelHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
@@ -64,57 +64,54 @@ function SignedInPage({ page }: { readonly page: HackathonView }) {
 	const stage = STAGE[page.status];
 
 	return (
-		<div className="flex h-full min-h-0">
-			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-				<PageBar
-					title={
-						<h1 className="truncate text-sm font-medium">
-							{roleLabel(page.job.role)}
-							<span className="text-muted-foreground">
-								{" "}
-								· {page.startup.name}
-							</span>
-						</h1>
-					}
-					badge={
-						<Badge variant="status" tone={stage.tone} className="shrink-0">
-							{stage.label}
-						</Badge>
-					}
-					actions={
-						<Button size="sm" className="md:hidden" onClick={panel.open}>
-							Apply
-						</Button>
+		<AppPage
+			bar={{
+				title: (
+					<h1 className="truncate text-sm font-medium">
+						{roleLabel(page.job.role)}
+						<span className="text-muted-foreground">
+							{" "}
+							· {page.startup.name}
+						</span>
+					</h1>
+				),
+				badge: (
+					<Badge variant="status" tone={stage.tone} className="shrink-0">
+						{stage.label}
+					</Badge>
+				),
+				actions: (
+					<Button size="sm" className="md:hidden" onClick={panel.open}>
+						Apply
+					</Button>
+				),
+			}}
+			panel={
+				<DetailPanel
+					shows={panel.shows}
+					title="Apply"
+					description="Apply, and who's hiring."
+					onClose={panel.close}
+					hasCloseButton
+					item={null}
+					fallback={
+						<div className="flex min-h-0 flex-1 flex-col">
+							<PanelHeader>
+								<h2 className="text-sm font-medium">Apply</h2>
+							</PanelHeader>
+							<div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4">
+								<div className="flex flex-col gap-3">
+									<ApplyCard page={page} />
+								</div>
+								<StartupCard page={page} />
+							</div>
+						</div>
 					}
 				/>
-				<div className="min-h-0 flex-1 overflow-y-auto">
-					<Page width="narrow">
-						<HackathonPost post={postOf(page)} />
-					</Page>
-				</div>
-			</div>
-			<DetailPanel
-				shows={panel.shows}
-				title="Apply"
-				description="Apply, and who's hiring."
-				onClose={panel.close}
-				hasCloseButton
-				item={null}
-				fallback={
-					<div className="flex min-h-0 flex-1 flex-col">
-						<PanelHeader>
-							<h2 className="text-sm font-medium">Apply</h2>
-						</PanelHeader>
-						<div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4">
-							<div className="flex flex-col gap-3">
-								<ApplyCard page={page} />
-							</div>
-							<StartupCard page={page} />
-						</div>
-					</div>
-				}
-			/>
-		</div>
+			}
+		>
+			<HackathonPost post={postOf(page)} />
+		</AppPage>
 	);
 }
 

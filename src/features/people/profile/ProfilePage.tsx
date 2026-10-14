@@ -2,10 +2,10 @@ import type { api } from "@convex/_generated/api";
 import { getRouteApi } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { useState } from "react";
+import { AppPage } from "~/components/AppPage";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Page } from "~/components/Page";
-import { PageBar } from "~/components/PageBar";
 import { Row, RowList } from "~/components/RowList";
 import { SectionLabel } from "~/components/SectionLabel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -66,14 +66,14 @@ function SignedInProfile({
 	].filter((link) => link.url !== null);
 
 	return (
-		<>
-			<PageBar
-				title={
+		<AppPage
+			bar={{
+				title: (
 					<h1 className="truncate text-sm font-medium">
 						<PersonName person={profile} />
 					</h1>
-				}
-				badge={
+				),
+				badge: (
 					<span
 						className={cn(
 							"text-sm font-semibold tabular-nums",
@@ -82,20 +82,19 @@ function SignedInProfile({
 					>
 						{profile.rating}
 					</span>
-				}
-				actions={
-					isMine ? (
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setIsEditing(true)}
-						>
-							Edit profile
-						</Button>
-					) : null
-				}
-			/>
-			<Page width="narrow" className="flex flex-col gap-10">
+				),
+				actions: isMine ? (
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setIsEditing(true)}
+					>
+						Edit profile
+					</Button>
+				) : null,
+			}}
+		>
+			<div className="flex flex-col gap-10">
 				<header className="flex flex-col gap-3">
 					<ProfileIdentity profile={profile} />
 					{details.bio ? (
@@ -168,11 +167,11 @@ function SignedInProfile({
 						</RowList>
 					)}
 				</section>
-			</Page>
+			</div>
 			{isMine ? (
 				<SettingsSheet open={isEditing} onOpenChange={setIsEditing} />
 			) : null}
-		</>
+		</AppPage>
 	);
 }
 

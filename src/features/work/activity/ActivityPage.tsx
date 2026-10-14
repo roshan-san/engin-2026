@@ -1,17 +1,19 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
+import { AppPage, PageTitle } from "~/components/AppPage";
 import { DetailPanel } from "~/components/DetailPanel";
-import { PageBar } from "~/components/PageBar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useDetailPanel } from "~/components/useDetailPanel";
+import { cn } from "~/lib/utils";
 import { useWorkspace } from "../board/StartupContext";
 import { ActivityFeed } from "./ActivityFeed";
 import { EntryPanel } from "./EntryPanel";
 import { RecordPanel } from "./RecordPanel";
 import { RecordSignals } from "./RecordSignals";
 import { findEntry } from "./record";
+import { tierText } from "./tierText";
 import { useActivity } from "./useActivity";
 import { useSignals } from "./useSignals";
 
@@ -46,81 +48,102 @@ export function ActivityPage() {
 	}, [entryId, isMobile, navigate]);
 
 	return (
-		<div className="flex h-full min-h-0">
-			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-				<PageBar
-					title={<h1 className="text-sm font-medium">Activity</h1>}
-					actions={
-						<Button
-							asChild
-							variant="ghost"
-							size="sm"
-							className="text-muted-foreground"
-						>
-							<Link to="/startups/$slug" params={{ slug: startup.slug }}>
-								How others see this
-								<ArrowUpRight aria-hidden />
-							</Link>
-						</Button>
+		<AppPage
+			bar={{
+				title: (
+					<PageTitle
+						name="Activity"
+						context={
+							signals ? (
+								<>
+									<span
+										className={cn(
+											"font-medium tabular-nums",
+											tierText(signals.rating),
+										)}
+									>
+										Rating {signals.rating}
+									</span>
+									<span className="tabular-nums">
+										{" · "}
+										{signals.verifiedTotal12} verified in 12 weeks
+									</span>
+								</>
+							) : null
+						}
+					/>
+				),
+				actions: (
+					<Button
+						asChild
+						variant="ghost"
+						size="sm"
+						className="text-muted-foreground"
+					>
+						<Link to="/startups/$slug" params={{ slug: startup.slug }}>
+							How others see this
+							<ArrowUpRight aria-hidden />
+						</Link>
+					</Button>
+				),
+			}}
+			panel={
+				<DetailPanel
+					shows={panel.shows}
+					title="What shipped"
+					description="The Card's proof."
+					onClose={panel.close}
+					item={
+						open ? (
+							<EntryPanel
+								key={open.entry.id}
+								entry={open.entry}
+								cycle={open.cycle}
+								onBack={panel.back}
+								onClose={isMobile ? panel.close : undefined}
+							/>
+						) : null
 					}
+					fallback={<RecordPanel signals={signals} />}
 				/>
-				<div className="min-h-0 flex-1 overflow-y-auto">
-					<div className="flex flex-col gap-10 px-4 py-6 md:px-6">
-						{/* On a phone there's no side panel, so the Record leads the feed. */}
-						<div className="md:hidden">
-							{signals ? <RecordSignals signals={signals} /> : null}
-						</div>
-						<section className="flex flex-col gap-4">
-							<h2 className="sr-only">Cycles</h2>
-							{data ? (
-								<ActivityFeed
-									cycles={data.cycles}
-									hasMore={data.hasMore}
-									onShowEarlier={showEarlier}
-									isLoadingEarlier={isLoadingEarlier}
-									mode="full"
-									selectedId={open?.entry.id}
-									onSelect={(id) => select(id === entryId ? undefined : id)}
-									emptyHint={
-										<>
-											Cards land here when they're verified on the{" "}
-											<Link
-												to="/s/$slug/board"
-												params={{ slug: startup.slug }}
-												className="text-foreground underline underline-offset-4 hover:text-link"
-											>
-												Board
-											</Link>
-											.
-										</>
-									}
-								/>
-							) : (
-								<FeedSkeleton />
-							)}
-						</section>
-					</div>
+			}
+		>
+			<div className="flex flex-col gap-10">
+				{/* On a phone there's no side panel, so the Record leads the feed. */}
+				<div className="md:hidden">
+					{signals ? <RecordSignals signals={signals} /> : null}
 				</div>
-			</div>
-			<DetailPanel
-				shows={panel.shows}
-				title="What shipped"
-				description="The Card's proof."
-				onClose={panel.close}
-				item={
-					open ? (
-						<EntryPanel
-							key={open.entry.id}
-							entry={open.entry}
-							cycle={open.cycle}
-							onBack={panel.back}
-							onClose={isMobile ? panel.close : undefined}
+				<section className="flex flex-col gap-4">
+					<h2 className="sr-only">Cycles</h2>
+					{data ? (
+						<ActivityFeed
+							cycles={data.cycles}
+							hasMore={data.hasMore}
+							onShowEarlier={showEarlier}
+							isLoadingEarlier={isLoadingEarlier}
+							mode="full"
+							selectedId={open?.entry.id}
+							onSelect={(id) => select(id === entryId ? undefined : id)}
+							emptyHint={
+								<>
+									Cards land here when they're verified on the{" "}
+									<Link
+										to="/s/$slug/board"
+										params={{ slug: startup.slug }}
+										className="text-foreground underline underline-offset-4 hover:text-link"
+									>
+										Board
+									</Link>
+									.
+								</>
+							}
 						/>
-					) : null
-				}
-				fallback={<RecordPanel signals={signals} />}
-			/>
-		</div>
+					) : (
+						<FeedSkeleton />
+					)}
+				</section>
+			</div>
+		</AppPage>
 	);
 }
 

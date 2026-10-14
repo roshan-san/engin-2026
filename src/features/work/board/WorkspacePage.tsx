@@ -1,7 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
+import { AppPage } from "~/components/AppPage";
 import { DetailPanel } from "~/components/DetailPanel";
-import { PageBar } from "~/components/PageBar";
 import { UnreadDot } from "~/components/UnreadDot";
 import { Button } from "~/components/ui/button";
 import { useDetailPanel } from "~/components/useDetailPanel";
@@ -36,54 +36,54 @@ export function WorkspacePage() {
 	const onClose = panel.isMobile ? panel.close : undefined;
 
 	return (
-		<div className="flex h-full min-h-0">
-			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-				<PageBar
-					title={<CycleHeader />}
-					actions={
-						<Button
-							variant="ghost"
-							size="sm"
-							className="md:hidden"
-							onClick={panel.open}
-						>
-							Threads
-							{isTeamUnread ? <UnreadDot /> : null}
-						</Button>
+		<AppPage
+			width="full"
+			bar={{
+				title: <CycleHeader />,
+				actions: (
+					<Button
+						variant="ghost"
+						size="sm"
+						className="md:hidden"
+						onClick={panel.open}
+					>
+						Threads
+						{isTeamUnread ? <UnreadDot /> : null}
+					</Button>
+				),
+			}}
+			panel={
+				<DetailPanel
+					shows={panel.shows}
+					title={cardId ? "Card" : "Threads"}
+					description={cardId ? "Edit this Card." : "Talk with your team."}
+					onClose={panel.close}
+					item={
+						cardId ? (
+							<CardPanel
+								key={cardId}
+								cardId={cardId}
+								backLabel="Threads"
+								isBackUnread={isTeamUnread}
+								onBack={panel.back}
+								onClose={onClose}
+								onShip={setShipping}
+							/>
+						) : null
 					}
+					fallback={<TeamPanel onClose={onClose} />}
 				/>
-				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-					<Board
-						openCardId={cardId}
-						onShip={setShipping}
-						onOpen={(id) => void navigate({ search: { card: id } })}
-						onClose={closeCard}
-					/>
-				</div>
-			</div>
-			<DetailPanel
-				shows={panel.shows}
-				title={cardId ? "Card" : "Threads"}
-				description={cardId ? "Edit this Card." : "Talk with your team."}
-				onClose={panel.close}
-				item={
-					cardId ? (
-						<CardPanel
-							key={cardId}
-							cardId={cardId}
-							backLabel="Threads"
-							isBackUnread={isTeamUnread}
-							onBack={panel.back}
-							onClose={onClose}
-							onShip={setShipping}
-						/>
-					) : null
-				}
-				fallback={<TeamPanel onClose={onClose} />}
+			}
+		>
+			<Board
+				openCardId={cardId}
+				onShip={setShipping}
+				onOpen={(id) => void navigate({ search: { card: id } })}
+				onClose={closeCard}
 			/>
 			{shipping ? (
 				<ShipDialog card={shipping} onClose={() => setShipping(null)} />
 			) : null}
-		</div>
+		</AppPage>
 	);
 }

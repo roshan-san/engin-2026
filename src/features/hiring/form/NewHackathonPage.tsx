@@ -1,10 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { AppPage, BackLink } from "~/components/AppPage";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
-import { Page } from "~/components/Page";
-import { PageBar } from "~/components/PageBar";
 import { useWorkspace } from "~/features/work/board/StartupContext";
-import { HiringBackLink } from "../HiringBackLink";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";
 import { useHackathonForm } from "./useHackathonForm";
@@ -21,32 +19,31 @@ export function NewHackathonPage() {
 	}
 
 	return (
-		<div className="flex h-full min-h-0 flex-col">
-			<PageBar
-				back={<HiringBackLink slug={startup.slug} />}
-				title={<h1 className="truncate text-sm font-medium">New hackathon</h1>}
-			/>
-			<div className="min-h-0 flex-1 overflow-y-auto">
-				<Page>
-					<p className="mb-6 text-sm text-muted-foreground">
-						Saved as a draft. Publish it when it reads right.
-					</p>
-					<HackathonForm
-						startupName={startup.name}
-						initial={initial}
-						submitLabel="Save draft"
-						onSubmit={async (draft) => {
-							const id = await create(startup._id, draft);
-							if (!id) return false;
-							await navigate({
-								to: "/s/$slug/hiring/$id",
-								params: { slug: startup.slug, id },
-							});
-							return true;
-						}}
+		<AppPage
+			bar={{
+				back: (
+					<BackLink
+						label="Hiring"
+						link={{ to: "/s/$slug/hiring", params: { slug: startup.slug } }}
 					/>
-				</Page>
-			</div>
-		</div>
+				),
+				title: <h1 className="truncate text-sm font-medium">New hackathon</h1>,
+			}}
+		>
+			<HackathonForm
+				startupName={startup.name}
+				initial={initial}
+				submitLabel="Save draft"
+				onSubmit={async (draft) => {
+					const id = await create(startup._id, draft);
+					if (!id) return false;
+					await navigate({
+						to: "/s/$slug/hiring/$id",
+						params: { slug: startup.slug, id },
+					});
+					return true;
+				}}
+			/>
+		</AppPage>
 	);
 }

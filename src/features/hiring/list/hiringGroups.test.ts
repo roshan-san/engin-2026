@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	groupHackathons,
 	type HiringRow,
+	hiringSummary,
 	needsYou,
 	promiseLine,
 	rowNumber,
@@ -108,5 +109,39 @@ describe("needsYou", () => {
 		expect(needsYou(row({ status: "building", toReview: 0 }))).toBe(false);
 		expect(needsYou(row({ status: "open", applicantCount: 9 }))).toBe(false);
 		expect(needsYou(row({ status: "done", hires: 1 }))).toBe(false);
+	});
+});
+
+describe("hiringSummary", () => {
+	const withStatus = (status: HiringRow["status"]) => row({ status });
+
+	it("counts running, drafts and past for the Founder", () => {
+		expect(
+			hiringSummary(
+				[
+					withStatus("open"),
+					withStatus("building"),
+					withStatus("draft"),
+					withStatus("done"),
+				],
+				true,
+			),
+		).toBe("2 running · 1 draft · 1 past");
+	});
+
+	it("hides drafts from a Contributor", () => {
+		expect(
+			hiringSummary([withStatus("draft"), withStatus("deciding")], false),
+		).toBe("1 running");
+	});
+
+	it("says nothing with no Hackathons", () => {
+		expect(hiringSummary([], true)).toBeNull();
+	});
+
+	it("pluralises drafts", () => {
+		expect(
+			hiringSummary([withStatus("draft"), withStatus("draft")], true),
+		).toBe("2 drafts");
 	});
 });
