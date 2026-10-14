@@ -1,6 +1,7 @@
 import { MAX_BUILDERS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
 import { SectionLabel } from "~/components/SectionLabel";
+import { SignInCard } from "~/features/people/auth/SignInCard";
 import { cn } from "~/lib/utils";
 import {
 	buildDaysLabel,
@@ -25,8 +26,8 @@ export type PostView = {
 		readonly mode: JobMode | null;
 	};
 	readonly problem: string;
-	/** The Card titles each Builder gets. */
-	readonly cards: readonly string[];
+	/** The Card titles each Builder gets; `null` for a signed-out visitor, who sees the brief faded behind Sign in. */
+	readonly cards: readonly string[] | null;
 	readonly weeks: 1 | 2;
 	readonly startsAt: number | null;
 	readonly buildersGet: string | null;
@@ -62,7 +63,14 @@ export function HackathonPost({
 	const facts = [
 		labelOf(PAYS, post.job.pay),
 		labelOf(MODES, post.job.mode),
-		post.weeks === 1 ? "1 week" : "2 weeks",
+		post.startsAt === null
+			? post.weeks === 1
+				? "1 week"
+				: "2 weeks"
+			: buildDaysLabel(
+					post.startsAt,
+					hackathonDates(post.startsAt, post.weeks).endsAt,
+				),
 	].filter((fact) => fact !== null);
 	const problem = post.problem.trim();
 	const isPage = size === "page";
@@ -112,15 +120,36 @@ export function HackathonPost({
 				</p>
 			</section>
 
+			{post.cards === null ? (
+				<GatedBrief post={post} />
+			) : (
+				<Brief cards={post.cards} startsAt={post.startsAt} weeks={post.weeks} />
+			)}
+		</article>
+	);
+}
+
+/** What you'll build and how it works. */
+function Brief({
+	cards,
+	startsAt,
+	weeks,
+}: {
+	readonly cards: readonly string[];
+	readonly startsAt: number | null;
+	readonly weeks: 1 | 2;
+}) {
+	return (
+		<>
 			<section className="flex flex-col gap-3">
 				<SectionLabel>What you'll build</SectionLabel>
 				<ol className="flex flex-col gap-1.5">
-					{post.cards.length === 0 ? (
+					{cards.length === 0 ? (
 						<li className="rounded-md border border-dashed border-border px-3 py-2.5 text-sm">
 							<Unwritten>The Cards each Builder starts with.</Unwritten>
 						</li>
 					) : null}
-					{post.cards.map((title, index) => (
+					{cards.map((title, index) => (
 						<li
 							// Titles can repeat while they're typed; the order is stable.
 							// biome-ignore lint/suspicious/noArrayIndexKey: see above
@@ -140,9 +169,46 @@ export function HackathonPost({
 
 			<section className="flex flex-col gap-3">
 				<SectionLabel>How it works</SectionLabel>
-				<Timeline startsAt={post.startsAt} weeks={post.weeks} />
+				<Timeline startsAt={startsAt} weeks={weeks} />
 			</section>
-		</article>
+		</>
+	);
+}
+
+/** Signed out: the brief faded out behind Sign in. The Card titles never reach the page; blank rows stand in for them. */
+function GatedBrief({ post }: { readonly post: PostView }) {
+	return (
+		<div className="relative">
+			<div
+				aria-hidden
+				inert
+				className="pointer-events-none flex select-none flex-col gap-10 opacity-40 [mask-image:linear-gradient(to_bottom,black_30%,transparent)]"
+			>
+				<section className="flex flex-col gap-3">
+					<SectionLabel>What you'll build</SectionLabel>
+					<ol className="flex flex-col gap-1.5">
+						{[1, 2, 3].map((n) => (
+							<li
+								key={n}
+								className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5"
+							>
+								<span className="w-4 shrink-0 text-xs text-subtle-foreground tabular-nums">
+									{n}
+								</span>
+								<span className="h-3 w-2/3 rounded bg-muted" />
+							</li>
+						))}
+					</ol>
+				</section>
+				<section className="flex flex-col gap-3">
+					<SectionLabel>How it works</SectionLabel>
+					<Timeline startsAt={post.startsAt} weeks={post.weeks} />
+				</section>
+			</div>
+			<div className="absolute inset-x-0 top-10 flex justify-center px-4">
+				<SignInCard>Sign in to see the full brief and apply.</SignInCard>
+			</div>
+		</div>
 	);
 }
 

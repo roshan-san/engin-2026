@@ -3,16 +3,8 @@ import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
-import {
-	MAX_BUILDERS,
-	MAX_EXPLORE_ROWS,
-	MAX_HACKATHON_CARDS,
-	MAX_LISTED_HACKATHONS,
-} from "../shared/limits";
-import { getTeamRole, requireFounder, requireTeam } from "../model/teamAccess";
-import { toPublicStartup } from "../model/startups";
 import { toMyApplicationView } from "../model/applications";
+import { requireUserId } from "../model/auth";
 import {
 	copyTemplateCardsTo,
 	countUndecidedBuilders,
@@ -28,8 +20,16 @@ import {
 	sortExplore,
 	toExploreHackathon,
 } from "../model/hackathons";
-import { jobRole } from "../shared/validators";
 import { type HiringRecord, loadHiringRecord } from "../model/hiringRecord";
+import { toPublicStartup } from "../model/startups";
+import { getTeamRole, requireFounder, requireTeam } from "../model/teamAccess";
+import {
+	MAX_BUILDERS,
+	MAX_EXPLORE_ROWS,
+	MAX_HACKATHON_CARDS,
+	MAX_LISTED_HACKATHONS,
+} from "../shared/limits";
+import { jobRole } from "../shared/validators";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -109,7 +109,7 @@ export const get = query({
 	},
 });
 
-/** A published Hackathon for anyone, with your application. The id comes from a link, so anything that isn't one reads as missing. */
+/** A published Hackathon for anyone, with your application; the Card titles only when signed in. The id comes from a link, so anything that isn't one reads as missing. */
 export const getPublic = query({
 	args: { hackathonId: v.string() },
 	handler: async (ctx, args) => {
@@ -139,9 +139,12 @@ export const getPublic = query({
 			_id: hackathon._id,
 			job: hackathon.job,
 			problem: hackathon.problem,
-			cards: (await loadTemplateCards(ctx, hackathon._id)).map(
-				(card) => card.title,
-			),
+			/** The Card titles, only for people who are signed in. */
+			cards: userId
+				? (await loadTemplateCards(ctx, hackathon._id)).map(
+						(card) => card.title,
+					)
+				: null,
 			weeks: hackathon.weeks,
 			startsAt: hackathon.startsAt,
 			endsAt: hackathon.endsAt,

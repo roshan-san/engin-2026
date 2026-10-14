@@ -1,14 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
+import { finishIfDecided } from "../model/hackathons";
 import { MAX_LISTED_HACKATHONS } from "../shared/limits";
-import { signUp } from "../testing/users.setup";
-import {
-	addContributor,
-	type Setup,
-	setUpStartup,
-} from "../testing/startups.setup";
 import {
 	builders,
 	closeHackathon,
@@ -21,7 +15,13 @@ import {
 	nextMonday,
 	publishedHackathon,
 } from "../testing/hackathons.setup";
-import { finishIfDecided } from "../model/hackathons";
+import {
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../testing/startups.setup";
+import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {
@@ -225,11 +225,12 @@ describe("public page", () => {
 		expect(forFounder?.isTeam).toBe(true);
 	});
 
-	it("the public page lists the Cards Builders will work, without their notes", async () => {
+	it("signed in, the page lists the Cards Builders will work, without their notes", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
+		const sam = await signUp(setup.t, "Sam");
 
-		const page = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const page = await sam.as.query(api.hiring.hackathons.getPublic, {
 			hackathonId,
 		});
 
@@ -238,6 +239,20 @@ describe("public page", () => {
 			"Add onboarding",
 			"Track drop-off",
 		]);
+	});
+
+	it("signed out, the page shows the job and the problem but not the Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+
+		const page = await setup.t.query(api.hiring.hackathons.getPublic, {
+			hackathonId,
+		});
+
+		expect(page?.problem).not.toBe("");
+		expect(page?.job.role).not.toBeNull();
+		expect(page?.cards).toBeNull();
+		expect(JSON.stringify(page)).not.toContain("Fix signup");
 	});
 });
 
