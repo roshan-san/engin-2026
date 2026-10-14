@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
 import {
 	DECIDE_GRACE_MS,
 	MAX_APPLICATIONS,
@@ -9,12 +10,11 @@ import {
 	MIN_HACKATHON_CARDS,
 	TEXT,
 } from "../shared/limits";
-import { limitText, requireLimitedText } from "./text";
-import { requireFounder } from "./teamAccess";
-import { appendActivity } from "./activity";
-import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
 import { jobMode, jobPay, jobRole } from "../shared/validators";
+import { appendActivity } from "./activity";
 import type { HiringRecord } from "./hiringRecord";
+import { requireFounder } from "./teamAccess";
+import { limitText, requireLimitedText } from "./text";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {
@@ -253,11 +253,12 @@ export function sortExplore(
 	];
 }
 
-/** One Explore row. Its Startup and hiring record are loaded once per Startup by the caller. */
+/** One Explore row. Its Startup, hiring record and logo URL are loaded once per Startup by the caller. */
 export function toExploreHackathon(
 	hackathon: Doc<"hackathons">,
 	startup: Doc<"startups">,
 	hiringRecord: HiringRecord,
+	logoUrl: string | null,
 ) {
 	return {
 		hackathonId: hackathon._id,
@@ -272,6 +273,7 @@ export function toExploreHackathon(
 			rating: startup.rating,
 			ratingChange: startup.ratingChange,
 			isProvisional: startup.provisional,
+			logoUrl,
 		},
 		hiringRecord,
 	};

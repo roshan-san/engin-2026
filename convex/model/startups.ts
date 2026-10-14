@@ -1,9 +1,9 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { slugify } from "./text";
-import { loadPublicUser } from "./users";
 import { shiftWeek, weekStart } from "../shared/cycles";
 import { RATING } from "./rating";
+import { slugify } from "./text";
+import { loadPublicUser } from "./users";
 
 export async function getStartupBySlug(
 	ctx: QueryCtx | MutationCtx,
@@ -103,5 +103,14 @@ export async function toExploreStartup(
 		isProvisional: startup.provisional,
 		logoUrl: startup.logo ? await ctx.storage.getUrl(startup.logo) : null,
 		strip: buildRhythmStrip(startup.rhythm, startup.ratedThrough ?? endWeek),
+		isHiring:
+			(
+				await ctx.db
+					.query("hackathons")
+					.withIndex("by_startup_and_status", (q) =>
+						q.eq("startupId", startup._id).eq("status", "open"),
+					)
+					.take(1)
+			).length > 0,
 	};
 }

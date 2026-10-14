@@ -1,10 +1,11 @@
 import type { FunctionArgs } from "convex/server";
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { publishedHackathon } from "../testing/hackathons.setup";
 import { runRating, toNextWeek, verifyCards } from "../testing/rating.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
+import { createTest } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
 
 const acme = {
 	name: "Acme",
@@ -244,6 +245,16 @@ describe("explore", () => {
 		expect(byCategory.map((row) => row.name)).toEqual(["Alpha"]);
 		expect(byCity.map((row) => row.name)).toEqual(["Beta"]);
 		expect(byAll).toEqual([]);
+	});
+
+	it("a Startup with an open Hackathon is hiring", async () => {
+		const setup = await setUpStartup(createTest());
+		const before = await setup.t.query(api.startups.startups.explore, {});
+		await publishedHackathon(setup);
+		const after = await setup.t.query(api.startups.startups.explore, {});
+
+		expect(before[0].isHiring).toBe(false);
+		expect(after[0].isHiring).toBe(true);
 	});
 
 	it("a Startup never rated shows twelve empty weeks", async () => {

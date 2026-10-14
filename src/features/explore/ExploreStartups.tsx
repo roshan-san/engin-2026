@@ -4,9 +4,9 @@ import { RowList } from "~/components/RowList";
 import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { FilterChips } from "./FilterChips";
-import { useExploreStartups } from "./useExploreStartups";
-import { StartupExploreRow } from "./StartupExploreRow";
 import { RowsSkeleton } from "./RowsSkeleton";
+import { StartupExploreRow } from "./StartupExploreRow";
+import { useExploreStartups } from "./useExploreStartups";
 
 const route = getRouteApi("/_shell/explore/startups");
 
@@ -18,6 +18,11 @@ export function ExploreStartups() {
 
 	return (
 		<ExploreLayout
+			context={
+				startups
+					? `${startups.length} ${startups.length === 1 ? "startup" : "startups"}`
+					: null
+			}
 			filters={
 				<>
 					<FilterChips

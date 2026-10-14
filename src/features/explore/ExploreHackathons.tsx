@@ -5,8 +5,8 @@ import { ROLES } from "~/features/hiring/jobChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { FilterChips } from "./FilterChips";
 import { HackathonExploreRow } from "./HackathonExploreRow";
-import { useExploreHackathons } from "./useExploreHackathons";
 import { RowsSkeleton } from "./RowsSkeleton";
+import { useExploreHackathons } from "./useExploreHackathons";
 
 const route = getRouteApi("/_shell/explore/hackathons");
 
@@ -25,6 +25,11 @@ export function ExploreHackathons() {
 
 	return (
 		<ExploreLayout
+			context={
+				hackathons
+					? `${hackathons.length} ${hackathons.length === 1 ? "hackathon" : "hackathons"}`
+					: null
+			}
 			filters={
 				<>
 					<FilterChips

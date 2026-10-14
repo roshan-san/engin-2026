@@ -199,7 +199,11 @@ export const explore = query({
 
 		const startups = new Map<
 			Id<"startups">,
-			{ startup: Doc<"startups">; hiringRecord: HiringRecord } | null
+			{
+				startup: Doc<"startups">;
+				hiringRecord: HiringRecord;
+				logoUrl: string | null;
+			} | null
 		>();
 		for (const { startupId } of shown) {
 			if (startups.has(startupId)) {
@@ -209,7 +213,13 @@ export const explore = query({
 			startups.set(
 				startupId,
 				startup
-					? { startup, hiringRecord: await loadHiringRecord(ctx, startupId) }
+					? {
+							startup,
+							hiringRecord: await loadHiringRecord(ctx, startupId),
+							logoUrl: startup.logo
+								? await ctx.storage.getUrl(startup.logo)
+								: null,
+						}
 					: null,
 			);
 		}
@@ -217,7 +227,14 @@ export const explore = query({
 		return shown.flatMap((hackathon) => {
 			const loaded = startups.get(hackathon.startupId);
 			return loaded
-				? [toExploreHackathon(hackathon, loaded.startup, loaded.hiringRecord)]
+				? [
+						toExploreHackathon(
+							hackathon,
+							loaded.startup,
+							loaded.hiringRecord,
+							loaded.logoUrl,
+						),
+					]
 				: [];
 		});
 	},

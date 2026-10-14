@@ -615,6 +615,15 @@ describe("explore", () => {
 		return { t: setup.t, founder, startupId, slug };
 	}
 
+	it("an Explore row carries its Startup's logo, null without one", async () => {
+		const setup = await setUpStartup(createTest());
+		await publishedHackathon(setup);
+
+		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+
+		expect(rows[0].startup.logoUrl).toBeNull();
+	});
+
 	it("anyone can explore Hackathons signed out", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
