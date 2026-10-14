@@ -1,4 +1,5 @@
 import { PublicHeader } from "~/components/PublicHeader";
+import { SiteFooter } from "~/components/SiteFooter";
 import { TabRow } from "~/shell/TabRow";
 
 /** Signed-out frame: the public header and tab row over the page, which fills the rest and scrolls inside it. */
@@ -16,6 +17,7 @@ export function PublicShell({
 				className="flex min-h-0 flex-1 flex-col overflow-y-auto"
 			>
 				{children}
+				<SiteFooter />
 			</main>
 		</div>
 	);

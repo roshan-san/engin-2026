@@ -1,11 +1,47 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
-import { Navigate } from "@tanstack/react-router";
+import { Link, Navigate } from "@tanstack/react-router";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
-import { GlowHero } from "~/components/GlowHero";
+import { BoardMock } from "~/features/marketing/BoardMock";
+import { OpenNow } from "~/features/marketing/OpenNow";
+import { Pricing } from "~/features/marketing/Pricing";
 import { GoogleButton } from "~/features/people/auth/GoogleButton";
+import { pickLanding, readLastPlace } from "~/shell/landing";
 import { PublicShell } from "~/shell/PublicShell";
 import { usePlaces } from "~/shell/usePlaces";
-import { pickLanding, readLastPlace } from "~/shell/landing";
+
+const STEPS = [
+	{
+		title: "Post your real problem",
+		body: "One or two weeks, a handful of Builders, and the stipend shown upfront.",
+	},
+	{
+		title: "Builders ship on their own Boards",
+		body: "Each works through the same Cards. You see what shipped, Card by Card.",
+	},
+	{
+		title: "Walkthrough, then a Decision",
+		body: "Talk through the work with your shortlist. Every Builder hears back.",
+	},
+] as const;
+
+const AUDIENCES = [
+	{
+		title: "For Founders",
+		lines: [
+			"Stop guessing from CVs: watch real work on your real problem.",
+			"Hire in one click; the Builder joins your team.",
+			"Then run your team's week in Cycles on the same Board.",
+		],
+	},
+	{
+		title: "For Builders",
+		lines: [
+			"Work on a real startup problem, not a puzzle.",
+			"The stipend is shown upfront, and you always get a Decision.",
+			"Verified work builds a Rating that follows you.",
+		],
+	},
+] as const;
 
 /** Sends a signed-in visitor to the place they were last in, else their first. */
 function LandingRedirect() {
@@ -31,13 +67,80 @@ export function LandingPage() {
 
 	return (
 		<PublicShell>
-			<div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-				<GlowHero
-					title="Hire through hackathons. Run work in Cycles."
-					subtitle="Founders hire by watching people build. Contributors build for free and earn a Rating that follows them."
-				>
-					<GoogleButton label="Get started" variant="default" size="lg" />
-				</GlowHero>
+			<div className="mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 py-12 md:gap-28 md:px-6 md:py-20">
+				<section className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+					<div className="flex flex-col gap-5">
+						<p className="text-sm font-medium text-muted-foreground">
+							Hiring Hackathons for early-stage startups
+						</p>
+						<h1 className="text-4xl font-[650] tracking-[-0.03em] text-balance md:text-5xl">
+							Watch them ship before you hire.
+						</h1>
+						<p className="text-lg text-muted-foreground text-pretty">
+							Run a small, private Hackathon on your real problem. A handful of
+							Builders work on their own Boards. You check what ships, then
+							decide. Stipend shown upfront.
+						</p>
+						<div className="flex flex-wrap items-center gap-3">
+							<GoogleButton
+								label="Post a hackathon"
+								variant="default"
+								size="lg"
+							/>
+							<Link
+								to="/explore/hackathons"
+								className="text-sm font-medium underline-offset-4 hover:underline"
+							>
+								Find a hackathon →
+							</Link>
+						</div>
+					</div>
+					<BoardMock />
+				</section>
+
+				<section className="flex flex-col gap-6">
+					<h2 className="text-xl font-semibold tracking-tight">How it works</h2>
+					<ol className="grid gap-3 md:grid-cols-3">
+						{STEPS.map((step, index) => (
+							<li
+								key={step.title}
+								className="flex flex-col gap-2 rounded-xl border border-border p-5"
+							>
+								<span className="text-sm font-semibold tabular-nums text-muted-foreground">
+									{index + 1}
+								</span>
+								<p className="font-medium">{step.title}</p>
+								<p className="text-sm text-muted-foreground">{step.body}</p>
+							</li>
+						))}
+					</ol>
+				</section>
+
+				<section className="grid gap-3 md:grid-cols-2">
+					{AUDIENCES.map((audience) => (
+						<div
+							key={audience.title}
+							className="flex flex-col gap-3 rounded-xl border border-border bg-card p-6"
+						>
+							<h2 className="font-semibold">{audience.title}</h2>
+							<ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+								{audience.lines.map((line) => (
+									<li key={line}>{line}</li>
+								))}
+							</ul>
+						</div>
+					))}
+				</section>
+
+				<OpenNow />
+				<Pricing />
+
+				<section className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-6 py-12 text-center">
+					<h2 className="text-2xl font-semibold tracking-tight text-balance">
+						See if they can actually do the work.
+					</h2>
+					<GoogleButton label="Post a hackathon" variant="default" size="lg" />
+				</section>
 			</div>
 		</PublicShell>
 	);
