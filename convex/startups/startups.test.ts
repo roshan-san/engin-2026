@@ -1,7 +1,10 @@
 import type { FunctionArgs } from "convex/server";
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { publishedHackathon } from "../testing/hackathons.setup";
+import {
+	draftHackathon,
+	publishedHackathon,
+} from "../testing/hackathons.setup";
 import { runRating, toNextWeek, verifyCards } from "../testing/rating.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
@@ -75,6 +78,20 @@ describe("startups", () => {
 		expect(workspace).toBeNull();
 		expect(page).toMatchObject({ name: "Acme", rating: 1000 });
 		expect(page).not.toHaveProperty("founderId");
+	});
+
+	it("the public page lists the Startup's open Hackathons", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await draftHackathon(setup);
+
+		const page = await setup.t.query(api.startups.startups.getPublic, {
+			slug: setup.slug,
+		});
+
+		expect(page?.openHackathons.map((h) => h.hackathonId)).toEqual([
+			hackathonId,
+		]);
 	});
 
 	it("only the Founder edits the startup", async () => {

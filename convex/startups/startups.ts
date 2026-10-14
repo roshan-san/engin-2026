@@ -2,22 +2,8 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
-import { loadHiringRecord } from "../model/hiringRecord";
 import { requireUserId } from "../model/auth";
-import {
-	EXPLORE_SCAN,
-	MAX_EXPLORE_ROWS,
-	STARTING_RATING,
-	TEXT,
-} from "../shared/limits";
-import { assertUrl, limitText, requireLimitedText } from "../model/text";
-import {
-	startupCategory,
-	startupCity,
-	startupStage,
-} from "../shared/validators";
-import { shiftWeek, weekOf } from "../shared/cycles";
-import { getTeamRole, requireFounder } from "../model/teamAccess";
+import { loadHiringRecord } from "../model/hiringRecord";
 import {
 	buildUniqueSlug,
 	getStartupBySlug,
@@ -25,6 +11,21 @@ import {
 	toExploreStartup,
 	toPublicStartup,
 } from "../model/startups";
+import { getTeamRole, requireFounder } from "../model/teamAccess";
+import { assertUrl, limitText, requireLimitedText } from "../model/text";
+import { shiftWeek, weekOf } from "../shared/cycles";
+import {
+	EXPLORE_SCAN,
+	MAX_EXPLORE_ROWS,
+	MAX_OPEN_HACKATHONS,
+	STARTING_RATING,
+	TEXT,
+} from "../shared/limits";
+import {
+	startupCategory,
+	startupCity,
+	startupStage,
+} from "../shared/validators";
 
 export const getBySlug = query({
 	args: { slug: v.string() },
@@ -46,9 +47,22 @@ export const getPublic = query({
 		if (!startup) {
 			return null;
 		}
+		const open = await ctx.db
+			.query("hackathons")
+			.withIndex("by_startup_and_status", (q) =>
+				q.eq("startupId", startup._id).eq("status", "open"),
+			)
+			.take(MAX_OPEN_HACKATHONS);
 		return {
 			...(await toPublicStartup(ctx, startup)),
 			hiringRecord: await loadHiringRecord(ctx, startup._id),
+			openHackathons: open.map((h) => ({
+				hackathonId: h._id,
+				job: h.job,
+				weeks: h.weeks,
+				startsAt: h.startsAt,
+				buildersGet: h.buildersGet ?? null,
+			})),
 		};
 	},
 });

@@ -1,15 +1,21 @@
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
+import { useConvexAuth } from "convex/react";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Page } from "~/components/Page";
+import { PlaceLogo } from "~/components/PlaceLogo";
 import { SectionLabel } from "~/components/SectionLabel";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
+import { dayLabel } from "~/features/hiring/hackathonDates";
+import { jobLine } from "~/features/hiring/jobChips";
 import { ActivityFeed } from "~/features/work/activity/ActivityFeed";
-import { useSignals } from "~/features/work/activity/useSignals";
 import { RecordSignals } from "~/features/work/activity/RecordSignals";
-import { initials } from "~/lib/initials";
+import { tierText } from "~/features/work/activity/tierText";
+import { useSignals } from "~/features/work/activity/useSignals";
+import { cn } from "~/lib/utils";
+import { usePlaces } from "~/shell/usePlaces";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import { hiringLine } from "./hiringLine";
 import { usePublicActivity } from "./usePublicActivity";
@@ -35,6 +41,8 @@ export function PublicStartupPage() {
 	const { slug } = route.useParams();
 	const startup = usePublicStartup(slug);
 	const signals = useSignals(slug);
+	const { isAuthenticated } = useConvexAuth();
+	const places = usePlaces(isAuthenticated);
 	const {
 		data: activity,
 		showEarlier,
@@ -55,30 +63,42 @@ export function PublicStartupPage() {
 		labelOf(CITIES, startup.city),
 	];
 
+	const isOnTeam = places?.startups.some((s) => s.slug === slug) ?? false;
+
 	return (
-		<Page width="narrow" className="flex flex-col gap-10">
-			<header className="flex items-start gap-4">
-				<Avatar className="size-14 rounded-xl">
-					{startup.logo ? <AvatarImage src={startup.logo} alt="" /> : null}
-					<AvatarFallback className="rounded-xl">
-						{initials(startup.name, null)}
-					</AvatarFallback>
-				</Avatar>
-				<div className="flex min-w-0 flex-col gap-2">
-					<h1 className="text-2xl font-semibold tracking-tight break-words">
-						{startup.name}
-					</h1>
-					{startup.oneLiner ? (
-						<p className="text-sm text-muted-foreground">{startup.oneLiner}</p>
-					) : null}
-					<div className="flex flex-wrap items-center gap-2">
-						{chips.map((chip) => (
-							<Badge key={chip} variant="secondary">
-								{chip}
-							</Badge>
-						))}
+		<div className="flex flex-col">
+			<section className="border-b border-border bg-[radial-gradient(circle_at_top_right,var(--glow),transparent_60%)]">
+				<div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10 md:px-6 md:py-14">
+					<div className="flex items-start gap-4">
+						<PlaceLogo name={startup.name} url={startup.logo} size="xl" />
+						<div className="flex min-w-0 flex-1 flex-col gap-2">
+							<h1 className="text-3xl font-semibold tracking-tight break-words">
+								{startup.name}
+							</h1>
+							{startup.oneLiner ? (
+								<p className="text-muted-foreground">{startup.oneLiner}</p>
+							) : null}
+							<div className="flex flex-wrap items-center gap-2">
+								{chips.map((chip) => (
+									<Badge key={chip} variant="secondary">
+										{chip}
+									</Badge>
+								))}
+							</div>
+						</div>
+						<div className="flex shrink-0 flex-col items-end">
+							<span
+								className={cn(
+									"text-3xl font-semibold tabular-nums",
+									tierText(startup.rating),
+								)}
+							>
+								{startup.rating}
+							</span>
+							<span className="text-xs text-muted-foreground">Rating</span>
+						</div>
 					</div>
-					<p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+					<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
 						{startup.website ? (
 							<a
 								href={startup.website}
@@ -90,46 +110,92 @@ export function PublicStartupPage() {
 							</a>
 						) : null}
 						<span>On Engin since {SINCE.format(startup.createdAt)}</span>
-					</p>
+						{isOnTeam ? (
+							<Button asChild size="sm" className="ml-auto">
+								<Link to="/s/$slug/board" params={{ slug }}>
+									Open Board
+								</Link>
+							</Button>
+						) : null}
+					</div>
 				</div>
-			</header>
-
-			{signals ? (
-				<RecordSignals signals={signals} />
-			) : (
-				<Skeleton className="h-24 w-64" />
-			)}
-
-			{hiring ? (
-				<section className="flex flex-col gap-3">
-					<SectionLabel>Hiring</SectionLabel>
-					<p className="text-sm">{hiring}</p>
-				</section>
-			) : null}
-
-			<section className="flex flex-col gap-4">
-				<div className="flex items-baseline gap-3 border-b border-border pb-2">
-					<h2 className="text-xs font-semibold text-muted-foreground">
-						Cycles
-					</h2>
-					{activity?.full ? (
-						<span className="text-xs text-muted-foreground">
-							Investor Pro view
-						</span>
-					) : null}
-				</div>
-				{activity ? (
-					<ActivityFeed
-						cycles={activity.cycles}
-						hasMore={activity.hasMore}
-						onShowEarlier={showEarlier}
-						isLoadingEarlier={isLoadingEarlier}
-						mode={activity.full ? "full" : "masked"}
-					/>
-				) : (
-					<Skeleton className="h-40 w-full" />
-				)}
 			</section>
-		</Page>
+			<Page width="narrow" className="flex flex-col gap-10">
+				{signals ? (
+					<RecordSignals signals={signals} />
+				) : (
+					<Skeleton className="h-24 w-64" />
+				)}
+
+				{startup.openHackathons.length > 0 ? (
+					<section className="flex flex-col gap-3">
+						<SectionLabel>Hiring now</SectionLabel>
+						<div className="grid gap-3 sm:grid-cols-2">
+							{startup.openHackathons.map((h) => (
+								<Link
+									key={h.hackathonId}
+									to="/hackathons/$id"
+									params={{ id: h.hackathonId }}
+									className="flex flex-col gap-1 rounded-xl border border-border bg-card p-4 outline-none transition-colors hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring/60"
+								>
+									<span className="font-medium">{jobLine(h.job)}</span>
+									<span className="text-sm text-muted-foreground">
+										{h.weeks} {h.weeks === 1 ? "week" : "weeks"} · starts{" "}
+										{dayLabel(h.startsAt)}
+									</span>
+									{h.buildersGet ? (
+										<span className="text-sm">
+											Builders get {h.buildersGet}
+										</span>
+									) : null}
+								</Link>
+							))}
+						</div>
+					</section>
+				) : null}
+
+				{hiring ? (
+					<section className="flex flex-col gap-3">
+						<SectionLabel>Hiring record</SectionLabel>
+						<p className="text-sm">{hiring}</p>
+					</section>
+				) : null}
+
+				<section className="flex flex-col gap-4">
+					<div className="flex items-baseline gap-3 border-b border-border pb-2">
+						<h2 className="text-xs font-semibold text-muted-foreground">
+							Cycles
+						</h2>
+						{activity?.full ? (
+							<span className="text-xs text-muted-foreground">
+								Investor Pro view
+							</span>
+						) : null}
+					</div>
+					{activity ? (
+						<ActivityFeed
+							cycles={activity.cycles}
+							hasMore={activity.hasMore}
+							onShowEarlier={showEarlier}
+							isLoadingEarlier={isLoadingEarlier}
+							mode={activity.full ? "full" : "masked"}
+						/>
+					) : (
+						<Skeleton className="h-40 w-full" />
+					)}
+				</section>
+
+				{!isAuthenticated ? (
+					<section className="flex flex-col items-start gap-3 rounded-xl border border-border bg-card p-6">
+						<p className="font-medium">
+							Want to build with startups like {startup.name}?
+						</p>
+						<Button asChild variant="outline">
+							<Link to="/explore/hackathons">Find a hackathon</Link>
+						</Button>
+					</section>
+				) : null}
+			</Page>
+		</div>
 	);
 }
