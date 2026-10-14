@@ -222,7 +222,26 @@ describe("currentPlaceView", () => {
 				kind: "startup",
 				slug: "acme",
 			}),
-		).toEqual({ name: "Acme", logoUrl: null, role: "Founder" });
+		).toEqual({
+			name: "Acme",
+			logoName: "Acme",
+			logoUrl: null,
+			role: "Founder",
+		});
+	});
+
+	it("a logo passes through to the trigger", () => {
+		const withLogo = {
+			...startup("acme", "Acme", []),
+			logoUrl: "https://x/l.png",
+		};
+
+		expect(
+			currentPlaceView(places({ startups: [withLogo] }), {
+				kind: "startup",
+				slug: "acme",
+			})?.logoUrl,
+		).toBe("https://x/l.png");
 	});
 
 	it("a Builder's Hackathon shows the job and the Startup", () => {
@@ -233,6 +252,7 @@ describe("currentPlaceView", () => {
 
 		expect(view).toEqual({
 			name: "Frontend",
+			logoName: "Zest",
 			logoUrl: null,
 			role: "Builder · Zest",
 		});
@@ -257,6 +277,23 @@ describe("filterPlaces", () => {
 
 		expect(found.startups.map((s) => s.name)).toEqual(["Kitebase"]);
 		expect(found.building).toEqual([]);
+	});
+
+	it("keeps a Hackathon whose Startup or job matches", () => {
+		const all = places({
+			startups: [startup("acme", "Acme", [])],
+			building: [buildingRow("h1", "Zest")],
+		});
+
+		expect(filterPlaces(all, "zes").building).toHaveLength(1);
+		expect(filterPlaces(all, "front").building).toHaveLength(1);
+		expect(filterPlaces(all, "zes").startups).toEqual([]);
+	});
+
+	it("spaces around the query are ignored", () => {
+		const all = places({ startups: [startup("kite", "Kitebase", [])] });
+
+		expect(filterPlaces(all, "  kite ").startups).toHaveLength(1);
 	});
 
 	it("an empty query keeps everything", () => {

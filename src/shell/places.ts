@@ -95,17 +95,23 @@ export function othersWaiting(places: Places, current: CurrentPlace): boolean {
 	);
 }
 
-/** The switcher's trigger: what you're in, its logo, and who you are there. */
+/** The switcher's trigger: what you're in, its logo (named for the Startup, so initials match the menu rows), and who you are there. */
 export function currentPlaceView(
 	places: Places,
 	current: CurrentPlace,
-): { name: string; logoUrl: string | null; role: string } | null {
+): {
+	name: string;
+	logoName: string;
+	logoUrl: string | null;
+	role: string;
+} | null {
 	if (current?.kind === "startup") {
 		const slug = current.slug;
 		const startup = places.startups.find((s) => s.slug === slug);
 		return startup
 			? {
 					name: startup.name,
+					logoName: startup.name,
 					logoUrl: startup.logoUrl,
 					role: startup.role === "founder" ? "Founder" : "Contributor",
 				}
@@ -117,6 +123,7 @@ export function currentPlaceView(
 		return hackathon
 			? {
 					name: roleLabel(hackathon.job.role),
+					logoName: hackathon.startupName,
 					logoUrl: hackathon.startupLogoUrl,
 					role: `Builder · ${hackathon.startupName}`,
 				}

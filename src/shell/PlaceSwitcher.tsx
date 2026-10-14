@@ -6,7 +6,7 @@ import {
 	HomeIcon,
 	PlusIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { PlaceLogo } from "~/components/PlaceLogo";
 import { UnreadDot } from "~/components/UnreadDot";
 import {
@@ -18,6 +18,7 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { roleLabel } from "~/features/hiring/jobChips";
 import {
 	type CurrentPlace,
@@ -40,6 +41,7 @@ export function PlaceSwitcher({
 }) {
 	const places = usePlaces();
 	const [query, setQuery] = useState("");
+	const menu = useRef<HTMLDivElement>(null);
 	const view = places ? currentPlaceView(places, current) : null;
 	const count = places ? places.startups.length + places.building.length : 0;
 	const shown = places ? filterPlaces(places, query) : null;
@@ -55,7 +57,7 @@ export function PlaceSwitcher({
 			<DropdownMenuTrigger className="flex h-9 min-w-0 max-w-64 items-center gap-2 rounded-md px-1.5 text-left outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/60 data-[state=open]:bg-muted">
 				{view ? (
 					<>
-						<PlaceLogo name={view.name} url={view.logoUrl} size="sm" />
+						<PlaceLogo name={view.logoName} url={view.logoUrl} size="sm" />
 						<span className="flex min-w-0 flex-col leading-tight">
 							<span className="truncate text-sm font-medium">{view.name}</span>
 							<span className="hidden truncate text-[11px] text-muted-foreground sm:block">
@@ -63,10 +65,15 @@ export function PlaceSwitcher({
 							</span>
 						</span>
 					</>
-				) : (
+				) : places ? (
 					<>
 						<HomeIcon aria-hidden className="size-4 text-muted-foreground" />
 						<span className="text-sm font-medium">Home</span>
+					</>
+				) : (
+					<>
+						<Skeleton aria-hidden className="size-6 shrink-0" />
+						<Skeleton aria-hidden className="h-4 w-24" />
 					</>
 				)}
 				{places && othersWaiting(places, current) ? <UnreadDot /> : null}
@@ -75,7 +82,7 @@ export function PlaceSwitcher({
 					className="size-3.5 shrink-0 text-muted-foreground"
 				/>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="start" className="w-72">
+			<DropdownMenuContent ref={menu} align="start" className="w-72">
 				{count >= SEARCH_FROM ? (
 					<div className="p-1">
 						<Input
@@ -85,8 +92,21 @@ export function PlaceSwitcher({
 							value={query}
 							className="h-8"
 							onChange={(event) => setQuery(event.target.value)}
-							// Radix typeahead would steal the letters.
-							onKeyDown={(event) => event.stopPropagation()}
+							onKeyDown={(event) => {
+								// Radix typeahead would steal the letters, so keep keys here,
+								// except the two that lead to the rows.
+								event.stopPropagation();
+								const rows = menu.current?.querySelectorAll<HTMLElement>(
+									'[data-place-row][role="menuitem"]',
+								);
+								if (event.key === "ArrowDown" && rows?.length) {
+									event.preventDefault();
+									rows[0].focus();
+								} else if (event.key === "Enter" && rows?.length) {
+									event.preventDefault();
+									rows[0].click();
+								}
+							}}
 						/>
 					</div>
 				) : null}
@@ -101,7 +121,19 @@ export function PlaceSwitcher({
 								asChild
 								className="cursor-pointer gap-2"
 							>
-								<Link to="/s/$slug/board" params={{ slug: startup.slug }}>
+								<Link
+									to="/s/$slug/board"
+									params={{ slug: startup.slug }}
+									data-place-row
+									aria-current={
+										isSamePlace(
+											{ kind: "startup", slug: startup.slug },
+											current,
+										)
+											? "page"
+											: undefined
+									}
+								>
 									<PlaceLogo
 										name={startup.name}
 										url={startup.logoUrl}
@@ -133,7 +165,19 @@ export function PlaceSwitcher({
 								asChild
 								className="cursor-pointer gap-2"
 							>
-								<Link to="/h/$id" params={{ id: hackathon.hackathonId }}>
+								<Link
+									to="/h/$id"
+									params={{ id: hackathon.hackathonId }}
+									data-place-row
+									aria-current={
+										isSamePlace(
+											{ kind: "hackathon", hackathonId: hackathon.hackathonId },
+											current,
+										)
+											? "page"
+											: undefined
+									}
+								>
 									<PlaceLogo
 										name={hackathon.startupName}
 										url={hackathon.startupLogoUrl}
