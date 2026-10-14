@@ -3,6 +3,7 @@ import {
 	Activity,
 	Briefcase,
 	Building2,
+	Settings,
 	SquareKanban,
 	Trophy,
 	Users,
@@ -10,7 +11,8 @@ import {
 import type { ReactNode } from "react";
 import { builderStatusText } from "~/features/hiring/builder/builderStatus";
 import { useHackathon } from "~/features/hiring/public/useHackathon";
-import { tabsFromRoute } from "~/shell/places";
+import { canSeeSettings, tabsFromRoute } from "~/shell/places";
+import { usePlaces } from "~/shell/usePlaces";
 
 export const TAB_CLASS =
 	"relative flex shrink-0 items-center gap-1.5 px-2 py-2 text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:text-foreground aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground [&_svg]:size-4 [&_svg]:shrink-0";
@@ -51,8 +53,24 @@ export function TabRow() {
 }
 
 function StartupRow({ slug }: { readonly slug: string }) {
+	const places = usePlaces();
+
 	return (
-		<TabRowFrame label="Startup">
+		<TabRowFrame
+			label="Startup"
+			end={
+				canSeeSettings(places, slug) ? (
+					<Link
+						to="/s/$slug/settings"
+						params={{ slug }}
+						aria-label="Startup settings"
+						className="flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:bg-muted aria-[current=page]:text-foreground [&_svg]:size-4"
+					>
+						<Settings aria-hidden />
+					</Link>
+				) : null
+			}
+		>
 			<Link to="/s/$slug/board" params={{ slug }} className={TAB_CLASS}>
 				<SquareKanban aria-hidden />
 				Board

@@ -3,8 +3,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { usePublicStartup } from "~/features/startups/public/usePublicStartup";
-import { useUpload } from "~/lib/useUpload";
 import { errorMessage } from "~/lib/errors";
+import { useUpload } from "~/lib/useUpload";
 import type { SettingsDraft } from "./settingsDraft";
 
 /** Saving the Startup's settings and its logo. Failures are toasted and resolve to `false`. */

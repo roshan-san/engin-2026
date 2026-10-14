@@ -1,6 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { describe, expect, it } from "vitest";
 import {
+	canSeeSettings,
 	isSamePlace,
 	othersWaiting,
 	type Places,
@@ -203,5 +204,31 @@ describe("tabsFromRoute", () => {
 				match("/_shell/_authed/home"),
 			]),
 		).toBeNull();
+	});
+});
+
+describe("canSeeSettings", () => {
+	it("the Founder sees the gear", () => {
+		expect(
+			canSeeSettings(
+				places({ startups: [startup("acme", "Acme", false)] }),
+				"acme",
+			),
+		).toBe(true);
+	});
+
+	it("a Contributor doesn't", () => {
+		const contributor = {
+			...startup("acme", "Acme", false),
+			role: "contributor" as const,
+		};
+
+		expect(canSeeSettings(places({ startups: [contributor] }), "acme")).toBe(
+			false,
+		);
+	});
+
+	it("nobody sees it while places load", () => {
+		expect(canSeeSettings(undefined, "acme")).toBe(false);
 	});
 });

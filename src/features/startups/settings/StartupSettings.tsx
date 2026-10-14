@@ -18,7 +18,7 @@ import {
 } from "./settingsDraft";
 import { useStartupSettings } from "./useStartupSettings";
 
-/** The Founder's settings for the Startup, in the Team page's detail panel. One Save sends only what changed; the logo saves on pick. */
+/** The Founder's Startup settings page body. One Save sends only what changed; the logo saves on pick. */
 export function StartupSettings() {
 	const { startup } = useWorkspace();
 	const { logoUrl, save, saveLogo } = useStartupSettings(

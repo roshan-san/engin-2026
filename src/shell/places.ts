@@ -96,3 +96,14 @@ export function tabsFromRoute(matches: readonly RouteMatch[]): TabsKind {
 	}
 	return null;
 }
+
+/** Only the Founder sees a Startup's ⚙. */
+export function canSeeSettings(
+	places: Places | undefined,
+	slug: string,
+): boolean {
+	return (
+		places?.startups.some((s) => s.slug === slug && s.role === "founder") ??
+		false
+	);
+}

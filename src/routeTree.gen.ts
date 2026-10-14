@@ -24,6 +24,7 @@ import { Route as ShellAuthedSSlugRouteRouteImport } from './routes/_shell/_auth
 import { Route as ShellAuthedSSlugIndexRouteImport } from './routes/_shell/_authed/s/$slug/index'
 import { Route as ShellAuthedSSlugActivityRouteImport } from './routes/_shell/_authed/s/$slug/activity'
 import { Route as ShellAuthedSSlugBoardRouteImport } from './routes/_shell/_authed/s/$slug/board'
+import { Route as ShellAuthedSSlugSettingsRouteImport } from './routes/_shell/_authed/s/$slug/settings'
 import { Route as ShellAuthedSSlugTeamRouteImport } from './routes/_shell/_authed/s/$slug/team'
 import { Route as ShellAuthedSSlugHiringIndexRouteImport } from './routes/_shell/_authed/s/$slug/hiring/index'
 import { Route as ShellAuthedSSlugHiringIdRouteImport } from './routes/_shell/_authed/s/$slug/hiring/$id'
@@ -103,6 +104,12 @@ const ShellAuthedSSlugBoardRoute = ShellAuthedSSlugBoardRouteImport.update({
   path: '/board',
   getParentRoute: () => ShellAuthedSSlugRouteRoute,
 } as any)
+const ShellAuthedSSlugSettingsRoute =
+  ShellAuthedSSlugSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => ShellAuthedSSlugRouteRoute,
+  } as any)
 const ShellAuthedSSlugTeamRoute = ShellAuthedSSlugTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -140,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/h/$id': typeof ShellAuthedHIdRoute
   '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
+  '/s/$slug/settings': typeof ShellAuthedSSlugSettingsRoute
   '/s/$slug/team': typeof ShellAuthedSSlugTeamRoute
   '/s/$slug/': typeof ShellAuthedSSlugIndexRoute
   '/s/$slug/hiring/$id': typeof ShellAuthedSSlugHiringIdRoute
@@ -158,6 +166,7 @@ export interface FileRoutesByTo {
   '/h/$id': typeof ShellAuthedHIdRoute
   '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
+  '/s/$slug/settings': typeof ShellAuthedSSlugSettingsRoute
   '/s/$slug/team': typeof ShellAuthedSSlugTeamRoute
   '/s/$slug': typeof ShellAuthedSSlugIndexRoute
   '/s/$slug/hiring/$id': typeof ShellAuthedSSlugHiringIdRoute
@@ -180,6 +189,7 @@ export interface FileRoutesById {
   '/_shell/_authed/h/$id': typeof ShellAuthedHIdRoute
   '/_shell/_authed/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/_shell/_authed/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
+  '/_shell/_authed/s/$slug/settings': typeof ShellAuthedSSlugSettingsRoute
   '/_shell/_authed/s/$slug/team': typeof ShellAuthedSSlugTeamRoute
   '/_shell/_authed/s/$slug/': typeof ShellAuthedSSlugIndexRoute
   '/_shell/_authed/s/$slug/hiring/$id': typeof ShellAuthedSSlugHiringIdRoute
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/h/$id'
     | '/s/$slug/activity'
     | '/s/$slug/board'
+    | '/s/$slug/settings'
     | '/s/$slug/team'
     | '/s/$slug/'
     | '/s/$slug/hiring/$id'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/h/$id'
     | '/s/$slug/activity'
     | '/s/$slug/board'
+    | '/s/$slug/settings'
     | '/s/$slug/team'
     | '/s/$slug'
     | '/s/$slug/hiring/$id'
@@ -240,6 +252,7 @@ export interface FileRouteTypes {
     | '/_shell/_authed/h/$id'
     | '/_shell/_authed/s/$slug/activity'
     | '/_shell/_authed/s/$slug/board'
+    | '/_shell/_authed/s/$slug/settings'
     | '/_shell/_authed/s/$slug/team'
     | '/_shell/_authed/s/$slug/'
     | '/_shell/_authed/s/$slug/hiring/$id'
@@ -359,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedSSlugBoardRouteImport
       parentRoute: typeof ShellAuthedSSlugRouteRoute
     }
+    '/_shell/_authed/s/$slug/settings': {
+      id: '/_shell/_authed/s/$slug/settings'
+      path: '/settings'
+      fullPath: '/s/$slug/settings'
+      preLoaderRoute: typeof ShellAuthedSSlugSettingsRouteImport
+      parentRoute: typeof ShellAuthedSSlugRouteRoute
+    }
     '/_shell/_authed/s/$slug/team': {
       id: '/_shell/_authed/s/$slug/team'
       path: '/team'
@@ -393,6 +413,7 @@ declare module '@tanstack/react-router' {
 interface ShellAuthedSSlugRouteRouteChildren {
   ShellAuthedSSlugActivityRoute: typeof ShellAuthedSSlugActivityRoute
   ShellAuthedSSlugBoardRoute: typeof ShellAuthedSSlugBoardRoute
+  ShellAuthedSSlugSettingsRoute: typeof ShellAuthedSSlugSettingsRoute
   ShellAuthedSSlugTeamRoute: typeof ShellAuthedSSlugTeamRoute
   ShellAuthedSSlugIndexRoute: typeof ShellAuthedSSlugIndexRoute
   ShellAuthedSSlugHiringIdRoute: typeof ShellAuthedSSlugHiringIdRoute
@@ -403,6 +424,7 @@ interface ShellAuthedSSlugRouteRouteChildren {
 const ShellAuthedSSlugRouteRouteChildren: ShellAuthedSSlugRouteRouteChildren = {
   ShellAuthedSSlugActivityRoute: ShellAuthedSSlugActivityRoute,
   ShellAuthedSSlugBoardRoute: ShellAuthedSSlugBoardRoute,
+  ShellAuthedSSlugSettingsRoute: ShellAuthedSSlugSettingsRoute,
   ShellAuthedSSlugTeamRoute: ShellAuthedSSlugTeamRoute,
   ShellAuthedSSlugIndexRoute: ShellAuthedSSlugIndexRoute,
   ShellAuthedSSlugHiringIdRoute: ShellAuthedSSlugHiringIdRoute,
