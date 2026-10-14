@@ -41,6 +41,11 @@
 	--color-warning: var(--warning);
 	--color-warning-foreground: var(--warning-foreground);
 	--color-glow: var(--glow);
+	--color-tier-1: var(--tier-1);
+	--color-tier-2: var(--tier-2);
+	--color-tier-3: var(--tier-3);
+	--color-tier-4: var(--tier-4);
+	--color-tier-5: var(--tier-5);
 }
 
 /* Dark-only by design: :root is the single palette (Zinc), no light variant or toggle. */
@@ -84,6 +89,13 @@
 	--warning-foreground: #1a1203;
 
 	--glow: #0b5c99;
+
+	/* Rating Tiers (convex/shared/tiers.ts): grey, green, blue, violet, amber. Text colours. */
+	--tier-1: #a1a1aa;
+	--tier-2: #3fb87a;
+	--tier-3: #60a5fa;
+	--tier-4: #a78bfa;
+	--tier-5: #f5b83d;
 
 	--chart-1: #60a5fa;
 	--chart-2: #3fb87a;

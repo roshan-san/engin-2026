@@ -64,6 +64,11 @@ const textTokens = [
 	"warning",
 	"success",
 	"destructive",
+	"tier-1",
+	"tier-2",
+	"tier-3",
+	"tier-4",
+	"tier-5",
 ];
 const pairs = [
 	...textTokens.flatMap((fg) => [
