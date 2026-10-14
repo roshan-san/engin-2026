@@ -67,25 +67,12 @@ function stillBelongs(
 	);
 }
 
-/** Where a signed-in visitor lands: the last place they were in, else their first. */
+/** Where a signed-in visitor lands: the last place they were in while they still belong, else Home. */
 export function pickLanding(
 	places: Places,
 	lastPlace: RememberedPlace | null,
 ): string {
-	if (lastPlace && stillBelongs(places, lastPlace.place)) {
-		return lastPlace.path;
-	}
-	const [startup] = places.startups;
-	if (startup) {
-		return `/s/${startup.slug}/board`;
-	}
-	const [building] = places.building;
-	if (building) {
-		return `/h/${building.hackathonId}`;
-	}
-	const [applied] = places.applied;
-	if (applied) {
-		return `/hackathons/${applied.hackathonId}`;
-	}
-	return "/onboarding";
+	return lastPlace && stillBelongs(places, lastPlace.place)
+		? lastPlace.path
+		: "/home";
 }

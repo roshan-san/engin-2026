@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
+import { Route as ShellAuthedHomeRouteImport } from './routes/_shell/_authed/home'
 import { Route as ShellAuthedOnboardingRouteImport } from './routes/_shell/_authed/onboarding'
 import { Route as ShellExploreIndexRouteImport } from './routes/_shell/explore/index'
 import { Route as ShellExploreHackathonsRouteImport } from './routes/_shell/explore/hackathons'
@@ -44,6 +45,11 @@ const ShellRouteRoute = ShellRouteRouteImport.update({
 const ShellAuthedRouteRoute = ShellAuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellAuthedHomeRoute = ShellAuthedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => ShellAuthedRouteRoute,
 } as any)
 const ShellAuthedOnboardingRoute = ShellAuthedOnboardingRouteImport.update({
   id: '/onboarding',
@@ -148,6 +154,7 @@ const ShellAuthedSSlugHiringNewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/home': typeof ShellAuthedHomeRoute
   '/onboarding': typeof ShellAuthedOnboardingRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/explore/startups': typeof ShellExploreStartupsRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/home': typeof ShellAuthedHomeRoute
   '/onboarding': typeof ShellAuthedOnboardingRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/explore/startups': typeof ShellExploreStartupsRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
+  '/_shell/_authed/home': typeof ShellAuthedHomeRoute
   '/_shell/_authed/onboarding': typeof ShellAuthedOnboardingRoute
   '/_shell/explore/hackathons': typeof ShellExploreHackathonsRoute
   '/_shell/explore/startups': typeof ShellExploreStartupsRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/home'
     | '/onboarding'
     | '/explore/hackathons'
     | '/explore/startups'
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/home'
     | '/onboarding'
     | '/explore/hackathons'
     | '/explore/startups'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_shell'
     | '/_shell/_authed'
+    | '/_shell/_authed/home'
     | '/_shell/_authed/onboarding'
     | '/_shell/explore/hackathons'
     | '/_shell/explore/startups'
@@ -309,6 +321,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof ShellAuthedRouteRouteImport
       parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/_authed/home': {
+      id: '/_shell/_authed/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof ShellAuthedHomeRouteImport
+      parentRoute: typeof ShellAuthedRouteRoute
     }
     '/_shell/_authed/onboarding': {
       id: '/_shell/_authed/onboarding'
@@ -487,12 +506,14 @@ const ShellAuthedSSlugRouteRouteWithChildren =
   )
 
 interface ShellAuthedRouteRouteChildren {
+  ShellAuthedHomeRoute: typeof ShellAuthedHomeRoute
   ShellAuthedOnboardingRoute: typeof ShellAuthedOnboardingRoute
   ShellAuthedHIdRouteRoute: typeof ShellAuthedHIdRouteRouteWithChildren
   ShellAuthedSSlugRouteRoute: typeof ShellAuthedSSlugRouteRouteWithChildren
 }
 
 const ShellAuthedRouteRouteChildren: ShellAuthedRouteRouteChildren = {
+  ShellAuthedHomeRoute: ShellAuthedHomeRoute,
   ShellAuthedOnboardingRoute: ShellAuthedOnboardingRoute,
   ShellAuthedHIdRouteRoute: ShellAuthedHIdRouteRouteWithChildren,
   ShellAuthedSSlugRouteRoute: ShellAuthedSSlugRouteRouteWithChildren,

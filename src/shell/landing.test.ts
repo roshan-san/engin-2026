@@ -94,12 +94,17 @@ describe("pickLanding", () => {
 		);
 	});
 
-	it("a last place you left is skipped", () => {
+	it("with no remembered place you land on Home", () => {
+		expect(pickLanding(places({ startups: [startup("acme")] }), null)).toBe(
+			"/home",
+		);
+		expect(pickLanding(places(), null)).toBe("/home");
+	});
+
+	it("a remembered place you've left lands on Home", () => {
 		const all = places({ startups: [startup("acme")] });
 
-		expect(pickLanding(all, inStartup("gone", "/s/gone/board"))).toBe(
-			"/s/acme/board",
-		);
+		expect(pickLanding(all, inStartup("gone", "/s/gone/board"))).toBe("/home");
 	});
 
 	it("the last Hackathon Board wins while you are still building", () => {
@@ -113,37 +118,10 @@ describe("pickLanding", () => {
 		);
 	});
 
-	it("a last Hackathon no longer building is skipped", () => {
+	it("a last Hackathon no longer building lands on Home", () => {
 		const all = places({ startups: [startup("acme")] });
 
-		expect(pickLanding(all, inHackathon(hackathonId))).toBe("/s/acme/board");
-	});
-
-	it("no Startup goes to the Hackathon you build in", () => {
-		const all = places({ building: [building(hackathonId)] });
-
-		expect(pickLanding(all, null)).toBe(`/h/${hackathonId}`);
-	});
-
-	it("only an application goes to its Hackathon page", () => {
-		const all = places({
-			applied: [
-				{
-					hackathonId,
-					job,
-					startupName: "Acme",
-					startupSlug: "acme",
-					startupLogoUrl: null,
-					status: "applied",
-				},
-			],
-		});
-
-		expect(pickLanding(all, null)).toBe(`/hackathons/${hackathonId}`);
-	});
-
-	it("nothing goes to onboarding", () => {
-		expect(pickLanding(places(), null)).toBe("/onboarding");
+		expect(pickLanding(all, inHackathon(hackathonId))).toBe("/home");
 	});
 });
 
