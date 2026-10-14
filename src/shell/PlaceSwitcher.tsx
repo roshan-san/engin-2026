@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ChevronDownIcon, PlusIcon } from "lucide-react";
 import { UnreadDot } from "~/components/UnreadDot";
 import {
@@ -10,13 +10,16 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { roleLabel } from "~/features/hiring/jobChips";
+import { type CurrentPlace, othersWaiting, placeLabel } from "~/shell/places";
 import { usePlaces } from "~/shell/usePlaces";
-import { currentPlace, othersWaiting, placeLabel } from "~/shell/places";
 
 /** The place you're in, and the way to every other: your Startups, the Hackathons you build and applied to. */
-export function PlaceSwitcher() {
+export function PlaceSwitcher({
+	place: current,
+}: {
+	readonly place: CurrentPlace;
+}) {
 	const places = usePlaces();
-	const current = currentPlace(useLocation().pathname);
 	const label = places ? placeLabel(places, current) : "Places";
 
 	return (

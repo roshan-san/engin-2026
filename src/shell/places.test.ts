@@ -1,10 +1,10 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { describe, expect, it } from "vitest";
 import {
-	currentPlace,
 	isSamePlace,
 	othersWaiting,
 	type Places,
+	placeFromRoute,
 	placeLabel,
 } from "./places";
 
@@ -19,28 +19,55 @@ function places(overrides: Partial<Places> = {}): Places {
 	return { startups: [], building: [], applied: [], ...overrides };
 }
 
-describe("currentPlace", () => {
-	it("a workspace path is its Startup", () => {
-		expect(currentPlace("/s/acme/team")).toEqual({
-			kind: "startup",
-			slug: "acme",
-		});
-		expect(currentPlace("/s/acme/hiring/abc")).toEqual({
-			kind: "startup",
-			slug: "acme",
-		});
+function match(routeId: string, params: Record<string, string> = {}) {
+	return { routeId, params };
+}
+
+describe("placeFromRoute", () => {
+	it("a page inside a Startup is that Startup", () => {
+		const matches = [
+			match("__root__"),
+			match("/_shell"),
+			match("/_shell/_authed"),
+			match("/_shell/_authed/s/$slug", { slug: "acme" }),
+			match("/_shell/_authed/s/$slug/hiring/$id", { slug: "acme", id: "x" }),
+		];
+
+		expect(placeFromRoute(matches)).toEqual({ kind: "startup", slug: "acme" });
 	});
 
-	it("a Builder Board path is its Hackathon", () => {
-		expect(currentPlace("/h/x")).toEqual({
+	it("a Builder's Hackathon page is that Hackathon", () => {
+		const matches = [
+			match("__root__"),
+			match("/_shell"),
+			match("/_shell/_authed"),
+			match("/_shell/_authed/h/$id", { id: "x" }),
+		];
+
+		expect(placeFromRoute(matches)).toEqual({
 			kind: "hackathon",
 			hackathonId: "x",
 		});
 	});
 
-	it("the public Startup page is no place", () => {
-		expect(currentPlace("/startups/acme")).toBeNull();
-		expect(currentPlace("/explore/startups")).toBeNull();
+	it("the public Startup page, Explore and a Profile are no place", () => {
+		const shell = [match("__root__"), match("/_shell")];
+
+		expect(
+			placeFromRoute([
+				...shell,
+				match("/_shell/startups/$slug", { slug: "acme" }),
+			]),
+		).toBeNull();
+		expect(
+			placeFromRoute([...shell, match("/_shell/explore/startups")]),
+		).toBeNull();
+		expect(
+			placeFromRoute([
+				...shell,
+				match("/_shell/u/$username", { username: "ana" }),
+			]),
+		).toBeNull();
 	});
 });
 

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { cn } from "~/lib/utils";
 import { GitPullRequest } from "lucide-react";
+import { cn } from "~/lib/utils";
 
 /** The Engin mark (a block E), linking to the landing page, which picks your place. */
 export function EnginLogo({

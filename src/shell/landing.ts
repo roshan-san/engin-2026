@@ -1,43 +1,65 @@
-import { currentPlace, type Places } from "./places";
+import { z } from "zod";
+import type { CurrentPlace, Places } from "./places";
 
 export const LAST_PLACE_KEY = "engin:lastPlace";
 
-/** The remembered last place, or `null` when none or storage is blocked. */
-export function readLastPlace(): string | null {
+/** The last place you were in, and the page in it. */
+export type RememberedPlace = {
+	readonly place: NonNullable<CurrentPlace>;
+	readonly path: string;
+};
+
+const rememberedPlace = z.object({
+	place: z.discriminatedUnion("kind", [
+		z.object({ kind: z.literal("startup"), slug: z.string() }),
+		z.object({ kind: z.literal("hackathon"), hackathonId: z.string() }),
+	]),
+	path: z.string(),
+});
+
+/** The remembered last place, or `null` when none, unreadable, or storage is blocked. */
+export function readLastPlace(): RememberedPlace | null {
 	try {
-		return localStorage.getItem(LAST_PLACE_KEY);
+		const stored = localStorage.getItem(LAST_PLACE_KEY);
+		if (stored === null) {
+			return null;
+		}
+		const parsed = rememberedPlace.safeParse(JSON.parse(stored));
+		return parsed.success ? parsed.data : null;
 	} catch {
 		return null;
 	}
 }
 
 /** Remembers a place; does nothing when storage is blocked. */
-export function writeLastPlace(pathname: string): void {
+export function writeLastPlace(remembered: RememberedPlace): void {
 	try {
-		localStorage.setItem(LAST_PLACE_KEY, pathname);
+		localStorage.setItem(LAST_PLACE_KEY, JSON.stringify(remembered));
 	} catch {
 		// Blocked storage just means no memory.
 	}
 }
 
-/** Whether you still belong to the place a path is in. */
-function stillBelongs(places: Places, pathname: string): boolean {
-	const place = currentPlace(pathname);
-	if (place?.kind === "startup") {
+/** Whether you still belong to a place. */
+function stillBelongs(
+	places: Places,
+	place: RememberedPlace["place"],
+): boolean {
+	if (place.kind === "startup") {
 		return places.startups.some((startup) => startup.slug === place.slug);
 	}
-	if (place?.kind === "hackathon") {
-		return places.building.some(
-			(hackathon) => hackathon.hackathonId === place.hackathonId,
-		);
-	}
-	return false;
+	return places.building.some(
+		(hackathon) => hackathon.hackathonId === place.hackathonId,
+	);
 }
 
 /** Where a signed-in visitor lands: the last place they were in, else their first. */
-export function pickLanding(places: Places, lastPlace: string | null): string {
-	if (lastPlace && stillBelongs(places, lastPlace)) {
-		return lastPlace;
+export function pickLanding(
+	places: Places,
+	lastPlace: RememberedPlace | null,
+): string {
+	if (lastPlace && stillBelongs(places, lastPlace.place)) {
+		return lastPlace.path;
 	}
 	const [startup] = places.startups;
 	if (startup) {

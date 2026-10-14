@@ -1,26 +1,21 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Compass } from "lucide-react";
 import { AccountMenu } from "~/shell/AccountMenu";
-import { InviteTray } from "~/shell/InviteTray";
-import { currentPlace } from "~/shell/places";
-import { PlaceSwitcher } from "~/shell/PlaceSwitcher";
 import { EnginLogo } from "~/shell/EnginLogo";
-import { HackathonCrumb } from "~/shell/HackathonCrumb";
-import { PlaceTabs } from "~/shell/PlaceTabs";
+import { InviteTray } from "~/shell/InviteTray";
+import { PlaceSwitcher } from "~/shell/PlaceSwitcher";
+import { StartupTabs } from "~/shell/StartupTabs";
+import { useCurrentPlace } from "~/shell/useCurrentPlace";
 
-/** The signed-in bar: the logo, where you are, the tabs there, Explore, your Invites and the account menu. */
+/** The signed-in bar: the logo, the place switcher, Explore, your Invites and the account menu; inside a Startup, its tabs below. */
 export function TopBar() {
-	const inStartup = currentPlace(useLocation().pathname)?.kind === "startup";
+	const place = useCurrentPlace();
 
 	return (
 		<header className="border-b border-border bg-background">
 			<div className="flex h-14 items-center gap-2 px-4 md:px-6">
 				<EnginLogo />
-				<PlaceSwitcher />
-				<div className="hidden h-full items-center gap-2 md:flex">
-					<PlaceTabs />
-					<HackathonCrumb />
-				</div>
+				<PlaceSwitcher place={place} />
 				<div className="flex-1" />
 				<Link
 					to="/explore"
@@ -31,14 +26,10 @@ export function TopBar() {
 					<span className="hidden md:inline">Explore</span>
 				</Link>
 				<InviteTray />
+				{/* Your Rating goes here (app-feel issue 06). */}
 				<AccountMenu />
 			</div>
-			{inStartup ? (
-				<div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-t border-border px-4 md:hidden">
-					<PlaceTabs />
-					<HackathonCrumb />
-				</div>
-			) : null}
+			{place?.kind === "startup" ? <StartupTabs slug={place.slug} /> : null}
 		</header>
 	);
 }

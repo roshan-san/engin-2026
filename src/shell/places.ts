@@ -9,15 +9,21 @@ export type CurrentPlace =
 	| { kind: "hackathon"; hackathonId: string }
 	| null;
 
-/** The place a path is in: `/s/acme/*` is Acme, `/h/x` is the Hackathon x. */
-export function currentPlace(pathname: string): CurrentPlace {
-	const startup = pathname.match(/^\/s\/([^/]+)/);
-	if (startup?.[1]) {
-		return { kind: "startup", slug: startup[1] };
-	}
-	const hackathon = pathname.match(/^\/h\/([^/]+)/);
-	if (hackathon?.[1]) {
-		return { kind: "hackathon", hackathonId: hackathon[1] };
+/** The part of a route match that says where you are. */
+export type RouteMatch = {
+	readonly routeId: string;
+	readonly params: Readonly<Record<string, string>>;
+};
+
+/** The place the current route is in: a page under `/s/$slug` is that Startup, `/h/$id` is that Hackathon. */
+export function placeFromRoute(matches: readonly RouteMatch[]): CurrentPlace {
+	for (const { routeId, params } of matches) {
+		if (routeId === "/_shell/_authed/s/$slug" && params.slug) {
+			return { kind: "startup", slug: params.slug };
+		}
+		if (routeId === "/_shell/_authed/h/$id" && params.id) {
+			return { kind: "hackathon", hackathonId: params.id };
+		}
 	}
 	return null;
 }

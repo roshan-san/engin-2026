@@ -21,6 +21,17 @@ function building(id: Id<"hackathons">) {
 	return { hackathonId: id, job, startupName: "Acme", waiting: false };
 }
 
+function inStartup(slug: string, path: string) {
+	return { place: { kind: "startup" as const, slug }, path };
+}
+
+function inHackathon(id: string) {
+	return {
+		place: { kind: "hackathon" as const, hackathonId: id },
+		path: `/h/${id}`,
+	};
+}
+
 function places(overrides: Partial<Places> = {}): Places {
 	return { startups: [], building: [], applied: [], ...overrides };
 }
@@ -29,13 +40,17 @@ describe("pickLanding", () => {
 	it("the last place wins while you still belong", () => {
 		const all = places({ startups: [startup("beta"), startup("acme")] });
 
-		expect(pickLanding(all, "/s/acme/activity")).toBe("/s/acme/activity");
+		expect(pickLanding(all, inStartup("acme", "/s/acme/activity"))).toBe(
+			"/s/acme/activity",
+		);
 	});
 
 	it("a last place you left is skipped", () => {
 		const all = places({ startups: [startup("acme")] });
 
-		expect(pickLanding(all, "/s/gone/board")).toBe("/s/acme/board");
+		expect(pickLanding(all, inStartup("gone", "/s/gone/board"))).toBe(
+			"/s/acme/board",
+		);
 	});
 
 	it("the last Hackathon Board wins while you are still building", () => {
@@ -44,19 +59,15 @@ describe("pickLanding", () => {
 			building: [building(hackathonId)],
 		});
 
-		expect(pickLanding(all, `/h/${hackathonId}`)).toBe(`/h/${hackathonId}`);
+		expect(pickLanding(all, inHackathon(hackathonId))).toBe(
+			`/h/${hackathonId}`,
+		);
 	});
 
 	it("a last Hackathon no longer building is skipped", () => {
 		const all = places({ startups: [startup("acme")] });
 
-		expect(pickLanding(all, `/h/${hackathonId}`)).toBe("/s/acme/board");
-	});
-
-	it("a last path outside any place is skipped", () => {
-		const all = places({ startups: [startup("acme")] });
-
-		expect(pickLanding(all, "/explore/startups")).toBe("/s/acme/board");
+		expect(pickLanding(all, inHackathon(hackathonId))).toBe("/s/acme/board");
 	});
 
 	it("no Startup goes to the Hackathon you build in", () => {
@@ -94,7 +105,9 @@ describe("remembered place with blocked storage", () => {
 		});
 
 		expect(readLastPlace()).toBeNull();
-		expect(() => writeLastPlace("/s/acme/board")).not.toThrow();
+		expect(() =>
+			writeLastPlace(inStartup("acme", "/s/acme/board")),
+		).not.toThrow();
 	});
 
 	it("reads back the place that was written", () => {
@@ -104,8 +117,17 @@ describe("remembered place with blocked storage", () => {
 			setItem: (key: string, value: string) => store.set(key, value),
 		});
 
-		writeLastPlace("/s/acme/board");
+		writeLastPlace(inStartup("acme", "/s/acme/board"));
 
-		expect(readLastPlace()).toBe("/s/acme/board");
+		expect(readLastPlace()).toEqual(inStartup("acme", "/s/acme/board"));
+	});
+
+	it("a stored value that isn't a remembered place reads as nothing", () => {
+		vi.stubGlobal("localStorage", {
+			getItem: () => "/s/acme/board",
+			setItem: () => {},
+		});
+
+		expect(readLastPlace()).toBeNull();
 	});
 });
