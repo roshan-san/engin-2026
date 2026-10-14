@@ -1,25 +1,19 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
-import { PanelHeader } from "~/components/PanelHeader";
+import { DetailPanel } from "~/components/DetailPanel";
+import { PageBar } from "~/components/PageBar";
 import { Button } from "~/components/ui/button";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "~/components/ui/sheet";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useIsMobile } from "~/lib/use-mobile";
+import { useDetailPanel } from "~/components/useDetailPanel";
 import { useWorkspace } from "../board/StartupContext";
 import { ActivityFeed } from "./ActivityFeed";
 import { EntryPanel } from "./EntryPanel";
-import { useActivity } from "./useActivity";
-import { useSignals } from "./useSignals";
 import { RecordPanel } from "./RecordPanel";
 import { RecordSignals } from "./RecordSignals";
 import { findEntry } from "./record";
+import { useActivity } from "./useActivity";
+import { useSignals } from "./useSignals";
 
 const activityRoute = getRouteApi("/_shell/_authed/s/$slug/activity");
 
@@ -30,12 +24,14 @@ export function ActivityPage() {
 	const { data, showEarlier, isLoadingEarlier } = useActivity(startup._id);
 	const { entry: entryId } = activityRoute.useSearch();
 	const navigate = activityRoute.useNavigate();
-	const isMobile = useIsMobile();
 	const open = data ? findEntry(data.cycles, entryId) : null;
 
 	function select(id: string | undefined) {
 		void navigate({ search: (prev) => ({ ...prev, entry: id }) });
 	}
+
+	const panel = useDetailPanel(open !== null, () => select(undefined));
+	const isMobile = panel.isMobile;
 
 	// Escape closes the open entry; on a phone the sheet handles it.
 	useEffect(() => {
@@ -52,23 +48,22 @@ export function ActivityPage() {
 	return (
 		<div className="flex h-full min-h-0">
 			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-				<PanelHeader className="gap-3 md:px-6">
-					<h1 className="text-sm font-medium">Activity</h1>
-					<span className="hidden truncate text-sm text-muted-foreground sm:inline">
-						Every verified Card, week by week
-					</span>
-					<Button
-						asChild
-						variant="ghost"
-						size="sm"
-						className="ml-auto shrink-0 text-muted-foreground"
-					>
-						<Link to="/startups/$slug" params={{ slug: startup.slug }}>
-							How others see this
-							<ArrowUpRight aria-hidden />
-						</Link>
-					</Button>
-				</PanelHeader>
+				<PageBar
+					title={<h1 className="text-sm font-medium">Activity</h1>}
+					actions={
+						<Button
+							asChild
+							variant="ghost"
+							size="sm"
+							className="text-muted-foreground"
+						>
+							<Link to="/startups/$slug" params={{ slug: startup.slug }}>
+								How others see this
+								<ArrowUpRight aria-hidden />
+							</Link>
+						</Button>
+					}
+				/>
 				<div className="min-h-0 flex-1 overflow-y-auto">
 					<div className="flex flex-col gap-10 px-4 py-6 md:px-6">
 						{/* On a phone there's no side panel, so the Record leads the feed. */}
@@ -107,43 +102,24 @@ export function ActivityPage() {
 					</div>
 				</div>
 			</div>
-			<aside className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex">
-				{open && isMobile === false ? (
-					<EntryPanel
-						key={open.entry.id}
-						entry={open.entry}
-						cycle={open.cycle}
-						onBack={() => select(undefined)}
-					/>
-				) : (
-					<RecordPanel signals={signals} />
-				)}
-			</aside>
-			<Sheet
-				open={isMobile === true && open !== null}
-				onOpenChange={(isOpen) => {
-					if (!isOpen) select(undefined);
-				}}
-			>
-				<SheetContent
-					side="bottom"
-					className="h-[85dvh] gap-0"
-					showCloseButton={false}
-				>
-					<SheetHeader className="sr-only">
-						<SheetTitle>What shipped</SheetTitle>
-						<SheetDescription>The Card's proof.</SheetDescription>
-					</SheetHeader>
-					{open && isMobile === true ? (
+			<DetailPanel
+				shows={panel.shows}
+				title="What shipped"
+				description="The Card's proof."
+				onClose={panel.close}
+				item={
+					open ? (
 						<EntryPanel
+							key={open.entry.id}
 							entry={open.entry}
 							cycle={open.cycle}
-							onBack={() => select(undefined)}
-							onClose={() => select(undefined)}
+							onBack={panel.back}
+							onClose={isMobile ? panel.close : undefined}
 						/>
-					) : null}
-				</SheetContent>
-			</Sheet>
+					) : null
+				}
+				fallback={<RecordPanel signals={signals} />}
+			/>
 		</div>
 	);
 }
