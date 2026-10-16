@@ -6,7 +6,8 @@
 	"git": {
 		"deploymentEnabled": {
 			"**": false,
-			"main": true
+			"main": true,
+			"dev": true
 		}
 	},
 	"rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
