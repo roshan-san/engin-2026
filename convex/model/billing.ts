@@ -1,5 +1,5 @@
 import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
 	MAX_OPEN_HACKATHONS,
 	MAX_USER_STARTUPS,
@@ -7,6 +7,7 @@ import {
 } from "../shared/limits";
 import {
 	PLANS,
+	type PlanKey,
 	type PlanView,
 	type PublishBlock,
 	publishBlockFor,
@@ -120,4 +121,93 @@ export async function canPublishHackathon(
 	userId: Id<"users">,
 ): Promise<PublishBlock | null> {
 	return publishBlockFor(await loadPlanView(ctx, userId));
+}
+
+const PRODUCT_ENV: Record<PlanKey, string> = {
+	monthly: "DODO_PRODUCT_MONTHLY",
+	six_months: "DODO_PRODUCT_SIX_MONTHS",
+	yearly: "DODO_PRODUCT_YEARLY",
+};
+
+/** The Dodo product a plan is sold as. Test and live mode have different ids, so they come from env. */
+export function productIdFor(plan: PlanKey): string {
+	const productId = process.env[PRODUCT_ENV[plan]];
+	if (!productId) {
+		throw new Error(`${PRODUCT_ENV[plan]} is not set`);
+	}
+	return productId;
+}
+
+export function planForProduct(productId: string): PlanKey | null {
+	const plans = Object.keys(PRODUCT_ENV) as PlanKey[];
+	return (
+		plans.find((plan) => process.env[PRODUCT_ENV[plan]] === productId) ?? null
+	);
+}
+
+/** One Dodo subscription event, flattened by the webhook. */
+export type SubscriptionEvent = {
+	dodoSubscriptionId: string;
+	dodoCustomerId: string;
+	productId: string;
+	status: Doc<"subscriptions">["status"];
+	periodStart: number;
+	periodEnd: number;
+	/** `metadata.userId`, set by checkout. */
+	userId?: string;
+	/** When Dodo sent the event. */
+	eventAt: number;
+};
+
+/**
+ * Copies a Dodo subscription event in. Bad data is logged and dropped, never
+ * thrown: a throw makes Dodo retry the same event forever.
+ */
+export async function syncSubscription(
+	ctx: MutationCtx,
+	event: SubscriptionEvent,
+): Promise<void> {
+	const plan = planForProduct(event.productId);
+	if (!plan) {
+		console.warn(
+			`Dodo subscription ${event.dodoSubscriptionId}: unknown product ${event.productId}`,
+		);
+		return;
+	}
+	const userId = event.userId
+		? ctx.db.normalizeId("users", event.userId)
+		: null;
+	if (!userId || !(await ctx.db.get(userId))) {
+		console.warn(
+			`Dodo subscription ${event.dodoSubscriptionId}: no engin user in metadata`,
+		);
+		return;
+	}
+
+	const existing = await ctx.db
+		.query("subscriptions")
+		.withIndex("by_dodo_subscription", (q) =>
+			q.eq("dodoSubscriptionId", event.dodoSubscriptionId),
+		)
+		.unique();
+	// Dodo can deliver out of order; an older event must not overwrite a newer one.
+	if (existing && existing.syncedAt > event.eventAt) {
+		return;
+	}
+
+	const fields = {
+		userId,
+		dodoSubscriptionId: event.dodoSubscriptionId,
+		dodoCustomerId: event.dodoCustomerId,
+		plan,
+		status: event.status,
+		periodStart: event.periodStart,
+		periodEnd: event.periodEnd,
+		syncedAt: event.eventAt,
+	};
+	if (existing) {
+		await ctx.db.patch(existing._id, fields);
+	} else {
+		await ctx.db.insert("subscriptions", fields);
+	}
 }

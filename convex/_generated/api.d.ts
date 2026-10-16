@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as billing_subscriptions from "../billing/subscriptions.js";
 import type * as chat_messages from "../chat/messages.js";
 import type * as chat_presence from "../chat/presence.js";
 import type * as chat_threads from "../chat/threads.js";
@@ -21,6 +22,7 @@ import type * as http from "../http.js";
 import type * as model_activity from "../model/activity.js";
 import type * as model_applications from "../model/applications.js";
 import type * as model_auth from "../model/auth.js";
+import type * as model_billing from "../model/billing.js";
 import type * as model_cards from "../model/cards.js";
 import type * as model_contributors from "../model/contributors.js";
 import type * as model_goals from "../model/goals.js";
@@ -69,6 +71,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "billing/subscriptions": typeof billing_subscriptions;
   "chat/messages": typeof chat_messages;
   "chat/presence": typeof chat_presence;
   "chat/threads": typeof chat_threads;
@@ -81,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   "model/activity": typeof model_activity;
   "model/applications": typeof model_applications;
   "model/auth": typeof model_auth;
+  "model/billing": typeof model_billing;
   "model/cards": typeof model_cards;
   "model/contributors": typeof model_contributors;
   "model/goals": typeof model_goals;
