@@ -38,3 +38,6 @@ scripts/.jwks.txt
 /blob-report/
 /playwright/.cache/
 .playwright-cli/
+
+.vercel
+.env*
