@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "../_generated/server";
+import { query } from "../_generated/server";
+import { mutation } from "../functions";
 import { requireUserId } from "../model/auth";
 import { loadGoal, saveGoal } from "../model/goals";
 import { requireFounder, requireTeam } from "../model/teamAccess";

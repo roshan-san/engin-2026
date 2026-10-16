@@ -81,6 +81,27 @@
 			}
 		},
 		{
+			"includes": ["**/convex/**/*", "!**/convex/functions.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["**/_generated/server"],
+										"importNamePattern": "mutation",
+										"message": "Import mutation from convex/functions.ts, which refuses changes while engin is down for maintenance."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
 			"includes": ["**/convex/shared/**/*"],
 			"linter": {
 				"rules": {
