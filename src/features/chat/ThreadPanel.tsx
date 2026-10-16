@@ -5,9 +5,9 @@ import { PanelHeader } from "~/components/PanelHeader";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Composer } from "./Composer";
-import { useMessages } from "./useMessages";
 import { MessageList } from "./MessageList";
 import { PinnedStrip } from "./PinnedStrip";
+import { useMessages } from "./useMessages";
 
 /** One thread: its pinned messages, the messages and the composer. Mounted only while it shows. */
 export function ThreadPanel({

@@ -18,13 +18,13 @@ import { Textarea } from "~/components/ui/textarea";
 import { PlanSection } from "~/features/billing/PlanSection";
 import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
 import { useMe } from "~/shell/useMe";
-import { useUpdateProfile } from "./useUpdateProfile";
 import {
 	type ProfileDraft,
 	type ProfileSource,
 	toProfileArgs,
 	toProfileDraft,
 } from "./profileDraft";
+import { useUpdateProfile } from "./useUpdateProfile";
 
 /** Your profile: username, discipline, bio and links. One Save sends only what changed. */
 export function SettingsSheet({

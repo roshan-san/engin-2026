@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { DAY } from "../testing/test.setup";
-import { shiftWeek, weekOf, weekStart } from "../shared/cycles";
 import {
 	buildParts,
 	countedWeeks,
@@ -11,6 +9,8 @@ import {
 	startupTarget,
 	weekVolume,
 } from "../model/rating";
+import { shiftWeek, weekOf, weekStart } from "../shared/cycles";
+import { DAY } from "../testing/test.setup";
 
 describe("rating math", () => {
 	it("each Card counts fully up to 5 a week, and barely after", () => {

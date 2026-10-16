@@ -2,26 +2,26 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
+	MAX_MESSAGE_IMAGES,
+	MAX_MESSAGE_MENTIONS,
+	TEXT,
+} from "../shared/limits";
+import { mentionToken } from "../shared/mentions";
+import {
 	builders,
 	closeHackathon,
 	endHackathon,
 	startHackathon,
 } from "../testing/applications.setup";
+import { cardOn } from "../testing/cards.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import {
-	MAX_MESSAGE_IMAGES,
-	MAX_MESSAGE_MENTIONS,
-	TEXT,
-} from "../shared/limits";
-import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
 } from "../testing/startups.setup";
-import { cardOn } from "../testing/cards.setup";
-import { mentionToken } from "../shared/mentions";
+import { createTest } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
 
 async function teamThreadId(setup: Setup) {
 	const threads = await setup.founder.as.query(api.chat.threads.list, {

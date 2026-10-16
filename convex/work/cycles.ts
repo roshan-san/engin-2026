@@ -1,9 +1,9 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
+import { loadGoal, saveGoal } from "../model/goals";
 import { requireFounder, requireTeam } from "../model/teamAccess";
 import { cycleNumber, WEEK_MS, weekOf, weekStart } from "../shared/cycles";
-import { loadGoal, saveGoal } from "../model/goals";
 
 export const getCurrent = query({
 	args: { startupId: v.id("startups") },

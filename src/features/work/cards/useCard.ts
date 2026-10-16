@@ -1,8 +1,8 @@
 import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
 import type { BoardScope } from "../board/BoardScope";
-import { useBoardCards } from "../board/useBoard";
 import type { CardView } from "../board/types";
+import { useBoardCards } from "../board/useBoard";
 
 /**
  * One Card: taken from the Board's data when it's on the Board, else fetched

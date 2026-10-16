@@ -2,6 +2,7 @@
   "name": "engin",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
     "front": "vite dev --port 3000",
     "back": "convex dev",
@@ -42,7 +43,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "2.5.15",
     "@edge-runtime/vm": "5.0.0",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "4.3.3",

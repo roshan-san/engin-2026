@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { cardOn } from "../testing/cards.setup";
+import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { advancePast, createTest } from "../testing/test.setup";
 import { signUp } from "../testing/users.setup";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
-import { cardOn } from "../testing/cards.setup";
 
 const INTERVAL = 10_000;
 

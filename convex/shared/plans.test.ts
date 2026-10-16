@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
 	dayLabel,
-	type PlanView,
 	PLANS,
+	type PlanView,
 	publishBlockFor,
 	publishBlockMessage,
 } from "./plans";

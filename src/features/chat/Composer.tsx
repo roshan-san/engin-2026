@@ -1,19 +1,19 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { mentionToken, parseMentions } from "@convex/shared/mentions";
 import { MAX_MESSAGE_IMAGES, TEXT } from "@convex/shared/limits";
+import { mentionToken, parseMentions } from "@convex/shared/mentions";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { useUpload } from "~/lib/useUpload";
-import { pickImages } from "~/lib/images";
 import { isSendKey } from "~/features/work/board/keys";
 import { errorMessage } from "~/lib/errors";
+import { pickImages } from "~/lib/images";
+import { useUpload } from "~/lib/useUpload";
 import { cn } from "~/lib/utils";
-import { useMentionCards } from "./useMentionCards";
 import { MentionPicker } from "./MentionPicker";
+import { useMentionCards } from "./useMentionCards";
 
 /** The most Cards the picker lists at once. */
 const MAX_OPTIONS = 8;

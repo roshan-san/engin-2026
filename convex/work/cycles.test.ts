@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { cycleNumber, shiftWeek, weekOf, weekStart } from "../shared/cycles";
+import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../testing/users.setup";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
-import { cycleNumber, shiftWeek, weekOf, weekStart } from "../shared/cycles";
 
 describe("cycles", () => {
 	it("weeks run Monday to Sunday in IST", () => {

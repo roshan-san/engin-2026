@@ -2,9 +2,9 @@ import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
-import { toPublicUser } from "../model/users";
-import { requireTeam } from "../model/teamAccess";
 import { loadWorkingOn, parseHeartbeat, presence } from "../model/presence";
+import { requireTeam } from "../model/teamAccess";
+import { toPublicUser } from "../model/users";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

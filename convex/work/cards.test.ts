@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { MAX_BOARD_CARDS } from "../shared/limits";
-import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { cardOn, SHIPPED } from "../testing/cards.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
 } from "../testing/startups.setup";
-import { cardOn, SHIPPED } from "../testing/cards.setup";
+import { createTest } from "../testing/test.setup";
+import { signUp } from "../testing/users.setup";
 
 async function boardOf(setup: Setup, who = setup.founder) {
 	return await who.as.query(api.work.cards.listBoard, {

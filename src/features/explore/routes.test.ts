@@ -4,10 +4,10 @@ import {
 	isRedirect,
 } from "@tanstack/react-router";
 import { describe, expect, it } from "vitest";
-import { routeTree } from "~/routeTree.gen";
-import { Route as ExploreRoute } from "~/routes/_shell/explore/index";
 import { Route as HackathonsRoute } from "~/routes/_shell/explore/hackathons";
+import { Route as ExploreRoute } from "~/routes/_shell/explore/index";
 import { Route as StartupsRoute } from "~/routes/_shell/explore/startups";
+import { routeTree } from "~/routeTree.gen";
 import { ExploreHackathons } from "./ExploreHackathons";
 import { ExploreStartups } from "./ExploreStartups";
 import { parseHackathonSearch, parseStartupSearch } from "./exploreSearch";

@@ -2,13 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { MAX_APPLICATIONS } from "../shared/limits";
-import { createTest } from "../testing/test.setup";
-import {
-	addContributor,
-	type Setup,
-	setUpStartup,
-} from "../testing/startups.setup";
-import { SHIPPED } from "../testing/cards.setup";
 import {
 	type Applicant,
 	applicant,
@@ -17,7 +10,14 @@ import {
 	endHackathon,
 	startHackathon,
 } from "../testing/applications.setup";
+import { SHIPPED } from "../testing/cards.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
+import {
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../testing/startups.setup";
+import { createTest } from "../testing/test.setup";
 
 async function boardOf(hackathonId: Id<"hackathons">, builder: Applicant) {
 	return await builder.as.query(api.work.cards.listBuilderBoard, {

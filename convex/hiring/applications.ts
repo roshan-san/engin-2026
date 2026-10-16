@@ -1,17 +1,5 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
-import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../shared/limits";
-import { limitText, requireLimitedText } from "../model/text";
-import {
-	isProvisional,
-	loadProfileRecord,
-	toPublicProfile,
-	toPublicUser,
-} from "../model/users";
-import { decision } from "../shared/validators";
-import { getTeamRole } from "../model/teamAccess";
-import { ensureHireInvite } from "../model/invites";
 import { appendActivity } from "../model/activity";
 import {
 	ensurePrivateThread,
@@ -25,7 +13,19 @@ import {
 	requireRunning,
 	toFounderApplicationView,
 } from "../model/applications";
+import { requireUserId } from "../model/auth";
 import { finishIfDecided, requireHackathonFounder } from "../model/hackathons";
+import { ensureHireInvite } from "../model/invites";
+import { getTeamRole } from "../model/teamAccess";
+import { limitText, requireLimitedText } from "../model/text";
+import {
+	isProvisional,
+	loadProfileRecord,
+	toPublicProfile,
+	toPublicUser,
+} from "../model/users";
+import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../shared/limits";
+import { decision } from "../shared/validators";
 
 /** Everyone who applied, for the Founder. Never includes email. */
 export const listForHackathon = query({

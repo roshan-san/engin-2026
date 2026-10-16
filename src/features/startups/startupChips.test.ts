@@ -1,9 +1,9 @@
-import { describe, expect, test } from "vitest";
 import {
 	startupCategory,
 	startupCity,
 	startupStage,
 } from "@convex/shared/validators";
+import { describe, expect, test } from "vitest";
 import { CITIES, KINDS, STAGES } from "./startupChips";
 
 function literalsOf(validator: {

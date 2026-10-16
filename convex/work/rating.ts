@@ -1,9 +1,9 @@
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalMutation } from "../_generated/server";
-import { RATING_PAGE } from "../shared/limits";
-import { WEEK_MS, weekOf } from "../shared/cycles";
 import { rateStartup, rateUser } from "../model/rating";
+import { WEEK_MS, weekOf } from "../shared/cycles";
+import { RATING_PAGE } from "../shared/limits";
 
 const pageArgs = {
 	week: v.optional(v.string()),
