@@ -94,7 +94,7 @@ export async function buildThreadViews(
 		views.push({
 			_id: thread._id,
 			kind: thread.kind,
-			builder: await loadPublicUser(ctx, thread.builderId),
+			participant: await loadPublicUser(ctx, thread.participantId),
 			lastMessageAt: thread.lastMessageAt ?? null,
 			unread: isThreadUnread(thread, read),
 		});

@@ -38,10 +38,10 @@ export function StartupExploreRow({
 			<Link
 				to="/startups/$slug"
 				params={{ slug: startup.slug }}
-				className="flex flex-col gap-3 px-2 py-4 outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60 sm:flex-row sm:items-center sm:gap-6"
+				className="flex flex-col gap-3 px-2 py-4 transition-colors hover:bg-accent sm:flex-row focus-ring sm:items-center sm:gap-6"
 			>
 				<div className="flex min-w-0 flex-1 items-center gap-3">
-					<PlaceLogo name={startup.name} url={startup.logoUrl} size="lg" />
+					<PlaceLogo name={startup.name} url={startup.logoUrl} size={40} />
 					<div className="flex min-w-0 flex-col">
 						<div className="flex min-w-0 items-center gap-2">
 							<span className="truncate font-medium">{startup.name}</span>

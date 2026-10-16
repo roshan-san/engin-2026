@@ -28,9 +28,9 @@ export function RatingBadge({
 		<div className="flex items-center gap-2.5">
 			<span
 				className={cn(
-					"font-semibold tracking-tight tabular-nums",
+					"font-semibold tabular-nums",
 					tierText(rating),
-					size === "lg" ? "text-4xl" : "text-xl",
+					size === "lg" ? "text-3xl" : "text-lg",
 				)}
 			>
 				{rating}

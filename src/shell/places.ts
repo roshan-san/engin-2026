@@ -1,4 +1,5 @@
 import type { api } from "@convex/_generated/api";
+import { type HackathonPhase, phaseOf } from "@convex/shared/hackathonPhase";
 import type { WaitingReason } from "@convex/shared/places";
 import type { FunctionReturnType } from "convex/server";
 import { roleLabel } from "~/features/hiring/jobChips";
@@ -63,12 +64,12 @@ export function reasonLine(reason: WaitingReason): string {
 			return `${plural(reason.count, "Card", "Cards")} to verify`;
 		case "new_applicants":
 			return `${plural(reason.count, "new applicant", "new applicants")} on ${roleLabel(reason.role)}`;
-		case "builder_cards_to_review":
-			return `${plural(reason.count, "Builder Card", "Builder Cards")} to review on ${roleLabel(reason.role)}`;
+		case "participant_cards_to_review":
+			return `${plural(reason.count, "Participant Card", "Participant Cards")} to review on ${roleLabel(reason.role)}`;
 		case "hackathon_unread":
 			return `Unread messages on ${roleLabel(reason.role)}`;
-		case "builders_to_decide":
-			return `${plural(reason.count, "Builder", "Builders")} to decide on ${roleLabel(reason.role)}`;
+		case "participants_to_decide":
+			return `${plural(reason.count, "Participant", "Participants")} to decide on ${roleLabel(reason.role)}`;
 		case "messages_unread":
 			return "Unread messages";
 		case "promise_pending":
@@ -84,7 +85,7 @@ export function othersWaiting(places: Places, current: CurrentPlace): boolean {
 				isWaiting(startup) &&
 				!isSamePlace({ kind: "startup", slug: startup.slug }, current),
 		) ||
-		places.building.some(
+		places.hackathons.some(
 			(hackathon) =>
 				isWaiting(hackathon) &&
 				!isSamePlace(
@@ -119,17 +120,53 @@ export function currentPlaceView(
 	}
 	if (current?.kind === "hackathon") {
 		const id = current.hackathonId;
-		const hackathon = places.building.find((h) => h.hackathonId === id);
+		const hackathon = places.hackathons.find((h) => h.hackathonId === id);
 		return hackathon
 			? {
 					name: roleLabel(hackathon.job.role),
 					logoName: hackathon.startupName,
 					logoUrl: hackathon.startupLogoUrl,
-					role: `Builder · ${hackathon.startupName}`,
+					role: `Participant · ${hackathon.startupName}`,
 				}
 			: null;
 	}
 	return null;
+}
+
+/** A switcher row's second line: what is waiting on you there, or else who you are there. */
+export function placeHint(
+	waiting: readonly WaitingReason[],
+	otherwise: string,
+): string {
+	const [first, ...rest] = waiting;
+	if (!first) {
+		return otherwise;
+	}
+	return rest.length
+		? `${reasonLine(first)} · +${rest.length} more`
+		: reasonLine(first);
+}
+
+/** Where a Participant's Hackathon is, in a word, for the place switcher. */
+export function switcherPhaseText(
+	hackathon: {
+		readonly status: HackathonPhase;
+		readonly endsAt: number;
+		readonly decision: "hired" | "not_this_time" | null;
+	},
+	now: number,
+): string {
+	switch (phaseOf(hackathon, now)) {
+		case "draft":
+		case "open":
+			return "Starts soon";
+		case "live":
+			return "Live";
+		case "deciding":
+			return "Founder deciding";
+		case "done":
+			return hackathon.decision === "hired" ? "Hired" : "Finished";
+	}
 }
 
 /** Places whose name matches the search; blank keeps all. */
@@ -141,7 +178,7 @@ export function filterPlaces(places: Places, query: string): Places {
 	return {
 		...places,
 		startups: places.startups.filter((s) => s.name.toLowerCase().includes(q)),
-		building: places.building.filter((h) =>
+		hackathons: places.hackathons.filter((h) =>
 			`${roleLabel(h.job.role)} ${h.startupName}`.toLowerCase().includes(q),
 		),
 	};
@@ -150,18 +187,18 @@ export function filterPlaces(places: Places, query: string): Places {
 /** Which tab row the shell shows under the top bar. */
 export type TabsKind =
 	| { kind: "startup"; slug: string }
-	| { kind: "builder"; hackathonId: string }
+	| { kind: "participant"; hackathonId: string }
 	| { kind: "explore" }
 	| null;
 
-/** A Startup's tabs inside it, the Builder's tabs in their Hackathon, Explore's on Explore; nothing elsewhere. */
+/** A Startup's tabs inside it, the Participant's tabs in their Hackathon, Explore's on Explore; nothing elsewhere. */
 export function tabsFromRoute(matches: readonly RouteMatch[]): TabsKind {
 	const place = placeFromRoute(matches);
 	if (place?.kind === "startup") {
 		return place;
 	}
 	if (place?.kind === "hackathon") {
-		return { kind: "builder", hackathonId: place.hackathonId };
+		return { kind: "participant", hackathonId: place.hackathonId };
 	}
 	if (matches.some(({ routeId }) => routeId.startsWith("/_shell/explore/"))) {
 		return { kind: "explore" };
@@ -169,7 +206,7 @@ export function tabsFromRoute(matches: readonly RouteMatch[]): TabsKind {
 	return null;
 }
 
-/** Signed out, only Explore has a tab row: the Startup and Builder rows read the signed-in person's places. */
+/** Signed out, only Explore has a tab row: the Startup and Participant rows read the signed-in person's places. */
 export function tabsForSignedOut(tabs: TabsKind): TabsKind {
 	return tabs?.kind === "explore" ? tabs : null;
 }

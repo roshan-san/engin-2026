@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 
-/** Everyone who applied, Builders first, for the Founder. */
+/** Everyone who applied, Participants first, for the Founder. */
 export function useApplicants(hackathonId: Id<"hackathons">) {
 	return useQuery(api.hiring.applications.listForHackathon, { hackathonId });
 }

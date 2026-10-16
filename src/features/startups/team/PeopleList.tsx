@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Row, RowList } from "~/components/RowList";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -12,12 +12,11 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
-import { initials } from "~/lib/initials";
 import type { TeamPeople, TeamPerson } from "./useTeamPeople";
 
 function displayName(person: TeamPerson) {
@@ -45,8 +44,7 @@ export function PeopleList({
 	}
 
 	return (
-		<section className="flex flex-col gap-1">
-			<SectionLabel>People</SectionLabel>
+		<Section label="People">
 			<RowList>
 				{people.founder ? (
 					<PersonRow person={people.founder} position="Founder" />
@@ -64,7 +62,7 @@ export function PeopleList({
 					/>
 				))}
 			</RowList>
-		</section>
+		</Section>
 	);
 }
 
@@ -79,14 +77,7 @@ function PersonRow({
 }) {
 	return (
 		<Row
-			leading={
-				<Avatar className="size-9">
-					{person.image ? <AvatarImage src={person.image} alt="" /> : null}
-					<AvatarFallback className="text-xs">
-						{initials(person.name, person.username)}
-					</AvatarFallback>
-				</Avatar>
-			}
+			leading={<PersonAvatar person={person} size={32} />}
 			title={
 				person.username ? (
 					<Link

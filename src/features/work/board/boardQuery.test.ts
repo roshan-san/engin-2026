@@ -10,10 +10,10 @@ const startupScope: BoardScope = {
 	isFounder: true,
 };
 
-const builderScope: BoardScope = {
-	kind: "builder",
+const participantScope: BoardScope = {
+	kind: "participant",
 	hackathonId: "h1" as Id<"hackathons">,
-	builderId: "u2" as Id<"users">,
+	participantId: "u2" as Id<"users">,
 	userId: "u1" as Id<"users">,
 	isFounder: true,
 	isClosed: false,
@@ -27,10 +27,10 @@ describe("boardQuery", () => {
 		});
 	});
 
-	it("a Builder scope reads that Builder's Cards", () => {
-		expect(boardQuery(builderScope)).toEqual({
-			kind: "builder",
-			args: { hackathonId: "h1", builderId: "u2" },
+	it("a Participant scope reads that Participant's Cards", () => {
+		expect(boardQuery(participantScope)).toEqual({
+			kind: "participant",
+			args: { hackathonId: "h1", participantId: "u2" },
 		});
 	});
 });

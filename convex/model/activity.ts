@@ -55,7 +55,7 @@ export type EntryView = {
 		imageUrls: string[];
 		verifier: PublicUser | null;
 	} | null;
-	/** hackathon_finished and builder_hired only; null when the Hackathon is gone. */
+	/** hackathon_finished and participant_hired only; null when the Hackathon is gone. */
 	job: { role: JobRole } | null;
 };
 
@@ -70,7 +70,7 @@ export type CycleView = {
 };
 
 /** Milestones are all the public sees of a Cycle, besides its count. */
-const MILESTONES: ActivityKind[] = ["hackathon_finished", "builder_hired"];
+const MILESTONES: ActivityKind[] = ["hackathon_finished", "participant_hired"];
 
 async function loadCard(ctx: QueryCtx, row: Doc<"activity">) {
 	const card = row.cardId ? await ctx.db.get(row.cardId) : null;

@@ -1,5 +1,5 @@
 import { Row, RowList } from "~/components/RowList";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { dayLabel } from "~/features/hiring/hackathonDates";
@@ -16,8 +16,7 @@ export function PendingInvites({
 	if (!invites || invites.length === 0) return null;
 
 	return (
-		<section className="flex flex-col gap-1">
-			<SectionLabel>Invites</SectionLabel>
+		<Section label="Invites">
 			<RowList>
 				{invites.map((invite) => (
 					<Row
@@ -42,6 +41,6 @@ export function PendingInvites({
 					/>
 				))}
 			</RowList>
-		</section>
+		</Section>
 	);
 }

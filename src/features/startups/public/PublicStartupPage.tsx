@@ -4,7 +4,8 @@ import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Page } from "~/components/Page";
 import { PlaceLogo } from "~/components/PlaceLogo";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
+import { TILE, TILE_LINK } from "~/components/tile";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -70,13 +71,15 @@ export function PublicStartupPage() {
 			<section className="border-b border-border bg-[radial-gradient(circle_at_top_right,var(--glow),transparent_60%)]">
 				<div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10 md:px-6 md:py-14">
 					<div className="flex items-start gap-4">
-						<PlaceLogo name={startup.name} url={startup.logo} size="xl" />
+						<PlaceLogo name={startup.name} url={startup.logo} size={64} />
 						<div className="flex min-w-0 flex-1 flex-col gap-2">
-							<h1 className="text-3xl font-semibold tracking-tight break-words">
+							<h1 className="text-3xl font-semibold break-words">
 								{startup.name}
 							</h1>
 							{startup.oneLiner ? (
-								<p className="text-muted-foreground">{startup.oneLiner}</p>
+								<p className="text-lg text-muted-foreground">
+									{startup.oneLiner}
+								</p>
 							) : null}
 							<div className="flex flex-wrap items-center gap-2">
 								{chips.map((chip) => (
@@ -128,50 +131,41 @@ export function PublicStartupPage() {
 				)}
 
 				{startup.openHackathons.length > 0 ? (
-					<section className="flex flex-col gap-3">
-						<SectionLabel>Hiring now</SectionLabel>
+					<Section label="Hiring now">
 						<div className="grid gap-3 sm:grid-cols-2">
 							{startup.openHackathons.map((h) => (
 								<Link
 									key={h.hackathonId}
 									to="/hackathons/$id"
 									params={{ id: h.hackathonId }}
-									className="flex flex-col gap-1 rounded-xl border border-border bg-card p-4 outline-none transition-colors hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring/60"
+									className={cn(TILE_LINK, "flex flex-col gap-1")}
 								>
 									<span className="font-medium">{jobLine(h.job)}</span>
 									<span className="text-sm text-muted-foreground">
 										{h.weeks} {h.weeks === 1 ? "week" : "weeks"} · starts{" "}
 										{dayLabel(h.startsAt)}
 									</span>
-									{h.buildersGet ? (
+									{h.participantsGet ? (
 										<span className="text-sm">
-											Builders get {h.buildersGet}
+											Participants get {h.participantsGet}
 										</span>
 									) : null}
 								</Link>
 							))}
 						</div>
-					</section>
+					</Section>
 				) : null}
 
 				{hiring ? (
-					<section className="flex flex-col gap-3">
-						<SectionLabel>Hiring record</SectionLabel>
+					<Section label="Hiring record">
 						<p className="text-sm">{hiring}</p>
-					</section>
+					</Section>
 				) : null}
 
-				<section className="flex flex-col gap-4">
-					<div className="flex items-baseline gap-3 border-b border-border pb-2">
-						<h2 className="text-xs font-semibold text-muted-foreground">
-							Cycles
-						</h2>
-						{activity?.full ? (
-							<span className="text-xs text-muted-foreground">
-								Investor Pro view
-							</span>
-						) : null}
-					</div>
+				<Section
+					label="Cycles"
+					aside={activity?.full ? "Investor Pro view" : null}
+				>
 					{activity ? (
 						<ActivityFeed
 							cycles={activity.cycles}
@@ -183,10 +177,10 @@ export function PublicStartupPage() {
 					) : (
 						<Skeleton className="h-40 w-full" />
 					)}
-				</section>
+				</Section>
 
 				{!isAuthenticated ? (
-					<section className="flex flex-col items-start gap-3 rounded-xl border border-border bg-card p-6">
+					<section className={cn(TILE, "flex flex-col items-start gap-3 p-6")}>
 						<p className="font-medium">
 							Want to build with startups like {startup.name}?
 						</p>

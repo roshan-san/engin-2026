@@ -111,7 +111,7 @@ export function OnboardingFlow() {
 								aria-label={STEP_LABELS[step]}
 								disabled={isPending}
 								onClick={() => dispatch({ type: "goto", step })}
-								className="group rounded-full p-1.5 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-hidden"
+								className="group rounded-full p-1.5 focus-ring focus-visible:outline-hidden"
 							>
 								<span className="block size-2 rounded-full bg-foreground/50 transition-colors group-hover:bg-foreground" />
 							</button>

@@ -10,7 +10,7 @@ import {
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../testing/users.setup";
 
-/** Acme with a goal, one verified Card, a joined Contributor and a hired Builder. */
+/** Acme with a goal, one verified Card, a joined Contributor and a hired Participant. */
 async function busyStartup(): Promise<Setup> {
 	const setup = await setUpStartup(createTest());
 	await setup.founder.as.mutation(api.work.cycles.setGoal, {
@@ -46,8 +46,8 @@ describe("visibility", () => {
 		expect(cycles.reduce((sum, cycle) => sum + cycle.shippedCount, 0)).toBe(1);
 		const entries = cycles.flatMap((cycle) => cycle.entries);
 		expect(entries.map((entry) => entry.kind).sort()).toEqual([
-			"builder_hired",
 			"hackathon_finished",
+			"participant_hired",
 		]);
 		for (const entry of entries) {
 			expect(entry).toMatchObject({ line: null, card: null });

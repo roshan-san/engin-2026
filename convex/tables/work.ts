@@ -6,7 +6,7 @@ import { activityKind, cardStatus, shipped } from "../shared/validators";
 export const workTables = {
 	cards: defineTable({
 		startupId: v.id("startups"),
-		/** Set on a Hackathon Card, which lives on a Builder's board. */
+		/** Set on a Hackathon Card, which lives on a Participant's board. */
 		hackathonId: v.optional(v.id("hackathons")),
 		ownerId: v.optional(v.id("users")),
 		title: v.string(),

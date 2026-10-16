@@ -1,4 +1,5 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
+import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -6,11 +7,11 @@ import { DetailPanel } from "~/components/DetailPanel";
 import { PanelHeader } from "~/components/PanelHeader";
 import { Segmented } from "~/components/Segmented";
 import { UnreadDot } from "~/components/UnreadDot";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useDetailPanel } from "~/components/useDetailPanel";
 import { ThreadPanel } from "~/features/chat/ThreadPanel";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
 import { tierText } from "~/features/work/activity/tierText";
 import { Board } from "~/features/work/board/Board";
@@ -21,7 +22,6 @@ import {
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
-import { initials } from "~/lib/initials";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";
@@ -34,8 +34,8 @@ const PANES = [
 	{ value: "decide", label: "Decide" },
 ] as const;
 
-/** One Builder: their Board, your private thread with them, and the decision. */
-export function BuilderView({
+/** One Participant: their Board, your private thread with them, and the decision. */
+export function ParticipantView({
 	hackathon,
 	row,
 	threadId,
@@ -50,24 +50,24 @@ export function BuilderView({
 }) {
 	// Once it's over, deciding is the job; until then, talking is.
 	const [pane, setPane] = useState<"thread" | "decide">(
-		hackathon.status === "deciding" ? "decide" : "thread",
+		phaseOf(hackathon, Date.now()) === "deciding" ? "decide" : "thread",
 	);
 	const [shipping, setShipping] = useState<CardView | null>(null);
 	const cardId = route.useSearch({ select: (search) => search.card });
 	const navigate = route.useNavigate();
-	const builderId = row.user._id;
+	const participantId = row.user._id;
 	const isClosed = hackathon.status === "done";
 
 	const scope = useMemo<BoardScope>(
 		() => ({
-			kind: "builder",
+			kind: "participant",
 			hackathonId: hackathon._id,
-			builderId,
+			participantId,
 			userId,
 			isFounder: true,
 			isClosed,
 		}),
-		[hackathon._id, builderId, userId, isClosed],
+		[hackathon._id, participantId, userId, isClosed],
 	);
 
 	function closeCard() {
@@ -116,7 +116,7 @@ export function BuilderView({
 			<div className="flex min-h-0 min-w-0 flex-1">
 				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
 					<PanelHeader className="gap-3 md:px-6">
-						<BuilderHeader row={row} hackathon={hackathon} />
+						<ParticipantHeader row={row} hackathon={hackathon} />
 						<Button
 							variant="ghost"
 							size="sm"
@@ -138,7 +138,7 @@ export function BuilderView({
 				</div>
 				<DetailPanel
 					shows={detail.shows}
-					title={row.user.name ?? "Builder"}
+					title={row.user.name ?? "Participant"}
 					description="Thread, Decide and Cards."
 					onClose={detail.close}
 					item={card}
@@ -153,7 +153,7 @@ export function BuilderView({
 }
 
 /** Who this Board belongs to: their Rating, how far they've got, and ★. */
-function BuilderHeader({
+function ParticipantHeader({
 	row,
 	hackathon,
 }: {
@@ -166,12 +166,7 @@ function BuilderHeader({
 
 	return (
 		<div className="flex min-w-0 items-center gap-3">
-			<Avatar className="size-6">
-				{user.image ? <AvatarImage src={user.image} alt="" /> : null}
-				<AvatarFallback className="text-[10px]">
-					{initials(user.name, user.username)}
-				</AvatarFallback>
-			</Avatar>
+			<PersonAvatar person={user} size={24} />
 			<h2 className="truncate text-sm font-medium">
 				<PersonName person={user} />
 			</h2>

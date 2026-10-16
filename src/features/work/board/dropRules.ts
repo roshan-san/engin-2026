@@ -43,7 +43,7 @@ export function dropRefusal(
 	if (card.status === to || card.status === "done") return null;
 	if (dropAction(card, to, viewer) !== null) return null;
 	if (to === "done") return "Only Verify moves a Card to Done";
-	if (to === "review") return "Only the owner can submit this Card";
-	if (card.status === "review") return "Only the Founder can send it back";
+	if (to === "review") return "Only the Card's owner can submit it";
+	if (card.status === "review") return "Only the Founder can send a Card back";
 	return null;
 }

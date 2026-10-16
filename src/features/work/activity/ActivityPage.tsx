@@ -108,41 +108,39 @@ export function ActivityPage() {
 				/>
 			}
 		>
-			<div className="flex flex-col gap-10">
-				{/* On a phone there's no side panel, so the Record leads the feed. */}
-				<div className="md:hidden">
-					{signals ? <RecordSignals signals={signals} /> : null}
-				</div>
-				<section className="flex flex-col gap-4">
-					<h2 className="sr-only">Cycles</h2>
-					{data ? (
-						<ActivityFeed
-							cycles={data.cycles}
-							hasMore={data.hasMore}
-							onShowEarlier={showEarlier}
-							isLoadingEarlier={isLoadingEarlier}
-							mode="full"
-							selectedId={open?.entry.id}
-							onSelect={(id) => select(id === entryId ? undefined : id)}
-							emptyHint={
-								<>
-									Cards land here when they're verified on the{" "}
-									<Link
-										to="/s/$slug/board"
-										params={{ slug: startup.slug }}
-										className="text-foreground underline underline-offset-4 hover:text-link"
-									>
-										Board
-									</Link>
-									.
-								</>
-							}
-						/>
-					) : (
-						<FeedSkeleton />
-					)}
-				</section>
+			{/* On a phone there's no side panel, so the Record leads the feed. */}
+			<div className="md:hidden">
+				{signals ? <RecordSignals signals={signals} /> : null}
 			</div>
+			<section className="flex flex-col gap-4">
+				<h2 className="sr-only">Cycles</h2>
+				{data ? (
+					<ActivityFeed
+						cycles={data.cycles}
+						hasMore={data.hasMore}
+						onShowEarlier={showEarlier}
+						isLoadingEarlier={isLoadingEarlier}
+						mode="full"
+						selectedId={open?.entry.id}
+						onSelect={(id) => select(id === entryId ? undefined : id)}
+						emptyHint={
+							<>
+								Cards land here when they're verified on the{" "}
+								<Link
+									to="/s/$slug/board"
+									params={{ slug: startup.slug }}
+									className="text-foreground underline underline-offset-4 hover:text-link"
+								>
+									Board
+								</Link>
+								.
+							</>
+						}
+					/>
+				) : (
+					<FeedSkeleton />
+				)}
+			</section>
 		</AppPage>
 	);
 }

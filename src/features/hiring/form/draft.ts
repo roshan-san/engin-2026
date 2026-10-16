@@ -2,7 +2,7 @@ import { MIN_HACKATHON_CARDS } from "@convex/shared/limits";
 import type { Job, JobMode, JobPay, JobRole } from "../jobChips";
 import { startOptions } from "./startOptions";
 
-export const BUILDERS_GET = [
+export const PARTICIPANTS_GET = [
 	"Nothing",
 	"₹1,000 per finalist",
 	"₹3,000 per finalist",
@@ -15,7 +15,7 @@ export type HackathonDraft = {
 	problem: string;
 	weeks: 1 | 2;
 	startsAt: number | null;
-	buildersGet: { choice: string; custom: string };
+	participantsGet: { choice: string; custom: string };
 	/** `key` only keeps form rows apart; it isn't saved. */
 	cards: { key: string; title: string; notes: string }[];
 };
@@ -30,13 +30,13 @@ export function emptyDraft(now: number): HackathonDraft {
 		problem: "",
 		weeks: 1,
 		startsAt: startOptions(now)[0].startsAt,
-		buildersGet: { choice: "Nothing", custom: "" },
+		participantsGet: { choice: "Nothing", custom: "" },
 		cards: [],
 	};
 }
 
-/** What's stored for a "What Builders get" pick: nothing, a chip's label, or the custom line. */
-export function toBuildersGet(
+/** What's stored for a "What Participants get" pick: nothing, a chip's label, or the custom line. */
+export function toParticipantsGet(
 	choice: string,
 	custom: string,
 ): string | undefined {
@@ -45,12 +45,12 @@ export function toBuildersGet(
 	return choice;
 }
 
-export function fromBuildersGet(value: string | null): {
+export function fromParticipantsGet(value: string | null): {
 	choice: string;
 	custom: string;
 } {
 	if (!value) return { choice: "Nothing", custom: "" };
-	return (BUILDERS_GET as readonly string[]).includes(value)
+	return (PARTICIPANTS_GET as readonly string[]).includes(value)
 		? { choice: value, custom: "" }
 		: { choice: "Custom", custom: value };
 }
@@ -88,9 +88,9 @@ export function toDraftArgs(draft: HackathonDraft) {
 		problem: draft.problem.trim(),
 		weeks: draft.weeks,
 		startsAt: draft.startsAt,
-		buildersGet: toBuildersGet(
-			draft.buildersGet.choice,
-			draft.buildersGet.custom,
+		participantsGet: toParticipantsGet(
+			draft.participantsGet.choice,
+			draft.participantsGet.custom,
 		),
 		cards: draft.cards.map((card) => ({
 			title: card.title.trim(),

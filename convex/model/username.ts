@@ -44,7 +44,7 @@ export function requireUsername(value: string): string {
 	return username;
 }
 
-const FALLBACK_USERNAME = "builder";
+const FALLBACK_USERNAME = "participant";
 const BASE_MAX_LENGTH = 16;
 const MAX_NUMBERED_TRIES = 9;
 const MAX_RANDOM_TRIES = 20;

@@ -40,7 +40,7 @@ export type PlanView = {
 	periodEnd: number;
 	allowance: number;
 	hackathonsLeft: number;
-	/** Hackathons open, building or deciding, across all their Startups. */
+	/** Hackathons open, live or deciding, across all their Startups. */
 	running: number;
 };
 

@@ -4,7 +4,7 @@ import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 
-/** The Builder's one tap: did the Founder do what they promised? */
+/** The Participant's one tap: did the Founder do what they promised? */
 export function useKeepPromise(applicationId: Id<"applications">) {
 	const keepPromise = useMutation(api.hiring.applications.keepPromise);
 

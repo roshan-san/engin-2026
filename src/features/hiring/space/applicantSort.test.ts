@@ -18,7 +18,7 @@ function row(
 }
 
 const ana = row("ana", "applied", 1000, 3);
-const ben = row("ben", "building", 900, 1);
+const ben = row("ben", "participating", 900, 1);
 const cal = row("cal", "applied", 1200, 2);
 const dee = row("dee", "declined", 1300, 4);
 const eve = row("eve", "applied", 1200, 5);
@@ -26,7 +26,7 @@ const eve = row("eve", "applied", 1200, 5);
 const names = (rows: ApplicantRow[]) => rows.map((r) => r.user.name);
 
 describe("sortApplicants", () => {
-	it("Builders first, then Applicants, then the declined; newest first", () => {
+	it("Participants first, then Applicants, then the declined; newest first", () => {
 		expect(names(sortApplicants([ana, ben, cal, dee, eve], "newest"))).toEqual([
 			"ben",
 			"eve",

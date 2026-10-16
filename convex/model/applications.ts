@@ -1,10 +1,11 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { isUnderway, phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_APPLICATIONS,
-	MAX_BUILDERS,
 	MAX_HACKATHON_CARDS,
+	MAX_PARTICIPANTS,
 } from "../shared/limits";
 import { requireHackathonFounder } from "./hackathons";
 
@@ -24,14 +25,14 @@ export async function getApplication(
 		.unique();
 }
 
-/** Whether the person is a Builder on the Hackathon (accepted, not declined). */
-export async function isBuilder(
+/** Whether the person is a Participant on the Hackathon (accepted, not declined). */
+export async function isParticipant(
 	ctx: Ctx,
 	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
 ): Promise<boolean> {
 	const application = await getApplication(ctx, hackathonId, userId);
-	return application?.status === "building";
+	return application?.status === "participating";
 }
 
 /** The application and its Hackathon, once the person is confirmed as the Founder. */
@@ -58,41 +59,37 @@ export function requireOpen(hackathon: Doc<"hackathons">): void {
 	}
 }
 
-export function requireRunning(hackathon: Doc<"hackathons">): void {
-	if (hackathon.status !== "building" && hackathon.status !== "deciding") {
+export function requireUnderway(hackathon: Doc<"hackathons">): void {
+	if (!isUnderway(hackathon.status)) {
 		throw new ConvexError("This Hackathon isn't running");
 	}
 }
 
-export function requireBuilding(application: Doc<"applications">): void {
-	if (application.status !== "building") {
-		throw new ConvexError("They're not a Builder");
+export function requireParticipating(application: Doc<"applications">): void {
+	if (application.status !== "participating") {
+		throw new ConvexError("They're not a Participant");
 	}
 }
 
-/** Decisions open when the Hackathon ends, even before `startDeciding` has run. */
 export function requireDecidable(
 	hackathon: Doc<"hackathons">,
 	now: number,
 ): void {
-	const ended =
-		hackathon.status === "deciding" ||
-		(hackathon.status === "building" && now >= hackathon.endsAt);
-	if (!ended) {
+	if (phaseOf(hackathon, now) !== "deciding") {
 		throw new ConvexError("Decide after the Hackathon ends");
 	}
 }
 
-/** The Founder's private Thread with a Builder, created once. */
+/** The Founder's private Thread with a Participant, created once. */
 export async function ensurePrivateThread(
 	ctx: MutationCtx,
 	hackathon: Doc<"hackathons">,
-	builderId: Id<"users">,
+	participantId: Id<"users">,
 ): Promise<void> {
 	const existing = await ctx.db
 		.query("threads")
-		.withIndex("by_hackathon_and_builder", (q) =>
-			q.eq("hackathonId", hackathon._id).eq("builderId", builderId),
+		.withIndex("by_hackathon_and_participant", (q) =>
+			q.eq("hackathonId", hackathon._id).eq("participantId", participantId),
 		)
 		.first();
 	if (existing) {
@@ -102,13 +99,13 @@ export async function ensurePrivateThread(
 		startupId: hackathon.startupId,
 		hackathonId: hackathon._id,
 		kind: "private",
-		builderId,
+		participantId,
 	});
 }
 
 /**
- * A Hackathon's applications for its Founder: every Builder first, then up to
- * MAX_APPLICATIONS others, so a crowd of applicants never hides a Builder.
+ * A Hackathon's applications for its Founder: every Participant first, then up to
+ * MAX_APPLICATIONS others, so a crowd of applicants never hides a Participant.
  */
 export async function loadApplicationsForFounder(
 	ctx: Ctx,
@@ -127,16 +124,16 @@ export async function loadApplicationsForFounder(
 					)
 					.take(limit);
 
-	const builders = await byStatus("building", MAX_BUILDERS);
+	const participants = await byStatus("participating", MAX_PARTICIPANTS);
 	const others: Doc<"applications">[] = [];
 	for (const status of ["applied", "declined"] as const) {
 		others.push(...(await byStatus(status, MAX_APPLICATIONS - others.length)));
 	}
-	return [...builders, ...others];
+	return [...participants, ...others];
 }
 
-/** How far a Builder has got: their Cards on the Hackathon, and how many are Done. */
-export async function loadBuilderProgress(
+/** How far a Participant has got: their Cards on the Hackathon, and how many are Done. */
+export async function loadParticipantProgress(
 	ctx: Ctx,
 	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
@@ -153,7 +150,7 @@ export async function loadBuilderProgress(
 	};
 }
 
-/** What the Founder sees of an application. Leaves out the Builder's private promise answer. */
+/** What the Founder sees of an application. Leaves out the Participant's private promise answer. */
 export function toFounderApplicationView(application: Doc<"applications">) {
 	return {
 		_id: application._id,
@@ -170,7 +167,7 @@ export function toFounderApplicationView(application: Doc<"applications">) {
 	};
 }
 
-/** What the Builder sees of their own application: the decision, the Founder's note, and whether they've answered the promise question. */
+/** What the Participant sees of their own application: the decision, the Founder's note, and whether they've answered the promise question. */
 export function toMyApplicationView(application: Doc<"applications">) {
 	return {
 		applicationId: application._id,

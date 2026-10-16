@@ -1,3 +1,4 @@
+import { phaseOf } from "@convex/shared/hackathonPhase";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { AppPage } from "~/components/AppPage";
@@ -5,15 +6,17 @@ import { DetailPanel } from "~/components/DetailPanel";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Page } from "~/components/Page";
+import { PanelBody } from "~/components/PanelBody";
 import { PanelHeader } from "~/components/PanelHeader";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { PlaceLogo } from "~/components/PlaceLogo";
+import { TILE, TILE_LINK } from "~/components/tile";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useDetailPanel } from "~/components/useDetailPanel";
 import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { hiringLine } from "~/features/startups/public/hiringLine";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
-import { initials } from "~/lib/initials";
+import { cn } from "~/lib/utils";
 import { dayLabel, lastDay } from "../hackathonDates";
 import { roleLabel } from "../jobChips";
 import { STAGE } from "../stage";
@@ -54,14 +57,14 @@ function postOf(page: HackathonView) {
 		cards: page.cards,
 		weeks: page.weeks,
 		startsAt: page.startsAt,
-		buildersGet: page.buildersGet,
+		participantsGet: page.participantsGet,
 	};
 }
 
 /** `Frontend · Acme [Open]` over the post; Apply and the Startup in the detail panel, open on desktop and behind Apply on a phone. */
 function SignedInPage({ page }: { readonly page: HackathonView }) {
 	const panel = useDetailPanel(false, () => {});
-	const stage = STAGE[page.status];
+	const stage = STAGE[phaseOf(page, Date.now())];
 
 	return (
 		<AppPage
@@ -99,12 +102,12 @@ function SignedInPage({ page }: { readonly page: HackathonView }) {
 							<PanelHeader>
 								<h2 className="text-sm font-medium">Apply</h2>
 							</PanelHeader>
-							<div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4">
+							<PanelBody>
 								<div className="flex flex-col gap-3">
 									<ApplyCard page={page} />
 								</div>
 								<StartupCard page={page} />
-							</div>
+							</PanelBody>
 						</div>
 					}
 				/>
@@ -123,7 +126,7 @@ function SignedOutPage({ page }: { readonly page: HackathonView }) {
 				<HackathonPost post={postOf(page)} />
 
 				<aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-					<div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+					<div className={cn(TILE, "flex flex-col gap-3")}>
 						<ApplyCard page={page} />
 					</div>
 					<StartupCard page={page} />
@@ -141,17 +144,10 @@ function StartupCard({ page }: { readonly page: HackathonView }) {
 		<Link
 			to="/startups/$slug"
 			params={{ slug: page.startup.slug }}
-			className="flex flex-col gap-4 rounded-xl border border-border p-5 outline-none transition-colors hover:border-input focus-visible:ring-2 focus-visible:ring-ring/60"
+			className={cn(TILE_LINK, "flex flex-col gap-4")}
 		>
 			<div className="flex items-center gap-3">
-				<Avatar className="size-10 rounded-lg">
-					{page.startup.logo ? (
-						<AvatarImage src={page.startup.logo} alt="" />
-					) : null}
-					<AvatarFallback className="rounded-lg">
-						{initials(page.startup.name, null)}
-					</AvatarFallback>
-				</Avatar>
+				<PlaceLogo name={page.startup.name} url={page.startup.logo} size={40} />
 				<div className="flex min-w-0 flex-col">
 					<span className="truncate text-sm font-medium">
 						{page.startup.name}
@@ -210,10 +206,10 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 					<ApplyForm hackathonId={page._id} />
 				</>
 			);
-		case "building":
+		case "participating":
 			return (
 				<>
-					<p className="text-sm font-medium">{APPLY_COPY.building}</p>
+					<p className="text-sm font-medium">{APPLY_COPY.participating}</p>
 					<p className="text-sm text-muted-foreground">
 						Your Cards are on your Board.
 					</p>
@@ -239,7 +235,9 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 			return (
 				<>
 					<p className="text-sm font-medium">
-						{closedLabel(page.status === "building" ? "building" : "done")}
+						{closedLabel(
+							phaseOf(page, Date.now()) === "live" ? "live" : "done",
+						)}
 					</p>
 					<p className="text-sm text-muted-foreground">
 						Applications are closed.

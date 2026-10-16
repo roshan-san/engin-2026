@@ -8,9 +8,9 @@ import {
 } from "../shared/limits";
 import { mentionToken } from "../shared/mentions";
 import {
-	builders,
 	closeHackathon,
 	endHackathon,
+	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { cardOn } from "../testing/cards.setup";
@@ -105,11 +105,11 @@ describe("chat", () => {
 		).resolves.toEqual([]);
 	});
 
-	it("a Builder sees Everyone and their own private thread only", async () => {
+	it("a Participant sees Everyone and their own private thread only", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
-		const [ada, ben] = await builders(setup, hackathonId, ["Ada", "Ben"]);
+		const [ada, ben] = await participants(setup, hackathonId, ["Ada", "Ben"]);
 
 		const adaThreads = await ada.as.query(api.chat.threads.list, {
 			hackathonId,
@@ -119,7 +119,7 @@ describe("chat", () => {
 			"everyone",
 			"private",
 		]);
-		expect(adaThreads[1].builder?._id).toBe(ada.userId);
+		expect(adaThreads[1].participant?._id).toBe(ada.userId);
 		const founderThreads = await hackathonThreads(setup, hackathonId);
 		expect(founderThreads.map((thread) => thread.kind)).toEqual([
 			"everyone",
@@ -127,7 +127,7 @@ describe("chat", () => {
 			"private",
 		]);
 		const bensThread = founderThreads.find(
-			(thread) => thread.builder?._id === ben.userId,
+			(thread) => thread.participant?._id === ben.userId,
 		);
 		if (!bensThread) {
 			throw new Error("Ben's thread is missing");
@@ -137,7 +137,7 @@ describe("chat", () => {
 		).rejects.toThrow("You can't open this thread");
 	});
 
-	it("an applicant who is not a Builder can't open the Hackathon threads", async () => {
+	it("an applicant who is not a Participant can't open the Hackathon threads", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
@@ -152,11 +152,11 @@ describe("chat", () => {
 		).resolves.toEqual([]);
 	});
 
-	it("a Builder and the Founder talk in the private thread", async () => {
+	it("a Participant and the Founder talk in the private thread", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
-		const [ada] = await builders(setup, hackathonId, ["Ada"]);
+		const [ada] = await participants(setup, hackathonId, ["Ada"]);
 		const threads = await ada.as.query(api.chat.threads.list, { hackathonId });
 		const privateId = threads[1]._id;
 
@@ -177,7 +177,7 @@ describe("chat", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
-		const [ada] = await builders(setup, hackathonId, ["Ada"]);
+		const [ada] = await participants(setup, hackathonId, ["Ada"]);
 		const everyoneId = await everyoneThreadId(setup, hackathonId);
 		await setup.founder.as.mutation(api.chat.messages.send, {
 			threadId: everyoneId,
@@ -241,7 +241,7 @@ describe("chat", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
-		const [ada] = await builders(setup, hackathonId, ["Ada"]);
+		const [ada] = await participants(setup, hackathonId, ["Ada"]);
 		const [everyone, privateThread] = await ada.as.query(
 			api.chat.threads.list,
 			{ hackathonId },
@@ -268,7 +268,7 @@ describe("chat", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
-		const [ada] = await builders(setup, hackathonId, ["Ada"]);
+		const [ada] = await participants(setup, hackathonId, ["Ada"]);
 		const threads = await ada.as.query(api.chat.threads.list, { hackathonId });
 		const privateId = threads[1]._id;
 		await startHackathon(setup, hackathonId);
@@ -289,7 +289,7 @@ describe("chat", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
-		await builders(setup, hackathonId, ["Ada"]);
+		await participants(setup, hackathonId, ["Ada"]);
 		const everyoneId = await everyoneThreadId(setup, hackathonId);
 		await startHackathon(setup, hackathonId);
 		await setup.founder.as.mutation(api.chat.messages.send, {
@@ -461,7 +461,7 @@ describe("card mentions", () => {
 				startsAt: 0,
 				endsAt: 0,
 				decideBy: 0,
-				builderCount: 0,
+				participantCount: 0,
 				applicantCount: 0,
 			});
 			return await ctx.db.insert("cards", {
@@ -487,7 +487,7 @@ describe("card mentions", () => {
 	it("a Card mention in Everyone stays plain text", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		const threadId = await everyoneThreadId(setup, hackathonId);
 		const cardId = await cardOn(setup, setup.founder, "Secret roadmap");
 

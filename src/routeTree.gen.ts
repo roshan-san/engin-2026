@@ -28,7 +28,6 @@ import { Route as ShellAuthedHIdBriefRouteImport } from './routes/_shell/_authed
 import { Route as ShellAuthedSSlugIndexRouteImport } from './routes/_shell/_authed/s/$slug/index'
 import { Route as ShellAuthedSSlugActivityRouteImport } from './routes/_shell/_authed/s/$slug/activity'
 import { Route as ShellAuthedSSlugBoardRouteImport } from './routes/_shell/_authed/s/$slug/board'
-import { Route as ShellAuthedSSlugSettingsRouteImport } from './routes/_shell/_authed/s/$slug/settings'
 import { Route as ShellAuthedSSlugTeamRouteImport } from './routes/_shell/_authed/s/$slug/team'
 import { Route as ShellAuthedSSlugHiringIndexRouteImport } from './routes/_shell/_authed/s/$slug/hiring/index'
 import { Route as ShellAuthedSSlugHiringIdRouteImport } from './routes/_shell/_authed/s/$slug/hiring/$id'
@@ -128,12 +127,6 @@ const ShellAuthedSSlugBoardRoute = ShellAuthedSSlugBoardRouteImport.update({
   path: '/board',
   getParentRoute: () => ShellAuthedSSlugRouteRoute,
 } as any)
-const ShellAuthedSSlugSettingsRoute =
-  ShellAuthedSSlugSettingsRouteImport.update({
-    id: '/settings',
-    path: '/settings',
-    getParentRoute: () => ShellAuthedSSlugRouteRoute,
-  } as any)
 const ShellAuthedSSlugTeamRoute = ShellAuthedSSlugTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -174,7 +167,6 @@ export interface FileRoutesByFullPath {
   '/h/$id/brief': typeof ShellAuthedHIdBriefRoute
   '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
-  '/s/$slug/settings': typeof ShellAuthedSSlugSettingsRoute
   '/s/$slug/team': typeof ShellAuthedSSlugTeamRoute
   '/h/$id/': typeof ShellAuthedHIdIndexRoute
   '/s/$slug/': typeof ShellAuthedSSlugIndexRoute
@@ -196,7 +188,6 @@ export interface FileRoutesByTo {
   '/h/$id/brief': typeof ShellAuthedHIdBriefRoute
   '/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
-  '/s/$slug/settings': typeof ShellAuthedSSlugSettingsRoute
   '/s/$slug/team': typeof ShellAuthedSSlugTeamRoute
   '/h/$id': typeof ShellAuthedHIdIndexRoute
   '/s/$slug': typeof ShellAuthedSSlugIndexRoute
@@ -223,7 +214,6 @@ export interface FileRoutesById {
   '/_shell/_authed/h/$id/brief': typeof ShellAuthedHIdBriefRoute
   '/_shell/_authed/s/$slug/activity': typeof ShellAuthedSSlugActivityRoute
   '/_shell/_authed/s/$slug/board': typeof ShellAuthedSSlugBoardRoute
-  '/_shell/_authed/s/$slug/settings': typeof ShellAuthedSSlugSettingsRoute
   '/_shell/_authed/s/$slug/team': typeof ShellAuthedSSlugTeamRoute
   '/_shell/_authed/h/$id/': typeof ShellAuthedHIdIndexRoute
   '/_shell/_authed/s/$slug/': typeof ShellAuthedSSlugIndexRoute
@@ -249,7 +239,6 @@ export interface FileRouteTypes {
     | '/h/$id/brief'
     | '/s/$slug/activity'
     | '/s/$slug/board'
-    | '/s/$slug/settings'
     | '/s/$slug/team'
     | '/h/$id/'
     | '/s/$slug/'
@@ -271,7 +260,6 @@ export interface FileRouteTypes {
     | '/h/$id/brief'
     | '/s/$slug/activity'
     | '/s/$slug/board'
-    | '/s/$slug/settings'
     | '/s/$slug/team'
     | '/h/$id'
     | '/s/$slug'
@@ -297,7 +285,6 @@ export interface FileRouteTypes {
     | '/_shell/_authed/h/$id/brief'
     | '/_shell/_authed/s/$slug/activity'
     | '/_shell/_authed/s/$slug/board'
-    | '/_shell/_authed/s/$slug/settings'
     | '/_shell/_authed/s/$slug/team'
     | '/_shell/_authed/h/$id/'
     | '/_shell/_authed/s/$slug/'
@@ -447,13 +434,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAuthedSSlugBoardRouteImport
       parentRoute: typeof ShellAuthedSSlugRouteRoute
     }
-    '/_shell/_authed/s/$slug/settings': {
-      id: '/_shell/_authed/s/$slug/settings'
-      path: '/settings'
-      fullPath: '/s/$slug/settings'
-      preLoaderRoute: typeof ShellAuthedSSlugSettingsRouteImport
-      parentRoute: typeof ShellAuthedSSlugRouteRoute
-    }
     '/_shell/_authed/s/$slug/team': {
       id: '/_shell/_authed/s/$slug/team'
       path: '/team'
@@ -501,7 +481,6 @@ const ShellAuthedHIdRouteRouteWithChildren =
 interface ShellAuthedSSlugRouteRouteChildren {
   ShellAuthedSSlugActivityRoute: typeof ShellAuthedSSlugActivityRoute
   ShellAuthedSSlugBoardRoute: typeof ShellAuthedSSlugBoardRoute
-  ShellAuthedSSlugSettingsRoute: typeof ShellAuthedSSlugSettingsRoute
   ShellAuthedSSlugTeamRoute: typeof ShellAuthedSSlugTeamRoute
   ShellAuthedSSlugIndexRoute: typeof ShellAuthedSSlugIndexRoute
   ShellAuthedSSlugHiringIdRoute: typeof ShellAuthedSSlugHiringIdRoute
@@ -512,7 +491,6 @@ interface ShellAuthedSSlugRouteRouteChildren {
 const ShellAuthedSSlugRouteRouteChildren: ShellAuthedSSlugRouteRouteChildren = {
   ShellAuthedSSlugActivityRoute: ShellAuthedSSlugActivityRoute,
   ShellAuthedSSlugBoardRoute: ShellAuthedSSlugBoardRoute,
-  ShellAuthedSSlugSettingsRoute: ShellAuthedSSlugSettingsRoute,
   ShellAuthedSSlugTeamRoute: ShellAuthedSSlugTeamRoute,
   ShellAuthedSSlugIndexRoute: ShellAuthedSSlugIndexRoute,
   ShellAuthedSSlugHiringIdRoute: ShellAuthedSSlugHiringIdRoute,

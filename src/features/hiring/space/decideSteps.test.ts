@@ -2,20 +2,20 @@ import { describe, expect, it } from "vitest";
 import { decideState } from "./decideSteps";
 
 const endsAt = 1_000;
-const building = { status: "building" as const, endsAt };
+const live = { status: "live" as const, endsAt };
 const fresh = { shortlisted: false, walkthroughAt: null, decision: null };
 
 describe("decideState", () => {
-	it("while building, shortlist but don't decide", () => {
-		const state = decideState(fresh, building, endsAt - 1);
+	it("while live, shortlist but don't decide", () => {
+		const state = decideState(fresh, live, endsAt - 1);
 
 		expect(state).toMatchObject({ canShortlist: true, canDecide: false });
 	});
 
 	it("the Walkthrough follows the shortlist", () => {
-		expect(decideState(fresh, building, 0).canWalkthrough).toBe(false);
+		expect(decideState(fresh, live, 0).canWalkthrough).toBe(false);
 		expect(
-			decideState({ ...fresh, shortlisted: true }, building, 0).canWalkthrough,
+			decideState({ ...fresh, shortlisted: true }, live, 0).canWalkthrough,
 		).toBe(true);
 	});
 
@@ -31,10 +31,6 @@ describe("decideState", () => {
 			canHire: false,
 			hireHint: "Do the Walkthrough first",
 		});
-	});
-
-	it("an ended Hackathon not yet moved to deciding can still be decided", () => {
-		expect(decideState(fresh, building, endsAt).canDecide).toBe(true);
 	});
 
 	it("walked through, Hired opens", () => {

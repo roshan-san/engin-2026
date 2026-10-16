@@ -2,6 +2,7 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { weekOf, weekStart } from "../shared/cycles";
+import { phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
@@ -9,14 +10,14 @@ import {
 	TEXT,
 } from "../shared/limits";
 import { appendActivity } from "./activity";
-import { isBuilder } from "./applications";
+import { isParticipant } from "./applications";
 import { getTeamRole, requireTeam, type TeamRole } from "./teamAccess";
 import { assertUrl, requireLimitedText } from "./text";
 import { loadPublicUser } from "./users";
 
 type Ctx = QueryCtx | MutationCtx;
 
-export type CardRole = TeamRole | "builder";
+export type CardRole = TeamRole | "participant";
 
 export type Shipped = NonNullable<Doc<"cards">["shipped"]>;
 
@@ -51,8 +52,8 @@ export async function requireCardAccess(
 }
 
 /**
- * Hackathon Cards: the Founder works any of them; a Builder only their own,
- * and only while the Hackathon is building. Nobody else, Contributors included.
+ * Hackathon Cards: the Founder works any of them; a Participant only their own,
+ * and only while the Hackathon is live. Nobody else, Contributors included.
  */
 async function requireHackathonCardRole(
 	ctx: Ctx,
@@ -73,31 +74,37 @@ async function requireHackathonCardRole(
 		}
 		return { startup, role: "founder" };
 	}
-	if (card.ownerId === userId && (await isBuilder(ctx, hackathonId, userId))) {
-		if (hackathon.status !== "building") {
+	if (
+		card.ownerId === userId &&
+		(await isParticipant(ctx, hackathonId, userId))
+	) {
+		if (phaseOf(hackathon, Date.now()) !== "live") {
 			throw new ConvexError("This Hackathon isn't running");
 		}
-		return { startup, role: "builder" };
+		return { startup, role: "participant" };
 	}
 	throw new ConvexError("This Card isn't yours");
 }
 
-/** Who may see a Builder's Cards: the Founder, or that Builder. */
-export async function requireBuilderBoardAccess(
+/** Who may see a Participant's Cards: the Founder, or that Participant. */
+export async function requireParticipantBoardAccess(
 	ctx: Ctx,
 	hackathonId: Id<"hackathons">,
-	builderId: Id<"users">,
+	participantId: Id<"users">,
 	userId: Id<"users">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
 	if (!hackathon) {
-		throw new ConvexError("Hackathon not found");
+		throw new ConvexError("This Hackathon doesn't exist");
 	}
 	const startup = await ctx.db.get(hackathon.startupId);
 	if (startup?.founderId === userId) {
 		return;
 	}
-	if (builderId !== userId || !(await isBuilder(ctx, hackathonId, userId))) {
+	if (
+		participantId !== userId ||
+		!(await isParticipant(ctx, hackathonId, userId))
+	) {
 		throw new ConvexError("This Card isn't yours");
 	}
 }
@@ -112,7 +119,9 @@ export function isChangesAsked(card: Doc<"cards">): boolean {
 
 export function requireNotVerified(card: Doc<"cards">): void {
 	if (card.status === "done") {
-		throw new ConvexError("This Card is verified");
+		throw new ConvexError(
+			"This Card is verified, so only its notes can change",
+		);
 	}
 }
 
@@ -123,7 +132,7 @@ export async function requireTeamOwner(
 	ownerId: Id<"users">,
 ): Promise<void> {
 	if (!(await getTeamRole(ctx, startupId, ownerId))) {
-		throw new ConvexError("They're not on this startup");
+		throw new ConvexError("They're not on this Startup's team");
 	}
 }
 
@@ -159,7 +168,7 @@ export function parseShipped(input: Shipped): Shipped {
 		throw new ConvexError("Links must start with http:// or https://");
 	}
 	if (links.length === 0 && input.images.length === 0) {
-		throw new ConvexError("Add a link or image");
+		throw new ConvexError("Add a link or an image");
 	}
 	return { line, links, images: input.images };
 }
@@ -255,7 +264,7 @@ export async function markVerified(
 		verifiedAt: now,
 		verifiedBy: verifierId,
 	});
-	// Hackathon work is the Builder's, not the Startup's: it stays off the Activity.
+	// Hackathon work is the Participant's, not the Startup's: it stays off the Activity.
 	if (card.hackathonId) {
 		return;
 	}

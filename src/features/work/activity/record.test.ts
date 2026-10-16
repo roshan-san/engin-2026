@@ -82,7 +82,9 @@ describe("record", () => {
 
 	it("milestones name the job", () => {
 		expect(
-			entrySummary(entry({ kind: "builder_hired", job: { role: "frontend" } })),
+			entrySummary(
+				entry({ kind: "participant_hired", job: { role: "frontend" } }),
+			),
 		).toEqual({ actor: "Sam", text: "was hired · Frontend" });
 		expect(
 			entrySummary(entry({ kind: "hackathon_finished", job: null })),

@@ -8,8 +8,8 @@ export type WaitingReason =
 	| { kind: "team_unread" }
 	| { kind: "cards_to_verify"; count: number }
 	| { kind: "new_applicants"; role: JobRole; count: number }
-	| { kind: "builder_cards_to_review"; role: JobRole; count: number }
+	| { kind: "participant_cards_to_review"; role: JobRole; count: number }
 	| { kind: "hackathon_unread"; role: JobRole }
-	| { kind: "builders_to_decide"; role: JobRole; count: number }
+	| { kind: "participants_to_decide"; role: JobRole; count: number }
 	| { kind: "messages_unread" }
 	| { kind: "promise_pending" };

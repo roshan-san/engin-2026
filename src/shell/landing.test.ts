@@ -24,14 +24,14 @@ function startup(slug: string) {
 	};
 }
 
-function building(id: Id<"hackathons">) {
+function liveHackathon(id: Id<"hackathons">) {
 	return {
 		hackathonId: id,
 		job,
 		startupName: "Acme",
 		startupSlug: "acme",
 		startupLogoUrl: null,
-		status: "building" as const,
+		status: "live" as const,
 		startsAt: 0,
 		endsAt: 1,
 		decision: null,
@@ -51,7 +51,7 @@ function inHackathon(id: string) {
 }
 
 function places(overrides: Partial<Places> = {}): Places {
-	return { startups: [], building: [], applied: [], ...overrides };
+	return { startups: [], hackathons: [], applied: [], ...overrides };
 }
 
 describe("rememberedFrom", () => {
@@ -107,10 +107,10 @@ describe("pickLanding", () => {
 		expect(pickLanding(all, inStartup("gone", "/s/gone/board"))).toBe("/home");
 	});
 
-	it("the last Hackathon Board wins while you are still building", () => {
+	it("the last Hackathon Board wins while you're still in it", () => {
 		const all = places({
 			startups: [startup("acme")],
-			building: [building(hackathonId)],
+			hackathons: [liveHackathon(hackathonId)],
 		});
 
 		expect(pickLanding(all, inHackathon(hackathonId))).toBe(
@@ -118,7 +118,7 @@ describe("pickLanding", () => {
 		);
 	});
 
-	it("a last Hackathon no longer building lands on Home", () => {
+	it("a last Hackathon you're no longer in lands on Home", () => {
 		const all = places({ startups: [startup("acme")] });
 
 		expect(pickLanding(all, inHackathon(hackathonId))).toBe("/home");

@@ -1,13 +1,12 @@
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
 import { tierText } from "~/features/work/activity/tierText";
-import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import type { ApplicantRow } from "./applicantSort";
 
 const STATUS_LABEL = {
 	applied: null,
-	building: "Builder",
+	participating: "Participant",
 	declined: "Declined",
 	left: "Left",
 } as const;
@@ -36,17 +35,12 @@ export function ApplicantList({
 							aria-current={isActive ? "true" : undefined}
 							onClick={() => onSelect(application._id)}
 							className={cn(
-								"flex w-full items-center gap-3 rounded-md px-2 py-2 text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60",
+								"flex w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-accent focus-ring",
 								isActive && "bg-accent",
 								application.status === "declined" && "opacity-60",
 							)}
 						>
-							<Avatar className="size-7">
-								{user.image ? <AvatarImage src={user.image} alt="" /> : null}
-								<AvatarFallback className="text-[10px]">
-									{initials(user.name, user.username)}
-								</AvatarFallback>
-							</Avatar>
+							<PersonAvatar person={user} size={32} />
 							<PersonName
 								person={user}
 								className="min-w-0 flex-1 truncate text-sm"

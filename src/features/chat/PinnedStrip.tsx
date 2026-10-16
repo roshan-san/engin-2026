@@ -59,7 +59,7 @@ export function PinnedStrip({
 			{pinned.length > 1 ? (
 				<button
 					type="button"
-					className="self-start text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+					className="self-start text-xs text-muted-foreground hover:text-foreground focus-ring"
 					onClick={() => setIsOpen(!isOpen)}
 				>
 					{isOpen ? "Show less" : `${pinned.length} pinned`}

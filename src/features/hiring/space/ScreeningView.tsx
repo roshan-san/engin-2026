@@ -1,5 +1,5 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
-import { MAX_BUILDERS } from "@convex/shared/limits";
+import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { DetailPanel } from "~/components/DetailPanel";
@@ -33,7 +33,7 @@ const PANES = [
 	{ value: "post", label: "Post" },
 ] as const;
 
-/** Before the start: pick up to 10 Builders from the Applicants, J/K, A, D. */
+/** Before the start: pick up to 10 Participants from the Applicants, J/K, A, D. */
 export function ScreeningView({
 	hackathon,
 	cards,
@@ -62,8 +62,8 @@ export function ScreeningView({
 	const activeId = ids.find((id) => id === view) ?? ids[0];
 	// With nobody to show yet, the pane shows the post being shared.
 	const shownPane = pane === "applicant" && !activeId ? "post" : pane;
-	const builderCount = rows.filter(
-		(row) => row.application.status === "building",
+	const participantCount = rows.filter(
+		(row) => row.application.status === "participating",
 	).length;
 
 	function select(id: string) {
@@ -125,7 +125,7 @@ export function ScreeningView({
 							cards: cards.map((card) => card.title),
 							weeks: hackathon.weeks,
 							startsAt: hackathon.startsAt,
-							buildersGet: hackathon.buildersGet ?? null,
+							participantsGet: hackathon.participantsGet ?? null,
 						}}
 					/>
 				</div>
@@ -144,9 +144,9 @@ export function ScreeningView({
 				<PanelHeader className="gap-2">
 					<span className="text-sm">
 						<span className="font-medium tabular-nums">
-							{builderCount}/{MAX_BUILDERS}
+							{participantCount}/{MAX_PARTICIPANTS}
 						</span>{" "}
-						<span className="text-muted-foreground">Builders</span>
+						<span className="text-muted-foreground">Participants</span>
 					</span>
 					<Segmented
 						label="Sort"
@@ -199,7 +199,9 @@ export function ScreeningView({
 				shows={panel.shows}
 				title={view !== undefined ? "Applicant" : "# Everyone"}
 				description={
-					view !== undefined ? "Accept or decline." : "Talk to every Builder."
+					view !== undefined
+						? "Accept or decline."
+						: "Talk to every Participant."
 				}
 				onClose={panel.close}
 				hasCloseButton

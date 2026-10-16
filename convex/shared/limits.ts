@@ -1,5 +1,5 @@
-export const MAX_BUILDERS = 10;
-/** Hackathons one Founder may have open, building or deciding at once, across all their Startups. */
+export const MAX_PARTICIPANTS = 10;
+/** Hackathons one Founder may have open, live or deciding at once, across all their Startups. */
 export const MAX_OPEN_HACKATHONS = 4;
 /** Subscriptions read per Founder; old cancelled ones pile up slowly. */
 export const MAX_USER_SUBSCRIPTIONS = 20;
@@ -52,7 +52,7 @@ export const TEXT = {
 	startupName: 60,
 	problem: 2000,
 	answer: 1000,
-	buildersGet: 140,
+	participantsGet: 140,
 	feedback: 280,
 	walkthroughNotes: 2000,
 	message: 2000,

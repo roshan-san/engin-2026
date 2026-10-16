@@ -163,7 +163,9 @@ export function Board({
 						{column.id === "todo" && scope.kind === "startup" ? (
 							<NewCardInput
 								inputRef={newCardRef}
-								note={cards.length === 0 ? "3 is a good week." : undefined}
+								note={
+									cards.length === 0 ? "Three Cards is a good week." : undefined
+								}
 								onCreate={create}
 							/>
 						) : null}

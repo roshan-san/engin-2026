@@ -180,10 +180,10 @@ describe("users", () => {
 			const second = await signIn(t, "007");
 
 			expect((await first.query(api.people.users.getMe, {}))?.username).toBe(
-				"builder",
+				"participant",
 			);
 			expect((await second.query(api.people.users.getMe, {}))?.username).toBe(
-				"builder_2",
+				"participant_2",
 			);
 		});
 
@@ -207,7 +207,7 @@ describe("users", () => {
 			expect(me?.username).toMatch(/^sam_\d{4}$/);
 		});
 
-		it("a reserved email local part falls back to builder", async () => {
+		it("a reserved email local part falls back to participant", async () => {
 			const t = createTest();
 			const userId = await t.run(
 				async (ctx) =>
@@ -222,7 +222,7 @@ describe("users", () => {
 			const me = await t
 				.withIdentity({ subject: `${userId}|session` })
 				.query(api.people.users.getMe, {});
-			expect(me?.username).toBe("builder");
+			expect(me?.username).toBe("participant");
 		});
 
 		it("it gives up after twenty random tries", { timeout: 2000 }, async () => {

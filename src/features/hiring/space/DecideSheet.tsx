@@ -3,7 +3,7 @@ import { TEXT } from "@convex/shared/limits";
 import { CheckIcon, StarIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -43,8 +43,7 @@ export function DecideSheet({
 
 	if (state.decided) {
 		return (
-			<div className="flex flex-col gap-2 p-4">
-				<SectionLabel as="h3">Decision</SectionLabel>
+			<Section label="Decision" as="h3" className="p-4">
 				<p className="text-sm">
 					<span className="font-medium">
 						{state.decided === "hired" ? "Hired" : "Not this time"}
@@ -52,7 +51,7 @@ export function DecideSheet({
 					{application.feedback ? ` · ${application.feedback}` : null}
 				</p>
 				<WalkthroughNotes application={application} />
-			</div>
+			</Section>
 		);
 	}
 

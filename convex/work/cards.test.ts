@@ -55,7 +55,7 @@ describe("board", () => {
 				title: "Other",
 				ownerId: outsider.userId,
 			}),
-		).rejects.toThrow("They're not on this startup");
+		).rejects.toThrow("They're not on this Startup's team");
 	});
 
 	it("Cards move between To do and In progress", async () => {
@@ -101,7 +101,7 @@ describe("board", () => {
 
 		await expect(
 			lee.as.mutation(api.work.cards.remove, { cardId }),
-		).rejects.toThrow("Only the owner or the Founder can remove this Card");
+		).rejects.toThrow("Only the owner or the Founder can delete this Card");
 		await setup.founder.as.mutation(api.work.cards.remove, { cardId });
 
 		expect(await boardOf(setup)).toEqual([]);
@@ -238,7 +238,7 @@ describe("submit and verify", () => {
 				cardId,
 				shipped: { line: "Sent welcome emails", links: [], images: [] },
 			}),
-		).rejects.toThrow("Add a link or image");
+		).rejects.toThrow("Add a link or an image");
 		await expect(
 			setup.founder.as.mutation(api.work.cards.submit, {
 				cardId,
@@ -272,7 +272,7 @@ describe("submit and verify", () => {
 
 		await expect(
 			sam.as.mutation(api.work.cards.verify, { cardId }),
-		).rejects.toThrow("Only the Founder can do this");
+		).rejects.toThrow("Only the Founder can verify a Card");
 	});
 
 	it("only a Card in Review can be verified", async () => {
@@ -397,8 +397,12 @@ describe("locks", () => {
 			ownerId: lee.userId,
 		});
 
-		await expect(toFounder).rejects.toThrow("This Card is in Review");
-		await expect(toLee).rejects.toThrow("This Card is in Review");
+		await expect(toFounder).rejects.toThrow(
+			"The owner is fixed once a Card is in Review",
+		);
+		await expect(toLee).rejects.toThrow(
+			"The owner is fixed once a Card is in Review",
+		);
 		expect(await boardOf(setup)).toMatchObject([
 			{ status: "review", owner: { _id: sam.userId } },
 		]);
@@ -412,7 +416,7 @@ describe("locks", () => {
 
 		await expect(
 			sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED }),
-		).rejects.toThrow("This Card is in Review");
+		).rejects.toThrow("This Card is already in Review");
 	});
 
 	it("a Hackathon Card stays off the startup Board and away from the team", async () => {
@@ -428,7 +432,7 @@ describe("locks", () => {
 				startsAt: 0,
 				endsAt: 0,
 				decideBy: 0,
-				builderCount: 0,
+				participantCount: 0,
 				applicantCount: 0,
 			});
 			return await ctx.db.insert("cards", {
@@ -564,7 +568,7 @@ describe("card view", () => {
 					startsAt: 0,
 					endsAt: 0,
 					decideBy: 0,
-					builderCount: 0,
+					participantCount: 0,
 					applicantCount: 0,
 				}),
 		);
@@ -607,7 +611,7 @@ describe("card view", () => {
 				startsAt: 0,
 				endsAt: 0,
 				decideBy: 0,
-				builderCount: 0,
+				participantCount: 0,
 				applicantCount: 0,
 			});
 			return await ctx.db.insert("cards", {

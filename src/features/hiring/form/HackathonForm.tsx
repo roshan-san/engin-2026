@@ -1,7 +1,6 @@
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { ChipPicker } from "~/components/ChipPicker";
-import { FormFooter } from "~/components/FormFooter";
 import { MentorNote } from "~/components/MentorNote";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -12,10 +11,10 @@ import { MODES, PAYS, ROLES } from "../jobChips";
 import { HackathonPost } from "../public/HackathonPost";
 import { CardRows } from "./CardRows";
 import {
-	BUILDERS_GET,
 	type HackathonDraft,
 	missingParts,
-	toBuildersGet,
+	PARTICIPANTS_GET,
+	toParticipantsGet,
 } from "./draft";
 import { startOptions } from "./startOptions";
 
@@ -24,7 +23,7 @@ const WEEKS = [
 	{ value: "2", label: "2 weeks" },
 ] as const;
 
-const BUILDERS_GET_CHIPS = [...BUILDERS_GET, "Custom"].map((value) => ({
+const PARTICIPANTS_GET_CHIPS = [...PARTICIPANTS_GET, "Custom"].map((value) => ({
 	value,
 	label: value,
 }));
@@ -42,7 +41,7 @@ function Part({
 	return (
 		<section className="flex min-w-0 flex-col gap-3">
 			<div className="flex flex-col gap-0.5">
-				<h2 className="text-base font-medium">{label}</h2>
+				<h2 className="text-lg font-semibold">{label}</h2>
 				{note ? <MentorNote>{note}</MentorNote> : null}
 			</div>
 			{children}
@@ -168,7 +167,7 @@ export function HackathonForm({
 
 				<Part
 					label="Cards"
-					note="3–5 Cards, each done in a day. Every Builder starts with them in To do."
+					note="3–5 Cards, each done in a day. Every Participant starts with them in To do."
 				>
 					<CardRows
 						cards={draft.cards}
@@ -202,26 +201,26 @@ export function HackathonForm({
 				</Part>
 
 				<Part
-					label="What Builders get"
-					note="Even ₹1,000 brings better builders."
+					label="What Participants get"
+					note="Even ₹1,000 brings better Participants."
 				>
 					<ChipPicker
-						label="What Builders get"
-						options={BUILDERS_GET_CHIPS}
-						value={draft.buildersGet.choice}
+						label="What Participants get"
+						options={PARTICIPANTS_GET_CHIPS}
+						value={draft.participantsGet.choice}
 						onChange={(choice) =>
-							set("buildersGet", { ...draft.buildersGet, choice })
+							set("participantsGet", { ...draft.participantsGet, choice })
 						}
 					/>
-					{draft.buildersGet.choice === "Custom" ? (
+					{draft.participantsGet.choice === "Custom" ? (
 						<Input
-							aria-label="What Builders get"
+							aria-label="What Participants get"
 							placeholder="One line"
-							value={draft.buildersGet.custom}
-							maxLength={TEXT.buildersGet}
+							value={draft.participantsGet.custom}
+							maxLength={TEXT.participantsGet}
 							onChange={(e) =>
-								set("buildersGet", {
-									...draft.buildersGet,
+								set("participantsGet", {
+									...draft.participantsGet,
 									custom: e.target.value,
 								})
 							}
@@ -229,7 +228,7 @@ export function HackathonForm({
 					) : null}
 				</Part>
 
-				<FormFooter>
+				<div className="sticky bottom-0 -mx-4 flex items-center gap-2 border-t bg-background px-4 py-3 md:static md:mx-0 md:justify-end md:border-t-0 md:px-0 md:py-0">
 					{isReady ? null : (
 						<p className="mr-auto min-w-0 text-xs text-muted-foreground">
 							Still to do: {missing.join(", ")}
@@ -253,7 +252,7 @@ export function HackathonForm({
 							{secondary.label}
 						</Button>
 					) : null}
-				</FormFooter>
+				</div>
 			</form>
 
 			<aside
@@ -273,10 +272,10 @@ export function HackathonForm({
 							cards: draft.cards.map((card) => card.title),
 							weeks: draft.weeks,
 							startsAt: startValue === null ? null : draft.startsAt,
-							buildersGet:
-								toBuildersGet(
-									draft.buildersGet.choice,
-									draft.buildersGet.custom,
+							participantsGet:
+								toParticipantsGet(
+									draft.participantsGet.choice,
+									draft.participantsGet.custom,
 								) ?? null,
 						}}
 					/>

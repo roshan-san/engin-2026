@@ -1,6 +1,7 @@
-import { MAX_BUILDERS } from "@convex/shared/limits";
+import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
+import { Badge } from "~/components/ui/badge";
 import { SignInCard } from "~/features/people/auth/SignInCard";
 import { cn } from "~/lib/utils";
 import {
@@ -26,11 +27,11 @@ export type PostView = {
 		readonly mode: JobMode | null;
 	};
 	readonly problem: string;
-	/** The Card titles each Builder gets; `null` for a signed-out visitor, who sees the brief faded behind Sign in. */
+	/** The Card titles each Participant gets; `null` for a signed-out visitor, who sees the brief faded behind Sign in. */
 	readonly cards: readonly string[] | null;
 	readonly weeks: 1 | 2;
 	readonly startsAt: number | null;
-	readonly buildersGet: string | null;
+	readonly participantsGet: string | null;
 };
 
 function labelOf<T extends string>(
@@ -48,7 +49,7 @@ function Unwritten({ children }: { readonly children: ReactNode }) {
 }
 
 /**
- * A Hackathon as Applicants read it: the job and what Builders get, the problem, the Cards, and how
+ * A Hackathon as Applicants read it: the job and what Participants get, the problem, the Cards, and how
  * the weeks run. The public page shows it, and so does the form's preview.
  */
 export function HackathonPost({
@@ -77,48 +78,36 @@ export function HackathonPost({
 
 	return (
 		<article
-			className={cn("flex min-w-0 flex-col", isPage ? "gap-10" : "gap-7")}
+			className={cn("flex min-w-0 flex-col", isPage ? "gap-10" : "gap-6")}
 		>
 			<header className="flex flex-col gap-3">
 				<p className="text-sm text-muted-foreground">
 					{post.startupName} is hiring
 				</p>
-				<h1
-					className={cn(
-						"font-semibold tracking-tight",
-						isPage ? "text-3xl" : "text-xl",
-					)}
-				>
+				<h1 className={cn("font-semibold", isPage ? "text-3xl" : "text-2xl")}>
 					{role ?? <Unwritten>The role</Unwritten>}
 				</h1>
-				<ul className="flex flex-wrap gap-1.5">
+				<ul className="flex flex-wrap gap-2">
 					{facts.map((fact) => (
-						<li
-							key={fact}
-							className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground"
-						>
-							{fact}
+						<li key={fact}>
+							<Badge variant="secondary">{fact}</Badge>
 						</li>
 					))}
-					{post.buildersGet ? (
-						<li className="rounded-full border border-success/40 px-2.5 py-0.5 text-xs text-success">
-							Builders get {post.buildersGet}
+					{post.participantsGet ? (
+						<li>
+							<Badge variant="status" tone="success">
+								Participants get {post.participantsGet}
+							</Badge>
 						</li>
 					) : null}
 				</ul>
 			</header>
 
-			<section className="flex flex-col gap-3">
-				<SectionLabel>The problem</SectionLabel>
-				<p
-					className={cn(
-						"leading-relaxed break-words whitespace-pre-wrap",
-						isPage ? "text-base" : "text-sm",
-					)}
-				>
+			<Section label="The problem">
+				<p className="leading-relaxed break-words whitespace-pre-wrap">
 					{problem || <Unwritten>A real first-month problem.</Unwritten>}
 				</p>
-			</section>
+			</Section>
 
 			{post.cards === null ? (
 				<GatedBrief post={post} />
@@ -141,12 +130,11 @@ function Brief({
 }) {
 	return (
 		<>
-			<section className="flex flex-col gap-3">
-				<SectionLabel>What you'll build</SectionLabel>
+			<Section label="What you'll build">
 				<ol className="flex flex-col gap-1.5">
 					{cards.length === 0 ? (
 						<li className="rounded-md border border-dashed border-border px-3 py-2.5 text-sm">
-							<Unwritten>The Cards each Builder starts with.</Unwritten>
+							<Unwritten>The Cards each Participant starts with.</Unwritten>
 						</li>
 					) : null}
 					{cards.map((title, index) => (
@@ -165,12 +153,11 @@ function Brief({
 						</li>
 					))}
 				</ol>
-			</section>
+			</Section>
 
-			<section className="flex flex-col gap-3">
-				<SectionLabel>How it works</SectionLabel>
+			<Section label="How it works">
 				<Timeline startsAt={startsAt} weeks={weeks} />
-			</section>
+			</Section>
 		</>
 	);
 }
@@ -184,8 +171,7 @@ function GatedBrief({ post }: { readonly post: PostView }) {
 				inert
 				className="pointer-events-none flex select-none flex-col gap-10 opacity-40 [mask-image:linear-gradient(to_bottom,black_30%,transparent)]"
 			>
-				<section className="flex flex-col gap-3">
-					<SectionLabel>What you'll build</SectionLabel>
+				<Section label="What you'll build">
 					<ol className="flex flex-col gap-1.5">
 						{[1, 2, 3].map((n) => (
 							<li
@@ -199,11 +185,10 @@ function GatedBrief({ post }: { readonly post: PostView }) {
 							</li>
 						))}
 					</ol>
-				</section>
-				<section className="flex flex-col gap-3">
-					<SectionLabel>How it works</SectionLabel>
+				</Section>
+				<Section label="How it works">
 					<Timeline startsAt={post.startsAt} weeks={post.weeks} />
-				</section>
+				</Section>
 			</div>
 			<div className="absolute inset-x-0 top-10 flex justify-center px-4">
 				<SignInCard>Sign in to see the full brief and apply.</SignInCard>
@@ -225,7 +210,7 @@ function Timeline({
 		{
 			title: "Apply",
 			when: startsAt === null ? null : `until ${dayLabel(lastDay(startsAt))}`,
-			body: `Say how you'd approach it. Up to ${MAX_BUILDERS} become Builders.`,
+			body: `Say how you'd approach it. Up to ${MAX_PARTICIPANTS} become Participants.`,
 		},
 		{
 			title: "Build",

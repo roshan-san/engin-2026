@@ -5,16 +5,17 @@ import {
 	ensurePrivateThread,
 	getApplication,
 	loadApplicationsForFounder,
-	loadBuilderProgress,
+	loadParticipantProgress,
 	requireApplicationFounder,
-	requireBuilding,
 	requireDecidable,
 	requireOpen,
-	requireRunning,
+	requireParticipating,
+	requireUnderway,
 	toFounderApplicationView,
 } from "../model/applications";
 import { requireUserId } from "../model/auth";
-import { finishIfDecided, requireHackathonFounder } from "../model/hackathons";
+import { finishIfDecided } from "../model/hackathonLifecycle";
+import { requireHackathonFounder } from "../model/hackathons";
 import { ensureHireInvite } from "../model/invites";
 import { getTeamRole } from "../model/teamAccess";
 import { limitText, requireLimitedText } from "../model/text";
@@ -24,7 +25,7 @@ import {
 	toPublicProfile,
 	toPublicUser,
 } from "../model/users";
-import { MAX_BUILDERS, STARTING_RATING, TEXT } from "../shared/limits";
+import { MAX_PARTICIPANTS, STARTING_RATING, TEXT } from "../shared/limits";
 import { decision } from "../shared/validators";
 
 /** Everyone who applied, for the Founder. Never includes email. */
@@ -51,8 +52,8 @@ export const listForHackathon = query({
 								isProvisional: isProvisional(user),
 							},
 							progress:
-								application.status === "building"
-									? await loadBuilderProgress(
+								application.status === "participating"
+									? await loadParticipantProgress(
 											ctx,
 											application.hackathonId,
 											application.userId,
@@ -120,7 +121,7 @@ export const apply = mutation({
 	},
 });
 
-/** Makes an applicant a Builder. They start building when the Hackathon starts. */
+/** Makes an applicant a Participant. They take part once the Hackathon starts. */
 export const accept = mutation({
 	args: { applicationId: v.id("applications") },
 	handler: async (ctx, args) => {
@@ -131,16 +132,16 @@ export const accept = mutation({
 			userId,
 		);
 		requireOpen(hackathon);
-		if (application.status === "building") {
+		if (application.status === "participating") {
 			return;
 		}
-		if (hackathon.builderCount >= MAX_BUILDERS) {
-			throw new ConvexError(`${MAX_BUILDERS} Builders is the limit`);
+		if (hackathon.participantCount >= MAX_PARTICIPANTS) {
+			throw new ConvexError(`${MAX_PARTICIPANTS} Participants is the limit`);
 		}
 
-		await ctx.db.patch(application._id, { status: "building" });
+		await ctx.db.patch(application._id, { status: "participating" });
 		await ctx.db.patch(hackathon._id, {
-			builderCount: hackathon.builderCount + 1,
+			participantCount: hackathon.participantCount + 1,
 		});
 		await ensurePrivateThread(ctx, hackathon, application.userId);
 	},
@@ -158,9 +159,9 @@ export const decline = mutation({
 		requireOpen(hackathon);
 
 		await ctx.db.patch(application._id, { status: "declined" });
-		if (application.status === "building") {
+		if (application.status === "participating") {
 			await ctx.db.patch(hackathon._id, {
-				builderCount: hackathon.builderCount - 1,
+				participantCount: hackathon.participantCount - 1,
 			});
 		}
 	},
@@ -175,8 +176,8 @@ export const shortlist = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireRunning(hackathon);
-		requireBuilding(application);
+		requireUnderway(hackathon);
+		requireParticipating(application);
 
 		await ctx.db.patch(application._id, { shortlisted: args.shortlisted });
 	},
@@ -191,8 +192,8 @@ export const markWalkthrough = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireRunning(hackathon);
-		requireBuilding(application);
+		requireUnderway(hackathon);
+		requireParticipating(application);
 		if (!application.shortlisted) {
 			throw new ConvexError("Shortlist them first");
 		}
@@ -218,7 +219,7 @@ export const decide = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireBuilding(application);
+		requireParticipating(application);
 		if (application.decision) {
 			throw new ConvexError("Already decided");
 		}
@@ -234,20 +235,20 @@ export const decide = mutation({
 
 		await ctx.db.patch(application._id, { decision: args.decision, feedback });
 		if (args.decision === "hired") {
-			const builder = await ctx.db.get(application.userId);
-			if (!builder?.email) {
-				throw new ConvexError("This Builder has no email to invite");
+			const participant = await ctx.db.get(application.userId);
+			if (!participant?.email) {
+				throw new ConvexError("This Participant has no email to invite");
 			}
 			await ensureHireInvite(ctx, {
 				startupId: hackathon.startupId,
-				userId: builder._id,
-				email: builder.email,
+				userId: participant._id,
+				email: participant.email,
 				invitedBy: userId,
 				hackathonId: hackathon._id,
 			});
 			await appendActivity(ctx, {
 				startupId: hackathon.startupId,
-				kind: "builder_hired",
+				kind: "participant_hired",
 				at: now,
 				actorId: application.userId,
 				hackathonId: hackathon._id,
@@ -257,7 +258,7 @@ export const decide = mutation({
 	},
 });
 
-/** The Builder says whether the Startup kept what it promised Builders. */
+/** The Participant says whether the Startup kept what it promised Participants. */
 export const keepPromise = mutation({
 	args: { applicationId: v.id("applications"), kept: v.boolean() },
 	handler: async (ctx, args) => {

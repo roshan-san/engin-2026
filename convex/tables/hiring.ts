@@ -21,8 +21,8 @@ export const hiringTables = {
 		endsAt: v.number(),
 		/** endsAt + 7 days. */
 		decideBy: v.number(),
-		buildersGet: v.optional(v.string()),
-		builderCount: v.number(),
+		participantsGet: v.optional(v.string()),
+		participantCount: v.number(),
 		applicantCount: v.number(),
 		/** Set when published; counts against the plan's Hackathons for the billing period. */
 		publishedAt: v.optional(v.number()),

@@ -9,7 +9,7 @@ type ThreadAccess = { thread: Doc<"threads">; isFounder: boolean };
 
 /**
  * The thread when the person may open it, else null. Team: the team.
- * Everyone: the Founder and Builders. Private: the Founder and that Builder.
+ * Everyone: the Founder and Participants. Private: the Founder and that Participant.
  */
 export async function getThreadAccess(
 	ctx: Ctx,
@@ -30,7 +30,7 @@ export async function getThreadAccess(
 	}
 	if (
 		!thread.hackathonId ||
-		(thread.kind === "private" && thread.builderId !== userId)
+		(thread.kind === "private" && thread.participantId !== userId)
 	) {
 		return null;
 	}
@@ -42,7 +42,7 @@ export async function getThreadAccess(
 			q.eq("hackathonId", hackathonId).eq("userId", userId),
 		)
 		.unique();
-	return application?.status === "building"
+	return application?.status === "participating"
 		? { thread, isFounder: false }
 		: null;
 }

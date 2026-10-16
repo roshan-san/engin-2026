@@ -2,17 +2,17 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useState } from "react";
 import { EmptyState } from "~/components/EmptyState";
 import { Kbd } from "~/components/Kbd";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { TILE } from "~/components/tile";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
 import { ShippedView } from "~/features/work/cards/ShippedView";
-import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 import { useListKeys } from "./useListKeys";
 import { useReviewQueue } from "./useReviewQueue";
 
-/** Every Card waiting for you, across all Builders. J/K move, V verifies, Enter opens. */
+/** Every Card waiting for you, across all Participants. J/K move, V verifies, Enter opens. */
 export function ReviewQueue({
 	hackathonId,
 	isClosed,
@@ -20,8 +20,8 @@ export function ReviewQueue({
 }: {
 	readonly hackathonId: Id<"hackathons">;
 	readonly isClosed: boolean;
-	/** Opens the Card in its Builder's Board. */
-	readonly onOpen: (builderId: Id<"users">, cardId: Id<"cards">) => void;
+	/** Opens the Card in its Participant's Board. */
+	readonly onOpen: (participantId: Id<"users">, cardId: Id<"cards">) => void;
 }) {
 	const { queue, verify } = useReviewQueue(hackathonId);
 	const [active, setActive] = useState<string>();
@@ -64,7 +64,7 @@ export function ReviewQueue({
 		return (
 			<EmptyState
 				title="Nothing to review."
-				body="Cards land here when a Builder ships them."
+				body="Cards land here when a Participant ships them."
 			/>
 		);
 	}
@@ -81,26 +81,17 @@ export function ReviewQueue({
 								tabIndex={0}
 								onFocus={() => setActive(card._id)}
 								className={cn(
-									"flex flex-col gap-3 rounded-lg border border-border p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
+									TILE,
+									"flex flex-col gap-3 focus-ring",
 									card._id === activeId && "border-foreground/25 bg-accent/40",
 								)}
 							>
 								<header className="flex items-center gap-2">
-									<Avatar className="size-6">
-										{card.owner?.image ? (
-											<AvatarImage src={card.owner.image} alt="" />
-										) : null}
-										<AvatarFallback className="text-[10px]">
-											{initials(
-												card.owner?.name ?? null,
-												card.owner?.username ?? null,
-											)}
-										</AvatarFallback>
-									</Avatar>
+									<PersonAvatar person={card.owner} size={24} />
 									<PersonName person={card.owner} className="text-sm" />
 									<button
 										type="button"
-										className="min-w-0 truncate text-sm font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/60"
+										className="min-w-0 truncate text-sm font-medium hover:underline focus-ring"
 										onClick={() =>
 											card.owner && onOpen(card.owner._id, card._id)
 										}

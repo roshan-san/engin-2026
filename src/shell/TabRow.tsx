@@ -1,17 +1,8 @@
 import { Link, useMatches } from "@tanstack/react-router";
-import {
-	Activity,
-	Briefcase,
-	Building2,
-	FileText,
-	Settings,
-	SquareKanban,
-	Trophy,
-	Users,
-} from "lucide-react";
-import type { ReactNode } from "react";
-import { builderStatusText } from "~/features/hiring/builder/builderStatus";
+import { type ReactNode, useState } from "react";
+import { participantStatusText } from "~/features/hiring/participant/participantStatus";
 import { useHackathon } from "~/features/hiring/public/useHackathon";
+import { StartupSettingsSheet } from "~/features/startups/settings/StartupSettingsSheet";
 import {
 	canSeeSettings,
 	tabsForSignedOut,
@@ -19,11 +10,11 @@ import {
 } from "~/shell/places";
 import { usePlaces } from "~/shell/usePlaces";
 
-export const TAB_CLASS =
-	"relative flex shrink-0 items-center gap-1.5 px-2 py-2 text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:text-foreground aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground [&_svg]:size-4 [&_svg]:shrink-0";
+const TAB_CLASS =
+	"relative flex shrink-0 items-center px-2 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:text-foreground focus-ring aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground";
 
 /** The second row: tabs that scroll sideways on a phone, and one thing pinned on the right. Its top rule is dropped right after a header that has its own bottom rule, so there is one line, not two. */
-export function TabRowFrame({
+function TabRowFrame({
 	label,
 	end,
 	children,
@@ -56,55 +47,62 @@ export function TabRow({
 	const routeTabs = useMatches({ select: tabsFromRoute });
 	const tabs = signedOut ? tabsForSignedOut(routeTabs) : routeTabs;
 	if (tabs?.kind === "startup") return <StartupRow slug={tabs.slug} />;
-	if (tabs?.kind === "builder")
-		return <BuilderTabs hackathonId={tabs.hackathonId} />;
+	if (tabs?.kind === "participant")
+		return <ParticipantTabs hackathonId={tabs.hackathonId} />;
 	if (tabs?.kind === "explore") return <ExploreTabs />;
 	return null;
 }
 
 function StartupRow({ slug }: { readonly slug: string }) {
 	const places = usePlaces();
+	const [settingsOpen, setSettingsOpen] = useState(false);
 
 	return (
 		<TabRowFrame
 			label="Startup"
 			end={
 				canSeeSettings(places, slug) ? (
-					<Link
-						to="/s/$slug/settings"
-						params={{ slug }}
-						aria-label="Startup settings"
-						className="flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=page]:bg-muted aria-[current=page]:text-foreground [&_svg]:size-4"
-					>
-						<Settings aria-hidden />
-					</Link>
+					<>
+						<button
+							type="button"
+							className="flex h-8 items-center rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-ring"
+							onClick={() => setSettingsOpen(true)}
+						>
+							Settings
+						</button>
+						<StartupSettingsSheet
+							slug={slug}
+							open={settingsOpen}
+							onOpenChange={setSettingsOpen}
+						/>
+					</>
 				) : null
 			}
 		>
 			<Link to="/s/$slug/board" params={{ slug }} className={TAB_CLASS}>
-				<SquareKanban aria-hidden />
 				Board
 			</Link>
 			<Link to="/s/$slug/hiring" params={{ slug }} className={TAB_CLASS}>
-				<Briefcase aria-hidden />
 				Hiring
 			</Link>
 			<Link to="/s/$slug/activity" params={{ slug }} className={TAB_CLASS}>
-				<Activity aria-hidden />
 				Activity
 			</Link>
 			<Link to="/s/$slug/team" params={{ slug }} className={TAB_CLASS}>
-				<Users aria-hidden />
 				Team
 			</Link>
 		</TabRowFrame>
 	);
 }
 
-function BuilderTabs({ hackathonId }: { readonly hackathonId: string }) {
+function ParticipantTabs({ hackathonId }: { readonly hackathonId: string }) {
 	const page = useHackathon(hackathonId);
 	const status = page
-		? builderStatusText(page, page.myApplication?.decision ?? null, Date.now())
+		? participantStatusText(
+				page,
+				page.myApplication?.decision ?? null,
+				Date.now(),
+			)
 		: null;
 
 	return (
@@ -122,7 +120,6 @@ function BuilderTabs({ hackathonId }: { readonly hackathonId: string }) {
 				activeOptions={{ exact: true, includeSearch: false }}
 				className={TAB_CLASS}
 			>
-				<SquareKanban aria-hidden />
 				Board
 			</Link>
 			<Link
@@ -130,7 +127,6 @@ function BuilderTabs({ hackathonId }: { readonly hackathonId: string }) {
 				params={{ id: hackathonId }}
 				className={TAB_CLASS}
 			>
-				<FileText aria-hidden />
 				Brief
 			</Link>
 		</TabRowFrame>
@@ -141,11 +137,9 @@ function ExploreTabs() {
 	return (
 		<TabRowFrame label="Explore">
 			<Link to="/explore/hackathons" className={TAB_CLASS}>
-				<Trophy aria-hidden />
 				Hackathons
 			</Link>
 			<Link to="/explore/startups" className={TAB_CLASS}>
-				<Building2 aria-hidden />
 				Startups
 			</Link>
 		</TabRowFrame>

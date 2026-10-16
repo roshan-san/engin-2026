@@ -9,35 +9,35 @@ import {
 } from "~/features/work/board/BoardScope";
 import { useMe } from "~/shell/useMe";
 import { useHackathon } from "../public/useHackathon";
-import { type BuilderStatus, builderStatus } from "./builderStatus";
+import { type ParticipantStatus, participantStatus } from "./participantStatus";
 
 const route = getRouteApi("/_shell/_authed/h/$id");
 
 export type Hackathon = NonNullable<ReturnType<typeof useHackathon>>;
-type Builder = {
+type Participant = {
 	page: Hackathon;
 	userId: Id<"users">;
-	status: BuilderStatus;
+	status: ParticipantStatus;
 };
 
-const BuilderContext = createContext<Builder | null>(null);
+const ParticipantContext = createContext<Participant | null>(null);
 
-/** The Builder's Hackathon and their place in it; only inside `BuilderGate`. */
-export function useBuilder(): Builder {
-	const builder = useContext(BuilderContext);
-	if (!builder) throw new Error("useBuilder outside BuilderGate");
-	return builder;
+/** The Participant's Hackathon and their place in it; only inside `ParticipantGate`. */
+export function useParticipant(): Participant {
+	const participant = useContext(ParticipantContext);
+	if (!participant) throw new Error("useParticipant outside ParticipantGate");
+	return participant;
 }
 
-/** Loads the Hackathon for its Board and Brief; anyone not building goes to the public post. */
-export function BuilderGate() {
+/** Loads the Hackathon for its Board and Brief; anyone not participating goes to the public post. */
+export function ParticipantGate() {
 	const { id } = route.useParams();
 	const page = useHackathon(id);
 	const me = useMe();
 
 	if (page === undefined || me === undefined) return <GlobalSpinner fill />;
 	if (page === null || me === null) return <GlobalNotFound />;
-	if (page.myApplication?.status !== "building") {
+	if (page.myApplication?.status !== "participating") {
 		return <Navigate to="/hackathons/$id" params={{ id }} replace />;
 	}
 	return <Provided page={page} userId={me._id} />;
@@ -50,7 +50,7 @@ function Provided({
 	readonly page: Hackathon;
 	readonly userId: Id<"users">;
 }) {
-	const status = builderStatus(
+	const status = participantStatus(
 		page,
 		page.myApplication?.decision ?? null,
 		Date.now(),
@@ -58,9 +58,9 @@ function Provided({
 	const { isClosed } = status;
 	const scope = useMemo<BoardScope>(
 		() => ({
-			kind: "builder",
+			kind: "participant",
 			hackathonId: page._id,
-			builderId: userId,
+			participantId: userId,
 			userId,
 			isFounder: false,
 			isClosed,
@@ -68,10 +68,10 @@ function Provided({
 		[page._id, userId, isClosed],
 	);
 	return (
-		<BuilderContext.Provider value={{ page, userId, status }}>
+		<ParticipantContext.Provider value={{ page, userId, status }}>
 			<BoardScopeContext.Provider value={scope}>
 				<Outlet />
 			</BoardScopeContext.Provider>
-		</BuilderContext.Provider>
+		</ParticipantContext.Provider>
 	);
 }

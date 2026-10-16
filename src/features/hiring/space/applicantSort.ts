@@ -5,9 +5,9 @@ export type ApplicantRow = FunctionReturnType<
 	typeof api.hiring.applications.listForHackathon
 >[number];
 
-const GROUP = { building: 0, applied: 1, declined: 2, left: 2 } as const;
+const GROUP = { participating: 0, applied: 1, declined: 2, left: 2 } as const;
 
-/** Builders first, then Applicants, then the rest; newest first or by Rating. */
+/** Participants first, then Applicants, then the rest; newest first or by Rating. */
 export function sortApplicants(
 	rows: ApplicantRow[],
 	by: "newest" | "rating",

@@ -17,7 +17,7 @@ const LENGTHS = [
 
 const PAID = [{ value: "paid", label: "Paid" }] as const;
 
-/** Open and building Hackathons anyone can browse, filtered by the URL. */
+/** Open and live Hackathons anyone can browse, filtered by the URL. */
 export function ExploreHackathons() {
 	const search = route.useSearch();
 	const navigate = route.useNavigate();

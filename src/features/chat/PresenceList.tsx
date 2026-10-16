@@ -1,14 +1,13 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { displayName } from "~/lib/displayName";
-import { initials } from "~/lib/initials";
 import { orderPresence, presenceLabel } from "./presence";
 import { useOnline } from "./useOnline";
 
@@ -35,12 +34,11 @@ export function PresenceList({
 				{orderPresence(online, userId).map((entry) => {
 					const { user, workingOn } = entry;
 					const face = (
-						<Avatar className="size-6 ring-2 ring-background">
-							{user.image ? <AvatarImage src={user.image} alt="" /> : null}
-							<AvatarFallback className="text-[10px]">
-								{initials(user.name, user.username)}
-							</AvatarFallback>
-						</Avatar>
+						<PersonAvatar
+							person={user}
+							size={24}
+							className="ring-2 ring-background"
+						/>
 					);
 					return (
 						<li key={user._id} data-testid="presence-avatar">
@@ -52,7 +50,7 @@ export function PresenceList({
 											params={{ slug }}
 											search={{ card: workingOn.cardId }}
 											aria-label={presenceLabel(entry)}
-											className="block rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+											className="block rounded-full focus-ring"
 										>
 											{face}
 										</Link>

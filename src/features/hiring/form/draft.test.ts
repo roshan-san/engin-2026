@@ -2,36 +2,39 @@ import { describe, expect, it } from "vitest";
 import {
 	draftCard,
 	emptyDraft,
-	fromBuildersGet,
+	fromParticipantsGet,
 	type HackathonDraft,
 	isDraftReady,
 	missingParts,
-	toBuildersGet,
+	toParticipantsGet,
 } from "./draft";
 
-describe("what Builders get", () => {
+describe("what Participants get", () => {
 	it("Nothing stores nothing", () => {
-		expect(toBuildersGet("Nothing", "")).toBeUndefined();
+		expect(toParticipantsGet("Nothing", "")).toBeUndefined();
 	});
 
 	it("Custom stores the trimmed text", () => {
-		expect(toBuildersGet("Custom", "  Lunch  ")).toBe("Lunch");
-		expect(toBuildersGet("Custom", "   ")).toBeUndefined();
+		expect(toParticipantsGet("Custom", "  Lunch  ")).toBe("Lunch");
+		expect(toParticipantsGet("Custom", "   ")).toBeUndefined();
 	});
 
 	it("a chip stores its label", () => {
-		expect(toBuildersGet("₹1,000 per finalist", "")).toBe(
+		expect(toParticipantsGet("₹1,000 per finalist", "")).toBe(
 			"₹1,000 per finalist",
 		);
 	});
 
 	it("reads back as the chip, or as Custom", () => {
-		expect(fromBuildersGet(null)).toEqual({ choice: "Nothing", custom: "" });
-		expect(fromBuildersGet("₹5,000 to the hire")).toEqual({
+		expect(fromParticipantsGet(null)).toEqual({
+			choice: "Nothing",
+			custom: "",
+		});
+		expect(fromParticipantsGet("₹5,000 to the hire")).toEqual({
 			choice: "₹5,000 to the hire",
 			custom: "",
 		});
-		expect(fromBuildersGet("Lunch")).toEqual({
+		expect(fromParticipantsGet("Lunch")).toEqual({
 			choice: "Custom",
 			custom: "Lunch",
 		});

@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { finishIfDecided } from "../model/hackathons";
+import { finishIfDecided } from "../model/hackathonLifecycle";
 import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import {
-	builders,
 	closeHackathon,
 	decidedHackathon,
 	endHackathon,
+	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { givePro } from "../testing/billing.setup";
@@ -228,7 +228,7 @@ describe("public page", () => {
 		expect(forFounder?.isTeam).toBe(true);
 	});
 
-	it("signed in, the page lists the Cards Builders will work, without their notes", async () => {
+	it("signed in, the page lists the Cards Participants will work, without their notes", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 		const sam = await signUp(setup.t, "Sam");
@@ -336,7 +336,7 @@ describe("publish", () => {
 				_id: hackathonId,
 				status: "open",
 				applicantCount: 0,
-				builderCount: 0,
+				participantCount: 0,
 				toReview: 0,
 				toDecide: 0,
 			},
@@ -345,8 +345,8 @@ describe("publish", () => {
 	});
 });
 
-/** Puts a person on the Hackathon as a Builder. */
-async function addBuilder(
+/** Puts a person on the Hackathon as a Participant. */
+async function addParticipant(
 	setup: Setup,
 	hackathonId: Id<"hackathons">,
 	name: string,
@@ -357,10 +357,10 @@ async function addBuilder(
 			hackathonId,
 			userId: person.userId,
 			answer: "I can build it",
-			status: "building",
+			status: "participating",
 			shortlisted: false,
 		});
-		await ctx.db.patch(hackathonId, { builderCount: 1 });
+		await ctx.db.patch(hackathonId, { participantCount: 1 });
 	});
 	return person;
 }
@@ -455,14 +455,14 @@ describe("publishing needs Pro", () => {
 		const beta = await secondStartup(setup);
 		await givePro(setup.t, setup.founder);
 		const runningIds: Id<"hackathons">[] = [];
-		for (const [place, builder] of [
+		for (const [place, participant] of [
 			[setup, "Ben"],
 			[setup, "Cal"],
 			[beta, "Dee"],
 			[beta, "Eve"],
 		] as const) {
 			const id = await publishedHackathon(place);
-			await builders(place, id, [builder]);
+			await participants(place, id, [participant]);
 			runningIds.push(id);
 		}
 		const [firstId] = runningIds;
@@ -485,7 +485,7 @@ describe("publishing needs Pro", () => {
 				await ctx.db
 					.query("applications")
 					.withIndex("by_hackathon_and_status", (q) =>
-						q.eq("hackathonId", firstId).eq("status", "building"),
+						q.eq("hackathonId", firstId).eq("status", "participating"),
 					)
 					.take(1),
 		);
@@ -503,7 +503,7 @@ describe("publishing needs Pro", () => {
 		const setup = await setUpStartup(createTest());
 		const subscriptionId = await givePro(setup.t, setup.founder);
 		const hackathonId = await publishedHackathon(setup);
-		await builders(setup, hackathonId, ["Ben"]);
+		await participants(setup, hackathonId, ["Ben"]);
 		await setup.t.run(
 			async (ctx) =>
 				await ctx.db.patch(subscriptionId, { status: "cancelled" }),
@@ -514,12 +514,12 @@ describe("publishing needs Pro", () => {
 		const hackathon = await setup.t.run(
 			async (ctx) => await ctx.db.get(hackathonId),
 		);
-		expect(hackathon?.status).toBe("building");
+		expect(hackathon?.status).toBe("live");
 	});
 });
 
 describe("lifecycle", () => {
-	it("with no Builders, it ends at the start", async () => {
+	it("with no Participants, it ends at the start", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 
@@ -533,11 +533,11 @@ describe("lifecycle", () => {
 		expect(activity).toEqual([]);
 	});
 
-	it("at the start, each Builder gets their own copy of the Cards", async () => {
+	it("at the start, each Participant gets their own copy of the Cards", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const ana = await addBuilder(setup, hackathonId, "Ana");
-		const ben = await addBuilder(setup, hackathonId, "Ben");
+		const ana = await addParticipant(setup, hackathonId, "Ana");
+		const ben = await addParticipant(setup, hackathonId, "Ben");
 
 		await advancePast(setup.t, nextMonday() - Date.now() + HOUR);
 		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
@@ -563,7 +563,7 @@ describe("lifecycle", () => {
 	it("at the start, people still waiting are declined", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		await addBuilder(setup, hackathonId, "Ana");
+		await addParticipant(setup, hackathonId, "Ana");
 		const waiting = await signUp(setup.t, "Wes");
 		await setup.t.run(async (ctx) => {
 			await ctx.db.insert("applications", {
@@ -590,7 +590,7 @@ describe("lifecycle", () => {
 	it("after the end it's time to decide", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		await addBuilder(setup, hackathonId, "Ana");
+		await addParticipant(setup, hackathonId, "Ana");
 
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
 		await advancePast(setup.t, 0);
@@ -607,11 +607,11 @@ describe("lifecycle", () => {
 	it("starting twice does nothing the second time", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const ana = await addBuilder(setup, hackathonId, "Ana");
+		const ana = await addParticipant(setup, hackathonId, "Ana");
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
 		await advancePast(setup.t, 0);
 
-		await setup.t.mutation(internal.hiring.hackathons.startBuilding, {
+		await setup.t.mutation(internal.hiring.hackathons.goLive, {
 			hackathonId,
 		});
 		await setup.t.mutation(internal.hiring.hackathons.copyCardsFor, {
@@ -627,10 +627,10 @@ describe("lifecycle", () => {
 		expect(hackathon.status).toBe("deciding");
 	});
 
-	it("when every Builder has a decision, the Hackathon is done", async () => {
+	it("when every Participant has a decision, the Hackathon is done", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const ana = await addBuilder(setup, hackathonId, "Ana");
+		const ana = await addParticipant(setup, hackathonId, "Ana");
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
 		await advancePast(setup.t, 0);
 		const before = await spaceOf(setup, hackathonId);
@@ -671,7 +671,7 @@ describe("the decision deadline", () => {
 		return rows.filter((row) => row.kind === "hackathon_finished");
 	}
 
-	it("decideBy finishes a Hackathon with undecided Builders", async () => {
+	it("decideBy finishes a Hackathon with undecided Participants", async () => {
 		const setup = await setUpStartup(createTest());
 		const { hackathonId } = await decidedHackathon(setup, [
 			{ name: "Ana", decision: "not_this_time" },
@@ -706,7 +706,7 @@ describe("the decision deadline", () => {
 		const setup = await setUpStartup(createTest());
 		const {
 			hackathonId,
-			builders: [ben],
+			participants: [ben],
 		} = await decidedHackathon(setup, [{ name: "Ben" }]);
 		await closeHackathon(setup, hackathonId);
 
@@ -722,13 +722,13 @@ describe("the decision deadline", () => {
 describe("hiring rows", () => {
 	it("Hiring rows count hires and promises", async () => {
 		const setup = await setUpStartup(createTest());
-		const { builders: decided } = await decidedHackathon(setup, [
+		const { participants: decided } = await decidedHackathon(setup, [
 			{ name: "Ana", decision: "hired" },
 			{ name: "Ben", decision: "not_this_time" },
 		]);
-		for (const builder of decided) {
-			await builder.as.mutation(api.hiring.applications.keepPromise, {
-				applicationId: builder.applicationId,
+		for (const participant of decided) {
+			await participant.as.mutation(api.hiring.applications.keepPromise, {
+				applicationId: participant.applicationId,
 				kept: true,
 			});
 		}
@@ -747,7 +747,7 @@ describe("hiring rows", () => {
 		});
 	});
 
-	it("a closed Hackathon counts its undecided Builders", async () => {
+	it("a closed Hackathon counts its undecided Participants", async () => {
 		const setup = await setUpStartup(createTest());
 		const { hackathonId } = await decidedHackathon(setup, [{ name: "Ben" }]);
 		await closeHackathon(setup, hackathonId);
@@ -792,7 +792,7 @@ describe("explore", () => {
 				status: "open",
 				job: { role: "frontend", pay: "6_9l", mode: "remote" },
 				weeks: 1,
-				buildersGet: "Ship real work and meet the team",
+				participantsGet: "Ship real work and meet the team",
 				startup: {
 					name: "Acme",
 					slug: "acme",
@@ -804,25 +804,25 @@ describe("explore", () => {
 		]);
 	});
 
-	it("open Hackathons come before building ones", async () => {
+	it("open Hackathons come before live ones", async () => {
 		const setup = await setUpStartup(createTest());
 		const zeta = await otherStartup(setup, "Zeta");
-		const buildingId = await publishedHackathon(setup);
-		await builders(setup, buildingId, ["Ben"]);
+		const liveId = await publishedHackathon(setup);
+		await participants(setup, liveId, ["Ben"]);
 		const laterId = await publishedHackathon(zeta, {
 			startsAt: nextMonday() + 14 * DAY,
 		});
 		const soonerId = await publishedHackathon(zeta, {
 			startsAt: nextMonday() + 7 * DAY,
 		});
-		await startHackathon(setup, buildingId);
+		await startHackathon(setup, liveId);
 
 		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
 
 		expect(rows.map((row) => [row.hackathonId, row.status])).toEqual([
 			[soonerId, "open"],
 			[laterId, "open"],
-			[buildingId, "building"],
+			[liveId, "live"],
 		]);
 	});
 
@@ -849,15 +849,15 @@ describe("explore", () => {
 		expect(rows[0].hackathonId).toBe(soonestId);
 	});
 
-	it("building Hackathons come latest start first", async () => {
+	it("live Hackathons come latest start first", async () => {
 		const setup = await setUpStartup(createTest());
 		const zeta = await otherStartup(setup, "Zeta");
 		const firstId = await publishedHackathon(setup, { weeks: 2 });
-		await builders(setup, firstId, ["Ben"]);
+		await participants(setup, firstId, ["Ben"]);
 		const secondId = await publishedHackathon(zeta, {
 			startsAt: nextMonday() + 7 * DAY,
 		});
-		await builders(zeta, secondId, ["Cal"]);
+		await participants(zeta, secondId, ["Cal"]);
 		await startHackathon(zeta, secondId);
 
 		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
@@ -883,7 +883,7 @@ describe("explore", () => {
 		const setup = await setUpStartup(createTest());
 		const designerId = await publishedHackathon(setup, {
 			job: { role: "designer", pay: "equity", mode: "remote" },
-			buildersGet: undefined,
+			participantsGet: undefined,
 		});
 		const backendId = await publishedHackathon(setup, {
 			job: { role: "backend", pay: "6_9l", mode: "remote" },

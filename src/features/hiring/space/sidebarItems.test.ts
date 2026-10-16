@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { resolveView, type SidebarInput, sidebarItems } from "./sidebarItems";
 
-function builder(id: string, shortlisted = false, done = 0) {
+function participant(id: string, shortlisted = false, done = 0) {
 	return {
 		progress: { done, total: 3 },
 		application: {
 			_id: `app-${id}`,
-			status: "building",
+			status: "participating",
 			shortlisted,
 			decision: null,
 		},
@@ -15,36 +15,46 @@ function builder(id: string, shortlisted = false, done = 0) {
 }
 
 const input = {
-	builders: [builder("ana", true, 2), builder("ben")],
+	participants: [participant("ana", true, 2), participant("ben")],
 	queue: [
 		{ owner: { _id: "ana" } },
 		{ owner: { _id: "ana" } },
 		{ owner: { _id: "ben" } },
 	],
 	threads: [
-		{ _id: "t-everyone", kind: "everyone", builder: null, unread: true },
-		{ _id: "t-ana", kind: "private", builder: { _id: "ana" }, unread: false },
-		{ _id: "t-ben", kind: "private", builder: { _id: "ben" }, unread: true },
+		{ _id: "t-everyone", kind: "everyone", participant: null, unread: true },
+		{
+			_id: "t-ana",
+			kind: "private",
+			participant: { _id: "ana" },
+			unread: false,
+		},
+		{
+			_id: "t-ben",
+			kind: "private",
+			participant: { _id: "ben" },
+			unread: true,
+		},
 	],
 } as unknown as SidebarInput;
 
 describe("sidebarItems", () => {
-	it("counts the review queue, overall and per Builder", () => {
+	it("counts the review queue, overall and per Participant", () => {
 		const items = sidebarItems(input);
 
 		expect(items.reviewCount).toBe(3);
 		expect(
-			items.builders.map((b) => [b.userId, b.reviewCount, b.shortlisted]),
+			items.participants.map((b) => [b.userId, b.reviewCount, b.shortlisted]),
 		).toEqual([
 			["ana", 2, true],
 			["ben", 1, false],
 		]);
 	});
 
-	it("shows how far each Builder has got", () => {
+	it("shows how far each Participant has got", () => {
 		const items = sidebarItems(input);
 
-		expect(items.builders.map((b) => b.progress)).toEqual([
+		expect(items.participants.map((b) => b.progress)).toEqual([
 			{ done: 2, total: 3 },
 			{ done: 0, total: 3 },
 		]);
@@ -54,7 +64,7 @@ describe("sidebarItems", () => {
 		const items = sidebarItems(input);
 
 		expect(items.everyoneUnread).toBe(true);
-		expect(items.builders.map((b) => [b.userId, b.unread])).toEqual([
+		expect(items.participants.map((b) => [b.userId, b.unread])).toEqual([
 			["ana", false],
 			["ben", true],
 		]);
@@ -62,17 +72,17 @@ describe("sidebarItems", () => {
 });
 
 describe("resolveView", () => {
-	const builderIds = ["ana", "ben"];
+	const participantIds = ["ana", "ben"];
 
 	it("keeps a view that still exists", () => {
-		expect(resolveView("everyone", builderIds, "building")).toBe("everyone");
-		expect(resolveView("ben", builderIds, "deciding")).toBe("ben");
+		expect(resolveView("everyone", participantIds, "live")).toBe("everyone");
+		expect(resolveView("ben", participantIds, "deciding")).toBe("ben");
 	});
 
 	it("falls back when the view is gone or was never set", () => {
-		expect(resolveView("app-123", builderIds, "building")).toBe("review");
-		expect(resolveView(undefined, builderIds, "building")).toBe("review");
-		expect(resolveView("zed", builderIds, "deciding")).toBe("ana");
+		expect(resolveView("app-123", participantIds, "live")).toBe("review");
+		expect(resolveView(undefined, participantIds, "live")).toBe("review");
+		expect(resolveView("zed", participantIds, "deciding")).toBe("ana");
 		expect(resolveView(undefined, [], "done")).toBe("review");
 	});
 });

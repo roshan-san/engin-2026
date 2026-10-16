@@ -24,7 +24,7 @@ export function hackathonInput(
 		problem: "Our signup drops people before they finish.",
 		weeks: 1,
 		startsAt: nextMonday(),
-		buildersGet: "Ship real work and meet the team",
+		participantsGet: "Ship real work and meet the team",
 		cards: [
 			{ title: "Fix signup" },
 			{ title: "Add onboarding", notes: "Keep it short" },

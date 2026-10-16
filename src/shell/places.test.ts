@@ -1,6 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import type { WaitingReason } from "@convex/shared/places";
 import { describe, expect, it } from "vitest";
+import { participantStatusText } from "~/features/hiring/participant/participantStatus";
 import {
 	canSeeSettings,
 	currentPlaceView,
@@ -10,7 +11,9 @@ import {
 	othersWaiting,
 	type Places,
 	placeFromRoute,
+	placeHint,
 	reasonLine,
+	switcherPhaseText,
 	tabsForSignedOut,
 	tabsFromRoute,
 } from "./places";
@@ -30,14 +33,17 @@ function startup(slug: string, name: string, waiting: WaitingReason[]) {
 	};
 }
 
-function building(role: "frontend" | "fullstack", waiting: WaitingReason[]) {
+function liveHackathon(
+	role: "frontend" | "fullstack",
+	waiting: WaitingReason[],
+) {
 	return {
 		hackathonId,
 		job: { role, pay: "equity", mode: "remote" } as const,
 		startupName: "Acme",
 		startupSlug: "acme",
 		startupLogoUrl: null,
-		status: "building" as const,
+		status: "live" as const,
 		startsAt: 0,
 		endsAt: 1,
 		decision: null,
@@ -45,14 +51,14 @@ function building(role: "frontend" | "fullstack", waiting: WaitingReason[]) {
 	};
 }
 
-function buildingRow(id: string, startupName: string) {
+function hackathonRow(id: string, startupName: string) {
 	return {
 		hackathonId: id as Id<"hackathons">,
 		job: { role: "frontend", pay: "6_9l", mode: "remote" } as const,
 		startupName,
 		startupSlug: startupName.toLowerCase(),
 		startupLogoUrl: null,
-		status: "building" as const,
+		status: "live" as const,
 		startsAt: 0,
 		endsAt: 0,
 		decision: null,
@@ -61,7 +67,7 @@ function buildingRow(id: string, startupName: string) {
 }
 
 function places(overrides: Partial<Places> = {}): Places {
-	return { startups: [], building: [], applied: [], ...overrides };
+	return { startups: [], hackathons: [], applied: [], ...overrides };
 }
 
 function match(routeId: string, params: Record<string, string> = {}) {
@@ -81,7 +87,7 @@ describe("placeFromRoute", () => {
 		expect(placeFromRoute(matches)).toEqual({ kind: "startup", slug: "acme" });
 	});
 
-	it("a Builder's Hackathon page is that Hackathon", () => {
+	it("a Participant's Hackathon page is that Hackathon", () => {
 		const matches = [
 			match("__root__"),
 			match("/_shell"),
@@ -140,7 +146,7 @@ describe("othersWaiting", () => {
 	it("places with nothing waiting never count, even an empty list", () => {
 		const quiet = places({
 			startups: [startup("acme", "Acme", [])],
-			building: [building("frontend", [])],
+			hackathons: [liveHackathon("frontend", [])],
 		});
 
 		expect(othersWaiting(quiet, null)).toBe(false);
@@ -148,7 +154,7 @@ describe("othersWaiting", () => {
 
 	it("a waiting Hackathon Board counts from a Startup", () => {
 		const onBoard = places({
-			building: [building("frontend", [{ kind: "promise_pending" }])],
+			hackathons: [liveHackathon("frontend", [{ kind: "promise_pending" }])],
 		});
 
 		expect(othersWaiting(onBoard, { kind: "startup", slug: "acme" })).toBe(
@@ -180,21 +186,67 @@ describe("reasonLine", () => {
 			"3 new applicants on Frontend",
 		],
 		[
-			{ kind: "builder_cards_to_review", role: "frontend", count: 1 },
-			"1 Builder Card to review on Frontend",
+			{ kind: "participant_cards_to_review", role: "frontend", count: 1 },
+			"1 Participant Card to review on Frontend",
 		],
 		[
 			{ kind: "hackathon_unread", role: "frontend" },
 			"Unread messages on Frontend",
 		],
 		[
-			{ kind: "builders_to_decide", role: "frontend", count: 2 },
-			"2 Builders to decide on Frontend",
+			{ kind: "participants_to_decide", role: "frontend", count: 2 },
+			"2 Participants to decide on Frontend",
 		],
 		[{ kind: "messages_unread" }, "Unread messages"],
 		[{ kind: "promise_pending" }, "Did they keep their promise?"],
 	] as const)("%o reads %s", (reason, line) => {
 		expect(reasonLine(reason)).toBe(line);
+	});
+});
+
+describe("placeHint", () => {
+	it("nothing waiting shows who you are there", () => {
+		expect(placeHint([], "Founder")).toBe("Founder");
+	});
+
+	it("one reason reads in plain words", () => {
+		expect(placeHint([{ kind: "cards_to_verify", count: 2 }], "Founder")).toBe(
+			"2 Cards to verify",
+		);
+	});
+
+	it("more reasons show the first and how many more", () => {
+		expect(
+			placeHint(
+				[{ kind: "team_unread" }, { kind: "cards_to_verify", count: 1 }],
+				"Founder",
+			),
+		).toBe("Unread team messages · +1 more");
+	});
+});
+
+describe("switcherPhaseText", () => {
+	const endsAt = 1_000;
+
+	it.each([
+		["open", null, "Starts soon"],
+		["live", null, "Live"],
+		["deciding", null, "Founder deciding"],
+		["done", "hired", "Hired"],
+		["done", "not_this_time", "Finished"],
+	] as const)("%s (%s) reads %s", (status, decision, phase) => {
+		expect(switcherPhaseText({ status, endsAt, decision }, 0)).toBe(phase);
+	});
+
+	it("agrees with the tab row once a Live Hackathon has ended", () => {
+		const hackathon = {
+			status: "live" as const,
+			startsAt: 0,
+			endsAt,
+			decision: null,
+		};
+		expect(switcherPhaseText(hackathon, endsAt)).toBe("Founder deciding");
+		expect(participantStatusText(hackathon, null, endsAt)).toBe("Deciding");
 	});
 });
 
@@ -245,9 +297,9 @@ describe("currentPlaceView", () => {
 		).toBe("https://x/l.png");
 	});
 
-	it("a Builder's Hackathon shows the job and the Startup", () => {
+	it("a Participant's Hackathon shows the job and the Startup", () => {
 		const view = currentPlaceView(
-			places({ building: [buildingRow("h1", "Zest")] }),
+			places({ hackathons: [hackathonRow("h1", "Zest")] }),
 			{ kind: "hackathon", hackathonId: "h1" },
 		);
 
@@ -255,7 +307,7 @@ describe("currentPlaceView", () => {
 			name: "Frontend",
 			logoName: "Zest",
 			logoUrl: null,
-			role: "Builder · Zest",
+			role: "Participant · Zest",
 		});
 	});
 
@@ -271,23 +323,23 @@ describe("filterPlaces", () => {
 	it("keeps Startups and Hackathons whose name matches, ignoring case", () => {
 		const all = places({
 			startups: [startup("acme", "Acme", []), startup("kite", "Kitebase", [])],
-			building: [buildingRow("h1", "Zest")],
+			hackathons: [hackathonRow("h1", "Zest")],
 		});
 
 		const found = filterPlaces(all, "KI");
 
 		expect(found.startups.map((s) => s.name)).toEqual(["Kitebase"]);
-		expect(found.building).toEqual([]);
+		expect(found.hackathons).toEqual([]);
 	});
 
 	it("keeps a Hackathon whose Startup or job matches", () => {
 		const all = places({
 			startups: [startup("acme", "Acme", [])],
-			building: [buildingRow("h1", "Zest")],
+			hackathons: [hackathonRow("h1", "Zest")],
 		});
 
-		expect(filterPlaces(all, "zes").building).toHaveLength(1);
-		expect(filterPlaces(all, "front").building).toHaveLength(1);
+		expect(filterPlaces(all, "zes").hackathons).toHaveLength(1);
+		expect(filterPlaces(all, "front").hackathons).toHaveLength(1);
 		expect(filterPlaces(all, "zes").startups).toEqual([]);
 	});
 
@@ -318,14 +370,14 @@ describe("tabsFromRoute", () => {
 		).toEqual({ kind: "startup", slug: "acme" });
 	});
 
-	it("a Builder's Hackathon shows the Builder tabs", () => {
+	it("a Participant's Hackathon shows the Participant tabs", () => {
 		expect(
 			tabsFromRoute([
 				...shell,
 				match("/_shell/_authed"),
 				match("/_shell/_authed/h/$id", { id: "x" }),
 			]),
-		).toEqual({ kind: "builder", hackathonId: "x" });
+		).toEqual({ kind: "participant", hackathonId: "x" });
 	});
 
 	it("Explore shows its tabs, signed in or out", () => {
@@ -359,9 +411,11 @@ describe("tabsForSignedOut", () => {
 		expect(tabsForSignedOut({ kind: "explore" })).toEqual({ kind: "explore" });
 	});
 
-	it("drops the Startup and Builder rows, which need a signed-in person", () => {
+	it("drops the Startup and Participant rows, which need a signed-in person", () => {
 		expect(tabsForSignedOut({ kind: "startup", slug: "acme" })).toBeNull();
-		expect(tabsForSignedOut({ kind: "builder", hackathonId: "x" })).toBeNull();
+		expect(
+			tabsForSignedOut({ kind: "participant", hackathonId: "x" }),
+		).toBeNull();
 		expect(tabsForSignedOut(null)).toBeNull();
 	});
 });

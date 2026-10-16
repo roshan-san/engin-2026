@@ -2,8 +2,9 @@ import { TEXT } from "@convex/shared/limits";
 import { ChevronLeftIcon, MoreHorizontalIcon, XIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { Kbd } from "~/components/Kbd";
+import { PanelBody } from "~/components/PanelBody";
 import { PanelHeader } from "~/components/PanelHeader";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
 import { UnreadDot } from "~/components/UnreadDot";
 import {
 	AlertDialog,
@@ -86,7 +87,7 @@ export function CardPanel({
 			<div className="flex min-h-0 flex-1 flex-col">
 				<CardHeader {...panel} />
 				<p className="p-4 text-sm text-muted-foreground">
-					This Card isn't here.
+					This Card doesn't exist.
 				</p>
 			</div>
 		);
@@ -159,7 +160,7 @@ function OpenCard({
 					dropAction(card, column.id, viewer) !== null,
 			);
 	const current = COLUMNS.find((column) => column.id === card.status);
-	// Hackathon Cards stay with their Builder until the end.
+	// Hackathon Cards stay with their Participant until the end.
 	const canDelete =
 		scope.kind === "startup" &&
 		!isDone &&
@@ -200,7 +201,7 @@ function OpenCard({
 				) : null}
 			</CardHeader>
 
-			<div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 pt-4 pb-6">
+			<PanelBody className="pb-6">
 				<TitleField card={card} isLocked={isDone || isLocked} onSave={update} />
 
 				<dl className="-mt-2 grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-x-2 gap-y-1 text-sm">
@@ -256,23 +257,21 @@ function OpenCard({
 					</Badge>
 				) : null}
 
-				<section className="flex flex-col gap-2">
-					<SectionLabel as="h3">Notes</SectionLabel>
+				<Section label="Notes" as="h3">
 					<NotesField
 						card={card}
 						isReadOnly={isLocked}
 						isDiscarded={isDeleting}
 						onSave={(notes) => update(card._id, { notes })}
 					/>
-				</section>
+				</Section>
 
 				{card.shipped ? (
-					<section className="flex flex-col gap-2">
-						<SectionLabel as="h3">What shipped</SectionLabel>
+					<Section label="What shipped" as="h3">
 						<ShippedView card={card} />
-					</section>
+					</Section>
 				) : null}
-			</div>
+			</PanelBody>
 
 			{canVerify ? (
 				<div className="shrink-0 border-t border-border p-3">

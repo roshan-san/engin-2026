@@ -1,8 +1,8 @@
 import { query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
 import {
-	builderReasons,
 	isPromisePending,
+	participantReasons,
 	startupReasons,
 } from "../model/places";
 import { MAX_USER_APPLICATIONS, MAX_USER_STARTUPS } from "../shared/limits";
@@ -55,7 +55,7 @@ export const list = query({
 			.withIndex("by_user", (q) => q.eq("userId", userId))
 			.take(MAX_USER_APPLICATIONS);
 
-		const building = [];
+		const hackathons = [];
 		const applied = [];
 		for (const application of applications) {
 			const hackathon = await ctx.db.get(application.hackathonId);
@@ -73,16 +73,16 @@ export const list = query({
 					: null,
 			};
 
-			if (application.status === "building") {
+			if (application.status === "participating") {
 				// A finished Hackathon stays until the promise question is answered.
 				if (hackathon.status !== "done" || isPromisePending(application)) {
-					building.push({
+					hackathons.push({
 						...place,
 						status: hackathon.status,
 						startsAt: hackathon.startsAt,
 						endsAt: hackathon.endsAt,
 						decision: application.decision ?? null,
-						waiting: await builderReasons(ctx, application),
+						waiting: await participantReasons(ctx, application),
 					});
 				}
 			} else if (
@@ -94,6 +94,6 @@ export const list = query({
 			}
 		}
 
-		return { startups, building, applied };
+		return { startups, hackathons, applied };
 	},
 });

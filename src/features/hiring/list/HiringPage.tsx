@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { AppPage, PageTitle } from "~/components/AppPage";
 import { EmptyState } from "~/components/EmptyState";
 import { RowList } from "~/components/RowList";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/work/board/StartupContext";
@@ -47,7 +47,7 @@ export function HiringPage() {
 					}
 					body={
 						isFounder
-							? "Post a real problem. Up to 10 Builders work it for a week on their own Boards. Hire on what they ship."
+							? "Post a real problem. Up to 10 Participants work it for a week on their own Boards. Hire on what they ship."
 							: null
 					}
 					action={newHackathon}
@@ -76,10 +76,9 @@ function Groups({
 	].filter((section) => section.rows.length > 0);
 
 	return (
-		<div className="flex flex-col gap-8">
+		<div className="flex flex-col gap-10">
 			{sections.map((section) => (
-				<section key={section.label} className="flex flex-col gap-1">
-					<SectionLabel>{section.label}</SectionLabel>
+				<Section key={section.label} label={section.label}>
 					<RowList>
 						{section.rows.map((row) => (
 							<HackathonRow
@@ -90,7 +89,7 @@ function Groups({
 							/>
 						))}
 					</RowList>
-				</section>
+				</Section>
 			))}
 		</div>
 	);

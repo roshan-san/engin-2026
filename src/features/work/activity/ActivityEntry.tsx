@@ -14,15 +14,14 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "~/components/ui/collapsible";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { tierText } from "~/features/work/activity/tierText";
 import { cn } from "~/lib/utils";
-import { ActorAvatar } from "./ActorAvatar";
 import { EntryProof } from "./EntryProof";
 import { type EntryView, entryDay, entrySummary } from "./record";
 
 const ROW = "flex w-full items-center gap-3 px-2 py-2 text-left text-sm";
-const INTERACTIVE =
-	"rounded-md outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60";
+const INTERACTIVE = "rounded-md transition-colors hover:bg-accent focus-ring";
 
 const MILESTONE_ICON: Record<
 	Exclude<EntryView["kind"], "card_verified">,
@@ -30,7 +29,7 @@ const MILESTONE_ICON: Record<
 > = {
 	contributor_joined: UserPlus,
 	hackathon_finished: Flag,
-	builder_hired: Handshake,
+	participant_hired: Handshake,
 };
 
 /**
@@ -124,7 +123,7 @@ function EntryLine({
 					<Icon aria-hidden className="size-3.5" />
 				</span>
 			) : (
-				<ActorAvatar person={entry.actor} className="shrink-0" />
+				<PersonAvatar person={entry.actor} size={24} />
 			)}
 			<span className="min-w-0 flex-1 truncate">
 				{actor ? (

@@ -1,3 +1,4 @@
+import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 import { AppPage, BackLink } from "~/components/AppPage";
@@ -47,7 +48,8 @@ function SpaceBody({
 	const hires =
 		applicants?.filter((row) => row.application.decision === "hired").length ??
 		0;
-	const stage = STAGE[hackathon.status];
+	const current = { ...hackathon, status: phaseOf(hackathon, Date.now()) };
+	const stage = STAGE[current.status];
 
 	return (
 		<AppPage
@@ -73,7 +75,7 @@ function SpaceBody({
 								? hires > 0
 									? `${hires} hired`
 									: "No hire"
-								: stageDate(hackathon)}
+								: stageDate(current)}
 						</span>
 					</Badge>
 				),

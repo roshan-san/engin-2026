@@ -1,3 +1,9 @@
+import {
+	type HackathonPhase,
+	isUnderway,
+	phaseOf,
+} from "@convex/shared/hackathonPhase";
+
 type Decision = "hired" | "not_this_time";
 
 export type DecideState = {
@@ -10,26 +16,19 @@ export type DecideState = {
 	readonly decided: Decision | null;
 };
 
-/** What the Founder can do next for one Builder: ★, then the Walkthrough, then the decision. */
+/** What the Founder can do next for one Participant: ★, then the Walkthrough, then the decision. */
 export function decideState(
 	application: {
 		shortlisted: boolean;
 		walkthroughAt: number | null;
 		decision: Decision | null;
 	},
-	hackathon: {
-		status: "draft" | "open" | "building" | "deciding" | "done";
-		endsAt: number;
-	},
+	hackathon: { status: HackathonPhase; endsAt: number },
 	now: number,
 ): DecideState {
-	const isOpen =
-		!application.decision &&
-		(hackathon.status === "building" || hackathon.status === "deciding");
-	const hasEnded =
-		hackathon.status === "deciding" ||
-		(hackathon.status === "building" && now >= hackathon.endsAt);
-	const canDecide = isOpen && hasEnded;
+	const phase = phaseOf(hackathon, now);
+	const isOpen = !application.decision && isUnderway(phase);
+	const canDecide = isOpen && phase === "deciding";
 	const isWalkedThrough = application.walkthroughAt !== null;
 
 	return {

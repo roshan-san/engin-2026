@@ -14,7 +14,7 @@ export function OpenNow() {
 	return (
 		<section className="flex flex-col gap-4">
 			<div className="flex items-baseline justify-between">
-				<h2 className="text-xl font-semibold tracking-tight">Open now</h2>
+				<h2 className="text-2xl font-semibold">Open now</h2>
 				<Link
 					to="/explore/hackathons"
 					className="text-sm text-muted-foreground hover:text-foreground"

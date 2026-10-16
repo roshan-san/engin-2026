@@ -6,7 +6,7 @@ import {
 	type RouteMatch,
 } from "./places";
 
-export const LAST_PLACE_KEY = "engin:lastPlace";
+const LAST_PLACE_KEY = "engin:lastPlace";
 
 /** The last place you were in, and the page in it. */
 export type RememberedPlace = {
@@ -62,7 +62,7 @@ function stillBelongs(
 	if (place.kind === "startup") {
 		return places.startups.some((startup) => startup.slug === place.slug);
 	}
-	return places.building.some(
+	return places.hackathons.some(
 		(hackathon) => hackathon.hackathonId === place.hackathonId,
 	);
 }

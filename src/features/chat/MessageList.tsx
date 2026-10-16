@@ -1,11 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog";
 import { Skeleton } from "~/components/ui/skeleton";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
-import { initials } from "~/lib/initials";
 import { relativeTime } from "~/lib/relativeTime";
 import { groupMessages } from "./groupMessages";
 import { MessageBody } from "./MessageBody";
@@ -101,14 +100,7 @@ export function MessageList({
 			>
 				{groupMessages(messages).map((group) => (
 					<div key={group.messages[0]._id} className="flex gap-2.5">
-						<Avatar className="mt-0.5 size-7">
-							{group.author.image ? (
-								<AvatarImage src={group.author.image} alt="" />
-							) : null}
-							<AvatarFallback className="text-[10px]">
-								{initials(group.author.name, group.author.username)}
-							</AvatarFallback>
-						</Avatar>
+						<PersonAvatar person={group.author} size={32} className="mt-0.5" />
 						<div className="flex min-w-0 flex-1 flex-col gap-1">
 							<div className="flex items-baseline gap-2">
 								<PersonName
@@ -152,7 +144,7 @@ export function MessageList({
 													key={url}
 													type="button"
 													aria-label="Open image"
-													className="size-20 overflow-hidden rounded-md border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+													className="size-20 overflow-hidden rounded-md border border-border focus-ring"
 													onClick={() => setViewing(url)}
 												>
 													<img

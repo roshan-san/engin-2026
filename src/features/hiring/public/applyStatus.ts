@@ -1,12 +1,12 @@
-type HackathonStatus = "draft" | "open" | "building" | "deciding" | "done";
-type ApplicationStatus = "applied" | "declined" | "building";
+type HackathonStatus = "draft" | "open" | "live" | "deciding" | "done";
+type ApplicationStatus = "applied" | "declined" | "participating";
 
 export type ApplyState =
 	| "sign_in"
 	| "team"
 	| "form"
 	| "applied"
-	| "building"
+	| "participating"
 	| "declined"
 	| "closed";
 
@@ -28,12 +28,12 @@ export function applyState(
 
 export const APPLY_COPY = {
 	applied: "Sent. You'll hear before it starts.",
-	building: "You're in.",
+	participating: "You're in.",
 	declined: "Not this time. Thanks for applying.",
 } as const;
 
-export function closedLabel(status: "building" | "deciding" | "done"): string {
-	return status === "building" ? "Building now" : "Finished";
+export function closedLabel(status: "live" | "deciding" | "done"): string {
+	return status === "live" ? "Live now" : "Finished";
 }
 
 /** Where an unsent answer waits in `localStorage`. */

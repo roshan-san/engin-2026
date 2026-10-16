@@ -24,20 +24,12 @@ docs/
 CONTEXT.md
 .scratch/
 .tanstack
-.vercel
 .agents/
-.vercel
 .cursorrules
 .env.local
 scripts/.jwt_private_key.txt
 .env.prod
 scripts/.jwks.txt
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
 .playwright-cli/
 
-.vercel
 .env*

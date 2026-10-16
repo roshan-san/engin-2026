@@ -8,10 +8,9 @@ import { requireUserId } from "../model/auth";
 import { canPublishHackathon } from "../model/billing";
 import {
 	copyTemplateCardsTo,
-	countUndecidedBuilders,
+	countUndecidedParticipants,
 	declineAppliedBatch,
 	draftArgs,
-	finishHackathon,
 	insertTemplateCards,
 	loadTemplateCards,
 	matchesExplore,
@@ -21,14 +20,16 @@ import {
 	sortExplore,
 	toExploreHackathon,
 } from "../model/hackathons";
+import * as lifecycle from "../model/hackathonLifecycle";
 import { type HiringRecord, loadHiringRecord } from "../model/hiringRecord";
 import { toPublicStartup } from "../model/startups";
 import { getTeamRole, requireFounder, requireTeam } from "../model/teamAccess";
+import { phaseOf } from "../shared/hackathonPhase";
 import {
-	MAX_BUILDERS,
 	MAX_EXPLORE_ROWS,
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
+	MAX_PARTICIPANTS,
 } from "../shared/limits";
 import { publishBlockMessage } from "../shared/plans";
 import { jobRole } from "../shared/validators";
@@ -52,18 +53,18 @@ export const list = query({
 
 		return await Promise.all(
 			visible.map(async (hackathon) => {
-				const builders = await ctx.db
+				const participants = await ctx.db
 					.query("applications")
 					.withIndex("by_hackathon_and_status", (q) =>
-						q.eq("hackathonId", hackathon._id).eq("status", "building"),
+						q.eq("hackathonId", hackathon._id).eq("status", "participating"),
 					)
-					.take(MAX_BUILDERS);
+					.take(MAX_PARTICIPANTS);
 				const inReview = await ctx.db
 					.query("cards")
 					.withIndex("by_hackathon_and_status", (q) =>
 						q.eq("hackathonId", hackathon._id).eq("status", "review"),
 					)
-					.take(MAX_BUILDERS * MAX_HACKATHON_CARDS);
+					.take(MAX_PARTICIPANTS * MAX_HACKATHON_CARDS);
 				return {
 					_id: hackathon._id,
 					job: hackathon.job,
@@ -73,19 +74,21 @@ export const list = query({
 					endsAt: hackathon.endsAt,
 					decideBy: hackathon.decideBy,
 					applicantCount: hackathon.applicantCount,
-					builderCount: hackathon.builderCount,
+					participantCount: hackathon.participantCount,
 					toReview: inReview.filter((card) => card.ownerId).length,
 					toDecide:
-						hackathon.status === "deciding"
-							? await countUndecidedBuilders(ctx, hackathon._id)
+						phaseOf(hackathon, Date.now()) === "deciding"
+							? await countUndecidedParticipants(ctx, hackathon._id)
 							: 0,
-					hires: builders.filter((b) => b.decision === "hired").length,
-					promisesKept: builders.filter((b) => b.promiseKept === true).length,
-					promisesAnswered: builders.filter((b) => b.promiseKept !== undefined)
+					hires: participants.filter((b) => b.decision === "hired").length,
+					promisesKept: participants.filter((b) => b.promiseKept === true)
 						.length,
+					promisesAnswered: participants.filter(
+						(b) => b.promiseKept !== undefined,
+					).length,
 					undecided:
 						hackathon.status === "done"
-							? builders.filter((b) => !b.decision).length
+							? participants.filter((b) => !b.decision).length
 							: 0,
 				};
 			}),
@@ -151,7 +154,7 @@ export const getPublic = query({
 			startsAt: hackathon.startsAt,
 			endsAt: hackathon.endsAt,
 			decideBy: hackathon.decideBy,
-			buildersGet: hackathon.buildersGet ?? null,
+			participantsGet: hackathon.participantsGet ?? null,
 			status: hackathon.status,
 			startup: {
 				name: publicStartup.name,
@@ -172,7 +175,7 @@ export const getPublic = query({
 	},
 });
 
-/** Hackathons Builders can still join or are building now, for anyone. */
+/** Hackathons Participants can still join or that are live now, for anyone. */
 export const explore = query({
 	args: {
 		role: v.optional(jobRole),
@@ -181,11 +184,11 @@ export const explore = query({
 	},
 	handler: async (ctx, args) => {
 		// Read each status in the order Explore shows it, so the bound keeps the first rows.
-		const [open, building] = await Promise.all(
+		const [open, live] = await Promise.all(
 			(
 				[
 					["open", "asc"],
-					["building", "desc"],
+					["live", "desc"],
 				] as const
 			).map(([status, order]) =>
 				ctx.db
@@ -195,7 +198,7 @@ export const explore = query({
 					.take(MAX_LISTED_HACKATHONS),
 			),
 		);
-		const shown = sortExplore(open, building)
+		const shown = sortExplore(open, live)
 			.filter((hackathon) => matchesExplore(hackathon, args))
 			.slice(0, MAX_EXPLORE_ROWS);
 
@@ -252,7 +255,7 @@ export const create = mutation({
 		const hackathonId = await ctx.db.insert("hackathons", {
 			startupId: args.startupId,
 			status: "draft",
-			builderCount: 0,
+			participantCount: 0,
 			applicantCount: 0,
 			...draft,
 		});
@@ -306,67 +309,14 @@ export const publish = mutation({
 			throw new ConvexError(publishBlockMessage(block));
 		}
 
-		await ctx.db.patch(hackathon._id, {
-			status: "open",
-			publishedAt: Date.now(),
-		});
-		await ctx.db.insert("threads", {
-			startupId: hackathon.startupId,
-			hackathonId: hackathon._id,
-			kind: "everyone",
-		});
-		await ctx.scheduler.runAt(
-			hackathon.startsAt,
-			internal.hiring.hackathons.startBuilding,
-			{ hackathonId: hackathon._id },
-		);
-		await ctx.scheduler.runAt(
-			hackathon.endsAt,
-			internal.hiring.hackathons.startDeciding,
-			{ hackathonId: hackathon._id },
-		);
-		await ctx.scheduler.runAt(
-			hackathon.decideBy,
-			internal.hiring.hackathons.closeDeciding,
-			{ hackathonId: hackathon._id },
-		);
+		await lifecycle.publish(ctx, hackathon);
 	},
 });
 
-export const startBuilding = internalMutation({
+export const goLive = internalMutation({
 	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
-		const hackathon = await ctx.db.get(args.hackathonId);
-		if (hackathon?.status !== "open") {
-			return;
-		}
-
-		if (await declineAppliedBatch(ctx, hackathon._id)) {
-			await ctx.scheduler.runAfter(
-				0,
-				internal.hiring.hackathons.declineApplied,
-				{
-					hackathonId: hackathon._id,
-				},
-			);
-		}
-
-		const builders = await ctx.db
-			.query("applications")
-			.withIndex("by_hackathon_and_status", (q) =>
-				q.eq("hackathonId", hackathon._id).eq("status", "building"),
-			)
-			.take(MAX_BUILDERS);
-		// Nobody to build with: nothing was built, so there is nothing to log.
-		await ctx.db.patch(hackathon._id, {
-			status: builders.length === 0 ? "done" : "building",
-		});
-		for (const builder of builders) {
-			await ctx.scheduler.runAfter(0, internal.hiring.hackathons.copyCardsFor, {
-				hackathonId: hackathon._id,
-				userId: builder.userId,
-			});
-		}
+		await lifecycle.goLive(ctx, args.hackathonId);
 	},
 });
 
@@ -408,22 +358,13 @@ export const copyCardsFor = internalMutation({
 export const startDeciding = internalMutation({
 	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
-		const hackathon = await ctx.db.get(args.hackathonId);
-		if (hackathon?.status !== "building") {
-			return;
-		}
-		await ctx.db.patch(hackathon._id, { status: "deciding" });
+		await lifecycle.startDeciding(ctx, args.hackathonId);
 	},
 });
 
-/** At `decideBy` the Hackathon closes; Builders still undecided stay that way. */
 export const closeDeciding = internalMutation({
 	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
-		const hackathon = await ctx.db.get(args.hackathonId);
-		if (hackathon?.status !== "building" && hackathon?.status !== "deciding") {
-			return;
-		}
-		await finishHackathon(ctx, hackathon);
+		await lifecycle.closeDeciding(ctx, args.hackathonId);
 	},
 });

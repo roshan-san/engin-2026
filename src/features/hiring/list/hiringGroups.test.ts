@@ -18,7 +18,7 @@ function row(overrides: Partial<HiringRow>): HiringRow {
 		endsAt: 0,
 		decideBy: 0,
 		applicantCount: 0,
-		builderCount: 0,
+		participantCount: 0,
 		toReview: 0,
 		toDecide: 0,
 		hires: 0,
@@ -30,11 +30,11 @@ function row(overrides: Partial<HiringRow>): HiringRow {
 }
 
 describe("groups", () => {
-	it("open, building and deciding are Now; drafts and done are their own", () => {
+	it("open, live and deciding are Now; drafts and done are their own", () => {
 		const rows = [
 			row({ _id: "a" as HiringRow["_id"], status: "open" }),
 			row({ _id: "b" as HiringRow["_id"], status: "draft" }),
-			row({ _id: "c" as HiringRow["_id"], status: "building" }),
+			row({ _id: "c" as HiringRow["_id"], status: "live" }),
 			row({ _id: "d" as HiringRow["_id"], status: "done" }),
 			row({ _id: "e" as HiringRow["_id"], status: "deciding" }),
 		];
@@ -60,10 +60,8 @@ describe("row number", () => {
 		);
 	});
 
-	it("building shows what's waiting for review", () => {
-		expect(rowNumber(row({ status: "building", toReview: 4 }))).toBe(
-			"4 to review",
-		);
+	it("live shows what's waiting for review", () => {
+		expect(rowNumber(row({ status: "live", toReview: 4 }))).toBe("4 to review");
 	});
 
 	it("deciding shows who's left to decide", () => {
@@ -89,7 +87,7 @@ describe("row number", () => {
 });
 
 describe("promise line", () => {
-	it("shows only once Builders answered", () => {
+	it("shows only once Participants answered", () => {
 		expect(promiseLine(row({ status: "done" }))).toBeNull();
 		expect(
 			promiseLine(
@@ -100,13 +98,13 @@ describe("promise line", () => {
 });
 
 describe("needsYou", () => {
-	it("Cards to review and Builders to decide wait on the Founder", () => {
-		expect(needsYou(row({ status: "building", toReview: 2 }))).toBe(true);
+	it("Cards to review and Participants to decide wait on the Founder", () => {
+		expect(needsYou(row({ status: "live", toReview: 2 }))).toBe(true);
 		expect(needsYou(row({ status: "deciding", toDecide: 1 }))).toBe(true);
 	});
 
 	it("applicants and finished Hackathons don't", () => {
-		expect(needsYou(row({ status: "building", toReview: 0 }))).toBe(false);
+		expect(needsYou(row({ status: "live", toReview: 0 }))).toBe(false);
 		expect(needsYou(row({ status: "open", applicantCount: 9 }))).toBe(false);
 		expect(needsYou(row({ status: "done", hires: 1 }))).toBe(false);
 	});
@@ -120,7 +118,7 @@ describe("hiringSummary", () => {
 			hiringSummary(
 				[
 					withStatus("open"),
-					withStatus("building"),
+					withStatus("live"),
 					withStatus("draft"),
 					withStatus("done"),
 				],

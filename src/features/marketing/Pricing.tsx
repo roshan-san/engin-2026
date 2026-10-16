@@ -1,3 +1,4 @@
+import { TILE } from "~/components/tile";
 import { planLines } from "~/features/billing/planLines";
 import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { cn } from "~/lib/utils";
@@ -7,13 +8,13 @@ export function Pricing() {
 	return (
 		<section id="pricing" className="flex scroll-mt-6 flex-col gap-6">
 			<div>
-				<h2 className="text-xl font-semibold tracking-tight">Pricing</h2>
+				<h2 className="text-2xl font-semibold">Pricing</h2>
 				<p className="mt-1 text-sm text-muted-foreground">
-					Founders pay to publish hiring Hackathons. Builders join free.
+					Founders pay to publish hiring Hackathons. Participants join free.
 				</p>
 			</div>
 			<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-				<div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
+				<div className={cn(TILE, "flex flex-col gap-3")}>
 					<p className="text-sm font-medium">Free</p>
 					<p>
 						<span className="text-3xl font-semibold tabular-nums">$0</span>{" "}
@@ -29,7 +30,8 @@ export function Pricing() {
 					<div
 						key={plan.key}
 						className={cn(
-							"flex flex-col gap-3 rounded-xl border border-border bg-card p-5",
+							TILE,
+							"flex flex-col gap-3",
 							plan.isHighlighted && "border-primary",
 						)}
 					>

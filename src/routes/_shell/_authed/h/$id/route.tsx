@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BuilderGate } from "~/features/hiring/builder/BuilderGate";
+import { ParticipantGate } from "~/features/hiring/participant/ParticipantGate";
 
 export const Route = createFileRoute("/_shell/_authed/h/$id")({
-	component: BuilderGate,
+	component: ParticipantGate,
 });

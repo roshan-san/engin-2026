@@ -57,7 +57,7 @@ export const getPublic = query({
 				job: h.job,
 				weeks: h.weeks,
 				startsAt: h.startsAt,
-				buildersGet: h.buildersGet ?? null,
+				participantsGet: h.participantsGet ?? null,
 			})),
 		};
 	},

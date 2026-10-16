@@ -47,7 +47,7 @@ export const startupsTables = {
 		invitedBy: v.id("users"),
 		status: inviteStatus,
 		expiresAt: v.number(),
-		/** Set when the Invite brings a hired Builder onto the Startup. */
+		/** Set when the Invite brings a hired Participant onto the Startup. */
 		hackathonId: v.optional(v.id("hackathons")),
 	})
 		.index("by_startup_and_status_and_expiresAt", [

@@ -1,15 +1,15 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Kbd } from "~/components/Kbd";
+import { PanelBody } from "~/components/PanelBody";
 import { Row, RowList } from "~/components/RowList";
-import { SectionLabel } from "~/components/SectionLabel";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Section } from "~/components/Section";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
 import { hackathonLine, workLine } from "~/features/people/profile/profileText";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { RatingParts } from "~/features/work/activity/RatingParts";
-import { initials } from "~/lib/initials";
 import { useApplicant } from "./useApplicants";
 
 /** One Applicant: their answer, their Rating and its parts, and what they've done. */
@@ -34,18 +34,13 @@ export function ApplicantDetail({
 	}
 
 	const { application, user, record } = applicant;
-	const isBuilder = application.status === "building";
+	const isParticipant = application.status === "participating";
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
-			<div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto p-6">
+			<PanelBody>
 				<header className="flex items-center gap-3">
-					<Avatar className="size-10">
-						{user.image ? <AvatarImage src={user.image} alt="" /> : null}
-						<AvatarFallback>
-							{initials(user.name, user.username)}
-						</AvatarFallback>
-					</Avatar>
+					<PersonAvatar person={user} size={40} />
 					<div className="flex min-w-0 flex-col">
 						<h2 className="truncate font-medium">
 							<PersonName person={user} />
@@ -58,12 +53,11 @@ export function ApplicantDetail({
 					</div>
 				</header>
 
-				<section className="flex flex-col gap-2">
-					<SectionLabel as="h3">Their answer</SectionLabel>
+				<Section label="Their answer" as="h3">
 					<p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
 						{application.answer}
 					</p>
-				</section>
+				</Section>
 
 				<section className="flex flex-col gap-3">
 					<RatingBadge
@@ -74,8 +68,7 @@ export function ApplicantDetail({
 					<RatingParts parts={record.parts} />
 				</section>
 
-				<section className="flex flex-col gap-1">
-					<SectionLabel as="h3">Hackathons</SectionLabel>
+				<Section label="Hackathons" as="h3">
 					{record.hackathons.length === 0 ? (
 						<p className="py-2 text-sm text-muted-foreground">
 							No hackathons yet
@@ -90,10 +83,9 @@ export function ApplicantDetail({
 							))}
 						</RowList>
 					)}
-				</section>
+				</Section>
 
-				<section className="flex flex-col gap-1">
-					<SectionLabel as="h3">Verified work</SectionLabel>
+				<Section label="Verified work" as="h3">
 					{record.work.length === 0 ? (
 						<p className="py-2 text-sm text-muted-foreground">
 							No verified work yet
@@ -105,8 +97,8 @@ export function ApplicantDetail({
 							))}
 						</RowList>
 					)}
-				</section>
-			</div>
+				</Section>
+			</PanelBody>
 
 			<div className="flex shrink-0 items-center gap-2 border-t border-border p-3">
 				{application.status === "declined" ? null : (
@@ -115,7 +107,7 @@ export function ApplicantDetail({
 						<Kbd>D</Kbd>
 					</Button>
 				)}
-				{isBuilder ? null : (
+				{isParticipant ? null : (
 					<Button onClick={onAccept}>
 						Accept
 						<Kbd className="border-primary-foreground/20 text-primary-foreground/60">

@@ -3,10 +3,10 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
 	applicant,
-	builders,
 	closeHackathon,
 	decidedHackathon,
 	endHackathon,
+	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { SHIPPED } from "../testing/cards.setup";
@@ -39,11 +39,11 @@ async function say(person: Person, threadId: Id<"threads">) {
 	await person.as.mutation(api.chat.messages.send, { threadId, body: "Hello" });
 }
 
-/** The Hackathon's Builder Cards as the Builder sees them. */
-async function boardOf(hackathonId: Id<"hackathons">, builder: Person) {
-	return await builder.as.query(api.work.cards.listBuilderBoard, {
+/** The Hackathon's Participant Cards as the Participant sees them. */
+async function boardOf(hackathonId: Id<"hackathons">, participant: Person) {
+	return await participant.as.query(api.work.cards.listParticipantBoard, {
 		hackathonId,
-		builderId: builder.userId,
+		participantId: participant.userId,
 	});
 }
 
@@ -89,14 +89,14 @@ describe("groups", () => {
 		]);
 	});
 
-	it("a Hackathon you build in lists under building", async () => {
+	it("a Hackathon you take part in lists under hackathons", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 
 		const places = await placesOf(ana);
 
-		expect(places.building).toMatchObject([
+		expect(places.hackathons).toMatchObject([
 			{
 				hackathonId,
 				job: { role: "frontend", pay: "6_9l", mode: "remote" },
@@ -134,13 +134,13 @@ describe("groups", () => {
 			},
 		]);
 		expect(after.applied).toMatchObject([{ hackathonId, status: "declined" }]);
-		expect(after.building).toEqual([]);
+		expect(after.hackathons).toEqual([]);
 	});
 
 	it("applied drops when the Hackathon is done", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ben] = await builders(setup, hackathonId, ["Ben"]);
+		const [ben] = await participants(setup, hackathonId, ["Ben"]);
 		const ana = await applicant(setup, hackathonId, "Ana");
 		await startHackathon(setup, hackathonId);
 		await endHackathon(setup, hackathonId);
@@ -151,14 +151,14 @@ describe("groups", () => {
 
 		expect(before.applied).toHaveLength(1);
 		expect(after.applied).toEqual([]);
-		expect((await placesOf(ben)).building).toEqual([]);
+		expect((await placesOf(ben)).hackathons).toEqual([]);
 	});
 
-	it("building stays after the decision until the promise is answered, then drops", async () => {
+	it("a Hackathon stays after the decision until the promise is answered, then drops", async () => {
 		const setup = await setUpStartup(createTest());
 		const {
 			hackathonId,
-			builders: [ana],
+			participants: [ana],
 		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
 
 		const before = await placesOf(ana);
@@ -168,8 +168,8 @@ describe("groups", () => {
 		});
 		const after = await placesOf(ana);
 
-		expect(before.building).toMatchObject([{ hackathonId }]);
-		expect(after.building).toEqual([]);
+		expect(before.hackathons).toMatchObject([{ hackathonId }]);
+		expect(after.hackathons).toEqual([]);
 	});
 });
 
@@ -244,11 +244,11 @@ describe("waiting", () => {
 		expect(screened.startups[0].waiting).toEqual([]);
 	});
 
-	it("a Builder's Card in Review lights it", async () => {
+	it("a Participant's Card in Review lights it", async () => {
 		const setup = await setUpStartup(createTest());
 		const cal = await addContributor(setup, "Cal");
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		const [card] = await boardOf(hackathonId, ana);
 		await ana.as.mutation(api.work.cards.submit, {
@@ -268,10 +268,10 @@ describe("waiting", () => {
 		expect(clear.startups[0].waiting).toEqual([]);
 	});
 
-	it("an unread Builder thread lights it for the Founder", async () => {
+	it("an unread Participant thread lights it for the Founder", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		const threadId = await threadOf(ana, { hackathonId }, "private");
 
@@ -287,7 +287,7 @@ describe("waiting", () => {
 	it("the Founder's Startup lights when Everyone has an unread message", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		const threadId = await threadOf(ana, { hackathonId }, "everyone");
 
@@ -300,7 +300,7 @@ describe("waiting", () => {
 		const setup = await setUpStartup(createTest());
 		await draftHackathon(setup);
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		await say(ana, await threadOf(ana, { hackathonId }, "everyone"));
 		await endHackathon(setup, hackathonId);
@@ -310,32 +310,32 @@ describe("waiting", () => {
 		expect((await placesOf(setup.founder)).startups[0].waiting).toEqual([]);
 	});
 
-	it("an undecided Builder while deciding lights it", async () => {
+	it("an undecided Participant while deciding lights it", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana, ben] = await builders(setup, hackathonId, ["Ana", "Ben"]);
+		const [ana, ben] = await participants(setup, hackathonId, ["Ana", "Ben"]);
 		await startHackathon(setup, hackathonId);
-		const building = await placesOf(setup.founder);
+		const live = await placesOf(setup.founder);
 		await endHackathon(setup, hackathonId);
 
 		const lit = await placesOf(setup.founder);
-		for (const builder of [ana, ben]) {
+		for (const participant of [ana, ben]) {
 			await setup.founder.as.mutation(api.hiring.applications.decide, {
-				applicationId: builder.applicationId,
+				applicationId: participant.applicationId,
 				decision: "not_this_time",
 			});
 		}
 		const decided = await placesOf(setup.founder);
 
-		expect(building.startups[0].waiting).toEqual([]);
+		expect(live.startups[0].waiting).toEqual([]);
 		expect(lit.startups[0].waiting).not.toEqual([]);
 		expect(decided.startups[0].waiting).toEqual([]);
 	});
 
-	it("an unread Everyone message lights the Builder's Hackathon", async () => {
+	it("an unread Everyone message lights the Participant's Hackathon", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		const threadId = await threadOf(setup.founder, { hackathonId }, "everyone");
 
 		await say(setup.founder, threadId);
@@ -343,30 +343,30 @@ describe("waiting", () => {
 		await ana.as.mutation(api.chat.threads.markRead, { threadId });
 		const read = await placesOf(ana);
 
-		expect(lit.building[0].waiting).not.toEqual([]);
-		expect(read.building[0].waiting).toEqual([]);
+		expect(lit.hackathons[0].waiting).not.toEqual([]);
+		expect(read.hackathons[0].waiting).toEqual([]);
 	});
 
-	it("a decision waiting on the promise lights the Builder's Hackathon", async () => {
+	it("a decision waiting on the promise lights the Participant's Hackathon", async () => {
 		const setup = await setUpStartup(createTest());
 		const {
-			builders: [ana],
+			participants: [ana],
 		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
 
 		const places = await placesOf(ana);
 
-		expect(places.building[0].waiting).not.toEqual([]);
+		expect(places.hackathons[0].waiting).not.toEqual([]);
 	});
 
 	it("a decision waiting on the promise reads as the promise question", async () => {
 		const setup = await setUpStartup(createTest());
 		const {
-			builders: [ana],
+			participants: [ana],
 		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
 
 		const places = await placesOf(ana);
 
-		expect(places.building[0].waiting).toEqual([{ kind: "promise_pending" }]);
+		expect(places.hackathons[0].waiting).toEqual([{ kind: "promise_pending" }]);
 	});
 
 	it("an Applicant reads as new applicants on the job", async () => {
@@ -405,7 +405,7 @@ describe("waiting", () => {
 		const setup = await setUpStartup(createTest());
 		const cal = await addContributor(setup, "Cal");
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 
 		const places = [setup.founder, cal, ana].map(placesOf);
@@ -414,8 +414,8 @@ describe("waiting", () => {
 			expect(place.startups.map((row) => row.waiting)).toEqual(
 				place.startups.map(() => []),
 			);
-			expect(place.building.map((row) => row.waiting)).toEqual(
-				place.building.map(() => []),
+			expect(place.hackathons.map((row) => row.waiting)).toEqual(
+				place.hackathons.map(() => []),
 			);
 		}
 	});

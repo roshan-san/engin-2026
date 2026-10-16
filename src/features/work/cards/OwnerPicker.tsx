@@ -1,5 +1,4 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
 	Select,
 	SelectContent,
@@ -7,8 +6,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
-import { initials } from "~/lib/initials";
 import type { CardView } from "../board/types";
 import { useTeam } from "./useTeam";
 
@@ -21,12 +20,7 @@ export const GHOST_TRIGGER =
 function PersonLabel({ person }: { readonly person: Person }) {
 	return (
 		<span className="flex items-center gap-2">
-			<Avatar className="size-5">
-				{person.image ? <AvatarImage src={person.image} alt="" /> : null}
-				<AvatarFallback className="text-[9px]">
-					{initials(person.name, person.username)}
-				</AvatarFallback>
-			</Avatar>
+			<PersonAvatar person={person} size={20} />
 			<PersonName person={person} />
 		</span>
 	);

@@ -1,28 +1,31 @@
+import { AVATAR_SIZE, type AvatarSize } from "~/components/avatarSize";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
 
-const SIZE = {
-	sm: "size-5 rounded text-[10px]",
-	md: "size-8 rounded-md text-xs",
-	lg: "size-10 rounded-lg text-sm",
-	xl: "size-16 rounded-xl text-lg",
+const RADIUS: Record<AvatarSize, string> = {
+	16: "rounded-sm",
+	20: "rounded",
+	24: "rounded",
+	32: "rounded-md",
+	40: "rounded-lg",
+	64: "rounded-xl",
 };
 
-/** A Startup's logo, or its initials when it has none. */
+/** A Startup's logo, or its initials when it has none. Places are rounded squares; people are circles. */
 export function PlaceLogo({
 	name,
 	url,
-	size = "md",
+	size = 32,
 }: {
 	readonly name: string;
 	readonly url: string | null;
-	readonly size?: keyof typeof SIZE;
+	readonly size?: AvatarSize;
 }) {
 	return (
-		<Avatar className={cn("shrink-0", SIZE[size])}>
+		<Avatar className={cn("shrink-0", AVATAR_SIZE[size], RADIUS[size])}>
 			{url ? <AvatarImage src={url} alt="" /> : null}
-			<AvatarFallback className={cn(SIZE[size])}>
+			<AvatarFallback className={RADIUS[size]}>
 				{initials(name, null)}
 			</AvatarFallback>
 		</Avatar>

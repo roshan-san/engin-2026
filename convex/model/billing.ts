@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { RUNNING } from "../shared/hackathonPhase";
 import {
 	MAX_OPEN_HACKATHONS,
 	MAX_USER_STARTUPS,
@@ -12,8 +13,6 @@ import {
 	type PublishBlock,
 	publishBlockFor,
 } from "../shared/plans";
-
-const RUNNING = ["open", "building", "deciding"] as const;
 
 /** The Founder's plan: their active subscription that runs longest, or null. */
 export async function loadPlan(
@@ -89,7 +88,7 @@ async function countPublishedSince(
 	return count;
 }
 
-/** Hackathons open, building or deciding across the Startups, counting up to the cap. */
+/** Hackathons open, live or deciding across the Startups, counting up to the cap. */
 async function countRunning(
 	ctx: QueryCtx,
 	startupIds: Id<"startups">[],

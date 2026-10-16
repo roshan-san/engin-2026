@@ -15,7 +15,7 @@ const BARE_FIELD_CLASS =
 	"field-sizing-content w-full min-w-0 resize-none bg-transparent outline-none placeholder:text-subtle-foreground";
 
 /**
- * The 3–5 Cards every Builder starts with, drawn as the To do column they land in: the Board's
+ * The 3–5 Cards every Participant starts with, drawn as the To do column they land in: the Board's
  * new-Card input on top, then a tile per Card, edited in place.
  */
 export function CardRows({
@@ -46,7 +46,7 @@ export function CardRows({
 			<div className="flex flex-col gap-1.5 px-1.5 pt-0.5 pb-1.5">
 				{cards.length < MAX_HACKATHON_CARDS ? (
 					<NewCardInput
-						placeholder="What will a Builder finish in a day?"
+						placeholder="What will a Participant finish in a day?"
 						shortcut={null}
 						onCreate={async (title) => {
 							onChange([...cards, draftCard(title)]);
@@ -116,7 +116,7 @@ function DraftCardTile({
 				<button
 					type="button"
 					aria-label={`Remove card ${number}`}
-					className="-mt-0.5 -mr-1 flex size-6 shrink-0 items-center justify-center rounded text-subtle-foreground opacity-0 outline-none transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/60"
+					className="-mt-0.5 -mr-1 flex size-6 shrink-0 items-center justify-center rounded text-subtle-foreground opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-ring"
 					onClick={onRemove}
 				>
 					<XIcon className="size-3.5" />
@@ -129,7 +129,7 @@ function DraftCardTile({
 					// biome-ignore lint/a11y/noAutofocus: see above
 					autoFocus={card.notes.length === 0}
 					aria-label={`Card ${number} notes`}
-					placeholder="Notes for the Builder"
+					placeholder="Notes for the Participant"
 					value={card.notes}
 					maxLength={TEXT.notes}
 					className={cn(BARE_FIELD_CLASS, "text-xs text-muted-foreground")}
@@ -141,7 +141,7 @@ function DraftCardTile({
 			) : (
 				<button
 					type="button"
-					className="self-start text-xs text-subtle-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+					className="self-start text-xs text-subtle-foreground hover:text-foreground focus-ring"
 					onClick={() => setHasNotes(true)}
 				>
 					Add notes

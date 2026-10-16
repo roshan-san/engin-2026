@@ -10,12 +10,15 @@ type QueueRow = FunctionReturnType<
 >[number];
 
 export type SidebarInput = {
-	readonly builders: ApplicantRow[];
+	readonly participants: ApplicantRow[];
 	readonly queue: Pick<QueueRow, "owner">[];
-	readonly threads: Pick<ThreadRow, "_id" | "kind" | "builder" | "unread">[];
+	readonly threads: Pick<
+		ThreadRow,
+		"_id" | "kind" | "participant" | "unread"
+	>[];
 };
 
-export type SidebarBuilder = {
+export type SidebarParticipant = {
 	readonly userId: Id<"users">;
 	readonly applicationId: Id<"applications">;
 	readonly name: string;
@@ -30,13 +33,14 @@ export type SidebarBuilder = {
 	readonly progress: { readonly done: number; readonly total: number };
 };
 
-/** The space's left bar: Review's count, # Everyone's dot, and each Builder. */
+/** The space's left bar: Review's count, # Everyone's dot, and each Participant. */
 export function sidebarItems(input: SidebarInput) {
 	const reviewsOf = (userId: string) =>
 		input.queue.filter((card) => card.owner?._id === userId).length;
 	const privateThread = (userId: string) =>
 		input.threads.find(
-			(thread) => thread.kind === "private" && thread.builder?._id === userId,
+			(thread) =>
+				thread.kind === "private" && thread.participant?._id === userId,
 		);
 
 	return {
@@ -44,8 +48,8 @@ export function sidebarItems(input: SidebarInput) {
 		everyoneUnread:
 			input.threads.find((thread) => thread.kind === "everyone")?.unread ??
 			false,
-		builders: input.builders.map(
-			({ application, user, progress }): SidebarBuilder => ({
+		participants: input.participants.map(
+			({ application, user, progress }): SidebarParticipant => ({
 				userId: user._id,
 				applicationId: application._id,
 				name: displayName(user),
@@ -62,13 +66,13 @@ export function sidebarItems(input: SidebarInput) {
 	};
 }
 
-/** The space's view from the URL, or a sensible one when it's unset or gone (a screening id after the start, a removed Builder). */
+/** The space's view from the URL, or a sensible one when it's unset or gone (a screening id after the start, a removed Participant). */
 export function resolveView(
 	view: string | undefined,
-	builderIds: readonly string[],
-	status: "draft" | "open" | "building" | "deciding" | "done",
+	participantIds: readonly string[],
+	status: "draft" | "open" | "live" | "deciding" | "done",
 ): string {
 	if (view === "review" || view === "everyone") return view;
-	if (view && builderIds.includes(view)) return view;
-	return status === "building" ? "review" : (builderIds[0] ?? "review");
+	if (view && participantIds.includes(view)) return view;
+	return status === "live" ? "review" : (participantIds[0] ?? "review");
 }

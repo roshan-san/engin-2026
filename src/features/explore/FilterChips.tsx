@@ -27,7 +27,7 @@ export function FilterChips<T extends string | number>({
 							aria-pressed={on}
 							onClick={() => onChange(on ? undefined : option.value)}
 							className={cn(
-								"shrink-0 rounded-full border px-2.5 py-0.5 text-xs whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-hidden",
+								"shrink-0 rounded-full border px-2.5 py-0.5 text-xs whitespace-nowrap transition-colors focus-ring",
 								on
 									? "border-foreground bg-foreground text-background"
 									: "border-input hover:border-foreground/25 hover:bg-accent",

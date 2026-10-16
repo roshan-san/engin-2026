@@ -1,9 +1,8 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
+import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
-import { SectionLabel } from "~/components/SectionLabel";
 import { UnreadDot } from "~/components/UnreadDot";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
 	Select,
 	SelectContent,
@@ -11,14 +10,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { tierText } from "~/features/work/activity/tierText";
 import { useWorkspace } from "~/features/work/board/StartupContext";
-import { initials } from "~/lib/initials";
 import { cn } from "~/lib/utils";
-import { BuilderView } from "./BuilderView";
 import { EveryonePanel } from "./EveryonePanel";
+import { ParticipantView } from "./ParticipantView";
 import { ReviewQueue } from "./ReviewQueue";
-import { resolveView, type SidebarBuilder, sidebarItems } from "./sidebarItems";
+import {
+	resolveView,
+	type SidebarParticipant,
+	sidebarItems,
+} from "./sidebarItems";
 import { useApplicants } from "./useApplicants";
 import { useReviewQueue } from "./useReviewQueue";
 import { useHackathonThreads } from "./useSpace";
@@ -26,9 +29,9 @@ import { useHackathonThreads } from "./useSpace";
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
 const ITEM_CLASS =
-	"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60 aria-[current=true]:bg-accent";
+	"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent aria-[current=true]:bg-accent focus-ring";
 
-/** Building, deciding and done: Review, # Everyone, and each Builder. */
+/** Live, deciding and done: Review, # Everyone, and each Participant. */
 export function RunningView({
 	hackathon,
 }: {
@@ -42,21 +45,23 @@ export function RunningView({
 	const navigate = route.useNavigate();
 	const isClosed = hackathon.status === "done";
 
-	const builders =
-		applicants?.filter((row) => row.application.status === "building") ?? [];
+	const participants =
+		applicants?.filter((row) => row.application.status === "participating") ??
+		[];
 	const items = sidebarItems({
-		builders,
+		participants,
 		queue: queue ?? [],
 		threads: threads ?? [],
 	});
 	const current = resolveView(
 		view,
-		builders.map((row) => row.user._id),
-		hackathon.status,
+		participants.map((row) => row.user._id),
+		phaseOf(hackathon, Date.now()),
 	);
-	const builderRow = builders.find((row) => row.user._id === current);
+	const participantRow = participants.find((row) => row.user._id === current);
 	const privateThread = threads?.find(
-		(thread) => thread.kind === "private" && thread.builder?._id === current,
+		(thread) =>
+			thread.kind === "private" && thread.participant?._id === current,
 	);
 
 	function show(next: string, cardId?: Id<"cards">) {
@@ -66,9 +71,9 @@ export function RunningView({
 	const choices = [
 		{ value: "review", label: `Review · ${items.reviewCount}` },
 		{ value: "everyone", label: "# Everyone" },
-		...items.builders.map((builder) => ({
-			value: builder.userId,
-			label: builder.name,
+		...items.participants.map((participant) => ({
+			value: participant.userId,
+			label: participant.name,
 		})),
 	];
 
@@ -105,53 +110,50 @@ export function RunningView({
 					</button>
 				</div>
 				<div className="flex flex-col gap-1">
-					<div className="px-2">
-						<SectionLabel as="h2">Builders</SectionLabel>
-					</div>
+					<h2 className="mx-2 border-b border-border pb-2 text-xs font-semibold text-muted-foreground">
+						Participants
+					</h2>
 					<ul className="flex flex-col gap-0.5">
-						{items.builders.map((builder) => (
-							<li key={builder.userId}>
+						{items.participants.map((participant) => (
+							<li key={participant.userId}>
 								<button
 									type="button"
-									aria-current={current === builder.userId}
+									aria-current={current === participant.userId}
 									className={cn(ITEM_CLASS, "items-start py-2")}
-									onClick={() => show(builder.userId)}
+									onClick={() => show(participant.userId)}
 								>
-									<Avatar className="mt-0.5 size-5">
-										{builder.image ? (
-											<AvatarImage src={builder.image} alt="" />
-										) : null}
-										<AvatarFallback className="text-[9px]">
-											{initials(builder.name, builder.username)}
-										</AvatarFallback>
-									</Avatar>
+									<PersonAvatar
+										person={participant}
+										size={20}
+										className="mt-0.5"
+									/>
 									<span className="flex min-w-0 flex-1 flex-col gap-1">
 										<span className="flex items-center gap-1.5">
 											<span
 												className={cn(
 													"min-w-0 flex-1 truncate",
-													tierText(builder.rating),
+													tierText(participant.rating),
 												)}
 											>
-												{builder.name}
+												{participant.name}
 											</span>
-											{builder.shortlisted ? (
+											{participant.shortlisted ? (
 												<StarIcon
 													aria-label="Shortlisted"
 													className="size-3.5 shrink-0 fill-current text-warning"
 												/>
 											) : null}
-											{builder.unread ? <UnreadDot /> : null}
-											{builder.reviewCount > 0 ? (
+											{participant.unread ? <UnreadDot /> : null}
+											{participant.reviewCount > 0 ? (
 												<span
-													title={`${builder.reviewCount} to review`}
-													className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-medium tabular-nums text-foreground"
+													title={`${participant.reviewCount} to review`}
+													className="rounded-full bg-foreground/10 px-1.5 text-xs font-medium tabular-nums text-foreground"
 												>
-													{builder.reviewCount}
+													{participant.reviewCount}
 												</span>
 											) : null}
 										</span>
-										<BuilderProgress builder={builder} />
+										<ParticipantProgress participant={participant} />
 									</span>
 								</button>
 							</li>
@@ -180,7 +182,7 @@ export function RunningView({
 					<ReviewQueue
 						hackathonId={hackathon._id}
 						isClosed={isClosed}
-						onOpen={(builderId, cardId) => show(builderId, cardId)}
+						onOpen={(participantId, cardId) => show(participantId, cardId)}
 					/>
 				) : current === "everyone" ? (
 					<div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col">
@@ -190,11 +192,11 @@ export function RunningView({
 							isReadOnly={isClosed}
 						/>
 					</div>
-				) : builderRow ? (
-					<BuilderView
-						key={builderRow.user._id}
+				) : participantRow ? (
+					<ParticipantView
+						key={participantRow.user._id}
 						hackathon={hackathon}
-						row={builderRow}
+						row={participantRow}
 						threadId={privateThread?._id}
 						isThreadUnread={privateThread?.unread ?? false}
 						userId={userId}
@@ -206,12 +208,16 @@ export function RunningView({
 }
 
 /** "2/4 done" with a thin bar, or the decision once it's made. */
-function BuilderProgress({ builder }: { readonly builder: SidebarBuilder }) {
-	const { done, total } = builder.progress;
-	if (builder.decision) {
+function ParticipantProgress({
+	participant,
+}: {
+	readonly participant: SidebarParticipant;
+}) {
+	const { done, total } = participant.progress;
+	if (participant.decision) {
 		return (
 			<span className="text-xs text-muted-foreground">
-				{builder.decision === "hired" ? "Hired" : "Not this time"}
+				{participant.decision === "hired" ? "Hired" : "Not this time"}
 			</span>
 		);
 	}
@@ -223,7 +229,7 @@ function BuilderProgress({ builder }: { readonly builder: SidebarBuilder }) {
 					style={{ width: total > 0 ? `${(done / total) * 100}%` : 0 }}
 				/>
 			</span>
-			<span className="text-[11px] text-muted-foreground tabular-nums">
+			<span className="text-xs text-muted-foreground tabular-nums">
 				{done}/{total}
 			</span>
 		</span>

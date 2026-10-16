@@ -3,12 +3,12 @@ import { ArrowUpRightIcon } from "lucide-react";
 import { AppPage } from "~/components/AppPage";
 import { Button } from "~/components/ui/button";
 import { roleLabel } from "../jobChips";
-import { BuilderBrief } from "./BuilderBrief";
-import { useBuilder } from "./BuilderGate";
+import { ParticipantBrief } from "./ParticipantBrief";
+import { useParticipant } from "./ParticipantGate";
 
-/** The Builder's Brief tab: the problem and how it ends, full width. */
+/** The Participant's Brief tab: the problem and how it ends, full width. */
 export function BriefPage() {
-	const { page } = useBuilder();
+	const { page } = useParticipant();
 
 	return (
 		<AppPage
@@ -36,7 +36,7 @@ export function BriefPage() {
 				),
 			}}
 		>
-			<BuilderBrief hackathon={page} />
+			<ParticipantBrief hackathon={page} />
 		</AppPage>
 	);
 }

@@ -32,19 +32,17 @@ export function TeamPage() {
 				actions: isFounder ? <InviteButton onSend={send} /> : null,
 			}}
 		>
-			<div className="flex flex-col gap-10">
-				<PeopleList
-					people={people}
-					canRemove={isFounder}
-					onRemove={(person) => remove(person._id)}
+			<PeopleList
+				people={people}
+				canRemove={isFounder}
+				onRemove={(person) => remove(person._id)}
+			/>
+			{isFounder ? (
+				<PendingInvites
+					invites={invites}
+					onRevoke={(invite) => revoke(invite.inviteId)}
 				/>
-				{isFounder ? (
-					<PendingInvites
-						invites={invites}
-						onRevoke={(invite) => revoke(invite.inviteId)}
-					/>
-				) : null}
-			</div>
+			) : null}
 		</AppPage>
 	);
 }

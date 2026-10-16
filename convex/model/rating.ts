@@ -2,6 +2,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { shiftWeek, weekOf } from "../shared/cycles";
+import { phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_LISTED_HACKATHONS,
 	MAX_USER_APPLICATIONS,
@@ -79,7 +80,7 @@ export function outcomeOf(a: {
 	decision?: string;
 	shortlisted: boolean;
 }): Outcome | null {
-	if (a.status !== "building") return null;
+	if (a.status !== "participating") return null;
 	if (a.decision === "hired") return "hired";
 	return a.shortlisted ? "finalist" : "built";
 }
@@ -185,7 +186,9 @@ export async function loadOutcomes(
 		const outcome = outcomeOf(application);
 		if (!outcome) continue;
 		const hackathon = await ctx.db.get(application.hackathonId);
-		if (hackathon?.status !== "deciding" && hackathon?.status !== "done") {
+		if (!hackathon) continue;
+		const phase = phaseOf(hackathon, Date.now());
+		if (phase !== "deciding" && phase !== "done") {
 			continue;
 		}
 		outcomes.push({ outcome, hackathon });

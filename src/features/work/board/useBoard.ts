@@ -22,9 +22,16 @@ export function patchBoardCards(
 		}
 		return;
 	}
-	const current = store.getQuery(api.work.cards.listBuilderBoard, query.args);
+	const current = store.getQuery(
+		api.work.cards.listParticipantBoard,
+		query.args,
+	);
 	if (current) {
-		store.setQuery(api.work.cards.listBuilderBoard, query.args, patch(current));
+		store.setQuery(
+			api.work.cards.listParticipantBoard,
+			query.args,
+			patch(current),
+		);
 	}
 }
 
@@ -35,11 +42,11 @@ export function useBoardCards(scope: BoardScope): CardView[] | undefined {
 		api.work.cards.listBoard,
 		query.kind === "startup" ? query.args : "skip",
 	);
-	const builderCards = useQuery(
-		api.work.cards.listBuilderBoard,
-		query.kind === "builder" ? query.args : "skip",
+	const participantCards = useQuery(
+		api.work.cards.listParticipantBoard,
+		query.kind === "participant" ? query.args : "skip",
 	);
-	return query.kind === "startup" ? startupCards : builderCards;
+	return query.kind === "startup" ? startupCards : participantCards;
 }
 
 /** The Board's Cards: creating (Startup Boards only), moving between To do and In progress, and Verify. */

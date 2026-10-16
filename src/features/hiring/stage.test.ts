@@ -20,7 +20,7 @@ describe("stageDate", () => {
 		expect(stageDate({ ...hackathon, status: "open" })).toBe(
 			"starts Mon, Oct 19",
 		);
-		expect(stageDate({ ...hackathon, status: "building" })).toBe(
+		expect(stageDate({ ...hackathon, status: "live" })).toBe(
 			"ends Sun, Oct 25",
 		);
 		expect(stageDate({ ...hackathon, status: "deciding" })).toBe(

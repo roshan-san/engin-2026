@@ -1,3 +1,4 @@
+import { PanelBody } from "~/components/PanelBody";
 import { PanelHeader } from "~/components/PanelHeader";
 import { Skeleton } from "~/components/ui/skeleton";
 import { RecordSignals } from "./RecordSignals";
@@ -14,7 +15,7 @@ export function RecordPanel({
 			<PanelHeader>
 				<h2 className="text-sm font-medium">Record</h2>
 			</PanelHeader>
-			<div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto p-4">
+			<PanelBody>
 				{signals ? (
 					<RecordSignals signals={signals} layout="stack" />
 				) : (
@@ -34,7 +35,7 @@ export function RecordPanel({
 						the team and Investor Pro.
 					</p>
 				</section>
-			</div>
+			</PanelBody>
 		</div>
 	);
 }

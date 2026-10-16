@@ -1,3 +1,4 @@
+import { phaseOf } from "@convex/shared/hackathonPhase";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
@@ -11,7 +12,7 @@ import {
 } from "./hiringGroups";
 
 const ROW_CLASS =
-	"grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-2 px-2 py-4 text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60 md:grid-cols-[minmax(0,1fr)_14rem_9rem]";
+	"grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-2 px-2 py-4 text-left transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_14rem_9rem] focus-ring";
 
 /** One Hackathon: the job, its stage and date, and the number that matters now. */
 export function HackathonRow({
@@ -23,9 +24,10 @@ export function HackathonRow({
 	readonly slug: string;
 	readonly isFounder: boolean;
 }) {
-	const stage = STAGE[row.status];
+	const current = { ...row, status: phaseOf(row, Date.now()) };
+	const stage = STAGE[current.status];
 	const promises = row.status === "done" ? promiseLine(row) : null;
-	const isWaiting = needsYou(row);
+	const isWaiting = needsYou(current);
 	const content = (
 		<>
 			<div className="min-w-0">
@@ -41,7 +43,7 @@ export function HackathonRow({
 					{stage.label}
 				</Badge>
 				<span className="truncate text-xs text-muted-foreground">
-					{stageDate(row)}
+					{stageDate(current)}
 				</span>
 			</div>
 			<div className="col-start-2 row-start-1 flex flex-col items-end text-sm md:col-start-auto md:row-start-auto">
@@ -54,7 +56,7 @@ export function HackathonRow({
 					{isWaiting ? (
 						<span aria-hidden className="size-1.5 rounded-full bg-warning" />
 					) : null}
-					{rowNumber(row)}
+					{rowNumber(current)}
 				</span>
 				{promises ? (
 					<span className="text-xs text-subtle-foreground">{promises}</span>

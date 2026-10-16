@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
 import { cn } from "~/lib/utils";
-import { ActorAvatar } from "./ActorAvatar";
 import { type EntryView, linkLabel } from "./record";
 
 type ProofCard = NonNullable<EntryView["card"]>;
@@ -76,7 +76,7 @@ export function EntryProof({
 				) : (
 					<>
 						Verified by
-						<ActorAvatar person={card.verifier} className="size-4" />
+						<PersonAvatar person={card.verifier} size={16} />
 						<PersonName person={card.verifier} />
 					</>
 				)}

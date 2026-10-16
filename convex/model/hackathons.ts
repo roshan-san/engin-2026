@@ -5,13 +5,12 @@ import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
 import {
 	DECIDE_GRACE_MS,
 	MAX_APPLICATIONS,
-	MAX_BUILDERS,
 	MAX_HACKATHON_CARDS,
+	MAX_PARTICIPANTS,
 	MIN_HACKATHON_CARDS,
 	TEXT,
 } from "../shared/limits";
 import { jobMode, jobPay, jobRole } from "../shared/validators";
-import { appendActivity } from "./activity";
 import type { HiringRecord } from "./hiringRecord";
 import { requireFounder } from "./teamAccess";
 import { limitText, requireLimitedText } from "./text";
@@ -22,7 +21,7 @@ export const draftArgs = {
 	problem: v.string(),
 	weeks: v.number(),
 	startsAt: v.number(),
-	buildersGet: v.optional(v.string()),
+	participantsGet: v.optional(v.string()),
 	cards: v.array(
 		v.object({ title: v.string(), notes: v.optional(v.string()) }),
 	),
@@ -33,7 +32,7 @@ type DraftInput = {
 	problem: string;
 	weeks: number;
 	startsAt: number;
-	buildersGet?: string;
+	participantsGet?: string;
 	cards: { title: string; notes?: string }[];
 };
 
@@ -66,7 +65,11 @@ export function requireValidDraft(input: DraftInput, now: number) {
 		startsAt: input.startsAt,
 		endsAt,
 		decideBy: endsAt + DECIDE_GRACE_MS,
-		buildersGet: limitText(input.buildersGet, "Builders get", TEXT.buildersGet),
+		participantsGet: limitText(
+			input.participantsGet,
+			"Participants get",
+			TEXT.participantsGet,
+		),
 		cards: input.cards.map((card) => ({
 			title: requireLimitedText(card.title, "Card title", TEXT.cardTitle),
 			notes: limitText(card.notes, "Notes", TEXT.notes) ?? "",
@@ -88,7 +91,7 @@ export async function requireHackathonFounder(
 	return hackathon;
 }
 
-/** The Cards every Builder starts with: ownerless Cards on the Hackathon. */
+/** The Cards every Participant starts with: ownerless Cards on the Hackathon. */
 export async function loadTemplateCards(
 	ctx: QueryCtx | MutationCtx,
 	hackathonId: Id<"hackathons">,
@@ -128,7 +131,7 @@ export async function replaceTemplateCards(
 	await insertTemplateCards(ctx, hackathon, cards);
 }
 
-/** Gives a Builder their own copy of the template Cards, once. */
+/** Gives a Participant their own copy of the template Cards, once. */
 export async function copyTemplateCardsTo(
 	ctx: MutationCtx,
 	hackathon: Doc<"hackathons">,
@@ -175,58 +178,21 @@ export async function declineAppliedBatch(
 	return applied.length === MAX_APPLICATIONS;
 }
 
-/** Builders still waiting for a decision from the Founder. */
-export async function countUndecidedBuilders(
+/** Participants still waiting for a decision from the Founder. */
+export async function countUndecidedParticipants(
 	ctx: QueryCtx | MutationCtx,
 	hackathonId: Id<"hackathons">,
 ): Promise<number> {
-	const builders = await ctx.db
+	const participants = await ctx.db
 		.query("applications")
 		.withIndex("by_hackathon_and_status", (q) =>
-			q.eq("hackathonId", hackathonId).eq("status", "building"),
+			q.eq("hackathonId", hackathonId).eq("status", "participating"),
 		)
-		.take(MAX_BUILDERS);
-	return builders.filter((builder) => !builder.decision).length;
+		.take(MAX_PARTICIPANTS);
+	return participants.filter((participant) => !participant.decision).length;
 }
 
-/** Ends the Hackathon once every Builder has a decision. Call after each decision. */
-export async function finishIfDecided(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-): Promise<void> {
-	if (hackathon.status !== "deciding" && hackathon.status !== "building") {
-		return;
-	}
-	const builders = await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon_and_status", (q) =>
-			q.eq("hackathonId", hackathon._id).eq("status", "building"),
-		)
-		.take(MAX_BUILDERS);
-	if (builders.length === 0 || builders.some((builder) => !builder.decision)) {
-		return;
-	}
-	await finishHackathon(ctx, hackathon);
-}
-
-/** Marks the Hackathon done and logs it on the Startup's Activity, once. */
-export async function finishHackathon(
-	ctx: MutationCtx,
-	hackathon: Doc<"hackathons">,
-): Promise<void> {
-	if (hackathon.status === "done") {
-		return;
-	}
-	await ctx.db.patch(hackathon._id, { status: "done" });
-	await appendActivity(ctx, {
-		startupId: hackathon.startupId,
-		kind: "hackathon_finished",
-		at: Date.now(),
-		hackathonId: hackathon._id,
-	});
-}
-
-/** Whether the Hackathon passes every filter that is set. `paid` means Builders get something. */
+/** Whether the Hackathon passes every filter that is set. `paid` means Participants get something. */
 export function matchesExplore(
 	hackathon: Doc<"hackathons">,
 	filters: {
@@ -238,18 +204,18 @@ export function matchesExplore(
 	return (
 		(filters.role === undefined || hackathon.job.role === filters.role) &&
 		(filters.weeks === undefined || hackathon.weeks === filters.weeks) &&
-		(filters.paid !== true || hackathon.buildersGet !== undefined)
+		(filters.paid !== true || hackathon.participantsGet !== undefined)
 	);
 }
 
-/** Open Hackathons by soonest start, then building ones by latest start. */
+/** Open Hackathons by soonest start, then live ones by latest start. */
 export function sortExplore(
 	open: Doc<"hackathons">[],
-	building: Doc<"hackathons">[],
+	live: Doc<"hackathons">[],
 ): Doc<"hackathons">[] {
 	return [
 		...[...open].sort((a, b) => a.startsAt - b.startsAt),
-		...[...building].sort((a, b) => b.startsAt - a.startsAt),
+		...[...live].sort((a, b) => b.startsAt - a.startsAt),
 	];
 }
 
@@ -266,7 +232,7 @@ export function toExploreHackathon(
 		job: hackathon.job,
 		weeks: hackathon.weeks,
 		startsAt: hackathon.startsAt,
-		buildersGet: hackathon.buildersGet ?? null,
+		participantsGet: hackathon.participantsGet ?? null,
 		startup: {
 			name: startup.name,
 			slug: startup.slug,

@@ -11,7 +11,7 @@ export function PublicHeader() {
 				<div className="flex-1" />
 				<Link
 					to="/explore"
-					className="rounded-md px-2 py-1 text-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+					className="rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-ring"
 				>
 					Explore
 				</Link>

@@ -1,7 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
-import { initials } from "~/lib/initials";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { cn } from "~/lib/utils";
 import { useBoardScope } from "./BoardScope";
 import type { CardView } from "./types";
@@ -12,7 +11,7 @@ export const TILE_CLASS =
 
 /** What a Card looks like, on the Board and while it's dragged. */
 export function CardFace({ card }: { readonly card: CardView }) {
-	// A Builder's Board is one person's: their face on every Card says nothing.
+	// A Participant's Board is one person's: their face on every Card says nothing.
 	const owner = useBoardScope().kind === "startup" ? card.owner : null;
 	const showsBadges = card.changesAsked || card.selfVerified;
 
@@ -29,15 +28,7 @@ export function CardFace({ card }: { readonly card: CardView }) {
 					{card.title}
 				</p>
 				{owner ? (
-					<Avatar
-						className="mt-px size-5"
-						title={owner.name ?? owner.username ?? ""}
-					>
-						{owner.image ? <AvatarImage src={owner.image} alt="" /> : null}
-						<AvatarFallback className="text-[9px]">
-							{initials(owner.name, owner.username)}
-						</AvatarFallback>
-					</Avatar>
+					<PersonAvatar person={owner} size={20} className="mt-px" />
 				) : null}
 			</div>
 			{showsBadges ? (
@@ -86,7 +77,7 @@ export function CardTile({
 			onClick={() => onOpen(card._id)}
 			className={cn(
 				TILE_CLASS,
-				"shrink-0 cursor-pointer outline-none transition-colors select-none hover:border-input focus-visible:ring-2 focus-visible:ring-ring/60",
+				"shrink-0 cursor-pointer transition-colors select-none hover:border-input focus-ring",
 				// Done is this week's record: quieter, an outline rather than a tile.
 				card.status === "done" && "bg-transparent",
 				isOpen && "border-foreground/30 bg-accent/60",

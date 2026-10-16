@@ -13,11 +13,13 @@ describe("buildUsernameBase", () => {
 	test("leading digits are dropped", () =>
 		expect(buildUsernameBase("007 Bond", undefined)).toBe("bond"));
 
-	test("a name with no usable letters becomes builder", () =>
-		expect(buildUsernameBase("李雷", undefined)).toBe("builder"));
+	test("a name with no usable letters becomes participant", () =>
+		expect(buildUsernameBase("李雷", undefined)).toBe("participant"));
 
-	test("a reserved word becomes builder", () =>
-		expect(buildUsernameBase(undefined, "admin@example.com")).toBe("builder"));
+	test("a reserved word becomes participant", () =>
+		expect(buildUsernameBase(undefined, "admin@example.com")).toBe(
+			"participant",
+		));
 
 	test("a long name is cut to 16 characters", () =>
 		expect(buildUsernameBase("Bartholomew Montgomery", undefined)).toBe(

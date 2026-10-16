@@ -35,10 +35,7 @@ export function OnboardingStep({
 			aria-labelledby="onboarding-question"
 			className="flex flex-col gap-5"
 		>
-			<h1
-				id="onboarding-question"
-				className="text-2xl font-semibold tracking-tight"
-			>
+			<h1 id="onboarding-question" className="text-2xl font-semibold">
 				{QUESTIONS[state.step]}
 			</h1>
 			{renderControl(state, dispatch)}

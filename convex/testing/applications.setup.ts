@@ -25,7 +25,7 @@ export async function applicant(
 }
 
 /** Applicants the Founder accepted before the start. */
-export async function builders(
+export async function participants(
 	setup: Setup,
 	hackathonId: Id<"hackathons">,
 	names: string[],
@@ -41,7 +41,7 @@ export async function builders(
 	return accepted;
 }
 
-/** Moves time just past the start and lets the Builders' Cards be copied. Stays in `building`. */
+/** Moves time just past the start and lets the Participants' Cards be copied. Stays `live`. */
 export async function startHackathon(
 	setup: Setup,
 	hackathonId: Id<"hackathons">,
@@ -84,20 +84,20 @@ export async function closeHackathon(
 	await advancePast(setup.t, hackathon.decideBy - Date.now() + HOUR);
 }
 
-type BuilderPlan = {
+type ParticipantPlan = {
 	name: string;
 	decision?: "hired" | "not_this_time";
-	/** Hired Builders are always shortlisted and walked through. */
+	/** Hired Participants are always shortlisted and walked through. */
 	shortlisted?: boolean;
 };
 
-/** A Frontend Hackathon run to its end, each Builder decided as planned or left undecided. */
+/** A Frontend Hackathon run to its end, each Participant decided as planned or left undecided. */
 export async function decidedHackathon(
 	setup: Setup,
-	plans: BuilderPlan[],
-): Promise<{ hackathonId: Id<"hackathons">; builders: Applicant[] }> {
+	plans: ParticipantPlan[],
+): Promise<{ hackathonId: Id<"hackathons">; participants: Applicant[] }> {
 	const hackathonId = await publishedHackathon(setup);
-	const accepted = await builders(
+	const accepted = await participants(
 		setup,
 		hackathonId,
 		plans.map((plan) => plan.name),
@@ -125,5 +125,5 @@ export async function decidedHackathon(
 			});
 		}
 	}
-	return { hackathonId, builders: accepted };
+	return { hackathonId, participants: accepted };
 }

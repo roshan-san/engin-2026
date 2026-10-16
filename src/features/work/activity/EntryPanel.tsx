@@ -1,9 +1,10 @@
 import { ChevronLeftIcon, XIcon } from "lucide-react";
+import { PanelBody } from "~/components/PanelBody";
 import { PanelHeader } from "~/components/PanelHeader";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
 import { Button } from "~/components/ui/button";
+import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
-import { ActorAvatar } from "./ActorAvatar";
 import { EntryProof } from "./EntryProof";
 import { type CycleView, type EntryView, entryDate } from "./record";
 
@@ -49,13 +50,13 @@ export function EntryPanel({
 					</Button>
 				) : null}
 			</PanelHeader>
-			<div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4">
+			<PanelBody>
 				<div className="flex flex-col gap-3">
 					<div className="flex items-center gap-2 text-sm">
-						<ActorAvatar person={entry.actor} />
+						<PersonAvatar person={entry.actor} size={24} />
 						<PersonName person={entry.actor} className="font-medium" />
 					</div>
-					<p className="text-base font-medium break-words">
+					<p className="text-lg font-semibold break-words">
 						{entry.line ?? card?.title}
 					</p>
 					<p className="text-xs text-muted-foreground">
@@ -64,17 +65,15 @@ export function EntryPanel({
 				</div>
 				{card ? (
 					<>
-						<section className="flex flex-col gap-2">
-							<SectionLabel as="h3">Card</SectionLabel>
+						<Section label="Card" as="h3">
 							<p className="text-sm break-words">{card.title}</p>
-						</section>
-						<section className="flex flex-col gap-3">
-							<SectionLabel as="h3">Proof</SectionLabel>
+						</Section>
+						<Section label="Proof" as="h3">
 							<EntryProof entry={entry} card={card} size="panel" />
-						</section>
+						</Section>
 					</>
 				) : null}
-			</div>
+			</PanelBody>
 		</div>
 	);
 }

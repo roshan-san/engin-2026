@@ -26,7 +26,7 @@ describe("hiringLine", () => {
 		).toBe("2 hackathons · 1 hire · promises kept 3/3");
 	});
 
-	it("Builders left waiting show as undecided", () => {
+	it("Participants left waiting show as undecided", () => {
 		expect(hiringLine({ ...NOTHING, finished: 1, undecided: 1 })).toBe(
 			"1 hackathon · didn't decide 1",
 		);

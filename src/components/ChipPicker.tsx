@@ -57,7 +57,7 @@ export function ChipPicker<T extends string>({
 						onClick={() => onChange(option.value)}
 						onKeyDown={(event) => onKeyDown(event, index)}
 						className={cn(
-							"rounded-full border px-3 py-1 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-hidden",
+							"rounded-full border px-3 py-1 text-sm transition-colors focus-ring focus-visible:outline-hidden",
 							checked
 								? "border-foreground bg-foreground text-background"
 								: "border-input hover:border-foreground/25 hover:bg-accent",

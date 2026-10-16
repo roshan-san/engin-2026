@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 
-/** Every Builder Card waiting in Review, oldest submission first, and Verify. */
+/** Every Participant Card waiting in Review, oldest submission first, and Verify. */
 export function useReviewQueue(hackathonId: Id<"hackathons">) {
 	const queue = useQuery(api.work.cards.listReviewQueue, { hackathonId });
 	const verifyCard = useMutation(api.work.cards.verify);

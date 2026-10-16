@@ -58,20 +58,24 @@ describe("rating math", () => {
 		expect(outcomeScore([])).toBe(0);
 	});
 
-	it("a Builder's outcome is Hired, then Finalist, then Built", () => {
+	it("a Participant's outcome is Hired, then Finalist, then Built", () => {
 		expect(
-			outcomeOf({ status: "building", decision: "hired", shortlisted: true }),
+			outcomeOf({
+				status: "participating",
+				decision: "hired",
+				shortlisted: true,
+			}),
 		).toBe("hired");
 		expect(
 			outcomeOf({
-				status: "building",
+				status: "participating",
 				decision: "not_this_time",
 				shortlisted: true,
 			}),
 		).toBe("finalist");
 		expect(
 			outcomeOf({
-				status: "building",
+				status: "participating",
 				decision: "not_this_time",
 				shortlisted: false,
 			}),

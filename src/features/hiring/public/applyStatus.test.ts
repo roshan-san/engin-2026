@@ -17,19 +17,19 @@ describe("applyState", () => {
 	});
 
 	it("an application shows its status, whatever the Hackathon's", () => {
-		const withStatus = (status: "applied" | "building" | "declined") => ({
-			status: "building" as const,
+		const withStatus = (status: "applied" | "participating" | "declined") => ({
+			status: "live" as const,
 			isTeam: false,
 			myApplication: { status },
 		});
 
 		expect(applyState(withStatus("applied"), true)).toBe("applied");
-		expect(applyState(withStatus("building"), true)).toBe("building");
+		expect(applyState(withStatus("participating"), true)).toBe("participating");
 		expect(applyState(withStatus("declined"), true)).toBe("declined");
 	});
 
 	it("a Hackathon that isn't open is closed to new applicants", () => {
-		for (const status of ["building", "deciding", "done"] as const) {
+		for (const status of ["live", "deciding", "done"] as const) {
 			expect(applyState({ ...open, status }, true)).toBe("closed");
 			expect(applyState({ ...open, status }, false)).toBe("closed");
 		}
@@ -39,12 +39,12 @@ describe("applyState", () => {
 describe("copy", () => {
 	it("says where you stand", () => {
 		expect(APPLY_COPY.applied).toBe("Sent. You'll hear before it starts.");
-		expect(APPLY_COPY.building).toBe("You're in.");
+		expect(APPLY_COPY.participating).toBe("You're in.");
 		expect(APPLY_COPY.declined).toBe("Not this time. Thanks for applying.");
 	});
 
 	it("names a closed Hackathon", () => {
-		expect(closedLabel("building")).toBe("Building now");
+		expect(closedLabel("live")).toBe("Live now");
 		expect(closedLabel("deciding")).toBe("Finished");
 		expect(closedLabel("done")).toBe("Finished");
 	});

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import {
-	builders,
 	decidedHackathon,
+	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
@@ -73,10 +73,10 @@ describe("profile record", () => {
 		expect(JSON.stringify(record)).not.toContain("not_this_time");
 	});
 
-	it("a Hackathon still building isn't shown", async () => {
+	it("a Hackathon still live isn't shown", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		await builders(setup, hackathonId, ["Ana"]);
+		await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 
 		const record = await recordOf(setup, "ana");

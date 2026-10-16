@@ -1,10 +1,10 @@
-import { SectionLabel } from "~/components/SectionLabel";
+import { Section } from "~/components/Section";
 import { useBoardScope } from "~/features/work/board/BoardScope";
 import { useBoardCards } from "~/features/work/board/useBoard";
 import { buildDaysLabel, dayLabel, lastDay } from "../hackathonDates";
 
-/** What a Builder keeps coming back to: how far they've got, the problem, and how it ends. */
-export function BuilderBrief({
+/** What a Participant keeps coming back to: how far they've got, the problem, and how it ends. */
+export function ParticipantBrief({
 	hackathon,
 }: {
 	readonly hackathon: {
@@ -12,7 +12,7 @@ export function BuilderBrief({
 		readonly startsAt: number;
 		readonly endsAt: number;
 		readonly decideBy: number;
-		readonly buildersGet: string | null;
+		readonly participantsGet: string | null;
 	};
 }) {
 	const cards = useBoardCards(useBoardScope());
@@ -20,7 +20,7 @@ export function BuilderBrief({
 	const total = cards?.length ?? 0;
 
 	return (
-		<div className="flex flex-col gap-8">
+		<div className="flex flex-col gap-10">
 			<section className="flex flex-col gap-2">
 				<p className="flex items-baseline justify-between gap-3 text-sm">
 					<span className="font-medium">
@@ -38,29 +38,26 @@ export function BuilderBrief({
 				</div>
 			</section>
 
-			<section className="flex flex-col gap-2">
-				<SectionLabel as="h3">The problem</SectionLabel>
+			<Section label="The problem" as="h3">
 				<p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
 					{hackathon.problem}
 				</p>
-			</section>
+			</Section>
 
-			<section className="flex flex-col gap-2">
-				<SectionLabel as="h3">How it ends</SectionLabel>
+			<Section label="How it ends" as="h3">
 				<ul className="flex list-disc flex-col gap-1.5 pl-4 text-sm text-muted-foreground marker:text-subtle-foreground">
 					<li>Ship each Card with what shipped. The Founder verifies it.</li>
-					<li>Shortlisted Builders get a Walkthrough call.</li>
+					<li>Shortlisted Participants get a Walkthrough call.</li>
 					<li>
 						The decision comes by {dayLabel(lastDay(hackathon.decideBy))}.
 					</li>
 				</ul>
-			</section>
+			</Section>
 
-			{hackathon.buildersGet ? (
-				<section className="flex flex-col gap-2">
-					<SectionLabel as="h3">What Builders get</SectionLabel>
-					<p className="text-sm">{hackathon.buildersGet}</p>
-				</section>
+			{hackathon.participantsGet ? (
+				<Section label="What Participants get" as="h3">
+					<p className="text-sm">{hackathon.participantsGet}</p>
+				</Section>
 			) : null}
 		</div>
 	);

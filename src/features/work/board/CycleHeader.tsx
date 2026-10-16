@@ -92,7 +92,9 @@ export function CycleHeader() {
 				{isFocused ? (
 					// Below the bar, over the Board's top edge, so the bar keeps its height.
 					<div className="absolute top-full left-2 z-10 mt-2 rounded-md bg-background px-1">
-						<MentorNote>One line. What makes this week count?</MentorNote>
+						<MentorNote>
+							What has to ship by Sunday? Keep it to one line.
+						</MentorNote>
 					</div>
 				) : null}
 			</div>

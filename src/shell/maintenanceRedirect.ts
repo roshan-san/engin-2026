@@ -1,4 +1,4 @@
-export const MAINTENANCE_PATH = "/maintenance";
+const MAINTENANCE_PATH = "/maintenance";
 
 /** Where the router should send you for this maintenance state; `null` to stay put. */
 export function maintenanceRedirect(

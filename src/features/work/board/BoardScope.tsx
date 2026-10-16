@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { createContext, useContext } from "react";
 
-/** Whose Board is showing: a Startup's, or one Builder's Cards on a Hackathon. */
+/** Whose Board is showing: a Startup's, or one Participant's Cards on a Hackathon. */
 export type BoardScope =
 	| {
 			readonly kind: "startup";
@@ -11,9 +11,9 @@ export type BoardScope =
 			readonly isFounder: boolean;
 	  }
 	| {
-			readonly kind: "builder";
+			readonly kind: "participant";
 			readonly hackathonId: Id<"hackathons">;
-			readonly builderId: Id<"users">;
+			readonly participantId: Id<"users">;
 			readonly userId: Id<"users">;
 			readonly isFounder: boolean;
 			/** The Hackathon is over for this viewer: the Cards are read-only. */
@@ -35,18 +35,21 @@ export function useBoardScope(): BoardScope {
 export function boardQuery(scope: BoardScope):
 	| { kind: "startup"; args: { startupId: Id<"startups"> } }
 	| {
-			kind: "builder";
-			args: { hackathonId: Id<"hackathons">; builderId: Id<"users"> };
+			kind: "participant";
+			args: { hackathonId: Id<"hackathons">; participantId: Id<"users"> };
 	  } {
 	return scope.kind === "startup"
 		? { kind: "startup", args: { startupId: scope.startupId } }
 		: {
-				kind: "builder",
-				args: { hackathonId: scope.hackathonId, builderId: scope.builderId },
+				kind: "participant",
+				args: {
+					hackathonId: scope.hackathonId,
+					participantId: scope.participantId,
+				},
 			};
 }
 
 /** Whether the viewer can't change these Cards any more. */
 export function isReadOnly(scope: BoardScope): boolean {
-	return scope.kind === "builder" && scope.isClosed;
+	return scope.kind === "participant" && scope.isClosed;
 }

@@ -1,10 +1,11 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
+import { isRunning, phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_APPLICATIONS,
 	MAX_BOARD_CARDS,
-	MAX_BUILDERS,
 	MAX_LISTED_HACKATHONS,
+	MAX_PARTICIPANTS,
 } from "../shared/limits";
 import type { WaitingReason } from "../shared/places";
 import {
@@ -14,7 +15,7 @@ import {
 	loadThreadRead,
 } from "./threads";
 
-/** A decision is in, and the Builder hasn't said whether the promise was kept. */
+/** A decision is in, and the Participant hasn't said whether the promise was kept. */
 export function isPromisePending(application: Doc<"applications">): boolean {
 	return (
 		application.decision !== undefined && application.promiseKept === undefined
@@ -60,7 +61,8 @@ async function hackathonReasons(
 ): Promise<WaitingReason[]> {
 	const role = hackathon.job.role;
 	const reasons: WaitingReason[] = [];
-	if (hackathon.status === "open") {
+	const phase = phaseOf(hackathon, Date.now());
+	if (phase === "open") {
 		const applied = await ctx.db
 			.query("applications")
 			.withIndex("by_hackathon_and_status", (q) =>
@@ -71,14 +73,14 @@ async function hackathonReasons(
 			reasons.push({ kind: "new_applicants", role, count: applied.length });
 		}
 	}
-	if (hackathon.status === "building") {
+	if (phase === "live") {
 		const count = await countCardsInReview(
 			ctx,
 			hackathon.startupId,
 			hackathon._id,
 		);
 		if (count > 0) {
-			reasons.push({ kind: "builder_cards_to_review", role, count });
+			reasons.push({ kind: "participant_cards_to_review", role, count });
 		}
 		if (
 			await anyUnread(
@@ -90,18 +92,18 @@ async function hackathonReasons(
 			reasons.push({ kind: "hackathon_unread", role });
 		}
 	}
-	if (hackathon.status === "deciding") {
-		const building = await ctx.db
+	if (phase === "deciding") {
+		const participants = await ctx.db
 			.query("applications")
 			.withIndex("by_hackathon_and_status", (q) =>
-				q.eq("hackathonId", hackathon._id).eq("status", "building"),
+				q.eq("hackathonId", hackathon._id).eq("status", "participating"),
 			)
-			.take(MAX_BUILDERS);
-		const count = building.filter(
+			.take(MAX_PARTICIPANTS);
+		const count = participants.filter(
 			(application) => application.decision === undefined,
 		).length;
 		if (count > 0) {
-			reasons.push({ kind: "builders_to_decide", role, count });
+			reasons.push({ kind: "participants_to_decide", role, count });
 		}
 	}
 	return reasons;
@@ -133,17 +135,14 @@ export async function startupReasons(
 		.take(MAX_LISTED_HACKATHONS);
 	const perHackathon = await Promise.all(
 		hackathons
-			.filter(
-				(hackathon) =>
-					hackathon.status !== "draft" && hackathon.status !== "done",
-			)
+			.filter((hackathon) => isRunning(hackathon.status))
 			.map((hackathon) => hackathonReasons(ctx, hackathon, userId)),
 	);
 	return [...reasons, ...perHackathon.flat()];
 }
 
 /** Why a Hackathon the person builds in is waiting on them: Everyone, then their private thread, then the promise. */
-export async function builderReasons(
+export async function participantReasons(
 	ctx: QueryCtx,
 	application: Doc<"applications">,
 ): Promise<WaitingReason[]> {
@@ -156,8 +155,8 @@ export async function builderReasons(
 		.take(1);
 	const priv = await ctx.db
 		.query("threads")
-		.withIndex("by_hackathon_and_builder", (q) =>
-			q.eq("hackathonId", hackathonId).eq("builderId", userId),
+		.withIndex("by_hackathon_and_participant", (q) =>
+			q.eq("hackathonId", hackathonId).eq("participantId", userId),
 		)
 		.take(1);
 	const reasons: WaitingReason[] = [];

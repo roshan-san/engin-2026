@@ -90,7 +90,7 @@ export function ShipDialog({
 	function addLink(text: string) {
 		const link = parseLink(text);
 		if (!link) {
-			toast("Links start with http:// or https://");
+			toast("Links must start with http:// or https://");
 			return;
 		}
 		if (!links.includes(link)) setLinks([...links, link]);
@@ -102,7 +102,8 @@ export function ShipDialog({
 			files,
 			MAX_SHIPPED_IMAGES - pictures.length,
 		);
-		if (skipped > 0) toast(`Images only, up to ${MAX_SHIPPED_IMAGES}.`);
+		if (skipped > 0)
+			toast(`Some files were skipped. Add up to ${MAX_SHIPPED_IMAGES} images.`);
 
 		for (const file of accepted) {
 			const picture: Picture = {

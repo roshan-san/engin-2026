@@ -1,15 +1,22 @@
+import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useRef, useState } from "react";
 import { ChipPicker } from "~/components/ChipPicker";
-import { FormFooter } from "~/components/FormFooter";
 import { MentorNote } from "~/components/MentorNote";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { PlaceLogo } from "~/components/PlaceLogo";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "~/components/ui/sheet";
 import { Spinner } from "~/components/ui/spinner";
-import { useWorkspace } from "~/features/work/board/StartupContext";
-import { initials } from "~/lib/initials";
+import { useStartup } from "~/features/work/board/useStartup";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import {
 	type SettingsDraft,
@@ -18,9 +25,46 @@ import {
 } from "./settingsDraft";
 import { useStartupSettings } from "./useStartupSettings";
 
-/** The Founder's Startup settings page body. One Save sends only what changed; the logo saves on pick. */
-export function StartupSettings() {
-	const { startup } = useWorkspace();
+/** The Founder's Startup settings, in a side sheet over whichever tab is open. */
+export function StartupSettingsSheet({
+	slug,
+	open,
+	onOpenChange,
+}: {
+	readonly slug: string;
+	readonly open: boolean;
+	readonly onOpenChange: (open: boolean) => void;
+}) {
+	const found = useStartup(open ? slug : undefined);
+
+	return (
+		<Sheet open={open} onOpenChange={onOpenChange}>
+			<SheetContent className="overflow-y-auto">
+				<SheetHeader>
+					<SheetTitle>Startup settings</SheetTitle>
+					<SheetDescription>
+						What people see on your Startup's page.
+					</SheetDescription>
+				</SheetHeader>
+				{found?.role === "founder" ? (
+					<StartupSettings
+						startup={found.startup}
+						onSaved={() => onOpenChange(false)}
+					/>
+				) : null}
+			</SheetContent>
+		</Sheet>
+	);
+}
+
+/** One Save sends only what changed; the logo saves on pick. */
+function StartupSettings({
+	startup,
+	onSaved,
+}: {
+	readonly startup: Doc<"startups">;
+	readonly onSaved: () => void;
+}) {
 	const { logoUrl, save, saveLogo } = useStartupSettings(
 		startup._id,
 		startup.slug,
@@ -40,8 +84,9 @@ export function StartupSettings() {
 		event.preventDefault();
 		if (!isChanged || isSaving) return;
 		setIsSaving(true);
-		await save(changes);
+		const saved = await save(changes);
 		setIsSaving(false);
+		if (saved) onSaved();
 	}
 
 	async function pickLogo(file: File | undefined) {
@@ -53,14 +98,9 @@ export function StartupSettings() {
 	}
 
 	return (
-		<form onSubmit={submit} className="flex flex-col gap-5">
+		<form onSubmit={submit} className="flex flex-1 flex-col gap-5 px-4">
 			<div className="flex items-center gap-3">
-				<Avatar className="size-12 rounded-lg">
-					{logoUrl ? <AvatarImage src={logoUrl} alt="" /> : null}
-					<AvatarFallback className="rounded-lg">
-						{initials(startup.name, null)}
-					</AvatarFallback>
-				</Avatar>
+				<PlaceLogo name={startup.name} url={logoUrl ?? null} size={40} />
 				<input
 					ref={fileInput}
 					type="file"
@@ -141,12 +181,12 @@ export function StartupSettings() {
 				/>
 			</div>
 
-			<FormFooter>
+			<SheetFooter className="px-0">
 				<Button type="submit" disabled={!isChanged || isSaving}>
 					{isSaving ? <Spinner /> : null}
 					Save
 				</Button>
-			</FormFooter>
+			</SheetFooter>
 		</form>
 	);
 }

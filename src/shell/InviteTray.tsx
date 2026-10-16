@@ -37,7 +37,7 @@ export function InviteTray() {
 		<Popover>
 			<PopoverTrigger
 				aria-label="Invites"
-				className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 data-[state=open]:bg-muted"
+				className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted focus-ring"
 			>
 				<Mail aria-hidden className="size-4" />
 				{invites.length}

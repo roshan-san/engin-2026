@@ -60,7 +60,7 @@ export function entrySummary(entry: EntryView): {
 			return { actor, text: "joined as a Contributor" };
 		case "hackathon_finished":
 			return { actor: null, text: `Hackathon finished · ${job}` };
-		case "builder_hired":
+		case "participant_hired":
 			return { actor, text: `was hired · ${job}` };
 	}
 }

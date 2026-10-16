@@ -7,15 +7,15 @@ import {
 	normalizeNotes,
 	normalizeTitle,
 	parseShipped,
-	requireBuilderBoardAccess,
 	requireCardAccess,
 	requireNotVerified,
+	requireParticipantBoardAccess,
 	requireTeamOwner,
 	toCardView,
 } from "../model/cards";
 import { requireHackathonFounder } from "../model/hackathons";
 import { requireTeam } from "../model/teamAccess";
-import { MAX_BUILDERS, MAX_HACKATHON_CARDS } from "../shared/limits";
+import { MAX_HACKATHON_CARDS, MAX_PARTICIPANTS } from "../shared/limits";
 import { shipped } from "../shared/validators";
 
 export const listBoard = query({
@@ -29,29 +29,29 @@ export const listBoard = query({
 	},
 });
 
-/** One Builder's Cards on a Hackathon, in every status. */
-export const listBuilderBoard = query({
-	args: { hackathonId: v.id("hackathons"), builderId: v.id("users") },
+/** One Participant's Cards on a Hackathon, in every status. */
+export const listParticipantBoard = query({
+	args: { hackathonId: v.id("hackathons"), participantId: v.id("users") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireBuilderBoardAccess(
+		await requireParticipantBoardAccess(
 			ctx,
 			args.hackathonId,
-			args.builderId,
+			args.participantId,
 			userId,
 		);
 
 		const cards = await ctx.db
 			.query("cards")
 			.withIndex("by_hackathon_and_owner", (q) =>
-				q.eq("hackathonId", args.hackathonId).eq("ownerId", args.builderId),
+				q.eq("hackathonId", args.hackathonId).eq("ownerId", args.participantId),
 			)
 			.take(MAX_HACKATHON_CARDS);
 		return await Promise.all(cards.map((card) => toCardView(ctx, card)));
 	},
 });
 
-/** Builders' Cards waiting in Review, oldest submission first. */
+/** Participants' Cards waiting in Review, oldest submission first. */
 export const listReviewQueue = query({
 	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
@@ -63,7 +63,7 @@ export const listReviewQueue = query({
 			.withIndex("by_hackathon_and_status", (q) =>
 				q.eq("hackathonId", args.hackathonId).eq("status", "review"),
 			)
-			.take(MAX_BUILDERS * MAX_HACKATHON_CARDS);
+			.take(MAX_PARTICIPANTS * MAX_HACKATHON_CARDS);
 		const queue = inReview
 			.filter((card) => card.ownerId !== undefined)
 			.sort((a, b) => (a.submittedAt ?? 0) - (b.submittedAt ?? 0));
@@ -136,11 +136,11 @@ export const update = mutation({
 		}
 		if (args.ownerId !== undefined) {
 			if (card.hackathonId) {
-				throw new ConvexError("Hackathon Cards stay with their Builder");
+				throw new ConvexError("Hackathon Cards stay with their Participant");
 			}
 			// Verifying credits the owner, so the owner is fixed once submitted.
 			if (card.status === "review") {
-				throw new ConvexError("This Card is in Review");
+				throw new ConvexError("The owner is fixed once a Card is in Review");
 			}
 			await requireTeamOwner(ctx, card.startupId, args.ownerId);
 			patch.ownerId = args.ownerId;
@@ -184,7 +184,7 @@ export const submit = mutation({
 		}
 		requireNotVerified(card);
 		if (card.status === "review") {
-			throw new ConvexError("This Card is in Review");
+			throw new ConvexError("This Card is already in Review");
 		}
 		const proof = parseShipped(args.shipped);
 
@@ -208,7 +208,7 @@ export const verify = mutation({
 		const userId = await requireUserId(ctx);
 		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
 		if (role !== "founder") {
-			throw new ConvexError("Only the Founder can do this");
+			throw new ConvexError("Only the Founder can verify a Card");
 		}
 		if (card.status !== "review" || !card.shipped) {
 			throw new ConvexError("This Card isn't in Review");
@@ -224,12 +224,12 @@ export const remove = mutation({
 		const userId = await requireUserId(ctx);
 		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
 		requireNotVerified(card);
-		if (role === "builder") {
-			throw new ConvexError("Only the Founder can remove this Card");
+		if (role === "participant") {
+			throw new ConvexError("Only the Founder can delete this Card");
 		}
 		if (card.ownerId !== userId && role !== "founder") {
 			throw new ConvexError(
-				"Only the owner or the Founder can remove this Card",
+				"Only the owner or the Founder can delete this Card",
 			);
 		}
 

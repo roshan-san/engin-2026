@@ -11,7 +11,11 @@ import { usePaymentIssue } from "~/features/billing/usePaymentIssue";
 import { usePlan } from "~/features/billing/usePlan";
 import { usePortal } from "~/features/billing/usePortal";
 import { useWorkspace } from "~/features/work/board/StartupContext";
-import { draftCard, fromBuildersGet, type HackathonDraft } from "../form/draft";
+import {
+	draftCard,
+	fromParticipantsGet,
+	type HackathonDraft,
+} from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";
 import { useHackathonForm } from "../form/useHackathonForm";
 
@@ -37,7 +41,7 @@ export function DraftView({
 		problem: hackathon.problem,
 		weeks: hackathon.weeks,
 		startsAt: hackathon.startsAt,
-		buildersGet: fromBuildersGet(hackathon.buildersGet ?? null),
+		participantsGet: fromParticipantsGet(hackathon.participantsGet ?? null),
 		cards: cards.map((card) => draftCard(card.title, card.notes)),
 	}));
 	const publishing = draftPublish({

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { homeSections } from "./homeSections";
 
-const none = { startups: [], building: [], applied: [] };
+const none = { startups: [], hackathons: [], applied: [] };
 const application = { hackathonId: "h" };
 const startup = { startupId: "s" };
 
@@ -27,11 +27,11 @@ describe("homeSections", () => {
 		});
 	});
 
-	it("a Builder with an application sees both", () => {
+	it("a Participant with an application sees both", () => {
 		expect(
 			homeSections({
 				...none,
-				building: [{ hackathonId: "b" }],
+				hackathons: [{ hackathonId: "b" }],
 				applied: [application],
 			}),
 		).toEqual({ welcome: false, applications: true });

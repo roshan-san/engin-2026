@@ -14,14 +14,14 @@ import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
 import { roleLabel } from "../jobChips";
 import { useHackathonThreads } from "../space/useSpace";
-import { useBuilder } from "./BuilderGate";
 import { DecisionBanner } from "./DecisionBanner";
+import { useParticipant } from "./ParticipantGate";
 
 const route = getRouteApi("/_shell/_authed/h/$id/");
 
-/** A Builder's own Board on a Hackathon, beside Everyone and the Founder. */
-export function BuilderPage() {
-	const { page, userId, status } = useBuilder();
+/** A Participant's own Board on a Hackathon, beside Everyone and the Founder. */
+export function ParticipantPage() {
+	const { page, userId, status } = useParticipant();
 	const { card: cardId, panel = "everyone" } = route.useSearch();
 	const navigate = route.useNavigate();
 	const [shipping, setShipping] = useState<CardView | null>(null);
@@ -109,7 +109,7 @@ export function BuilderPage() {
 						<Link
 							to="/hackathons/$id"
 							params={{ id: page._id }}
-							className="flex min-w-0 items-center gap-0.5 truncate text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
+							className="flex min-w-0 items-center gap-0.5 truncate text-muted-foreground hover:text-foreground focus-ring"
 						>
 							<span className="truncate">{page.startup.name}</span>
 							<ArrowUpRightIcon aria-hidden className="size-3.5 shrink-0" />

@@ -11,7 +11,7 @@ export type HackathonExploreRowData = FunctionReturnType<
 	typeof api.hiring.hackathons.explore
 >[number];
 
-/** One Hackathon: the job, who's hiring, what Builders get, and when. */
+/** One Hackathon: the job, who's hiring, what Participants get, and when. */
 export function HackathonExploreRow({
 	hackathon,
 }: {
@@ -24,13 +24,13 @@ export function HackathonExploreRow({
 			<Link
 				to="/hackathons/$id"
 				params={{ id: hackathon.hackathonId }}
-				className="flex flex-col gap-2 px-2 py-4 outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+				className="flex flex-col gap-2 px-2 py-4 transition-colors hover:bg-accent sm:flex-row focus-ring sm:items-start sm:justify-between sm:gap-6"
 			>
 				<div className="flex min-w-0 items-start gap-3">
 					<PlaceLogo
 						name={hackathon.startup.name}
 						url={hackathon.startup.logoUrl}
-						size="lg"
+						size={40}
 					/>
 					<div className="flex min-w-0 flex-col gap-1">
 						<p className="truncate font-medium">{jobLine(hackathon.job)}</p>
@@ -43,9 +43,9 @@ export function HackathonExploreRow({
 								isProvisional={hackathon.startup.isProvisional}
 							/>
 						</div>
-						{hackathon.buildersGet ? (
+						{hackathon.participantsGet ? (
 							<p className="truncate text-sm text-muted-foreground">
-								Builders get {hackathon.buildersGet}
+								Participants get {hackathon.participantsGet}
 							</p>
 						) : null}
 						{record ? (
@@ -56,7 +56,7 @@ export function HackathonExploreRow({
 				<span className="shrink-0 text-sm text-muted-foreground">
 					{hackathon.status === "open"
 						? `Starts ${dayLabel(hackathon.startsAt)}`
-						: "Building"}
+						: "Live"}
 				</span>
 			</Link>
 		</li>

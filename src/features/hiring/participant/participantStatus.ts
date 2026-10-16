@@ -1,8 +1,7 @@
+import { type HackathonPhase, phaseOf } from "@convex/shared/hackathonPhase";
 import { dayLabel, lastDay } from "../hackathonDates";
 
-type HackathonStatus = "draft" | "open" | "building" | "deciding" | "done";
-
-export type BuilderStatus = {
+export type ParticipantStatus = {
 	/** The header line: "Starts Mon, Oct 19", "Ends Sun, Oct 25", "Ended". */
 	readonly line: string;
 	/** The Board can't be worked: not started yet, or over. */
@@ -11,20 +10,21 @@ export type BuilderStatus = {
 	readonly note: string | null;
 };
 
-/** Where a Builder stands on their own Board, before, during and after the Hackathon. */
-export function builderStatus(
-	hackathon: { status: HackathonStatus; startsAt: number; endsAt: number },
+/** Where a Participant stands on their own Board, before, during and after the Hackathon. */
+export function participantStatus(
+	hackathon: { status: HackathonPhase; startsAt: number; endsAt: number },
 	decision: "hired" | "not_this_time" | null,
 	now: number,
-): BuilderStatus {
-	if (hackathon.status === "draft" || hackathon.status === "open") {
+): ParticipantStatus {
+	const phase = phaseOf(hackathon, now);
+	if (phase === "draft" || phase === "open") {
 		return {
 			line: `Starts ${dayLabel(hackathon.startsAt)}`,
 			isClosed: true,
 			note: "Your Cards arrive when it starts.",
 		};
 	}
-	if (hackathon.status === "building" && now < hackathon.endsAt) {
+	if (phase === "live") {
 		return {
 			line: `Ends ${dayLabel(lastDay(hackathon.endsAt))}`,
 			isClosed: false,
@@ -44,15 +44,15 @@ export function builderStatus(
 	};
 }
 
-/** The Builder tab row's right end: the Decision once it's in, else where the Hackathon stands ("Deciding" while the Founder decides, "Closed" if it ended without a Decision). */
-export function builderStatusText(
-	hackathon: { status: HackathonStatus; startsAt: number; endsAt: number },
+/** The Participant tab row's right end: the Decision once it's in, else where the Hackathon stands ("Deciding" while the Founder decides, "Closed" if it ended without a Decision). */
+export function participantStatusText(
+	hackathon: { status: HackathonPhase; startsAt: number; endsAt: number },
 	decision: "hired" | "not_this_time" | null,
 	now: number,
 ): string {
 	if (decision === "hired") return "Hired";
 	if (decision === "not_this_time") return "Not this time";
-	const { line } = builderStatus(hackathon, decision, now);
+	const { line } = participantStatus(hackathon, decision, now);
 	if (line !== "Ended") return line;
 	return hackathon.status === "done" ? "Closed" : "Deciding";
 }

@@ -8,13 +8,13 @@ export const chatTables = {
 		startupId: v.id("startups"),
 		hackathonId: v.optional(v.id("hackathons")),
 		kind: threadKind,
-		/** The Builder a private Thread belongs to. */
-		builderId: v.optional(v.id("users")),
+		/** The Participant a private Thread belongs to. */
+		participantId: v.optional(v.id("users")),
 		lastMessageAt: v.optional(v.number()),
 	})
 		.index("by_startup_and_kind", ["startupId", "kind"])
 		.index("by_hackathon_and_kind", ["hackathonId", "kind"])
-		.index("by_hackathon_and_builder", ["hackathonId", "builderId"]),
+		.index("by_hackathon_and_participant", ["hackathonId", "participantId"]),
 
 	messages: defineTable({
 		threadId: v.id("threads"),

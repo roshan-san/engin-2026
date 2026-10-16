@@ -86,13 +86,13 @@ describe("dropRefusal", () => {
 
 	it("says only the owner submits a Card", () => {
 		expect(dropRefusal(aCard("in_progress"), "review", founder)).toBe(
-			"Only the owner can submit this Card",
+			"Only the Card's owner can submit it",
 		);
 	});
 
 	it("says only the Founder sends a Card back from Review", () => {
 		expect(dropRefusal(aCard("review"), "todo", owner)).toBe(
-			"Only the Founder can send it back",
+			"Only the Founder can send a Card back",
 		);
 	});
 

@@ -4,11 +4,13 @@ import type { ReactNode } from "react";
 import { AppPage } from "~/components/AppPage";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { PlaceLogo } from "~/components/PlaceLogo";
-import { SectionLabel } from "~/components/SectionLabel";
+import { Row, RowList } from "~/components/RowList";
+import { Section } from "~/components/Section";
+import { TILE_LINK } from "~/components/tile";
 import { UnreadDot } from "~/components/UnreadDot";
 import { Button } from "~/components/ui/button";
-import { builderStatusText } from "~/features/hiring/builder/builderStatus";
 import { roleLabel } from "~/features/hiring/jobChips";
+import { participantStatusText } from "~/features/hiring/participant/participantStatus";
 import { tierText } from "~/features/work/activity/tierText";
 import { cn } from "~/lib/utils";
 import { isWaiting, type Places, reasonLine } from "~/shell/places";
@@ -17,8 +19,7 @@ import { usePlaces } from "~/shell/usePlaces";
 import { greeting } from "./greeting";
 import { homeSections } from "./homeSections";
 
-const CARD =
-	"flex flex-col gap-3 rounded-xl border border-border bg-card p-4 outline-none transition-colors hover:border-foreground/20 hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring/60";
+const CARD = `${TILE_LINK} flex flex-col gap-3`;
 
 /** Where you work, and what's waiting on you in each place. */
 export function HomePage() {
@@ -41,10 +42,8 @@ export function HomePage() {
 				),
 			}}
 		>
-			<div className="flex flex-col gap-10">
-				{welcome ? <TwoWaysIn /> : <YourPlaces places={places} now={now} />}
-				{applications ? <Applications applied={places.applied} /> : null}
-			</div>
+			{welcome ? <TwoWaysIn /> : <YourPlaces places={places} now={now} />}
+			{applications ? <Applications applied={places.applied} /> : null}
 		</AppPage>
 	);
 }
@@ -58,7 +57,7 @@ function YourPlaces({
 }) {
 	return (
 		<div className="flex flex-col gap-10">
-			<Section label="Your startups">
+			<CardGrid label="Your startups">
 				{places.startups.length === 0 ? (
 					<StartCard />
 				) : (
@@ -73,7 +72,7 @@ function YourPlaces({
 								<PlaceLogo
 									name={startup.name}
 									url={startup.logoUrl}
-									size="lg"
+									size={40}
 								/>
 								<div className="min-w-0 flex-1">
 									<p className="truncate font-medium">{startup.name}</p>
@@ -94,12 +93,12 @@ function YourPlaces({
 						</Link>
 					))
 				)}
-			</Section>
-			<Section label="Hackathons you're building in">
-				{places.building.length === 0 ? (
+			</CardGrid>
+			<CardGrid label="Your Hackathons">
+				{places.hackathons.length === 0 ? (
 					<FindCard />
 				) : (
-					places.building.map((hackathon) => (
+					places.hackathons.map((hackathon) => (
 						<Link
 							key={hackathon.hackathonId}
 							to="/h/$id"
@@ -110,7 +109,7 @@ function YourPlaces({
 								<PlaceLogo
 									name={hackathon.startupName}
 									url={hackathon.startupLogoUrl}
-									size="lg"
+									size={40}
 								/>
 								<div className="min-w-0 flex-1">
 									<p className="truncate font-medium">
@@ -121,51 +120,47 @@ function YourPlaces({
 									</p>
 								</div>
 								<span className="shrink-0 text-xs text-muted-foreground">
-									{builderStatusText(hackathon, hackathon.decision, now)}
+									{participantStatusText(hackathon, hackathon.decision, now)}
 								</span>
 							</div>
 							<Waiting place={hackathon} />
 						</Link>
 					))
 				)}
-			</Section>
+			</CardGrid>
 		</div>
 	);
 }
 
-/** Hackathons you applied to and haven't started building in. */
+/** Hackathons you applied to and aren't in yet. */
 function Applications({ applied }: { readonly applied: Places["applied"] }) {
 	return (
-		<section className="flex flex-col gap-2">
-			<SectionLabel>Your applications</SectionLabel>
-			<ul className="divide-y divide-border rounded-xl border border-border">
+		<Section label="Your applications">
+			<RowList>
 				{applied.map((hackathon) => (
-					<li key={hackathon.hackathonId}>
-						<Link
-							to="/hackathons/$id"
-							params={{ id: hackathon.hackathonId }}
-							className="flex items-center gap-3 px-4 py-3 text-sm outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60"
-						>
+					<Row
+						key={hackathon.hackathonId}
+						leading={
 							<PlaceLogo
 								name={hackathon.startupName}
 								url={hackathon.startupLogoUrl}
-								size="sm"
 							/>
-							<span className="min-w-0 flex-1 truncate">
-								{roleLabel(hackathon.job.role)} · {hackathon.startupName}
-							</span>
-							<span className="shrink-0 text-xs text-muted-foreground">
-								{hackathon.status === "applied" ? "Applied" : "Not this time"}
-							</span>
-						</Link>
-					</li>
+						}
+						title={`${roleLabel(hackathon.job.role)} · ${hackathon.startupName}`}
+						trailing={
+							hackathon.status === "applied" ? "Applied" : "Not this time"
+						}
+						to="/hackathons/$id"
+						params={{ id: hackathon.hackathonId }}
+					/>
 				))}
-			</ul>
-		</section>
+			</RowList>
+		</Section>
 	);
 }
 
-function Section({
+/** A labelled grid of place cards. */
+function CardGrid({
 	label,
 	children,
 }: {
@@ -173,10 +168,9 @@ function Section({
 	readonly children: ReactNode;
 }) {
 	return (
-		<section className="flex flex-col gap-2">
-			<SectionLabel>{label}</SectionLabel>
+		<Section label={label}>
 			<div className="grid gap-3 sm:grid-cols-2">{children}</div>
-		</section>
+		</Section>
 	);
 }
 
@@ -184,7 +178,7 @@ function Section({
 function Waiting({
 	place,
 }: {
-	readonly place: Places["startups"][number] | Places["building"][number];
+	readonly place: Places["startups"][number] | Places["hackathons"][number];
 }) {
 	if (!isWaiting(place)) {
 		return (
@@ -245,9 +239,7 @@ function TwoWaysIn() {
 	return (
 		<div className="flex flex-col gap-6">
 			<div>
-				<h2 className="text-xl font-semibold tracking-tight">
-					Welcome to engin
-				</h2>
+				<h2 className="text-2xl font-semibold">Welcome to engin</h2>
 				<p className="mt-1 text-sm text-muted-foreground">
 					Pick where to start. You can do both later.
 				</p>

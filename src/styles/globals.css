@@ -1,6 +1,38 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/*
+ * The type scale. These are the only text sizes; typeScale.test.ts fails on any other.
+ *   xs   12  Caption: meta lines, chips, badges, section labels, timestamps, keys
+ *   sm   15  Body: the default for everything
+ *   base 16  Inputs on phones only (iOS zooms into any field under 16px)
+ *   lg   18  Heading: one per panel, dialog or form part; a website lead paragraph
+ *   2xl  24  Title: a name or question that heads its content; website section headings
+ *   3xl  30  Hero: a website page's name, a Profile's Rating, prices
+ *   5xl  48  Display: the Landing headline on desktop
+ * Weights: 400 to read, 500 for emphasis in body text, 600 from lg up.
+ */
+@theme {
+	--text-*: initial;
+	--text-xs: 0.75rem;
+	--text-xs--line-height: 1rem;
+	--text-sm: 0.9375rem;
+	--text-sm--line-height: 1.375rem;
+	--text-base: 1rem;
+	--text-base--line-height: 1.5rem;
+	--text-lg: 1.125rem;
+	--text-lg--line-height: 1.5rem;
+	--text-2xl: 1.5rem;
+	--text-2xl--line-height: 1.875rem;
+	--text-2xl--letter-spacing: -0.015em;
+	--text-3xl: 1.875rem;
+	--text-3xl--line-height: 2.25rem;
+	--text-3xl--letter-spacing: -0.02em;
+	--text-5xl: 3rem;
+	--text-5xl--line-height: 3.25rem;
+	--text-5xl--letter-spacing: -0.03em;
+}
+
 @theme inline {
 	--radius-sm: calc(var(--radius-control) - 2px);
 	--radius-md: var(--radius-control);
@@ -32,7 +64,6 @@
 	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
 	--radius-control: var(--radius-control);
-	--text-sm: var(--font-size-body);
 	--color-link: var(--link);
 	--color-subtle-foreground: var(--subtle-foreground);
 	--color-success: var(--success);
@@ -54,7 +85,6 @@
 	--radius-control: 0.5rem;
 	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
 	--font-mono: "Geist Mono Variable", ui-monospace, monospace;
-	--font-size-body: 0.9375rem;
 
 	--background: #09090b;
 	--foreground: #fafafa;
@@ -104,6 +134,11 @@
 	--chart-5: #f27ba8;
 }
 
+/* The one keyboard focus style. outline-hidden keeps an outline in Windows high-contrast mode. */
+@utility focus-ring {
+	@apply outline-hidden focus-visible:ring-2 focus-visible:ring-ring/60;
+}
+
 @layer base {
 	* {
 		@apply border-border;
@@ -116,8 +151,8 @@
 		background-color: var(--background);
 		color: var(--foreground);
 		font-family: var(--font-sans);
-		font-size: var(--font-size-body);
-		line-height: 1.5;
+		font-size: var(--text-sm);
+		line-height: var(--text-sm--line-height);
 		font-feature-settings:
 			"rlig" 1,
 			"calt" 1;

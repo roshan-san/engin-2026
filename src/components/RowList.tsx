@@ -10,7 +10,10 @@ type RowListProps = {
 /** The default way to show a list: rows divided by hairlines, no cards. */
 export function RowList({ children, className }: RowListProps) {
 	return (
-		<ul className={cn("-mx-2 divide-y divide-border", className)}>
+		<ul
+			data-slot="row-list"
+			className={cn("-mx-2 divide-y divide-border", className)}
+		>
 			{children}
 		</ul>
 	);
@@ -28,7 +31,7 @@ type RowProps = {
 };
 
 const ROW_CLASS = "flex w-full items-center gap-3 px-2 py-3 text-left";
-const INTERACTIVE_CLASS = "transition-colors hover:bg-accent";
+const INTERACTIVE_CLASS = "focus-ring transition-colors hover:bg-accent";
 
 export function Row({
 	leading,

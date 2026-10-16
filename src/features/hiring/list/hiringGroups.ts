@@ -1,4 +1,5 @@
 import type { api } from "@convex/_generated/api";
+import { isRunning } from "@convex/shared/hackathonPhase";
 import type { FunctionReturnType } from "convex/server";
 
 export type HiringRow = FunctionReturnType<
@@ -8,9 +9,7 @@ export type HiringRow = FunctionReturnType<
 /** The Hiring tab's groups. Contributors never see drafts. */
 export function groupHackathons(rows: HiringRow[], isFounder: boolean) {
 	return {
-		now: rows.filter((row) =>
-			["open", "building", "deciding"].includes(row.status),
-		),
+		now: rows.filter((row) => isRunning(row.status)),
 		drafts: isFounder ? rows.filter((row) => row.status === "draft") : [],
 		past: rows.filter((row) => row.status === "done"),
 	};
@@ -23,7 +22,7 @@ export function rowNumber(row: HiringRow): string {
 			return "Draft";
 		case "open":
 			return `${row.applicantCount} applied`;
-		case "building":
+		case "live":
 			return `${row.toReview} to review`;
 		case "deciding":
 			return `${row.toDecide} to decide`;
@@ -36,15 +35,15 @@ export function rowNumber(row: HiringRow): string {
 	}
 }
 
-/** The row's number is waiting on the Founder: Cards to review, Builders to decide. */
+/** The row's number is waiting on the Founder: Cards to review, Participants to decide. */
 export function needsYou(row: HiringRow): boolean {
 	return (
-		(row.status === "building" && row.toReview > 0) ||
+		(row.status === "live" && row.toReview > 0) ||
 		(row.status === "deciding" && row.toDecide > 0)
 	);
 }
 
-/** "promises kept 3/3", once any Builder answered. */
+/** "promises kept 3/3", once any Participant answered. */
 export function promiseLine(row: HiringRow): string | null {
 	return row.promisesAnswered > 0
 		? `promises kept ${row.promisesKept}/${row.promisesAnswered}`

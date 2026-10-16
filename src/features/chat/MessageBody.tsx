@@ -34,7 +34,7 @@ export function MessageBody({
 						to="/s/$slug/board"
 						params={{ slug }}
 						search={{ card: mention.cardId }}
-						className="inline-flex max-w-full items-center rounded-md bg-muted px-1.5 align-bottom text-foreground outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60"
+						className="inline-flex max-w-full items-center rounded-md bg-muted px-1.5 align-bottom text-foreground hover:bg-accent focus-ring"
 					>
 						<span className="truncate"># {mention.title}</span>
 					</Link>

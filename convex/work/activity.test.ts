@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { MAX_LISTED_CYCLES } from "../shared/limits";
 import {
-	builders,
 	endHackathon,
+	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { cardOn, SHIPPED } from "../testing/cards.setup";
@@ -151,7 +151,7 @@ describe("activity", () => {
 	it("hires and finished Hackathons carry the job", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
 			applicationId: ana.applicationId,
@@ -170,7 +170,7 @@ describe("activity", () => {
 
 		const entries = cycles.flatMap((cycle) => cycle.entries);
 		expect(
-			entries.find((entry) => entry.kind === "builder_hired"),
+			entries.find((entry) => entry.kind === "participant_hired"),
 		).toMatchObject({
 			job: { role: "frontend" },
 			actor: { name: "Ana" },

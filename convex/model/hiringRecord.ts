@@ -1,17 +1,17 @@
 import type { Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { MAX_BUILDERS, MAX_LISTED_HACKATHONS } from "../shared/limits";
+import { MAX_LISTED_HACKATHONS, MAX_PARTICIPANTS } from "../shared/limits";
 
 export type HiringRecord = {
 	finished: number;
 	hires: number;
 	promisesKept: number;
 	promisesAnswered: number;
-	/** Builders left without a decision when the Hackathon closed. */
+	/** Participants left without a decision when the Hackathon closed. */
 	undecided: number;
 };
 
-/** How a Startup has treated its Builders, across its Hackathons. */
+/** How a Startup has treated its Participants, across its Hackathons. */
 export async function loadHiringRecord(
 	ctx: QueryCtx,
 	startupId: Id<"startups">,
@@ -32,23 +32,23 @@ export async function loadHiringRecord(
 		if (hackathon.status === "done") {
 			record.finished += 1;
 		}
-		const builders = await ctx.db
+		const participants = await ctx.db
 			.query("applications")
 			.withIndex("by_hackathon_and_status", (q) =>
-				q.eq("hackathonId", hackathon._id).eq("status", "building"),
+				q.eq("hackathonId", hackathon._id).eq("status", "participating"),
 			)
-			.take(MAX_BUILDERS);
-		for (const builder of builders) {
-			if (builder.decision === "hired") {
+			.take(MAX_PARTICIPANTS);
+		for (const participant of participants) {
+			if (participant.decision === "hired") {
 				record.hires += 1;
 			}
-			if (builder.promiseKept !== undefined) {
+			if (participant.promiseKept !== undefined) {
 				record.promisesAnswered += 1;
 			}
-			if (builder.promiseKept) {
+			if (participant.promiseKept) {
 				record.promisesKept += 1;
 			}
-			if (!builder.decision && hackathon.status === "done") {
+			if (!participant.decision && hackathon.status === "done") {
 				record.undecided += 1;
 			}
 		}

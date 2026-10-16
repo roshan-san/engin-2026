@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
-	builders,
 	endHackathon,
+	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
@@ -191,10 +191,10 @@ describe("rating", () => {
 		expect((await startupRow(setup.t, setup.startupId)).ratedWeeks).toBe(1);
 	});
 
-	it("a Hired Builder's Rating counts the outcome", async () => {
+	it("a Hired Participant's Rating counts the outcome", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const [ana] = await builders(setup, hackathonId, ["Ana"]);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
 			applicationId: ana.applicationId,

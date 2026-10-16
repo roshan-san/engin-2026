@@ -31,14 +31,14 @@ export const jobMode = v.union(
 export const hackathonStatus = v.union(
 	v.literal("draft"),
 	v.literal("open"),
-	v.literal("building"),
+	v.literal("live"),
 	v.literal("deciding"),
 	v.literal("done"),
 );
 export const applicationStatus = v.union(
 	v.literal("applied"),
 	v.literal("declined"),
-	v.literal("building"),
+	v.literal("participating"),
 );
 export const decision = v.union(v.literal("hired"), v.literal("not_this_time"));
 
@@ -102,7 +102,7 @@ export const activityKind = v.union(
 	v.literal("card_verified"),
 	v.literal("contributor_joined"),
 	v.literal("hackathon_finished"),
-	v.literal("builder_hired"),
+	v.literal("participant_hired"),
 );
 
 export const planKey = v.union(

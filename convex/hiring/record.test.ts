@@ -10,13 +10,13 @@ import { createTest } from "../testing/test.setup";
 describe("hiring record", () => {
 	it("the hiring record counts promises and hires", async () => {
 		const setup = await setUpStartup(createTest());
-		const { builders } = await decidedHackathon(setup, [
+		const { participants } = await decidedHackathon(setup, [
 			{ name: "Ana", decision: "hired" },
 			{ name: "Ben", decision: "not_this_time" },
 		]);
-		for (const builder of builders) {
-			await builder.as.mutation(api.hiring.applications.keepPromise, {
-				applicationId: builder.applicationId,
+		for (const participant of participants) {
+			await participant.as.mutation(api.hiring.applications.keepPromise, {
+				applicationId: participant.applicationId,
 				kept: true,
 			});
 		}
