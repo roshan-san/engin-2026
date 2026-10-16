@@ -18,7 +18,6 @@ import type * as chat_threads from "../chat/threads.js";
 import type * as crons from "../crons.js";
 import type * as dev_reset from "../dev/reset.js";
 import type * as files_files from "../files/files.js";
-import type * as functions from "../functions.js";
 import type * as hiring_applications from "../hiring/applications.js";
 import type * as hiring_hackathons from "../hiring/hackathons.js";
 import type * as http from "../http.js";
@@ -88,7 +87,6 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "dev/reset": typeof dev_reset;
   "files/files": typeof files_files;
-  functions: typeof functions;
   "hiring/applications": typeof hiring_applications;
   "hiring/hackathons": typeof hiring_hackathons;
   http: typeof http;

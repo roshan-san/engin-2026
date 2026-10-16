@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as ShellAuthedRouteRouteImport } from './routes/_shell/_authed/route'
 import { Route as ShellAuthedHomeRouteImport } from './routes/_shell/_authed/home'
 import { Route as ShellAuthedOnboardingRouteImport } from './routes/_shell/_authed/onboarding'
@@ -40,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const ShellRouteRoute = ShellRouteRouteImport.update({
   id: '/_shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShellAuthedRouteRoute = ShellAuthedRouteRouteImport.update({
@@ -154,6 +160,7 @@ const ShellAuthedSSlugHiringNewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/maintenance': typeof MaintenanceRoute
   '/home': typeof ShellAuthedHomeRoute
   '/onboarding': typeof ShellAuthedOnboardingRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/maintenance': typeof MaintenanceRoute
   '/home': typeof ShellAuthedHomeRoute
   '/onboarding': typeof ShellAuthedOnboardingRoute
   '/explore/hackathons': typeof ShellExploreHackathonsRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
+  '/maintenance': typeof MaintenanceRoute
   '/_shell/_authed': typeof ShellAuthedRouteRouteWithChildren
   '/_shell/_authed/home': typeof ShellAuthedHomeRoute
   '/_shell/_authed/onboarding': typeof ShellAuthedOnboardingRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/maintenance'
     | '/home'
     | '/onboarding'
     | '/explore/hackathons'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/maintenance'
     | '/home'
     | '/onboarding'
     | '/explore/hackathons'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_shell'
+    | '/maintenance'
     | '/_shell/_authed'
     | '/_shell/_authed/home'
     | '/_shell/_authed/onboarding'
@@ -297,6 +309,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShellRouteRoute: typeof ShellRouteRouteWithChildren
+  MaintenanceRoute: typeof MaintenanceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -313,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ShellRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_shell/_authed': {
@@ -549,6 +569,7 @@ const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShellRouteRoute: ShellRouteRouteWithChildren,
+  MaintenanceRoute: MaintenanceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

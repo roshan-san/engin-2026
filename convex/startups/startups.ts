@@ -1,8 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
-import { query } from "../_generated/server";
-import { mutation } from "../functions";
+import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
 import { loadHiringRecord } from "../model/hiringRecord";
 import {
