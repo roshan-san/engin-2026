@@ -83,6 +83,8 @@ export function HackathonForm({
 	/** A second way to submit, beside the first: Publish saves, then publishes. */
 	readonly secondary?: {
 		readonly label: string;
+		/** Shown but not pressable, e.g. while the plan can't publish. */
+		readonly disabled?: boolean;
 		readonly onSubmit: (draft: HackathonDraft) => Promise<boolean>;
 	};
 }) {
@@ -244,7 +246,7 @@ export function HackathonForm({
 					{secondary ? (
 						<Button
 							type="button"
-							disabled={!isReady || isSaving}
+							disabled={!isReady || isSaving || secondary.disabled}
 							onClick={() => void run(secondary.onSubmit)}
 						>
 							{isSaving ? <Spinner /> : null}

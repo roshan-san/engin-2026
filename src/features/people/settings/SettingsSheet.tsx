@@ -4,6 +4,7 @@ import { ChipPicker } from "~/components/ChipPicker";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Separator } from "~/components/ui/separator";
 import {
 	Sheet,
 	SheetContent,
@@ -14,6 +15,7 @@ import {
 } from "~/components/ui/sheet";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { PlanSection } from "~/features/billing/PlanSection";
 import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
 import { useMe } from "~/shell/useMe";
 import { useUpdateProfile } from "./useUpdateProfile";
@@ -42,7 +44,11 @@ export function SettingsSheet({
 					<SheetDescription>What people see on your profile.</SheetDescription>
 				</SheetHeader>
 				{me ? (
-					<SettingsForm me={me} onSaved={() => onOpenChange(false)} />
+					<>
+						<PlanSection />
+						<Separator className="mx-4 w-auto" />
+						<SettingsForm me={me} onSaved={() => onOpenChange(false)} />
+					</>
 				) : null}
 			</SheetContent>
 		</Sheet>
