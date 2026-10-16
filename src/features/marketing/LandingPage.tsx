@@ -3,6 +3,7 @@ import { Link, Navigate } from "@tanstack/react-router";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { BoardMock } from "~/features/marketing/BoardMock";
 import { OpenNow } from "~/features/marketing/OpenNow";
+import { Pricing } from "~/features/marketing/Pricing";
 import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { pickLanding, readLastPlace } from "~/shell/landing";
 import { PublicShell } from "~/shell/PublicShell";
@@ -132,6 +133,7 @@ export function LandingPage() {
 				</section>
 
 				<OpenNow />
+				<Pricing />
 
 				<section className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-6 py-12 text-center">
 					<h2 className="text-2xl font-semibold tracking-tight text-balance">
