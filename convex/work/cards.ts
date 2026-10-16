@@ -7,14 +7,15 @@ import {
 	normalizeNotes,
 	normalizeTitle,
 	parseShipped,
+	requireAllowed,
 	requireCardAccess,
-	requireNotVerified,
 	requireParticipantBoardAccess,
 	requireTeamOwner,
 	toCardView,
 } from "../model/cards";
 import { requireHackathonFounder } from "../model/hackathons";
 import { requireTeam } from "../model/teamAccess";
+import { submitLandsIn } from "../shared/cardRules";
 import { MAX_HACKATHON_CARDS, MAX_PARTICIPANTS } from "../shared/limits";
 import { shipped } from "../shared/validators";
 
@@ -124,28 +125,20 @@ export const update = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const { card } = await requireCardAccess(ctx, args.cardId, userId);
-		if (args.title !== undefined || args.ownerId !== undefined) {
-			// Only the notes of a verified Card may change.
-			requireNotVerified(card);
-		}
+		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
 
 		const patch: Partial<typeof card> = {};
 		if (args.title !== undefined) {
+			requireAllowed(card, { kind: "retitle" }, actor);
 			patch.title = normalizeTitle(args.title);
 		}
 		if (args.ownerId !== undefined) {
-			if (card.hackathonId) {
-				throw new ConvexError("Hackathon Cards stay with their Participant");
-			}
-			// Verifying credits the owner, so the owner is fixed once submitted.
-			if (card.status === "review") {
-				throw new ConvexError("The owner is fixed once a Card is in Review");
-			}
+			requireAllowed(card, { kind: "reassign" }, actor);
 			await requireTeamOwner(ctx, card.startupId, args.ownerId);
 			patch.ownerId = args.ownerId;
 		}
 		if (args.notes !== undefined) {
+			requireAllowed(card, { kind: "editNotes" }, actor);
 			const notes = normalizeNotes(args.notes);
 			if (notes !== card.notes) {
 				patch.notes = notes;
@@ -164,11 +157,8 @@ export const move = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
-		requireNotVerified(card);
-		if (card.status === "review" && role !== "founder") {
-			throw new ConvexError("Only the Founder can send a Card back");
-		}
+		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
+		requireAllowed(card, { kind: "move", to: args.to }, actor);
 
 		await ctx.db.patch(card._id, { status: args.to });
 	},
@@ -178,18 +168,12 @@ export const submit = mutation({
 	args: { cardId: v.id("cards"), shipped },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
-		if (card.ownerId !== userId) {
-			throw new ConvexError("Only the Card's owner can submit it");
-		}
-		requireNotVerified(card);
-		if (card.status === "review") {
-			throw new ConvexError("This Card is already in Review");
-		}
+		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
+		requireAllowed(card, { kind: "submit" }, actor);
 		const proof = parseShipped(args.shipped);
 
 		const now = Date.now();
-		if (role === "founder") {
+		if (submitLandsIn(card, actor) === "done") {
 			await ctx.db.patch(card._id, { submittedAt: now });
 			await markVerified(ctx, card, proof, userId, now);
 			return;
@@ -206,11 +190,9 @@ export const verify = mutation({
 	args: { cardId: v.id("cards") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
-		if (role !== "founder") {
-			throw new ConvexError("Only the Founder can verify a Card");
-		}
-		if (card.status !== "review" || !card.shipped) {
+		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
+		requireAllowed(card, { kind: "verify" }, actor);
+		if (!card.shipped) {
 			throw new ConvexError("This Card isn't in Review");
 		}
 
@@ -222,16 +204,8 @@ export const remove = mutation({
 	args: { cardId: v.id("cards") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const { card, role } = await requireCardAccess(ctx, args.cardId, userId);
-		requireNotVerified(card);
-		if (role === "participant") {
-			throw new ConvexError("Only the Founder can delete this Card");
-		}
-		if (card.ownerId !== userId && role !== "founder") {
-			throw new ConvexError(
-				"Only the owner or the Founder can delete this Card",
-			);
-		}
+		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
+		requireAllowed(card, { kind: "delete" }, actor);
 
 		await ctx.db.delete(card._id);
 	},

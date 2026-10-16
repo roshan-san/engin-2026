@@ -392,7 +392,7 @@ describe("live", () => {
 		});
 
 		await expect(remove).rejects.toThrow(
-			"Only the Founder can delete this Card",
+			"Hackathon Cards stay with their Participant",
 		);
 	});
 
@@ -405,6 +405,18 @@ describe("live", () => {
 		});
 
 		await expect(update).rejects.toThrow(
+			"Hackathon Cards stay with their Participant",
+		);
+	});
+
+	it("the Founder can't delete a Participant's Card", async () => {
+		const { setup, anaCard } = await twoParticipants();
+
+		const remove = setup.founder.as.mutation(api.work.cards.remove, {
+			cardId: anaCard._id,
+		});
+
+		await expect(remove).rejects.toThrow(
 			"Hackathon Cards stay with their Participant",
 		);
 	});

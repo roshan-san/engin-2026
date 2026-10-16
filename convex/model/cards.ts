@@ -1,6 +1,11 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import {
+	type CardAction,
+	type CardActor,
+	cardRefusal,
+} from "../shared/cardRules";
 import { weekOf, weekStart } from "../shared/cycles";
 import { phaseOf } from "../shared/hackathonPhase";
 import {
@@ -11,19 +16,18 @@ import {
 } from "../shared/limits";
 import { appendActivity } from "./activity";
 import { isParticipant } from "./applications";
-import { getTeamRole, requireTeam, type TeamRole } from "./teamAccess";
+import { getTeamRole, requireTeam } from "./teamAccess";
 import { assertUrl, requireLimitedText } from "./text";
 import { loadPublicUser } from "./users";
 
 type Ctx = QueryCtx | MutationCtx;
 
-export type CardRole = TeamRole | "participant";
-
 export type Shipped = NonNullable<Doc<"cards">["shipped"]>;
 
 /**
- * The one access path to a Card. Startup Cards belong to the team.
- * Hackathon Cards (`hackathonId` set) get their own branch with the Hackathon work.
+ * The one access path to a Card: who is acting on it, for `cardRefusal` to rule on.
+ * Startup Cards belong to the team. Hackathon Cards (`hackathonId` set) to the
+ * Founder and the Participant who owns them; nobody else, Contributors included.
  */
 export async function requireCardAccess(
 	ctx: Ctx,
@@ -32,58 +36,47 @@ export async function requireCardAccess(
 ): Promise<{
 	card: Doc<"cards">;
 	startup: Doc<"startups">;
-	role: CardRole;
+	actor: CardActor;
 }> {
 	const card = await ctx.db.get(cardId);
 	if (!card) {
 		throw new ConvexError("This Card doesn't exist");
 	}
-	if (card.hackathonId) {
-		const { startup, role } = await requireHackathonCardRole(
-			ctx,
-			card,
-			card.hackathonId,
-			userId,
-		);
-		return { card, startup, role };
+	if (!card.hackathonId) {
+		const { startup, role } = await requireTeam(ctx, card.startupId, userId);
+		return { card, startup, actor: { userId, role, phase: null } };
 	}
-	const { startup, role } = await requireTeam(ctx, card.startupId, userId);
-	return { card, startup, role };
-}
 
-/**
- * Hackathon Cards: the Founder works any of them; a Participant only their own,
- * and only while the Hackathon is live. Nobody else, Contributors included.
- */
-async function requireHackathonCardRole(
-	ctx: Ctx,
-	card: Doc<"cards">,
-	hackathonId: Id<"hackathons">,
-	userId: Id<"users">,
-): Promise<{ startup: Doc<"startups">; role: CardRole }> {
 	const [hackathon, startup] = await Promise.all([
-		ctx.db.get(hackathonId),
+		ctx.db.get(card.hackathonId),
 		ctx.db.get(card.startupId),
 	]);
 	if (!hackathon || !startup) {
 		throw new ConvexError("This Card doesn't exist");
 	}
+	const phase = phaseOf(hackathon, Date.now());
 	if (startup.founderId === userId) {
-		if (hackathon.status === "done") {
-			throw new ConvexError("This Hackathon has ended");
-		}
-		return { startup, role: "founder" };
+		return { card, startup, actor: { userId, role: "founder", phase } };
 	}
 	if (
 		card.ownerId === userId &&
-		(await isParticipant(ctx, hackathonId, userId))
+		(await isParticipant(ctx, hackathon._id, userId))
 	) {
-		if (phaseOf(hackathon, Date.now()) !== "live") {
-			throw new ConvexError("This Hackathon isn't running");
-		}
-		return { startup, role: "participant" };
+		return { card, startup, actor: { userId, role: "participant", phase } };
 	}
 	throw new ConvexError("This Card isn't yours");
+}
+
+/** Throws `cardRefusal`'s reason when `actor` may not do `action` to `card`. */
+export function requireAllowed(
+	card: Doc<"cards">,
+	action: CardAction,
+	actor: CardActor,
+): void {
+	const refusal = cardRefusal(card, action, actor);
+	if (refusal) {
+		throw new ConvexError(refusal);
+	}
 }
 
 /** Who may see a Participant's Cards: the Founder, or that Participant. */
@@ -115,14 +108,6 @@ export function isChangesAsked(card: Doc<"cards">): boolean {
 		(card.status === "todo" || card.status === "in_progress") &&
 		card.submittedAt !== undefined
 	);
-}
-
-export function requireNotVerified(card: Doc<"cards">): void {
-	if (card.status === "done") {
-		throw new ConvexError(
-			"This Card is verified, so only its notes can change",
-		);
-	}
 }
 
 /** The owner has to be on the Startup's team. */
