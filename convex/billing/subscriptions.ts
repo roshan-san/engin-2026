@@ -1,7 +1,11 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
-import { loadPlanView, syncSubscription } from "../model/billing";
+import {
+	hasPaymentIssue,
+	loadPlanView,
+	syncSubscription,
+} from "../model/billing";
 import { MAX_USER_SUBSCRIPTIONS } from "../shared/limits";
 import { subscriptionStatus } from "../shared/validators";
 
@@ -28,6 +32,15 @@ export const mine = query({
 	handler: async (ctx) => {
 		const userId = await requireUserId(ctx);
 		return await loadPlanView(ctx, userId);
+	},
+});
+
+/** Whether your plan is on hold or paused after a failed payment, with no active one. */
+export const paymentIssue = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await requireUserId(ctx);
+		return await hasPaymentIssue(ctx, userId);
 	},
 });
 

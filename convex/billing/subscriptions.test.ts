@@ -194,3 +194,29 @@ describe("customerIdFor", () => {
 		expect(customerId).toBe(`cus_${founder.userId}`);
 	});
 });
+
+describe("paymentIssue", () => {
+	it("a plan on hold or paused is a payment to fix", async () => {
+		for (const status of ["on_hold", "paused"] as const) {
+			const { t, founder } = await setUpStartup(createTest());
+			await givePro(t, founder, "monthly", { status });
+
+			expect(
+				await founder.as.query(api.billing.subscriptions.paymentIssue, {}),
+			).toBe(true);
+		}
+	});
+
+	it("no plan, an ended plan or an active plan is not", async () => {
+		const { t, founder } = await setUpStartup(createTest());
+		const asks = () =>
+			founder.as.query(api.billing.subscriptions.paymentIssue, {});
+
+		expect(await asks()).toBe(false);
+		await givePro(t, founder, "monthly", { status: "cancelled" });
+		expect(await asks()).toBe(false);
+		await givePro(t, founder, "yearly", { status: "on_hold" });
+		await givePro(t, founder, "monthly", { periodStart: Date.now() + 1 });
+		expect(await asks()).toBe(false);
+	});
+});

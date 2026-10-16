@@ -36,6 +36,27 @@ export async function loadPlan(
 	return plan;
 }
 
+/**
+ * True when the Founder has no active plan but one is on hold or paused: a
+ * failed payment Dodo is still retrying. They fix the card instead of buying again.
+ */
+export async function hasPaymentIssue(
+	ctx: QueryCtx,
+	userId: Id<"users">,
+): Promise<boolean> {
+	const subscriptions = await ctx.db
+		.query("subscriptions")
+		.withIndex("by_user", (q) => q.eq("userId", userId))
+		.take(MAX_USER_SUBSCRIPTIONS);
+	if (subscriptions.some((subscription) => subscription.status === "active")) {
+		return false;
+	}
+	return subscriptions.some(
+		(subscription) =>
+			subscription.status === "on_hold" || subscription.status === "paused",
+	);
+}
+
 async function loadFoundedStartupIds(
 	ctx: QueryCtx,
 	userId: Id<"users">,

@@ -2,20 +2,23 @@ import { useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import { PAYMENT_ISSUE } from "./draftPublish";
 import { PlansDialog } from "./PlansDialog";
 import { planSummary } from "./planLines";
+import { usePaymentIssue } from "./usePaymentIssue";
 import { usePlan } from "./usePlan";
 import { usePortal } from "./usePortal";
 
 /** Your plan in Settings: what's left and Manage billing, or the plans when you have none. */
 export function PlanSection() {
 	const plan = usePlan();
+	const hasPaymentIssue = usePaymentIssue();
 	const { pathname } = useLocation();
 	const { openPortal } = usePortal();
 	const [isPlansOpen, setPlansOpen] = useState(false);
 	const [isOpening, setIsOpening] = useState(false);
 
-	if (plan === undefined) {
+	if (plan === undefined || hasPaymentIssue === undefined) {
 		return null;
 	}
 
@@ -28,9 +31,11 @@ export function PlanSection() {
 	return (
 		<section className="flex flex-col gap-2 px-4">
 			<h3 className="text-sm font-medium">Plan</h3>
-			{plan ? (
+			{plan || hasPaymentIssue ? (
 				<>
-					<p className="text-sm text-muted-foreground">{planSummary(plan)}</p>
+					<p className="text-sm text-muted-foreground">
+						{plan ? planSummary(plan) : PAYMENT_ISSUE}
+					</p>
 					<Button
 						variant="outline"
 						size="sm"

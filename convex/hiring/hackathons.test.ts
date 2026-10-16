@@ -450,25 +450,47 @@ describe("publishing needs Pro", () => {
 		expect(hackathon?.status).toBe("open");
 	});
 
-	it("a fifth running Hackathon waits until one is done", async () => {
+	it("a fifth running Hackathon waits until one is done, counted across the Founder's Startups", async () => {
 		const setup = await setUpStartup(createTest());
+		const beta = await secondStartup(setup);
 		await givePro(setup.t, setup.founder);
-		const firstId = await publishedHackathon(setup);
-		const [ben] = await builders(setup, firstId, ["Ben"]);
-		for (let i = 0; i < 3; i++) {
-			await publishedHackathon(setup);
+		const runningIds: Id<"hackathons">[] = [];
+		for (const [place, builder] of [
+			[setup, "Ben"],
+			[setup, "Cal"],
+			[beta, "Dee"],
+			[beta, "Eve"],
+		] as const) {
+			const id = await publishedHackathon(place);
+			await builders(place, id, [builder]);
+			runningIds.push(id);
 		}
+		const [firstId] = runningIds;
 		const fifthId = await draftHackathon(setup, {
 			startsAt: nextMonday() + 21 * DAY,
 		});
+		const fifthWaits = () =>
+			expect(publish(setup, fifthId)).rejects.toThrow(
+				"4 Hackathons are running. Make your Decisions before you open a fifth.",
+			);
 
-		await expect(publish(setup, fifthId)).rejects.toThrow(
-			"4 Hackathons are running. Make your Decisions before you open a fifth.",
-		);
-
+		await fifthWaits();
+		await startHackathon(setup, firstId);
+		await fifthWaits();
 		await endHackathon(setup, firstId);
+		await fifthWaits();
+
+		const [ben] = await setup.t.run(
+			async (ctx) =>
+				await ctx.db
+					.query("applications")
+					.withIndex("by_hackathon_and_status", (q) =>
+						q.eq("hackathonId", firstId).eq("status", "building"),
+					)
+					.take(1),
+		);
 		await setup.founder.as.mutation(api.hiring.applications.decide, {
-			applicationId: ben.applicationId,
+			applicationId: ben._id,
 			decision: "not_this_time",
 		});
 		await publish(setup, fifthId);

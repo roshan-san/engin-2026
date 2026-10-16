@@ -1,12 +1,15 @@
 import type { Doc } from "@convex/_generated/dataModel";
-import { publishBlockFor, publishBlockMessage } from "@convex/shared/plans";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Page } from "~/components/Page";
+import { Button } from "~/components/ui/button";
 import { CheckoutNotice } from "~/features/billing/CheckoutNotice";
+import { draftPublish } from "~/features/billing/draftPublish";
 import { PlansDialog } from "~/features/billing/PlansDialog";
+import { usePaymentIssue } from "~/features/billing/usePaymentIssue";
 import { usePlan } from "~/features/billing/usePlan";
+import { usePortal } from "~/features/billing/usePortal";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { draftCard, fromBuildersGet, type HackathonDraft } from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";
@@ -26,6 +29,8 @@ export function DraftView({
 	const { checkout } = route.useSearch();
 	const { update, publish } = useHackathonForm();
 	const plan = usePlan();
+	const hasPaymentIssue = usePaymentIssue();
+	const { openPortal } = usePortal();
 	const [isPlansOpen, setPlansOpen] = useState(false);
 	const [initial] = useState<HackathonDraft>(() => ({
 		job: hackathon.job,
@@ -35,9 +40,11 @@ export function DraftView({
 		buildersGet: fromBuildersGet(hackathon.buildersGet ?? null),
 		cards: cards.map((card) => draftCard(card.title, card.notes)),
 	}));
-	// While the plan loads, Publish goes to the server, which checks it anyway.
-	const block = plan === undefined ? null : publishBlockFor(plan);
-	const isWaiting = block !== null && block.reason !== "no_pro";
+	const publishing = draftPublish({
+		plan,
+		hasPaymentIssue,
+		isBackFromCheckout: checkout === "done",
+	});
 
 	return (
 		<div className="min-h-0 flex-1 overflow-y-auto">
@@ -45,10 +52,21 @@ export function DraftView({
 				{checkout === "done" ? (
 					<CheckoutNotice hasPlan={Boolean(plan)} />
 				) : null}
-				{isWaiting && block ? (
-					<p className="mb-6 text-sm text-muted-foreground">
-						{publishBlockMessage(block)}
-					</p>
+				{publishing.message ? (
+					<div className="mb-6 flex flex-wrap items-center gap-3">
+						<p className="text-sm text-muted-foreground">
+							{publishing.message}
+						</p>
+						{publishing.managesBilling ? (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => void openPortal()}
+							>
+								Manage billing
+							</Button>
+						) : null}
+					</div>
 				) : null}
 				<HackathonForm
 					startupName={startup.name}
@@ -61,10 +79,10 @@ export function DraftView({
 					}}
 					secondary={{
 						label: "Publish",
-						disabled: isWaiting,
+						disabled: publishing.isDisabled,
 						onSubmit: async (draft) => {
 							if (!(await update(hackathon._id, draft))) return false;
-							if (block?.reason === "no_pro") {
+							if (publishing.opensPlans) {
 								setPlansOpen(true);
 								return true;
 							}

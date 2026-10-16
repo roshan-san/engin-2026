@@ -1,6 +1,7 @@
 import type { FunctionArgs } from "convex/server";
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { MAX_USER_STARTUPS } from "../shared/limits";
 import {
 	draftHackathon,
 	publishedHackathon,
@@ -170,6 +171,32 @@ describe("startups", () => {
 		await expect(
 			t.mutation(api.startups.startups.create, acme),
 		).rejects.toThrow("Not authenticated");
+	});
+
+	it("a person founds at most 50 Startups", async () => {
+		const t = createTest();
+		const fay = await signUp(t, "Fay");
+		await t.run(async (ctx) => {
+			for (let i = 0; i < MAX_USER_STARTUPS; i++) {
+				await ctx.db.insert("startups", {
+					name: `Idea ${i}`,
+					slug: `idea-${i}`,
+					stage: "idea",
+					category: "saas",
+					city: "pune",
+					founderId: fay.userId,
+					rating: 1000,
+					ratingChange: 0,
+					ratedWeeks: 0,
+					provisional: true,
+					rhythm: [],
+				});
+			}
+		});
+
+		await expect(
+			fay.as.mutation(api.startups.startups.create, acme),
+		).rejects.toThrow("You can found up to 50 Startups");
 	});
 
 	it("a new Startup starts with an empty rhythm", async () => {

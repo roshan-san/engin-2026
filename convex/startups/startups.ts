@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
@@ -18,6 +18,7 @@ import { shiftWeek, weekOf } from "../shared/cycles";
 import {
 	EXPLORE_SCAN,
 	MAX_EXPLORE_ROWS,
+	MAX_USER_STARTUPS,
 	STARTING_RATING,
 	TEXT,
 } from "../shared/limits";
@@ -97,6 +98,16 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
+		// Billing counts Hackathons across these, so the cap must hold exactly.
+		const founded = await ctx.db
+			.query("startups")
+			.withIndex("by_founder", (q) => q.eq("founderId", userId))
+			.take(MAX_USER_STARTUPS);
+		if (founded.length >= MAX_USER_STARTUPS) {
+			throw new ConvexError(
+				`You can found up to ${MAX_USER_STARTUPS} Startups`,
+			);
+		}
 		const name = requireLimitedText(args.name, "Name", TEXT.startupName);
 		const oneLiner = limitText(args.oneLiner, "One-liner", TEXT.oneLiner);
 		const slug = await buildUniqueSlug(ctx, name);
