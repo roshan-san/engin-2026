@@ -7,8 +7,10 @@ import {
 	builders,
 	closeHackathon,
 	decidedHackathon,
+	endHackathon,
 	startHackathon,
 } from "../testing/applications.setup";
+import { givePro } from "../testing/billing.setup";
 import {
 	draftHackathon,
 	hackathonInput,
@@ -37,6 +39,7 @@ async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {
 describe("drafts", () => {
 	it("a draft is private until published", async () => {
 		const setup = await setUpStartup(createTest());
+		await givePro(setup.t, setup.founder);
 		const hackathonId = await draftHackathon(setup);
 
 		const before = await setup.t.query(api.hiring.hackathons.getPublic, {
@@ -361,6 +364,137 @@ async function addBuilder(
 	});
 	return person;
 }
+
+describe("publishing needs Pro", () => {
+	/** A second Startup founded by the same Founder. */
+	async function secondStartup(setup: Setup): Promise<Setup> {
+		const { startupId, slug } = await setup.founder.as.mutation(
+			api.startups.startups.create,
+			{ name: "Beta", stage: "building", category: "saas", city: "pune" },
+		);
+		return { ...setup, startupId, slug };
+	}
+
+	function publish(setup: Setup, hackathonId: Id<"hackathons">) {
+		return setup.founder.as.mutation(api.hiring.hackathons.publish, {
+			hackathonId,
+		});
+	}
+
+	it("a Founder without Pro can't publish", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await draftHackathon(setup);
+
+		await expect(publish(setup, hackathonId)).rejects.toThrow(
+			"Publishing needs Pro. Your draft is saved.",
+		);
+	});
+
+	it("a plan on hold or cancelled can't publish", async () => {
+		for (const status of ["on_hold", "cancelled"] as const) {
+			const setup = await setUpStartup(createTest());
+			await givePro(setup.t, setup.founder, "yearly", { status });
+			const hackathonId = await draftHackathon(setup);
+
+			await expect(publish(setup, hackathonId)).rejects.toThrow(
+				"Publishing needs Pro.",
+			);
+		}
+	});
+
+	it("publishing records when it happened", async () => {
+		const setup = await setUpStartup(createTest());
+		await givePro(setup.t, setup.founder);
+		const hackathonId = await draftHackathon(setup);
+
+		await publish(setup, hackathonId);
+
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		expect(hackathon).toMatchObject({
+			status: "open",
+			publishedAt: Date.now(),
+		});
+	});
+
+	it("a Monthly plan publishes one Hackathon across all the Founder's Startups", async () => {
+		const setup = await setUpStartup(createTest());
+		const beta = await secondStartup(setup);
+		await givePro(setup.t, setup.founder, "monthly");
+		await draftHackathon(setup);
+		await publishedHackathon(setup);
+		const betaDraft = await draftHackathon(beta);
+
+		await expect(publish(beta, betaDraft)).rejects.toThrow(
+			"You've published the Hackathon on your plan. More on",
+		);
+	});
+
+	it("a renewal gives the allowance back", async () => {
+		const setup = await setUpStartup(createTest());
+		const subscriptionId = await givePro(setup.t, setup.founder, "monthly");
+		await publishedHackathon(setup);
+		await advancePast(setup.t, DAY);
+		await setup.t.run(
+			async (ctx) =>
+				await ctx.db.patch(subscriptionId, { periodStart: Date.now() }),
+		);
+		const hackathonId = await draftHackathon(setup);
+
+		await publish(setup, hackathonId);
+
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		expect(hackathon?.status).toBe("open");
+	});
+
+	it("a fifth running Hackathon waits until one is done", async () => {
+		const setup = await setUpStartup(createTest());
+		await givePro(setup.t, setup.founder);
+		const firstId = await publishedHackathon(setup);
+		const [ben] = await builders(setup, firstId, ["Ben"]);
+		for (let i = 0; i < 3; i++) {
+			await publishedHackathon(setup);
+		}
+		const fifthId = await draftHackathon(setup, {
+			startsAt: nextMonday() + 21 * DAY,
+		});
+
+		await expect(publish(setup, fifthId)).rejects.toThrow(
+			"4 Hackathons are running. Make your Decisions before you open a fifth.",
+		);
+
+		await endHackathon(setup, firstId);
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ben.applicationId,
+			decision: "not_this_time",
+		});
+		await publish(setup, fifthId);
+
+		const fifth = await setup.t.run(async (ctx) => await ctx.db.get(fifthId));
+		expect(fifth?.status).toBe("open");
+	});
+
+	it("a published Hackathon carries on after its Founder's plan is cancelled", async () => {
+		const setup = await setUpStartup(createTest());
+		const subscriptionId = await givePro(setup.t, setup.founder);
+		const hackathonId = await publishedHackathon(setup);
+		await builders(setup, hackathonId, ["Ben"]);
+		await setup.t.run(
+			async (ctx) =>
+				await ctx.db.patch(subscriptionId, { status: "cancelled" }),
+		);
+
+		await startHackathon(setup, hackathonId);
+
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		expect(hackathon?.status).toBe("building");
+	});
+});
 
 describe("lifecycle", () => {
 	it("with no Builders, it ends at the start", async () => {

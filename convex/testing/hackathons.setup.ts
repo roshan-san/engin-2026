@@ -3,6 +3,7 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { Setup } from "./startups.setup";
 import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
+import { givePro } from "./billing.setup";
 
 /** The Monday 00:00 IST that starts next week. */
 export function nextMonday(): number {
@@ -43,11 +44,22 @@ export async function draftHackathon(
 	});
 }
 
+/** Publishes a draft. A Founder without a plan is given a yearly one first. */
 export async function publishedHackathon(
 	setup: Setup,
 	overrides: Partial<HackathonInput> = {},
 ): Promise<Id<"hackathons">> {
 	const hackathonId = await draftHackathon(setup, overrides);
+	const subscription = await setup.t.run(
+		async (ctx) =>
+			await ctx.db
+				.query("subscriptions")
+				.withIndex("by_user", (q) => q.eq("userId", setup.founder.userId))
+				.first(),
+	);
+	if (!subscription) {
+		await givePro(setup.t, setup.founder);
+	}
 	await setup.founder.as.mutation(api.hiring.hackathons.publish, {
 		hackathonId,
 	});

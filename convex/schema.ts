@@ -1,5 +1,6 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema } from "convex/server";
+import { billingTables } from "./tables/billing";
 import { chatTables } from "./tables/chat";
 import { hiringTables } from "./tables/hiring";
 import { peopleTables } from "./tables/people";
@@ -20,4 +21,5 @@ export default defineSchema({
 	...workTables,
 	...hiringTables,
 	...chatTables,
+	...billingTables,
 });

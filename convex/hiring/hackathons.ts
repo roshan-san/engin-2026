@@ -5,6 +5,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
 import { toMyApplicationView } from "../model/applications";
 import { requireUserId } from "../model/auth";
+import { canPublishHackathon } from "../model/billing";
 import {
 	copyTemplateCardsTo,
 	countUndecidedBuilders,
@@ -29,6 +30,7 @@ import {
 	MAX_HACKATHON_CARDS,
 	MAX_LISTED_HACKATHONS,
 } from "../shared/limits";
+import { publishBlockMessage } from "../shared/plans";
 import { jobRole } from "../shared/validators";
 
 export const list = query({
@@ -299,7 +301,15 @@ export const publish = mutation({
 			throw new ConvexError("Start on a coming Monday");
 		}
 
-		await ctx.db.patch(hackathon._id, { status: "open" });
+		const block = await canPublishHackathon(ctx, userId);
+		if (block) {
+			throw new ConvexError(publishBlockMessage(block));
+		}
+
+		await ctx.db.patch(hackathon._id, {
+			status: "open",
+			publishedAt: Date.now(),
+		});
 		await ctx.db.insert("threads", {
 			startupId: hackathon.startupId,
 			hackathonId: hackathon._id,

@@ -104,3 +104,19 @@ export const activityKind = v.union(
 	v.literal("hackathon_finished"),
 	v.literal("builder_hired"),
 );
+
+export const planKey = v.union(
+	v.literal("monthly"),
+	v.literal("six_months"),
+	v.literal("yearly"),
+);
+/** Dodo's subscription statuses. Only `active` unlocks Pro. */
+export const subscriptionStatus = v.union(
+	v.literal("pending"),
+	v.literal("active"),
+	v.literal("on_hold"),
+	v.literal("paused"),
+	v.literal("cancelled"),
+	v.literal("failed"),
+	v.literal("expired"),
+);

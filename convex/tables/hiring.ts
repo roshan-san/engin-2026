@@ -24,8 +24,12 @@ export const hiringTables = {
 		buildersGet: v.optional(v.string()),
 		builderCount: v.number(),
 		applicantCount: v.number(),
+		/** Set when published; counts against the plan's Hackathons for the billing period. */
+		publishedAt: v.optional(v.number()),
 	})
 		.index("by_startup", ["startupId"])
+		.index("by_startup_and_status", ["startupId", "status"])
+		.index("by_startup_and_publishedAt", ["startupId", "publishedAt"])
 		.index("by_status_and_startsAt", ["status", "startsAt"]),
 
 	applications: defineTable({

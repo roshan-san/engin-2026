@@ -1,4 +1,8 @@
 export const MAX_BUILDERS = 10;
+/** Hackathons one Founder may have open, building or deciding at once, across all their Startups. */
+export const MAX_OPEN_HACKATHONS = 4;
+/** Subscriptions read per Founder; old cancelled ones pile up slowly. */
+export const MAX_USER_SUBSCRIPTIONS = 20;
 export const MIN_HACKATHON_CARDS = 3;
 export const MAX_HACKATHON_CARDS = 5;
 export const MAX_SHIPPED_LINKS = 5;
