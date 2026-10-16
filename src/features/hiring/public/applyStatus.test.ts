@@ -17,9 +17,7 @@ describe("applyState", () => {
 	});
 
 	it("an application shows its status, whatever the Hackathon's", () => {
-		const withStatus = (
-			status: "applied" | "building" | "declined",
-		) => ({
+		const withStatus = (status: "applied" | "building" | "declined") => ({
 			status: "building" as const,
 			isTeam: false,
 			myApplication: { status },
