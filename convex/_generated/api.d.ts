@@ -9,6 +9,8 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as billing_checkout from "../billing/checkout.js";
+import type * as billing_portal from "../billing/portal.js";
 import type * as billing_subscriptions from "../billing/subscriptions.js";
 import type * as chat_messages from "../chat/messages.js";
 import type * as chat_presence from "../chat/presence.js";
@@ -25,6 +27,7 @@ import type * as model_auth from "../model/auth.js";
 import type * as model_billing from "../model/billing.js";
 import type * as model_cards from "../model/cards.js";
 import type * as model_contributors from "../model/contributors.js";
+import type * as model_dodo from "../model/dodo.js";
 import type * as model_goals from "../model/goals.js";
 import type * as model_hackathons from "../model/hackathons.js";
 import type * as model_hiringRecord from "../model/hiringRecord.js";
@@ -47,6 +50,7 @@ import type * as shared_limits from "../shared/limits.js";
 import type * as shared_mentions from "../shared/mentions.js";
 import type * as shared_places from "../shared/places.js";
 import type * as shared_plans from "../shared/plans.js";
+import type * as shared_returnPath from "../shared/returnPath.js";
 import type * as shared_tiers from "../shared/tiers.js";
 import type * as shared_validators from "../shared/validators.js";
 import type * as startups_contributors from "../startups/contributors.js";
@@ -71,6 +75,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "billing/checkout": typeof billing_checkout;
+  "billing/portal": typeof billing_portal;
   "billing/subscriptions": typeof billing_subscriptions;
   "chat/messages": typeof chat_messages;
   "chat/presence": typeof chat_presence;
@@ -87,6 +93,7 @@ declare const fullApi: ApiFromModules<{
   "model/billing": typeof model_billing;
   "model/cards": typeof model_cards;
   "model/contributors": typeof model_contributors;
+  "model/dodo": typeof model_dodo;
   "model/goals": typeof model_goals;
   "model/hackathons": typeof model_hackathons;
   "model/hiringRecord": typeof model_hiringRecord;
@@ -109,6 +116,7 @@ declare const fullApi: ApiFromModules<{
   "shared/mentions": typeof shared_mentions;
   "shared/places": typeof shared_places;
   "shared/plans": typeof shared_plans;
+  "shared/returnPath": typeof shared_returnPath;
   "shared/tiers": typeof shared_tiers;
   "shared/validators": typeof shared_validators;
   "startups/contributors": typeof startups_contributors;
@@ -154,4 +162,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   presence: import("@convex-dev/presence/_generated/component.js").ComponentApi<"presence">;
+  dodopayments: import("@dodopayments/convex/_generated/component.js").ComponentApi<"dodopayments">;
 };
