@@ -7,6 +7,7 @@ import { loadHiringRecord } from "../model/hiringRecord";
 import {
 	buildUniqueSlug,
 	getStartupBySlug,
+	loadOpenHackathons,
 	matchesExploreStartup,
 	toExploreStartup,
 	toPublicStartup,
@@ -17,7 +18,6 @@ import { shiftWeek, weekOf } from "../shared/cycles";
 import {
 	EXPLORE_SCAN,
 	MAX_EXPLORE_ROWS,
-	MAX_OPEN_HACKATHONS,
 	STARTING_RATING,
 	TEXT,
 } from "../shared/limits";
@@ -47,12 +47,7 @@ export const getPublic = query({
 		if (!startup) {
 			return null;
 		}
-		const open = await ctx.db
-			.query("hackathons")
-			.withIndex("by_startup_and_status", (q) =>
-				q.eq("startupId", startup._id).eq("status", "open"),
-			)
-			.take(MAX_OPEN_HACKATHONS);
+		const open = await loadOpenHackathons(ctx, startup._id);
 		return {
 			...(await toPublicStartup(ctx, startup)),
 			hiringRecord: await loadHiringRecord(ctx, startup._id),

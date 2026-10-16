@@ -10,9 +10,6 @@ export function SiteFooter() {
 				<Link to="/explore" className="hover:text-foreground">
 					Explore
 				</Link>
-				<Link to="/" hash="pricing" className="hover:text-foreground">
-					Pricing
-				</Link>
 				<span className="ml-auto">© {new Date().getFullYear()} engin</span>
 			</div>
 		</footer>

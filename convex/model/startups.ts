@@ -1,6 +1,7 @@
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { shiftWeek, weekStart } from "../shared/cycles";
+import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import { RATING } from "./rating";
 import { slugify } from "./text";
 import { loadPublicUser } from "./users";
@@ -13,6 +14,18 @@ export async function getStartupBySlug(
 		.query("startups")
 		.withIndex("by_slug", (q) => q.eq("slug", slug))
 		.unique();
+}
+
+/** A Startup's Hackathons taking applications. */
+export async function loadOpenHackathons(
+	ctx: QueryCtx | MutationCtx,
+	startupId: Id<"startups">,
+): Promise<Doc<"hackathons">[]> {
+	const hackathons = await ctx.db
+		.query("hackathons")
+		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
+		.take(MAX_LISTED_HACKATHONS);
+	return hackathons.filter((hackathon) => hackathon.status === "open");
 }
 
 /** `acme`, then `acme-2`, `acme-3`, … until no Startup has it. */
@@ -103,14 +116,6 @@ export async function toExploreStartup(
 		isProvisional: startup.provisional,
 		logoUrl: startup.logo ? await ctx.storage.getUrl(startup.logo) : null,
 		strip: buildRhythmStrip(startup.rhythm, startup.ratedThrough ?? endWeek),
-		isHiring:
-			(
-				await ctx.db
-					.query("hackathons")
-					.withIndex("by_startup_and_status", (q) =>
-						q.eq("startupId", startup._id).eq("status", "open"),
-					)
-					.take(1)
-			).length > 0,
+		isHiring: (await loadOpenHackathons(ctx, startup._id)).length > 0,
 	};
 }
