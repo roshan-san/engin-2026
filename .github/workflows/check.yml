@@ -28,3 +28,5 @@ jobs:
         run: pnpm exec tsc -p convex --noEmit
       - name: Tests
         run: pnpm test
+      - name: Build
+        run: pnpm build
