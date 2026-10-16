@@ -169,6 +169,11 @@ export function tabsFromRoute(matches: readonly RouteMatch[]): TabsKind {
 	return null;
 }
 
+/** Signed out, only Explore has a tab row: the Startup and Builder rows read the signed-in person's places. */
+export function tabsForSignedOut(tabs: TabsKind): TabsKind {
+	return tabs?.kind === "explore" ? tabs : null;
+}
+
 /** Only the Founder sees a Startup's ⚙. */
 export function canSeeSettings(
 	places: Places | undefined,

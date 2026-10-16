@@ -1,7 +1,9 @@
+import { useConvexAuth } from "@convex-dev/auth/react";
 import type { ReactNode } from "react";
 import { AppPage, PageTitle } from "~/components/AppPage";
+import { SiteFooter } from "~/components/SiteFooter";
 
-/** Explore's frame: the count in the bar, the filters in a strip under it, rows in the column. */
+/** Explore's frame: the count in the bar, the filters in a strip under it, rows in the column. Signed out, the site footer scrolls at the end of the rows. */
 export function ExploreLayout({
 	context,
 	filters,
@@ -11,6 +13,8 @@ export function ExploreLayout({
 	readonly filters: ReactNode;
 	readonly children: ReactNode;
 }) {
+	const { isLoading, isAuthenticated } = useConvexAuth();
+
 	return (
 		<AppPage
 			bar={{ title: <PageTitle name="Explore" context={context} /> }}
@@ -19,6 +23,7 @@ export function ExploreLayout({
 					{filters}
 				</div>
 			}
+			footer={!isLoading && !isAuthenticated ? <SiteFooter /> : undefined}
 		>
 			{children}
 		</AppPage>

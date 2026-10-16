@@ -12,7 +12,11 @@ import {
 import type { ReactNode } from "react";
 import { builderStatusText } from "~/features/hiring/builder/builderStatus";
 import { useHackathon } from "~/features/hiring/public/useHackathon";
-import { canSeeSettings, tabsFromRoute } from "~/shell/places";
+import {
+	canSeeSettings,
+	tabsForSignedOut,
+	tabsFromRoute,
+} from "~/shell/places";
 import { usePlaces } from "~/shell/usePlaces";
 
 export const TAB_CLASS =
@@ -43,9 +47,14 @@ export function TabRowFrame({
 	);
 }
 
-/** The shell's second row, picked from the route. */
-export function TabRow() {
-	const tabs = useMatches({ select: tabsFromRoute });
+/** The shell's second row, picked from the route. Signed out, only Explore's row shows. */
+export function TabRow({
+	signedOut = false,
+}: {
+	readonly signedOut?: boolean;
+}) {
+	const routeTabs = useMatches({ select: tabsFromRoute });
+	const tabs = signedOut ? tabsForSignedOut(routeTabs) : routeTabs;
 	if (tabs?.kind === "startup") return <StartupRow slug={tabs.slug} />;
 	if (tabs?.kind === "builder")
 		return <BuilderTabs hackathonId={tabs.hackathonId} />;

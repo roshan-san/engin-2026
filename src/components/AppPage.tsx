@@ -23,6 +23,7 @@ export function AppPage({
 	notice,
 	width = "column",
 	panel,
+	footer,
 	children,
 }: {
 	readonly bar: AppPageBar;
@@ -32,6 +33,8 @@ export function AppPage({
 	readonly width?: "column" | "full";
 	/** A `DetailPanel`. */
 	readonly panel?: ReactNode;
+	/** Scrolls with the page, after the content, and sits at the bottom when the content is short. Only for `column`; a `full` page places its own. */
+	readonly footer?: ReactNode;
 	readonly children: ReactNode;
 }) {
 	return (
@@ -42,10 +45,11 @@ export function AppPage({
 				{width === "full" ? (
 					<div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
 				) : (
-					<div className="min-h-0 flex-1 overflow-y-auto">
-						<div className="mx-auto w-full max-w-3xl px-4 py-6 md:px-6 md:py-8">
+					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+						<div className="mx-auto w-full max-w-3xl shrink-0 px-4 py-6 md:px-6 md:py-8">
 							{children}
 						</div>
+						{footer}
 					</div>
 				)}
 			</div>

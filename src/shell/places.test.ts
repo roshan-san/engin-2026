@@ -11,6 +11,7 @@ import {
 	type Places,
 	placeFromRoute,
 	reasonLine,
+	tabsForSignedOut,
 	tabsFromRoute,
 } from "./places";
 
@@ -350,6 +351,18 @@ describe("tabsFromRoute", () => {
 				match("/_shell/_authed/home"),
 			]),
 		).toBeNull();
+	});
+});
+
+describe("tabsForSignedOut", () => {
+	it("keeps Explore's tabs", () => {
+		expect(tabsForSignedOut({ kind: "explore" })).toEqual({ kind: "explore" });
+	});
+
+	it("drops the Startup and Builder rows, which need a signed-in person", () => {
+		expect(tabsForSignedOut({ kind: "startup", slug: "acme" })).toBeNull();
+		expect(tabsForSignedOut({ kind: "builder", hackathonId: "x" })).toBeNull();
+		expect(tabsForSignedOut(null)).toBeNull();
 	});
 });
 
