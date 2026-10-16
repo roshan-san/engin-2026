@@ -43,7 +43,8 @@ export function RunningView({
 	const threads = useHackathonThreads(hackathon._id);
 	const view = route.useSearch({ select: (search) => search.view });
 	const navigate = route.useNavigate();
-	const isClosed = hackathon.status === "done";
+	const phase = phaseOf(hackathon, Date.now());
+	const isClosed = phase === "done";
 
 	const participants =
 		applicants?.filter((row) => row.application.status === "participating") ??
@@ -56,7 +57,7 @@ export function RunningView({
 	const current = resolveView(
 		view,
 		participants.map((row) => row.user._id),
-		phaseOf(hackathon, Date.now()),
+		phase,
 	);
 	const participantRow = participants.find((row) => row.user._id === current);
 	const privateThread = threads?.find(
@@ -181,7 +182,7 @@ export function RunningView({
 				{current === "review" ? (
 					<ReviewQueue
 						hackathonId={hackathon._id}
-						isClosed={isClosed}
+						founder={{ userId, role: "founder", phase }}
 						onOpen={(participantId, cardId) => show(participantId, cardId)}
 					/>
 				) : current === "everyone" ? (

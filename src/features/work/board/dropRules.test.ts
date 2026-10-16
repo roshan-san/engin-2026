@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import type { CardActor } from "@convex/shared/cardRules";
 import { describe, expect, it } from "vitest";
 import { dropAction, dropRefusal } from "./dropRules";
 import type { CardView } from "./types";
@@ -30,50 +31,29 @@ function aCard(status: CardView["status"], ownerId: Id<"users"> = fay) {
 	} satisfies CardView;
 }
 
-const owner = { userId: fay, isFounder: false };
-const founder = { userId: sam, isFounder: true };
+const owner: CardActor = { userId: fay, role: "contributor", phase: null };
+const founder: CardActor = { userId: sam, role: "founder", phase: null };
 
 describe("dropAction", () => {
-	it("ships a Card its owner drops on Review", () => {
+	it("a drop on Review opens What shipped", () => {
 		expect(dropAction(aCard("in_progress"), "review", owner)).toBe("ship");
-		expect(dropAction(aCard("todo"), "review", owner)).toBe("ship");
 	});
 
-	it("does nothing when someone else drops a Card on Review", () => {
-		expect(dropAction(aCard("in_progress"), "review", founder)).toBeNull();
-	});
-
-	it("does nothing when a Contributor drops a Card out of Review", () => {
-		const card = aCard("review");
-
-		expect(dropAction(card, "todo", owner)).toBeNull();
-		expect(dropAction(card, "in_progress", owner)).toBeNull();
-	});
-
-	it("lets the Founder send a Card back from Review", () => {
-		const card = aCard("review");
-
-		expect(dropAction(card, "todo", founder)).toBe("move");
-		expect(dropAction(card, "in_progress", founder)).toBe("move");
-	});
-
-	it("never moves a Card to Done", () => {
-		expect(dropAction(aCard("review"), "done", founder)).toBeNull();
-		expect(dropAction(aCard("in_progress"), "done", owner)).toBeNull();
-	});
-
-	it("moves a Card between To do and In progress", () => {
+	it("a drop on To do or In progress moves the Card", () => {
 		expect(dropAction(aCard("todo"), "in_progress", owner)).toBe("move");
-		expect(dropAction(aCard("in_progress"), "todo", owner)).toBe("move");
+		expect(dropAction(aCard("review"), "todo", founder)).toBe("move");
 	});
 
-	it("does nothing when a Card is dropped where it already is", () => {
+	it("nothing is ever dropped on Done", () => {
+		expect(dropAction(aCard("review"), "done", founder)).toBeNull();
+	});
+
+	it("a drop where the Card already is does nothing", () => {
 		expect(dropAction(aCard("todo"), "todo", owner)).toBeNull();
 	});
 
-	it("never moves a Card out of Done", () => {
-		expect(dropAction(aCard("done"), "todo", founder)).toBeNull();
-		expect(dropAction(aCard("done"), "review", founder)).toBeNull();
+	it("a drop the Card rules refuse does nothing", () => {
+		expect(dropAction(aCard("in_progress"), "review", founder)).toBeNull();
 	});
 });
 
@@ -84,22 +64,14 @@ describe("dropRefusal", () => {
 		);
 	});
 
-	it("says only the owner submits a Card", () => {
-		expect(dropRefusal(aCard("in_progress"), "review", founder)).toBe(
-			"Only the Card's owner can submit it",
-		);
-	});
-
-	it("says only the Founder sends a Card back from Review", () => {
+	it("gives the Card rules' reason for a refused drop", () => {
 		expect(dropRefusal(aCard("review"), "todo", owner)).toBe(
 			"Only the Founder can send a Card back",
 		);
 	});
 
-	it("is silent for allowed moves and drops where the Card already is", () => {
-		expect(dropRefusal(aCard("todo"), "in_progress", owner)).toBeNull();
+	it("is silent for allowed drops and drops where the Card already is", () => {
 		expect(dropRefusal(aCard("in_progress"), "review", owner)).toBeNull();
-		expect(dropRefusal(aCard("review"), "todo", founder)).toBeNull();
 		expect(dropRefusal(aCard("todo"), "todo", owner)).toBeNull();
 	});
 });

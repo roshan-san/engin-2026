@@ -1,3 +1,4 @@
+import type { CardAction } from "@convex/shared/cardRules";
 import { TEXT } from "@convex/shared/limits";
 import { ChevronLeftIcon, MoreHorizontalIcon, XIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
@@ -35,11 +36,12 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { PersonName } from "~/features/people/PersonName";
-import { isReadOnly, useBoardScope } from "../board/BoardScope";
+import { useBoardScope } from "../board/BoardScope";
 import { ColumnIcon } from "../board/ColumnIcon";
 import { COLUMNS, type Column, dropAction } from "../board/dropRules";
 import type { CardView } from "../board/types";
 import { useBoard } from "../board/useBoard";
+import { refusalFor } from "../cardRules";
 import { NotesField } from "./NotesField";
 import { GHOST_TRIGGER, OwnerPicker } from "./OwnerPicker";
 import { ShippedView } from "./ShippedView";
@@ -142,33 +144,23 @@ function OpenCard({
 	readonly onShip: (card: CardView) => void;
 }) {
 	const scope = useBoardScope();
-	const { userId, isFounder } = scope;
 	const { move, verify } = useBoard(scope);
-	const isLocked = isReadOnly(scope);
 	const { update, remove } = useCardActions();
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [isVerifying, setIsVerifying] = useState(false);
 	const isDeleting = useRef(false);
 
-	const viewer = { userId, isFounder };
-	const isDone = card.status === "done";
-	const columns = isLocked
-		? []
-		: COLUMNS.filter(
-				(column) =>
-					column.id === card.status ||
-					dropAction(card, column.id, viewer) !== null,
-			);
+	const can = (action: CardAction) => refusalFor(card, action, scope) === null;
+	const columns = COLUMNS.filter(
+		(column) =>
+			column.id === card.status || dropAction(card, column.id, scope) !== null,
+	);
 	const current = COLUMNS.find((column) => column.id === card.status);
-	// Hackathon Cards stay with their Participant until the end.
-	const canDelete =
-		scope.kind === "startup" &&
-		!isDone &&
-		(isFounder || card.owner?._id === userId);
-	const canVerify = isFounder && !isLocked && card.status === "review";
+	const canDelete = can({ kind: "delete" });
+	const canVerify = can({ kind: "verify" });
 
 	function changeColumn(to: Column) {
-		const action = dropAction(card, to, viewer);
+		const action = dropAction(card, to, scope);
 		if (action === "ship") {
 			onShip(card);
 		} else if (action === "move" && (to === "todo" || to === "in_progress")) {
@@ -202,7 +194,11 @@ function OpenCard({
 			</CardHeader>
 
 			<PanelBody className="pb-6">
-				<TitleField card={card} isLocked={isDone || isLocked} onSave={update} />
+				<TitleField
+					card={card}
+					isLocked={!can({ kind: "retitle" })}
+					onSave={update}
+				/>
 
 				<dl className="-mt-2 grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-x-2 gap-y-1 text-sm">
 					<dt className="text-muted-foreground">Column</dt>
@@ -241,6 +237,7 @@ function OpenCard({
 							<OwnerPicker
 								startupId={scope.startupId}
 								card={card}
+								isLocked={!can({ kind: "reassign" })}
 								onPick={(ownerId) => void update(card._id, { ownerId })}
 							/>
 						) : (
@@ -260,7 +257,7 @@ function OpenCard({
 				<Section label="Notes" as="h3">
 					<NotesField
 						card={card}
-						isReadOnly={isLocked}
+						isReadOnly={!can({ kind: "editNotes" })}
 						isDiscarded={isDeleting}
 						onSave={(notes) => update(card._id, { notes })}
 					/>

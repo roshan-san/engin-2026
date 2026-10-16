@@ -33,7 +33,8 @@ export function StartupGate({
 				startupId: found.startup._id,
 				slug: found.startup.slug,
 				userId,
-				isFounder,
+				role: found.role,
+				phase: null,
 			},
 		};
 	}, [found, userId]);

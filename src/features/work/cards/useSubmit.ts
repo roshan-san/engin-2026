@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 import { useBoardScope } from "../board/BoardScope";
 import { patchBoardCards } from "../board/useBoard";
+import { landsIn } from "../cardRules";
 
 export type Shipped = {
 	line: string;
@@ -23,9 +24,7 @@ export function useSubmit() {
 				patchBoardCards(store, scope, (current) =>
 					current.map((card) => {
 						if (card._id !== args.cardId) return card;
-						const goesStraightToDone =
-							scope.isFounder && card.owner?._id === scope.userId;
-						return goesStraightToDone
+						return landsIn(card, scope) === "done"
 							? { ...card, status: "done" as const, selfVerified: true }
 							: { ...card, status: "review" as const };
 					}),

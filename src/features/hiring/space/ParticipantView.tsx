@@ -56,7 +56,7 @@ export function ParticipantView({
 	const cardId = route.useSearch({ select: (search) => search.card });
 	const navigate = route.useNavigate();
 	const participantId = row.user._id;
-	const isClosed = hackathon.status === "done";
+	const phase = phaseOf(hackathon, Date.now());
 
 	const scope = useMemo<BoardScope>(
 		() => ({
@@ -64,10 +64,10 @@ export function ParticipantView({
 			hackathonId: hackathon._id,
 			participantId,
 			userId,
-			isFounder: true,
-			isClosed,
+			role: "founder",
+			phase,
 		}),
-		[hackathon._id, participantId, userId, isClosed],
+		[hackathon._id, participantId, userId, phase],
 	);
 
 	function closeCard() {
@@ -101,7 +101,7 @@ export function ParticipantView({
 				userId={userId}
 				placeholder={`Message ${name}`}
 				emptyNote="Only you two see this."
-				isReadOnly={isClosed}
+				isReadOnly={phase === "done"}
 				onClose={onClose}
 			/>
 		) : (

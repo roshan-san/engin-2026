@@ -7,7 +7,8 @@ const startupScope: BoardScope = {
 	startupId: "s1" as Id<"startups">,
 	slug: "acme",
 	userId: "u1" as Id<"users">,
-	isFounder: true,
+	role: "founder",
+	phase: null,
 };
 
 const participantScope: BoardScope = {
@@ -15,8 +16,8 @@ const participantScope: BoardScope = {
 	hackathonId: "h1" as Id<"hackathons">,
 	participantId: "u2" as Id<"users">,
 	userId: "u1" as Id<"users">,
-	isFounder: true,
-	isClosed: false,
+	role: "founder",
+	phase: "live",
 };
 
 describe("boardQuery", () => {

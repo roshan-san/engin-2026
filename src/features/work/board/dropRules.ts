@@ -1,4 +1,5 @@
-import type { Id } from "@convex/_generated/dataModel";
+import type { CardAction, CardActor } from "@convex/shared/cardRules";
+import { refusalFor } from "../cardRules";
 import type { CardView } from "./types";
 
 export type Column = "todo" | "in_progress" | "review" | "done";
@@ -10,8 +11,6 @@ export const COLUMNS: readonly { id: Column; label: string }[] = [
 	{ id: "done", label: "Done" },
 ];
 
-type Viewer = { userId: Id<"users">; isFounder: boolean };
-
 /**
  * What dropping `card` on column `to` does: `"move"` changes its column,
  * `"ship"` opens What shipped, `null` leaves it where it is. Done only takes
@@ -20,30 +19,29 @@ type Viewer = { userId: Id<"users">; isFounder: boolean };
 export function dropAction(
 	card: CardView,
 	to: Column,
-	viewer: Viewer,
+	actor: CardActor,
 ): "move" | "ship" | null {
-	if (card.status === to || to === "done" || card.status === "done") {
+	if (card.status === to || to === "done") {
 		return null;
 	}
-	if (to === "review") {
-		return card.owner?._id === viewer.userId ? "ship" : null;
+	if (refusalFor(card, actionFor(to), actor) !== null) {
+		return null;
 	}
-	if (card.status === "review") {
-		return viewer.isFounder ? "move" : null;
-	}
-	return "move";
+	return to === "review" ? "ship" : "move";
 }
 
 /** Why dropping `card` on `to` is refused, in words to show; `null` when it's fine or a no-op. */
 export function dropRefusal(
 	card: CardView,
 	to: Column,
-	viewer: Viewer,
+	actor: CardActor,
 ): string | null {
-	if (card.status === to || card.status === "done") return null;
-	if (dropAction(card, to, viewer) !== null) return null;
+	if (card.status === to) return null;
 	if (to === "done") return "Only Verify moves a Card to Done";
-	if (to === "review") return "Only the Card's owner can submit it";
-	if (card.status === "review") return "Only the Founder can send a Card back";
-	return null;
+	return refusalFor(card, actionFor(to), actor);
+}
+
+/** Dropping on Review submits; on To do or In progress, moves (a Send back when it leaves Review). */
+function actionFor(to: Exclude<Column, "done">): CardAction {
+	return to === "review" ? { kind: "submit" } : { kind: "move", to };
 }

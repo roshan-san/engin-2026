@@ -26,6 +26,7 @@ import { useUpload } from "../../../lib/useUpload";
 import { useBoardScope } from "../board/BoardScope";
 import { isSendKey } from "../board/keys";
 import type { CardView } from "../board/types";
+import { landsIn } from "../cardRules";
 import { useSubmit } from "./useSubmit";
 
 type Picture = {
@@ -56,7 +57,7 @@ export function ShipDialog({
 	readonly card: CardView;
 	readonly onClose: () => void;
 }) {
-	const { userId, isFounder } = useBoardScope();
+	const scope = useBoardScope();
 	const { submit } = useSubmit();
 	const { upload } = useUpload();
 	const [line, setLine] = useState("");
@@ -69,7 +70,7 @@ export function ShipDialog({
 	const picturesRef = useRef<Picture[]>([]);
 	picturesRef.current = pictures;
 
-	const marksDone = isFounder && card.owner?._id === userId;
+	const marksDone = landsIn(card, scope) === "done";
 	const isUploading = pictures.some((picture) => picture.storageId === null);
 	// Closing mid-send or mid-upload would lose the proof and orphan its files.
 	const isBusy = isUploading || isSubmitting;

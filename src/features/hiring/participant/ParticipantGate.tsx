@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Navigate, Outlet } from "@tanstack/react-router";
 import { createContext, useContext, useMemo } from "react";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
@@ -55,17 +56,17 @@ function Provided({
 		page.myApplication?.decision ?? null,
 		Date.now(),
 	);
-	const { isClosed } = status;
+	const phase = phaseOf(page, Date.now());
 	const scope = useMemo<BoardScope>(
 		() => ({
 			kind: "participant",
 			hackathonId: page._id,
 			participantId: userId,
 			userId,
-			isFounder: false,
-			isClosed,
+			role: "participant",
+			phase,
 		}),
-		[page._id, userId, isClosed],
+		[page._id, userId, phase],
 	);
 	return (
 		<ParticipantContext.Provider value={{ page, userId, status }}>

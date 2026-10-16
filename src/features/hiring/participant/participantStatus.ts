@@ -4,8 +4,6 @@ import { dayLabel, lastDay } from "../hackathonDates";
 export type ParticipantStatus = {
 	/** The header line: "Starts Mon, Oct 19", "Ends Sun, Oct 25", "Ended". */
 	readonly line: string;
-	/** The Board can't be worked: not started yet, or over. */
-	readonly isClosed: boolean;
 	/** One calm line above the Board, when there's something to say. */
 	readonly note: string | null;
 };
@@ -20,23 +18,20 @@ export function participantStatus(
 	if (phase === "draft" || phase === "open") {
 		return {
 			line: `Starts ${dayLabel(hackathon.startsAt)}`,
-			isClosed: true,
 			note: "Your Cards arrive when it starts.",
 		};
 	}
 	if (phase === "live") {
 		return {
 			line: `Ends ${dayLabel(lastDay(hackathon.endsAt))}`,
-			isClosed: false,
 			note: null,
 		};
 	}
 	if (decision) {
-		return { line: "Ended", isClosed: true, note: null };
+		return { line: "Ended", note: null };
 	}
 	return {
 		line: "Ended",
-		isClosed: true,
 		note:
 			hackathon.status === "done"
 				? "It closed without a decision."

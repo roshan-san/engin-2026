@@ -1,23 +1,28 @@
 import type { Id } from "@convex/_generated/dataModel";
+import type { HackathonPhase } from "@convex/shared/hackathonPhase";
 import { createContext, useContext } from "react";
 
-/** Whose Board is showing: a Startup's, or one Participant's Cards on a Hackathon. */
+/**
+ * Whose Board is showing: a Startup's, or one Participant's Cards on a Hackathon.
+ * It is also the actor the Card rules judge: who you are and where the Hackathon is.
+ */
 export type BoardScope =
 	| {
 			readonly kind: "startup";
 			readonly startupId: Id<"startups">;
 			readonly slug: string;
 			readonly userId: Id<"users">;
-			readonly isFounder: boolean;
+			readonly role: "founder" | "contributor";
+			readonly phase: null;
 	  }
 	| {
 			readonly kind: "participant";
 			readonly hackathonId: Id<"hackathons">;
 			readonly participantId: Id<"users">;
 			readonly userId: Id<"users">;
-			readonly isFounder: boolean;
-			/** The Hackathon is over for this viewer: the Cards are read-only. */
-			readonly isClosed: boolean;
+			/** The Founder, or the Participant whose Board it is. */
+			readonly role: "founder" | "participant";
+			readonly phase: HackathonPhase;
 	  };
 
 export const BoardScopeContext = createContext<BoardScope | null>(null);
@@ -47,9 +52,4 @@ export function boardQuery(scope: BoardScope):
 					participantId: scope.participantId,
 				},
 			};
-}
-
-/** Whether the viewer can't change these Cards any more. */
-export function isReadOnly(scope: BoardScope): boolean {
-	return scope.kind === "participant" && scope.isClosed;
 }

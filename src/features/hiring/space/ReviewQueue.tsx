@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import type { CardActor } from "@convex/shared/cardRules";
 import { useState } from "react";
 import { EmptyState } from "~/components/EmptyState";
 import { Kbd } from "~/components/Kbd";
@@ -7,6 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
+import { refusalFor } from "~/features/work/cardRules";
 import { ShippedView } from "~/features/work/cards/ShippedView";
 import { cn } from "~/lib/utils";
 import { useListKeys } from "./useListKeys";
@@ -15,11 +17,12 @@ import { useReviewQueue } from "./useReviewQueue";
 /** Every Card waiting for you, across all Participants. J/K move, V verifies, Enter opens. */
 export function ReviewQueue({
 	hackathonId,
-	isClosed,
+	founder,
 	onOpen,
 }: {
 	readonly hackathonId: Id<"hackathons">;
-	readonly isClosed: boolean;
+	/** The Founder as the Card rules see them, with the Hackathon's phase. */
+	readonly founder: CardActor;
 	/** Opens the Card in its Participant's Board. */
 	readonly onOpen: (participantId: Id<"users">, cardId: Id<"cards">) => void;
 }) {
@@ -32,6 +35,10 @@ export function ReviewQueue({
 		return queue?.find((card) => card._id === id);
 	}
 
+	function canVerify(card: NonNullable<typeof queue>[number]) {
+		return refusalFor(card, { kind: "verify" }, founder) === null;
+	}
+
 	useListKeys({
 		ids,
 		activeId,
@@ -42,7 +49,7 @@ export function ReviewQueue({
 		keys: {
 			v: (id) => {
 				const card = cardOf(id);
-				if (card && !isClosed) void verify(card._id);
+				if (card && canVerify(card)) void verify(card._id);
 			},
 			enter: (id) => {
 				const card = cardOf(id);
@@ -98,7 +105,7 @@ export function ReviewQueue({
 									>
 										{card.title}
 									</button>
-									{isClosed ? null : (
+									{!canVerify(card) ? null : (
 										<Button
 											size="sm"
 											className="ml-auto shrink-0"

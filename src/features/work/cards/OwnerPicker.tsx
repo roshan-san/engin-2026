@@ -26,18 +26,19 @@ function PersonLabel({ person }: { readonly person: Person }) {
 	);
 }
 
-/** Who owns the Card. Fixed once it is in Review or Done. */
+/** Who owns the Card; a plain label when the Card rules fix it (in Review or Done). */
 export function OwnerPicker({
 	startupId,
 	card,
+	isLocked,
 	onPick,
 }: {
 	readonly startupId: Id<"startups">;
 	readonly card: CardView;
+	readonly isLocked: boolean;
 	readonly onPick: (ownerId: Id<"users">) => void;
 }) {
 	const team = useTeam(startupId);
-	const isLocked = card.status === "review" || card.status === "done";
 
 	if (isLocked) {
 		return card.owner ? (

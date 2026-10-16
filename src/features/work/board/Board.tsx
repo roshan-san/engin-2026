@@ -14,7 +14,8 @@ import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { BoardColumn, type DropState } from "./BoardColumn";
-import { isReadOnly, useBoardScope } from "./BoardScope";
+import { refusalFor } from "../cardRules";
+import { useBoardScope } from "./BoardScope";
 import { CardFace, TILE_CLASS } from "./CardTile";
 import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
 import { NewCardInput } from "./NewCardInput";
@@ -50,9 +51,7 @@ export function Board({
 	readonly onClose: () => void;
 }) {
 	const scope = useBoardScope();
-	const { userId, isFounder } = scope;
 	const { cards, create, move, verify } = useBoard(scope);
-	const isLocked = isReadOnly(scope);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const newCardRef = useRef<HTMLTextAreaElement>(null);
@@ -73,7 +72,7 @@ export function Board({
 	const verifyLatest = useRef((_cardId: string) => {});
 	verifyLatest.current = (cardId) => {
 		const card = cards?.find((c) => c._id === cardId);
-		if (isFounder && !isLocked && card?.status === "review") {
+		if (card && refusalFor(card, { kind: "verify" }, scope) === null) {
 			void verify(card._id);
 		}
 	};
@@ -92,32 +91,25 @@ export function Board({
 		isPaused: draggedId !== null,
 	});
 
-	const viewer = { userId, isFounder };
 	const dragged = cards?.find((card) => card._id === draggedId) ?? null;
 
 	/** Shown while dragging, so a refused column fades before the drop, not after. */
 	function dropStateOf(column: Column): DropState {
 		if (!dragged || dragged.status === column) return "idle";
-		if (isLocked) return "refuse";
-		return dropAction(dragged, column, viewer) ? "accept" : "refuse";
+		return dropAction(dragged, column, scope) ? "accept" : "refuse";
 	}
 
 	function handleDragEnd(overId: string | undefined) {
 		setDraggedId(null);
 		if (!dragged || !overId || !COLUMN_IDS.has(overId)) return;
-		if (isLocked) {
-			toast("This Hackathon has ended");
-			return;
-		}
-
 		const to = overId as Column;
-		const action = dropAction(dragged, to, viewer);
+		const action = dropAction(dragged, to, scope);
 		if (action === "ship") {
 			onShip(dragged);
 		} else if (action === "move" && (to === "todo" || to === "in_progress")) {
 			void move(dragged._id, to);
 		} else {
-			const refusal = dropRefusal(dragged, to, viewer);
+			const refusal = dropRefusal(dragged, to, scope);
 			if (refusal) toast(refusal);
 		}
 	}

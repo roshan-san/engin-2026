@@ -9,20 +9,19 @@ function ist(day: number, hour = 0) {
 const hackathon = { startsAt: ist(19), endsAt: ist(26) };
 
 describe("participantStatus", () => {
-	it("accepted before the start: it starts Monday, nothing to work yet", () => {
+	it("accepted before the start: it starts Monday, the Cards come later", () => {
 		expect(
 			participantStatus({ ...hackathon, status: "open" }, null, ist(14)),
 		).toEqual({
 			line: "Starts Mon, Oct 19",
-			isClosed: true,
 			note: "Your Cards arrive when it starts.",
 		});
 	});
 
-	it("while live, it says when it ends and the Board is open", () => {
+	it("while live, it says when it ends", () => {
 		expect(
 			participantStatus({ ...hackathon, status: "live" }, null, ist(20)),
-		).toEqual({ line: "Ends Sun, Oct 25", isClosed: false, note: null });
+		).toEqual({ line: "Ends Sun, Oct 25", note: null });
 	});
 
 	it("after the end, it waits for the Founder", () => {
@@ -30,7 +29,6 @@ describe("participantStatus", () => {
 			participantStatus({ ...hackathon, status: "deciding" }, null, ist(27)),
 		).toEqual({
 			line: "Ended",
-			isClosed: true,
 			note: "Waiting for the Founder's decision.",
 		});
 	});
@@ -40,7 +38,6 @@ describe("participantStatus", () => {
 			participantStatus({ ...hackathon, status: "done" }, null, ist(40)),
 		).toEqual({
 			line: "Ended",
-			isClosed: true,
 			note: "It closed without a decision.",
 		});
 	});
