@@ -4,11 +4,14 @@ import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Toaster } from "~/components/ui/sonner";
 import { AppProviders } from "~/shell/AppProviders";
+import { MaintenanceGate } from "~/shell/MaintenanceGate";
 
 function RootComponent() {
 	return (
 		<AppProviders>
-			<Outlet />
+			<MaintenanceGate>
+				<Outlet />
+			</MaintenanceGate>
 			<Toaster richColors />
 		</AppProviders>
 	);

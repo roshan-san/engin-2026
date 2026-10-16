@@ -1,35 +1,20 @@
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
-import { passHash, resolveGate } from "./maintenance";
+import { useMaintenance } from "./useMaintenance";
 
-/** Shows the maintenance page instead of the app on a deployment with a pass set. */
+/**
+ * Shows the maintenance page instead of the app while maintenance is on. It's
+ * live: flipping `site/maintenance:set` in Convex switches every open tab.
+ */
 export function MaintenanceGate({
 	children,
 }: {
 	readonly children: ReactNode;
 }) {
-	const [gate, setGate] = useState<"checking" | "open" | "locked">(
-		passHash ? "checking" : "open",
-	);
+	const underMaintenance = useMaintenance();
 
-	useEffect(() => {
-		if (!passHash) return;
-		const fragment = window.location.hash;
-		resolveGate(passHash, fragment).then((result) => {
-			// Keep the pass out of the address bar and history.
-			if (fragment === "#lock" || fragment.startsWith("#unlock=")) {
-				history.replaceState(
-					history.state,
-					"",
-					window.location.pathname + window.location.search,
-				);
-			}
-			setGate(result);
-		});
-	}, []);
-
-	if (gate === "checking") return <GlobalSpinner />;
-	if (gate === "locked") return <MaintenancePage />;
+	if (underMaintenance === undefined) return <GlobalSpinner />;
+	if (underMaintenance) return <MaintenancePage />;
 	return children;
 }
 
