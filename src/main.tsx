@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { routeTree } from "~/routeTree.gen";
+import { MaintenanceGate } from "~/shell/MaintenanceGate";
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import "~/styles/globals.css";
@@ -31,6 +32,8 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
 	<StrictMode>
-		<RouterProvider router={router} />
+		<MaintenanceGate>
+			<RouterProvider router={router} />
+		</MaintenanceGate>
 	</StrictMode>,
 );
