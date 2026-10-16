@@ -12,7 +12,7 @@ const router = createRouter({
 	routeTree,
 	defaultPreload: "intent",
 	defaultPendingComponent: () => <GlobalSpinner fill />,
-	defaultNotFoundComponent: GlobalNotFound,
+	defaultNotFoundComponent: () => <GlobalNotFound />,
 	scrollRestoration: true,
 	scrollToTopSelectors: ["[data-scroll-restoration-id=main]"],
 });

@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { isMac } from "~/lib/platform";
 import { answerKey } from "./applyStatus";
 import { useApply } from "./useApply";
 
@@ -27,7 +28,7 @@ function save(key: string, text: string) {
 	}
 }
 
-/** "How would you approach this?" Autosaved here until sent. ⌘↵ sends. */
+/** "How would you approach this?" Autosaved here until sent. ⌘↵ (Ctrl ↵ off Mac) sends. */
 export function ApplyForm({
 	hackathonId,
 }: {
@@ -80,7 +81,7 @@ export function ApplyForm({
 				{isSending ? <Spinner /> : null}
 				Send
 				<Kbd className="border-primary-foreground/20 text-primary-foreground/60">
-					⌘↵
+					{isMac() ? "⌘↵" : "Ctrl ↵"}
 				</Kbd>
 			</Button>
 		</form>

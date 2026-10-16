@@ -21,5 +21,5 @@ export const Route = createRootRoute({
 	component: RootComponent,
 	pendingComponent: GlobalSpinner,
 	errorComponent: GlobalError,
-	notFoundComponent: GlobalNotFound,
+	notFoundComponent: () => <GlobalNotFound />,
 });
