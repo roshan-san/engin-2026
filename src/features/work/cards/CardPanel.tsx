@@ -106,13 +106,13 @@ export function CardPanel({
 
 /**
  * Keyboard focus around the open Card. Opened from a keyboard-focused tile
- * (Enter), focus moves to the title so you can edit at once. When the panel
+ * (Enter), focus moves to the panel, so V still verifies it and Tab reaches the title. When the panel
  * goes (Esc, Back, close, delete) and focus has nowhere left to be, it returns
  * to that Card's tile, or its column when the Card is gone.
  */
 function useCardFocus(
 	card: CardView,
-	titleRef: RefObject<HTMLElement | null>,
+	panelRef: RefObject<HTMLElement | null>,
 	isDeleting: RefObject<boolean>,
 ) {
 	const columnRef = useRef(card.status);
@@ -127,7 +127,7 @@ function useCardFocus(
 			tile.dataset.cardId === card._id &&
 			tile.matches(":focus-visible")
 		) {
-			titleRef.current?.focus();
+			panelRef.current?.focus();
 		}
 		return () => {
 			isMounted.current = false;
@@ -146,7 +146,7 @@ function useCardFocus(
 				(tile ?? column)?.focus();
 			}, 0);
 		};
-	}, [card._id, titleRef, isDeleting]);
+	}, [card._id, panelRef, isDeleting]);
 }
 
 /** Back to Threads on the left; the Card's menu and, on a phone, close on the right. */
@@ -200,8 +200,8 @@ function OpenCard({
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [isVerifying, setIsVerifying] = useState(false);
 	const isDeleting = useRef(false);
-	const titleRef = useRef<HTMLTextAreaElement>(null);
-	useCardFocus(card, titleRef, isDeleting);
+	const panelRef = useRef<HTMLDivElement>(null);
+	useCardFocus(card, panelRef, isDeleting);
 
 	const can = (action: CardAction) => refusalFor(card, action, scope) === null;
 	const columns = COLUMNS.filter(
@@ -228,7 +228,12 @@ function OpenCard({
 	}
 
 	return (
-		<div data-testid="card-panel" className="flex min-h-0 flex-1 flex-col">
+		<div
+			ref={panelRef}
+			data-testid="card-panel"
+			tabIndex={-1}
+			className="flex min-h-0 flex-1 flex-col outline-none"
+		>
 			<CardHeader {...panel}>
 				{canDelete ? (
 					<DropdownMenu>
@@ -249,7 +254,6 @@ function OpenCard({
 			<PanelBody className="pb-6">
 				<TitleField
 					card={card}
-					inputRef={titleRef}
 					isLocked={!can({ kind: "retitle" })}
 					onSave={update}
 				/>
@@ -373,12 +377,10 @@ function OpenCard({
 /** The title, edited in place; saves on blur or Enter, Esc undoes. Wraps, but stays one line. */
 function TitleField({
 	card,
-	inputRef,
 	isLocked,
 	onSave,
 }: {
 	readonly card: CardView;
-	readonly inputRef: RefObject<HTMLTextAreaElement | null>;
 	readonly isLocked: boolean;
 	readonly onSave: (
 		cardId: CardView["_id"],
@@ -413,7 +415,6 @@ function TitleField({
 
 	return (
 		<Textarea
-			ref={inputRef}
 			aria-label="Title"
 			rows={1}
 			value={draft}
