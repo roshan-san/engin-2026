@@ -2,7 +2,9 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { XIcon } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { AppPage } from "~/components/AppPage";
+import { Kbd } from "~/components/Kbd";
 import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
 import { cn } from "~/lib/utils";
 import { OnboardingStep, STEP_LABELS } from "./OnboardingStep";
 import {
@@ -24,6 +26,14 @@ export function OnboardingFlow() {
 	const isSubmittingRef = useRef(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const isLast = state.step === "oneLiner";
+	const isFirst = state.step === STEPS[0];
+
+	/** Enter and Continue both come here, so they always behave the same. */
+	function advance() {
+		if (!canAdvance(state)) return;
+		if (isLast) void submit(true);
+		else dispatch({ type: "next" });
+	}
 
 	async function submit(withOneLiner: boolean) {
 		const args = toCreateArgs(
@@ -70,8 +80,7 @@ export function OnboardingFlow() {
 				canAdvance(state)
 			) {
 				event.preventDefault();
-				if (isLast) void submit(true);
-				else dispatch({ type: "next" });
+				advance();
 			}
 		}
 		window.addEventListener("keydown", onKeyDown);
@@ -134,20 +143,46 @@ export function OnboardingFlow() {
 					)}
 				</nav>
 				<OnboardingStep key={state.step} state={state} dispatch={dispatch} />
-				{isLast ? (
-					<div className="flex items-center gap-2">
-						<Button disabled={isPending} onClick={() => void submit(true)}>
-							Create startup
-						</Button>
+				<div className="flex items-center justify-between gap-2">
+					{isFirst ? (
+						<span />
+					) : (
 						<Button
 							variant="ghost"
 							disabled={isPending}
-							onClick={() => void submit(false)}
+							onClick={() => dispatch({ type: "back" })}
 						>
-							Skip
+							Back
+						</Button>
+					)}
+					<div className="flex items-center gap-2">
+						{isLast && state.oneLiner.trim() === "" ? (
+							<Button
+								variant="ghost"
+								disabled={isPending}
+								onClick={() => void submit(false)}
+							>
+								Create without it
+							</Button>
+						) : null}
+						<Button
+							disabled={isPending || !canAdvance(state)}
+							onClick={advance}
+						>
+							{isPending ? (
+								<>
+									<Spinner />
+									Creating…
+								</>
+							) : (
+								<>
+									{isLast ? "Create startup" : "Continue"}
+									<Kbd>Enter</Kbd>
+								</>
+							)}
 						</Button>
 					</div>
-				) : null}
+				</div>
 			</div>
 		</AppPage>
 	);

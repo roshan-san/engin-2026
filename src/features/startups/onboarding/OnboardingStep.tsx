@@ -17,7 +17,7 @@ export const STEP_LABELS: Record<Step, string> = {
 const QUESTIONS: Record<Step, string> = {
 	name: "Name your startup.",
 	stage: "Pick your stage.",
-	kind: "Pick your kind.",
+	kind: "What kind of startup is it?",
 	city: "Pick your city.",
 	oneLiner: "Describe it in one line.",
 };
@@ -35,9 +35,9 @@ export function OnboardingStep({
 			aria-labelledby="onboarding-question"
 			className="flex flex-col gap-5"
 		>
-			<h1 id="onboarding-question" className="text-2xl font-semibold">
+			<h2 id="onboarding-question" className="text-2xl font-semibold">
 				{QUESTIONS[state.step]}
-			</h1>
+			</h2>
 			{renderControl(state, dispatch)}
 		</section>
 	);
