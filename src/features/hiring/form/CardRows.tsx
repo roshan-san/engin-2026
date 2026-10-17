@@ -1,6 +1,7 @@
 import { MAX_HACKATHON_CARDS, TEXT } from "@convex/shared/limits";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
+import { CharCount } from "~/components/CharCount";
 import { MentorNote } from "~/components/MentorNote";
 import { TILE_CLASS } from "~/features/work/board/CardTile";
 import { ColumnIcon } from "~/features/work/board/ColumnIcon";
@@ -116,28 +117,31 @@ function DraftCardTile({
 				<button
 					type="button"
 					aria-label={`Remove card ${number}`}
-					className="-mt-0.5 -mr-1 flex size-6 shrink-0 items-center justify-center rounded text-subtle-foreground opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-ring"
+					className="-my-1.5 -mr-2 flex size-8 shrink-0 items-center justify-center rounded text-subtle-foreground opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 pointer-coarse:opacity-100 focus-ring"
 					onClick={onRemove}
 				>
 					<XIcon className="size-3.5" />
 				</button>
 			</div>
 			{hasNotes ? (
-				<textarea
-					rows={1}
-					// Opened by "Add notes", so the cursor goes where the click was.
-					// biome-ignore lint/a11y/noAutofocus: see above
-					autoFocus={card.notes.length === 0}
-					aria-label={`Card ${number} notes`}
-					placeholder="Notes for the Participant"
-					value={card.notes}
-					maxLength={TEXT.notes}
-					className={cn(BARE_FIELD_CLASS, "text-xs text-muted-foreground")}
-					onChange={(e) => onChange({ notes: e.target.value })}
-					onBlur={() => {
-						if (!card.notes.trim()) setHasNotes(false);
-					}}
-				/>
+				<>
+					<textarea
+						rows={1}
+						// Opened by "Add notes", so the cursor goes where the click was.
+						// biome-ignore lint/a11y/noAutofocus: see above
+						autoFocus={card.notes.length === 0}
+						aria-label={`Card ${number} notes`}
+						placeholder="Notes for the Participant"
+						value={card.notes}
+						maxLength={TEXT.notes}
+						className={cn(BARE_FIELD_CLASS, "text-xs text-muted-foreground")}
+						onChange={(e) => onChange({ notes: e.target.value })}
+						onBlur={() => {
+							if (!card.notes.trim()) setHasNotes(false);
+						}}
+					/>
+					<CharCount value={card.notes} max={TEXT.notes} />
+				</>
 			) : (
 				<button
 					type="button"

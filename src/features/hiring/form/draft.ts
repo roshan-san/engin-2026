@@ -69,6 +69,10 @@ export function missingParts(draft: HackathonDraft): string[] {
 			? `at least ${MIN_HACKATHON_CARDS} Cards`
 			: null,
 		draft.startsAt === null ? "a start" : null,
+		draft.participantsGet.choice === "Custom" &&
+		!draft.participantsGet.custom.trim()
+			? "what Participants get"
+			: null,
 	].filter((part) => part !== null);
 }
 

@@ -1,7 +1,19 @@
 import { TEXT } from "@convex/shared/limits";
-import { type FormEvent, type ReactNode, useState } from "react";
+import { useBlocker } from "@tanstack/react-router";
+import { type FormEvent, type ReactNode, useRef, useState } from "react";
+import { CharCount } from "~/components/CharCount";
 import { ChipPicker } from "~/components/ChipPicker";
 import { MentorNote } from "~/components/MentorNote";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
@@ -16,6 +28,7 @@ import {
 	PARTICIPANTS_GET,
 	toParticipantsGet,
 } from "./draft";
+import { shouldBlockLeave } from "./leaveGuard";
 import { startOptions } from "./startOptions";
 
 const WEEKS = [
@@ -88,7 +101,25 @@ export function HackathonForm({
 	};
 }) {
 	const [draft, setDraft] = useState(initial);
-	const [isSaving, setIsSaving] = useState(false);
+	// Which button is working: only that one spins.
+	const [pending, setPending] = useState<"save" | "publish" | null>(null);
+	// True from a successful save until the next edit. A ref, so the blocker sees it the moment
+	// the save returns, before the page navigates away.
+	const savedRef = useRef(false);
+	const latest = useRef({ draft, pending });
+	latest.current = { draft, pending };
+	const leaveGuard = () =>
+		shouldBlockLeave(
+			latest.current.draft,
+			initial,
+			latest.current.pending,
+			savedRef.current,
+		);
+	const blocker = useBlocker({
+		shouldBlockFn: leaveGuard,
+		enableBeforeUnload: leaveGuard,
+		withResolver: true,
+	});
 	const [options] = useState(() => startOptions(Date.now()));
 	// A saved start that has passed isn't offered; the Founder picks a new one.
 	const startValue =
@@ -106,19 +137,24 @@ export function HackathonForm({
 		key: K,
 		value: HackathonDraft[K],
 	) {
+		savedRef.current = false;
 		setDraft((current) => ({ ...current, [key]: value }));
 	}
 
-	async function run(action: (draft: HackathonDraft) => Promise<boolean>) {
+	async function run(
+		kind: "save" | "publish",
+		action: (draft: HackathonDraft) => Promise<boolean>,
+	) {
 		if (!isReady) return;
-		setIsSaving(true);
-		await action(draft);
-		setIsSaving(false);
+		setPending(kind);
+		const isSaved = await action(draft);
+		if (isSaved) savedRef.current = true;
+		setPending(null);
 	}
 
 	function submit(event: FormEvent) {
 		event.preventDefault();
-		void run(onSubmit);
+		void run("save", onSubmit);
 	}
 
 	return (
@@ -155,14 +191,17 @@ export function HackathonForm({
 					label="The problem"
 					note="A real first-month problem. Finishable in a week."
 				>
-					<Textarea
-						aria-label="The problem"
-						placeholder="What's broken, and what good looks like"
-						value={draft.problem}
-						maxLength={TEXT.problem}
-						className="min-h-32"
-						onChange={(e) => set("problem", e.target.value)}
-					/>
+					<div className="flex flex-col gap-1.5">
+						<Textarea
+							aria-label="The problem"
+							placeholder="What's broken, and what good looks like"
+							value={draft.problem}
+							maxLength={TEXT.problem}
+							className="min-h-32"
+							onChange={(e) => set("problem", e.target.value)}
+						/>
+						<CharCount value={draft.problem} max={TEXT.problem} />
+					</div>
 				</Part>
 
 				<Part
@@ -213,18 +252,24 @@ export function HackathonForm({
 						}
 					/>
 					{draft.participantsGet.choice === "Custom" ? (
-						<Input
-							aria-label="What Participants get"
-							placeholder="One line"
-							value={draft.participantsGet.custom}
-							maxLength={TEXT.participantsGet}
-							onChange={(e) =>
-								set("participantsGet", {
-									...draft.participantsGet,
-									custom: e.target.value,
-								})
-							}
-						/>
+						<div className="flex flex-col gap-1.5">
+							<Input
+								aria-label="What Participants get"
+								placeholder="One line"
+								value={draft.participantsGet.custom}
+								maxLength={TEXT.participantsGet}
+								onChange={(e) =>
+									set("participantsGet", {
+										...draft.participantsGet,
+										custom: e.target.value,
+									})
+								}
+							/>
+							<CharCount
+								value={draft.participantsGet.custom}
+								max={TEXT.participantsGet}
+							/>
+						</div>
 					) : null}
 				</Part>
 
@@ -237,23 +282,45 @@ export function HackathonForm({
 					<Button
 						type="submit"
 						variant={secondary ? "outline" : "default"}
-						disabled={!isReady || isSaving}
+						disabled={!isReady || pending !== null}
 					>
-						{isSaving && !secondary ? <Spinner /> : null}
+						{pending === "save" ? <Spinner /> : null}
 						{submitLabel}
 					</Button>
 					{secondary ? (
 						<Button
 							type="button"
-							disabled={!isReady || isSaving || secondary.disabled}
-							onClick={() => void run(secondary.onSubmit)}
+							disabled={!isReady || pending !== null || secondary.disabled}
+							onClick={() => void run("publish", secondary.onSubmit)}
 						>
-							{isSaving ? <Spinner /> : null}
+							{pending === "publish" ? <Spinner /> : null}
 							{secondary.label}
 						</Button>
 					) : null}
 				</div>
 			</form>
+
+			<AlertDialog
+				open={blocker.status === "blocked"}
+				onOpenChange={(open) => {
+					if (!open) blocker.reset?.();
+				}}
+			>
+				<AlertDialogContent size="sm">
+					<AlertDialogHeader>
+						<AlertDialogTitle>Leave without saving?</AlertDialogTitle>
+						<AlertDialogDescription>
+							What you wrote here will be lost.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Stay</AlertDialogCancel>
+						<AlertDialogAction onClick={() => blocker.proceed?.()}>
+							Leave
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
 			<aside
 				aria-label="Preview"

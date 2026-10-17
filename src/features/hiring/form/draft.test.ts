@@ -93,4 +93,26 @@ describe("missingParts", () => {
 
 		expect(missingParts(draft)).toEqual(["a Card title"]);
 	});
+
+	it("an empty Custom line is named; a written one isn't", () => {
+		const draft: HackathonDraft = {
+			...emptyDraft(Date.now()),
+			job: { role: "frontend", pay: "6_9l", mode: "remote" },
+			problem: "Signup drops people",
+			cards: [draftCard("A"), draftCard("B"), draftCard("C")],
+		};
+
+		expect(
+			missingParts({
+				...draft,
+				participantsGet: { choice: "Custom", custom: "  " },
+			}),
+		).toContain("what Participants get");
+		expect(
+			missingParts({
+				...draft,
+				participantsGet: { choice: "Custom", custom: "A laptop" },
+			}),
+		).not.toContain("what Participants get");
+	});
 });
