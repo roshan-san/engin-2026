@@ -24,7 +24,12 @@ export function Pricing() {
 						Board, Cycles, What shipped, team chat, public Startup page.
 						Unlimited people.
 					</p>
-					<GoogleButton label="Get started" size="sm" className="mt-auto" />
+					<GoogleButton
+						label="Get started"
+						size="sm"
+						className="mt-auto"
+						returnTo="/home?intent=post"
+					/>
 				</div>
 				{planLines().map((plan) => (
 					<div
@@ -43,7 +48,12 @@ export function Pricing() {
 							<span className="text-sm text-muted-foreground">{plan.per}</span>
 						</p>
 						<p className="text-sm text-muted-foreground">{plan.hackathons}</p>
-						<GoogleButton label="Get started" size="sm" className="mt-auto" />
+						<GoogleButton
+							label="Get started"
+							size="sm"
+							className="mt-auto"
+							returnTo="/home?intent=post"
+						/>
 					</div>
 				))}
 			</div>

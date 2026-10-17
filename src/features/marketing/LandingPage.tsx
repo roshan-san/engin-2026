@@ -88,10 +88,11 @@ export function LandingPage() {
 								label="Post a hackathon"
 								variant="default"
 								size="lg"
+								returnTo="/home?intent=post"
 							/>
 							<Link
 								to="/explore/hackathons"
-								className="text-sm font-medium underline-offset-4 hover:underline"
+								className="rounded-sm text-sm font-medium underline-offset-4 hover:underline focus-ring"
 							>
 								Find a hackathon →
 							</Link>
@@ -143,7 +144,12 @@ export function LandingPage() {
 					<h2 className="text-2xl font-semibold text-balance">
 						See if they can actually do the work.
 					</h2>
-					<GoogleButton label="Post a hackathon" variant="default" size="lg" />
+					<GoogleButton
+						label="Post a hackathon"
+						variant="default"
+						size="lg"
+						returnTo="/home?intent=post"
+					/>
 				</section>
 			</div>
 		</PublicShell>

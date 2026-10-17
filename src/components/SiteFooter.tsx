@@ -7,10 +7,17 @@ export function SiteFooter() {
 		<footer className="mt-auto border-t border-border">
 			<div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-6 text-sm text-muted-foreground md:px-6">
 				<EnginLogo tabIndex={-1} />
-				<Link to="/explore" className="hover:text-foreground">
+				<Link
+					to="/explore"
+					className="rounded-sm hover:text-foreground focus-ring"
+				>
 					Explore
 				</Link>
-				<Link to="/" hash="pricing" className="hover:text-foreground">
+				<Link
+					to="/"
+					hash="pricing"
+					className="rounded-sm hover:text-foreground focus-ring"
+				>
 					Pricing
 				</Link>
 				<span className="ml-auto">© {new Date().getFullYear()} engin</span>
