@@ -1,4 +1,4 @@
-import { dayLabel, lastDay } from "./hackathonDates";
+import { dayLabel, lastDay, monthDayLabel } from "./hackathonDates";
 
 type Status = "draft" | "open" | "live" | "deciding" | "done";
 type Tone = "neutral" | "link" | "success" | "warning";
@@ -12,22 +12,26 @@ export const STAGE: Record<Status, { label: string; tone: Tone }> = {
 	done: { label: "Done", tone: "neutral" },
 };
 
-/** The date that matters at this stage: "ends Sun, Oct 25". */
-export function stageDate(hackathon: {
-	status: Status;
-	startsAt: number;
-	endsAt: number;
-	decideBy: number;
-}): string {
+/** The date that matters at this stage: "ends Sun, Oct 25", or "ends Oct 25" when `isShort` (phones). */
+export function stageDate(
+	hackathon: {
+		status: Status;
+		startsAt: number;
+		endsAt: number;
+		decideBy: number;
+	},
+	isShort = false,
+): string {
+	const label = isShort ? monthDayLabel : dayLabel;
 	switch (hackathon.status) {
 		case "draft":
 		case "open":
-			return `starts ${dayLabel(hackathon.startsAt)}`;
+			return `starts ${label(hackathon.startsAt)}`;
 		case "live":
-			return `ends ${dayLabel(lastDay(hackathon.endsAt))}`;
+			return `ends ${label(lastDay(hackathon.endsAt))}`;
 		case "deciding":
-			return `decide by ${dayLabel(lastDay(hackathon.decideBy))}`;
+			return `decide by ${label(lastDay(hackathon.decideBy))}`;
 		case "done":
-			return `ended ${dayLabel(lastDay(hackathon.endsAt))}`;
+			return `ended ${label(lastDay(hackathon.endsAt))}`;
 	}
 }

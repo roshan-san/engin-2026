@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { Kbd } from "~/components/Kbd";
 import { PanelBody } from "~/components/PanelBody";
 import { Row, RowList } from "~/components/RowList";
@@ -15,10 +16,13 @@ import { useApplicant } from "./useApplicants";
 /** One Applicant: their answer, their Rating and its parts, and what they've done. */
 export function ApplicantDetail({
 	applicationId,
+	canAccept,
 	onAccept,
 	onDecline,
 }: {
 	readonly applicationId: Id<"applications">;
+	/** False at the Participant limit: Accept is shown but off, with the reason. */
+	readonly canAccept: boolean;
 	readonly onAccept: () => void;
 	readonly onDecline: () => void;
 }) {
@@ -100,20 +104,27 @@ export function ApplicantDetail({
 				</Section>
 			</PanelBody>
 
-			<div className="flex shrink-0 items-center gap-2 border-t border-border p-3">
+			<div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-border p-3">
 				{application.status === "declined" ? null : (
 					<Button variant="outline" onClick={onDecline}>
-						Decline
+						{isParticipant ? "Remove" : "Decline"}
 						<Kbd>D</Kbd>
 					</Button>
 				)}
 				{isParticipant ? null : (
-					<Button onClick={onAccept}>
-						Accept
-						<Kbd className="border-primary-foreground/20 text-primary-foreground/60">
-							A
-						</Kbd>
-					</Button>
+					<>
+						<Button disabled={!canAccept} onClick={onAccept}>
+							Accept
+							<Kbd className="border-primary-foreground/20 text-primary-foreground/60">
+								A
+							</Kbd>
+						</Button>
+						{canAccept ? null : (
+							<p className="min-w-0 text-xs text-muted-foreground">
+								{MAX_PARTICIPANTS} Participants is the limit
+							</p>
+						)}
+					</>
 				)}
 			</div>
 		</div>

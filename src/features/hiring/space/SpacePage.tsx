@@ -69,13 +69,20 @@ function SpaceBody({
 				badge: (
 					<Badge variant="status" tone={stage.tone} className="shrink-0">
 						{stage.label}
-						<span className="hidden font-normal sm:inline">
+						<span className="font-normal">
 							{" · "}
-							{hackathon.status === "done"
-								? hires > 0
-									? `${hires} hired`
-									: "No hire"
-								: stageDate(current)}
+							{hackathon.status === "done" ? (
+								hires > 0 ? (
+									`${hires} hired`
+								) : (
+									"No hire"
+								)
+							) : (
+								<>
+									<span className="sm:hidden">{stageDate(current, true)}</span>
+									<span className="hidden sm:inline">{stageDate(current)}</span>
+								</>
+							)}
 						</span>
 					</Badge>
 				),

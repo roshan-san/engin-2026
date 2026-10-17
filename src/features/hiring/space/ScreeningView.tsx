@@ -5,12 +5,25 @@ import { useState } from "react";
 import { DetailPanel } from "~/components/DetailPanel";
 import { EmptyState } from "~/components/EmptyState";
 import { Kbd } from "~/components/Kbd";
+import { MentorNote } from "~/components/MentorNote";
 import { PanelHeader } from "~/components/PanelHeader";
 import { Segmented } from "~/components/Segmented";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useDetailPanel } from "~/components/useDetailPanel";
 import { useWorkspace } from "~/features/work/board/StartupContext";
+import { displayName } from "~/lib/displayName";
+import { dayLabel } from "../hackathonDates";
 import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";
@@ -48,6 +61,8 @@ export function ScreeningView({
 	const [pane, setPane] = useState<"applicant" | "everyone" | "post">(
 		"applicant",
 	);
+	// Who the Founder is about to remove, while the question is open.
+	const [removingId, setRemovingId] = useState<Id<"applications"> | null>(null);
 	const view = route.useSearch({ select: (search) => search.view });
 	const navigate = route.useNavigate();
 	// On a phone, an Applicant opens in the sheet; # Everyone is the sheet's own panel.
@@ -65,6 +80,10 @@ export function ScreeningView({
 	const participantCount = rows.filter(
 		(row) => row.application.status === "participating",
 	).length;
+	// Accept and the A key both stop at the limit.
+	const canAccept = participantCount < MAX_PARTICIPANTS;
+	const removing = rows.find((row) => row.application._id === removingId);
+	const startNote = `Accept by ${dayLabel(hackathon.startsAt)}. Anyone you haven't accepted is declined then; if nobody's accepted, the Hackathon ends.`;
 
 	function select(id: string) {
 		void navigate({ search: (prev) => ({ ...prev, view: id }), replace: true });
@@ -82,13 +101,25 @@ export function ScreeningView({
 		if ((await action(target)) && next) select(next);
 	}
 
+	/** Declining someone who was accepted takes them off the Hackathon, so it asks first. */
+	function requestDecline(id: string) {
+		const row = rows.find((candidate) => candidate.application._id === id);
+		if (row?.application.status === "participating") {
+			setRemovingId(row.application._id);
+			return;
+		}
+		void act(id, decline);
+	}
+
 	useListKeys({
 		ids,
 		activeId,
 		onMove: select,
 		keys: {
-			a: (id) => void act(id, accept),
-			d: (id) => void act(id, decline),
+			a: (id) => {
+				if (canAccept) void act(id, accept);
+			},
+			d: requestDecline,
 		},
 		isEnabled: isMobile === false && shownPane === "applicant",
 	});
@@ -97,8 +128,9 @@ export function ScreeningView({
 		<ApplicantDetail
 			key={activeId}
 			applicationId={activeId}
+			canAccept={canAccept}
 			onAccept={() => void act(activeId, accept)}
-			onDecline={() => void act(activeId, decline)}
+			onDecline={() => requestDecline(activeId)}
 		/>
 	) : null;
 
@@ -142,28 +174,36 @@ export function ScreeningView({
 				className="flex min-h-0 min-w-0 flex-1 flex-col"
 			>
 				<PanelHeader className="gap-2">
-					<span className="text-sm">
+					<span className="shrink-0 text-sm">
 						<span className="font-medium tabular-nums">
 							{participantCount}/{MAX_PARTICIPANTS}
 						</span>{" "}
-						<span className="text-muted-foreground">Participants</span>
+						{/* The count says it on a phone; the word is for screen readers there. */}
+						<span className="sr-only text-muted-foreground sm:not-sr-only">
+							Participants
+						</span>
 					</span>
 					<Segmented
 						label="Sort"
 						options={SORTS}
 						value={sort}
 						onChange={setSort}
-						className="ml-auto"
+						className="ml-auto shrink-0"
 					/>
 					<Button
 						variant="ghost"
 						size="sm"
-						className="md:hidden"
+						className="shrink-0 md:hidden"
 						onClick={panel.open}
 					>
 						# Everyone
 					</Button>
 				</PanelHeader>
+				{rows.length > 0 ? (
+					<div className="shrink-0 border-b border-border px-4 py-2">
+						<MentorNote>{startNote}</MentorNote>
+					</div>
+				) : null}
 				<div className="min-h-0 flex-1 overflow-y-auto">
 					{applicants === undefined ? (
 						<div className="flex flex-col gap-2 p-3">
@@ -173,7 +213,12 @@ export function ScreeningView({
 					) : rows.length === 0 ? (
 						<EmptyState
 							title="No applicants yet."
-							body="Share the page. Applications close when it starts."
+							body={
+								<div className="flex flex-col gap-2">
+									<p>Share the page. Applications close when it starts.</p>
+									<MentorNote>{startNote}</MentorNote>
+								</div>
+							}
 							action={<CopyLinkButton hackathonId={hackathon._id} />}
 						/>
 					) : (
@@ -214,6 +259,36 @@ export function ScreeningView({
 					)
 				}
 			/>
+
+			<AlertDialog
+				open={removing !== undefined}
+				onOpenChange={(open) => {
+					if (!open) setRemovingId(null);
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							Remove {displayName(removing?.user ?? null)}?
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							They stop being a Participant. You can accept them again before
+							the start.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							variant="destructive"
+							onClick={() => {
+								if (removingId) void act(removingId, decline);
+							}}
+						>
+							Remove
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

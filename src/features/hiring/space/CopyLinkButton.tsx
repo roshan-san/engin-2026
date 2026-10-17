@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { LinkIcon } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { copyHackathonLink } from "./copyHackathonLink";
 
 /** Copies the public Hackathon page's link, to share with Applicants. */
 export function CopyLinkButton({
@@ -15,16 +15,14 @@ export function CopyLinkButton({
 		<Button
 			variant={variant}
 			size={variant === "ghost" ? "sm" : "default"}
-			onClick={() => {
-				const url = `${window.location.origin}/hackathons/${hackathonId}`;
-				navigator.clipboard
-					.writeText(url)
-					.then(() => toast("Link copied"))
-					.catch(() => toast(url));
-			}}
+			aria-label="Copy link"
+			onClick={() => copyHackathonLink(hackathonId)}
 		>
 			<LinkIcon />
-			Copy link
+			{/* The bar is tight on a phone, so the ghost button there is just the icon. */}
+			<span className={variant === "ghost" ? "hidden sm:inline" : undefined}>
+				Copy link
+			</span>
 		</Button>
 	);
 }

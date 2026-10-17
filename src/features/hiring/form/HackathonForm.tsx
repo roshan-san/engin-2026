@@ -97,12 +97,18 @@ export function HackathonForm({
 		readonly label: string;
 		/** Shown but not pressable, e.g. while the plan can't publish. */
 		readonly disabled?: boolean;
+		/** When it returns text, the button asks first and runs `onSubmit` only once that's accepted. */
+		readonly confirm?: (
+			draft: HackathonDraft,
+		) => { title: string; description: string } | null;
 		readonly onSubmit: (draft: HackathonDraft) => Promise<boolean>;
 	};
 }) {
 	const [draft, setDraft] = useState(initial);
 	// Which button is working: only that one spins.
 	const [pending, setPending] = useState<"save" | "publish" | null>(null);
+	// The question Publish asks first, while it's open.
+	const [isConfirming, setConfirming] = useState(false);
 	// True from a successful save until the next edit. A ref, so the blocker sees it the moment
 	// the save returns, before the page navigates away.
 	const savedRef = useRef(false);
@@ -151,6 +157,8 @@ export function HackathonForm({
 		if (isSaved) savedRef.current = true;
 		setPending(null);
 	}
+
+	const confirmation = secondary?.confirm?.(draft) ?? null;
 
 	function submit(event: FormEvent) {
 		event.preventDefault();
@@ -291,7 +299,11 @@ export function HackathonForm({
 						<Button
 							type="button"
 							disabled={!isReady || pending !== null || secondary.disabled}
-							onClick={() => void run("publish", secondary.onSubmit)}
+							onClick={() =>
+								confirmation
+									? setConfirming(true)
+									: void run("publish", secondary.onSubmit)
+							}
 						>
 							{pending === "publish" ? <Spinner /> : null}
 							{secondary.label}
@@ -317,6 +329,27 @@ export function HackathonForm({
 						<AlertDialogCancel>Stay</AlertDialogCancel>
 						<AlertDialogAction onClick={() => blocker.proceed?.()}>
 							Leave
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			<AlertDialog open={isConfirming} onOpenChange={setConfirming}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{confirmation?.title}</AlertDialogTitle>
+						<AlertDialogDescription>
+							{confirmation?.description}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								if (secondary) void run("publish", secondary.onSubmit);
+							}}
+						>
+							{secondary?.label}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

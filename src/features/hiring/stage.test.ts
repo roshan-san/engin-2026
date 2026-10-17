@@ -30,4 +30,13 @@ describe("stageDate", () => {
 			"ended Sun, Oct 25",
 		);
 	});
+
+	it("drops the weekday on a phone", () => {
+		expect(stageDate({ ...hackathon, status: "open" }, true)).toBe(
+			"starts Oct 19",
+		);
+		expect(stageDate({ ...hackathon, status: "live" }, true)).toBe(
+			"ends Oct 25",
+		);
+	});
 });

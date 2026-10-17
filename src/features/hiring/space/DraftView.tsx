@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Page } from "~/components/Page";
 import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
 import { CheckoutNotice } from "~/features/billing/CheckoutNotice";
 import { draftPublish } from "~/features/billing/draftPublish";
 import { PlansDialog } from "~/features/billing/PlansDialog";
@@ -18,6 +19,9 @@ import {
 } from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";
 import { useHackathonForm } from "../form/useHackathonForm";
+import { dayLabel } from "../hackathonDates";
+import { roleLabel } from "../jobChips";
+import { copyHackathonLink } from "./copyHackathonLink";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
@@ -36,6 +40,7 @@ export function DraftView({
 	const hasPaymentIssue = usePaymentIssue();
 	const { openPortal } = usePortal();
 	const [isPlansOpen, setPlansOpen] = useState(false);
+	const [isOpening, setIsOpening] = useState(false);
 	const [initial] = useState<HackathonDraft>(() => ({
 		job: hackathon.job,
 		problem: hackathon.problem,
@@ -49,6 +54,12 @@ export function DraftView({
 		hasPaymentIssue,
 		isBackFromCheckout: checkout === "done",
 	});
+
+	async function manageBilling() {
+		setIsOpening(true);
+		const isLeavingForDodo = await openPortal();
+		if (!isLeavingForDodo) setIsOpening(false);
+	}
 
 	return (
 		<div className="min-h-0 flex-1 overflow-y-auto">
@@ -65,8 +76,10 @@ export function DraftView({
 							<Button
 								variant="outline"
 								size="sm"
-								onClick={() => void openPortal()}
+								disabled={isOpening}
+								onClick={() => void manageBilling()}
 							>
+								{isOpening ? <Spinner /> : null}
 								Manage billing
 							</Button>
 						) : null}
@@ -84,13 +97,34 @@ export function DraftView({
 					secondary={{
 						label: "Publish",
 						disabled: publishing.isDisabled,
+						// Publishing can't be undone. Without Pro the button opens the plans instead.
+						confirm: (draft) =>
+							publishing.opensPlans
+								? null
+								: {
+										title: `Publish ${draft.job.role ? roleLabel(draft.job.role) : "this post"}?`,
+										description: `Applications open now${
+											draft.startsAt === null
+												? ""
+												: ` and close ${dayLabel(draft.startsAt)}`
+										}. You can't edit the post after it's published.`,
+									},
 						onSubmit: async (draft) => {
 							if (!(await update(hackathon._id, draft))) return false;
 							if (publishing.opensPlans) {
 								setPlansOpen(true);
 								return true;
 							}
-							return await publish(hackathon._id);
+							const isPublished = await publish(hackathon._id);
+							if (isPublished) {
+								toast("Published", {
+									action: {
+										label: "Copy link",
+										onClick: () => copyHackathonLink(hackathon._id),
+									},
+								});
+							}
+							return isPublished;
 						},
 					}}
 				/>
