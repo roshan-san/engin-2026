@@ -2,6 +2,7 @@ import { TEXT } from "@convex/shared/limits";
 import { useRef, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { cycleDates } from "./cycleDates";
 import { useWorkspace } from "./StartupContext";
 import { useCycle } from "./useCycle";
@@ -17,7 +18,11 @@ export function CycleHeader() {
 	const isReverting = useRef(false);
 
 	if (!cycle) {
-		return <div className="min-w-0 flex-1" />;
+		return (
+			<div className="flex min-w-0 flex-1 items-center">
+				<Skeleton className="h-4 w-16" />
+			</div>
+		);
 	}
 
 	const goal = cycle.goal ?? "";

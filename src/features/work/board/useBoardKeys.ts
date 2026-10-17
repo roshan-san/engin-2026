@@ -13,8 +13,9 @@ function tilesIn(root: HTMLElement) {
 
 /**
  * Board shortcuts: C new Card, J/K or Up/Down within a column, Left/Right
- * across columns, Enter opens the focused Card, Esc closes it, V verifies the
- * focused Card or else the open one.
+ * across columns, Enter opens the focused Card, Esc closes it. V verifies the
+ * Card open in the panel; on a focused tile whose Card isn't open, it opens
+ * that Card instead, so nothing is verified unseen.
  */
 export function useBoardKeys({
 	rootRef,
@@ -57,12 +58,14 @@ export function useBoardKeys({
 			const active = document.activeElement;
 
 			if (event.key === "v" || event.key === "V") {
-				const cardId =
-					active?.closest<HTMLElement>("[data-card-id]")?.dataset.cardId ??
-					openCardId;
-				if (cardId) {
+				const focusedId =
+					active?.closest<HTMLElement>("[data-card-id]")?.dataset.cardId;
+				if (focusedId && focusedId !== openCardId) {
 					event.preventDefault();
-					onVerify(cardId);
+					onOpen(focusedId);
+				} else if (openCardId) {
+					event.preventDefault();
+					onVerify(openCardId);
 				}
 				return;
 			}

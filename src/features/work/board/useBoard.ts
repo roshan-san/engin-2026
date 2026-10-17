@@ -87,10 +87,11 @@ export function useBoard(scope: BoardScope) {
 		}
 	}
 
-	/** Founder only, from Review. Resolves `false` when it failed (the error is toasted). */
-	async function verify(cardId: Id<"cards">) {
+	/** Founder only, from Review. Toasts the success; resolves `false` when it failed (the error is toasted). */
+	async function verify(card: Pick<CardView, "_id" | "title">) {
 		try {
-			await verifyCard({ cardId });
+			await verifyCard({ cardId: card._id });
+			toast.success(`Verified · ${card.title}`);
 			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));

@@ -3,9 +3,10 @@ import {
 	DndContext,
 	DragOverlay,
 	KeyboardSensor,
-	PointerSensor,
+	MouseSensor,
 	pointerWithin,
 	rectIntersection,
+	TouchSensor,
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
@@ -13,9 +14,10 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
-import { BoardColumn, type DropState } from "./BoardColumn";
 import { refusalFor } from "../cardRules";
+import { BoardColumn, type DropState } from "./BoardColumn";
 import { useBoardScope } from "./BoardScope";
+import { boardAnnouncements } from "./boardAnnouncements";
 import { CardFace, TILE_CLASS } from "./CardTile";
 import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
 import { NewCardInput } from "./NewCardInput";
@@ -57,7 +59,11 @@ export function Board({
 	const newCardRef = useRef<HTMLTextAreaElement>(null);
 
 	const sensors = useSensors(
-		useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+		useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+		// A short press-and-hold lifts a Card, so a swipe still scrolls the columns.
+		useSensor(TouchSensor, {
+			activationConstraint: { delay: 250, tolerance: 5 },
+		}),
 		useSensor(KeyboardSensor, {
 			// Enter opens a Card, so only Space lifts and drops it.
 			keyboardCodes: {
@@ -73,7 +79,7 @@ export function Board({
 	verifyLatest.current = (cardId) => {
 		const card = cards?.find((c) => c._id === cardId);
 		if (card && refusalFor(card, { kind: "verify" }, scope) === null) {
-			void verify(card._id);
+			void verify(card);
 		}
 	};
 	const onVerify = useCallback(
@@ -98,6 +104,20 @@ export function Board({
 		if (!dragged || dragged.status === column) return "idle";
 		return dropAction(dragged, column, scope) ? "accept" : "refuse";
 	}
+
+	const announcements = boardAnnouncements(
+		(cardId) => cards?.find((card) => card._id === cardId)?.title ?? "a Card",
+		(columnId) =>
+			COLUMNS.find((column) => column.id === columnId)?.label ?? columnId,
+		(cardId, columnId) => {
+			const card = cards?.find((c) => c._id === cardId);
+			return (
+				card !== undefined &&
+				COLUMN_IDS.has(columnId) &&
+				dropAction(card, columnId as Column, scope) !== null
+			);
+		},
+	);
 
 	function handleDragEnd(overId: string | undefined) {
 		setDraggedId(null);
@@ -135,6 +155,7 @@ export function Board({
 		<DndContext
 			sensors={sensors}
 			collisionDetection={collisionDetection}
+			accessibility={{ announcements }}
 			onDragStart={(event) => setDraggedId(String(event.active.id))}
 			onDragEnd={(event) =>
 				handleDragEnd(event.over ? String(event.over.id) : undefined)

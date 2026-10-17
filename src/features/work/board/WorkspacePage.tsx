@@ -75,6 +75,7 @@ export function WorkspacePage() {
 				/>
 			}
 		>
+			<h1 className="sr-only">Board</h1>
 			<Board
 				openCardId={cardId}
 				onShip={setShipping}

@@ -73,11 +73,13 @@ export function CardTile({
 			data-card-id={card._id}
 			aria-current={isOpen ? "true" : undefined}
 			{...attributes}
+			// Done Cards can't be dragged but still open, so they aren't "disabled".
+			aria-disabled={false}
 			{...listeners}
 			onClick={() => onOpen(card._id)}
 			className={cn(
 				TILE_CLASS,
-				"shrink-0 cursor-pointer transition-colors select-none hover:border-input focus-ring",
+				"shrink-0 cursor-pointer transition-colors select-none [-webkit-touch-callout:none] hover:border-input focus-ring",
 				// Done is this week's record: quieter, an outline rather than a tile.
 				card.status === "done" && "bg-transparent",
 				isOpen && "border-foreground/30 bg-accent/60",

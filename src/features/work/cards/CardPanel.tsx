@@ -1,7 +1,13 @@
 import type { CardAction } from "@convex/shared/cardRules";
 import { TEXT } from "@convex/shared/limits";
 import { ChevronLeftIcon, MoreHorizontalIcon, XIcon } from "lucide-react";
-import { type ReactNode, useRef, useState } from "react";
+import {
+	type ReactNode,
+	type RefObject,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { Kbd } from "~/components/Kbd";
 import { PanelBody } from "~/components/PanelBody";
 import { PanelHeader } from "~/components/PanelHeader";
@@ -98,6 +104,51 @@ export function CardPanel({
 	return <OpenCard card={card} onShip={onShip} {...panel} />;
 }
 
+/**
+ * Keyboard focus around the open Card. Opened from a keyboard-focused tile
+ * (Enter), focus moves to the title so you can edit at once. When the panel
+ * goes (Esc, Back, close, delete) and focus has nowhere left to be, it returns
+ * to that Card's tile, or its column when the Card is gone.
+ */
+function useCardFocus(
+	card: CardView,
+	titleRef: RefObject<HTMLElement | null>,
+	isDeleting: RefObject<boolean>,
+) {
+	const columnRef = useRef(card.status);
+	columnRef.current = card.status;
+	const isMounted = useRef(false);
+
+	useEffect(() => {
+		isMounted.current = true;
+		const tile = document.activeElement;
+		if (
+			tile instanceof HTMLElement &&
+			tile.dataset.cardId === card._id &&
+			tile.matches(":focus-visible")
+		) {
+			titleRef.current?.focus();
+		}
+		return () => {
+			isMounted.current = false;
+			// After this render and any dialog's own focus return have settled.
+			setTimeout(() => {
+				if (isMounted.current || document.activeElement !== document.body) {
+					return;
+				}
+				// A deleted Card's tile is about to go, so land on its column.
+				const tile = isDeleting.current
+					? null
+					: document.querySelector<HTMLElement>(`[data-card-id="${card._id}"]`);
+				const column = document.querySelector<HTMLElement>(
+					`[data-column="${columnRef.current}"]`,
+				);
+				(tile ?? column)?.focus();
+			}, 0);
+		};
+	}, [card._id, titleRef, isDeleting]);
+}
+
 /** Back to Threads on the left; the Card's menu and, on a phone, close on the right. */
 function CardHeader({
 	backLabel,
@@ -149,6 +200,8 @@ function OpenCard({
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [isVerifying, setIsVerifying] = useState(false);
 	const isDeleting = useRef(false);
+	const titleRef = useRef<HTMLTextAreaElement>(null);
+	useCardFocus(card, titleRef, isDeleting);
 
 	const can = (action: CardAction) => refusalFor(card, action, scope) === null;
 	const columns = COLUMNS.filter(
@@ -170,7 +223,7 @@ function OpenCard({
 
 	async function handleVerify() {
 		setIsVerifying(true);
-		await verify(card._id);
+		await verify(card);
 		setIsVerifying(false);
 	}
 
@@ -196,6 +249,7 @@ function OpenCard({
 			<PanelBody className="pb-6">
 				<TitleField
 					card={card}
+					inputRef={titleRef}
 					isLocked={!can({ kind: "retitle" })}
 					onSave={update}
 				/>
@@ -319,10 +373,12 @@ function OpenCard({
 /** The title, edited in place; saves on blur or Enter, Esc undoes. Wraps, but stays one line. */
 function TitleField({
 	card,
+	inputRef,
 	isLocked,
 	onSave,
 }: {
 	readonly card: CardView;
+	readonly inputRef: RefObject<HTMLTextAreaElement | null>;
 	readonly isLocked: boolean;
 	readonly onSave: (
 		cardId: CardView["_id"],
@@ -357,6 +413,7 @@ function TitleField({
 
 	return (
 		<Textarea
+			ref={inputRef}
 			aria-label="Title"
 			rows={1}
 			value={draft}
