@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowRight, Compass, Plus } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { AppPage } from "~/components/AppPage";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { PlaceLogo } from "~/components/PlaceLogo";
@@ -17,6 +17,8 @@ import { isWaiting, type Places, reasonLine } from "~/shell/places";
 import { useMe } from "~/shell/useMe";
 import { usePlaces } from "~/shell/usePlaces";
 import { greeting } from "./greeting";
+import { HomeInvites } from "./HomeInvites";
+import { homeIntent } from "./homeIntent";
 import { homeSections } from "./homeSections";
 
 const CARD = `${TILE_LINK} flex flex-col gap-3`;
@@ -25,6 +27,26 @@ const CARD = `${TILE_LINK} flex flex-col gap-3`;
 export function HomePage() {
 	const places = usePlaces();
 	const me = useMe();
+	const { intent } = useSearch({ from: "/_shell/_authed/home" });
+	const navigate = useNavigate();
+	const redirected = useRef(false);
+	const target = homeIntent(intent, places);
+
+	useEffect(() => {
+		if (target === null || redirected.current) {
+			return;
+		}
+		redirected.current = true;
+		if (target.to === "/onboarding") {
+			void navigate({ to: "/onboarding", replace: true });
+		} else {
+			void navigate({
+				to: target.to,
+				params: { slug: target.slug },
+				replace: true,
+			});
+		}
+	}, [target, navigate]);
 
 	if (places === undefined || me === undefined) {
 		return <GlobalSpinner fill />;
@@ -42,6 +64,7 @@ export function HomePage() {
 				),
 			}}
 		>
+			<HomeInvites />
 			{welcome ? <TwoWaysIn /> : <YourPlaces places={places} now={now} />}
 			{applications ? <Applications applied={places.applied} /> : null}
 		</AppPage>
