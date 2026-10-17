@@ -1,5 +1,6 @@
 import { PanelBody } from "~/components/PanelBody";
 import { PanelHeader } from "~/components/PanelHeader";
+import { Section } from "~/components/Section";
 import { Skeleton } from "~/components/ui/skeleton";
 import { RecordSignals } from "./RecordSignals";
 import type { SignalsView } from "./record";
@@ -25,16 +26,13 @@ export function RecordPanel({
 						<Skeleton className="mt-6 h-7 w-full" />
 					</div>
 				)}
-				<section className="flex flex-col gap-2 border-t border-border pt-6">
-					<h2 className="text-xs leading-5 font-semibold text-muted-foreground">
-						Who sees what
-					</h2>
+				<Section label="Who sees what">
 					<p className="text-xs leading-5 text-muted-foreground">
 						Anyone sees the Rating, rhythm, how many shipped each Cycle,
-						Hackathons and Hires. Card titles, what shipped and proof stay with
-						the team and Investor Pro.
+						Hackathons and Hires. Card titles, What shipped, links and images
+						stay with the team and Investor Pro.
 					</p>
-				</section>
+				</Section>
 			</PanelBody>
 		</div>
 	);

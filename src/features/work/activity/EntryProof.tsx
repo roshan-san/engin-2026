@@ -46,17 +46,18 @@ export function EntryProof({
 							: "flex flex-wrap gap-2",
 					)}
 				>
-					{card.imageUrls.map((url) => (
+					{card.imageUrls.map((url, index) => (
 						<li key={url}>
 							<a
 								href={url}
+								aria-label={`Image ${index + 1} of What shipped`}
 								target="_blank"
 								rel="noreferrer noopener"
 								className="block overflow-hidden rounded-md border border-border transition-opacity hover:opacity-85"
 							>
 								<img
 									src={url}
-									alt="Proof"
+									alt=""
 									className={cn(
 										"object-cover",
 										size === "panel" ? "aspect-4/3 w-full" : "size-24",

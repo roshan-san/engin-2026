@@ -1,6 +1,7 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { AppPage, PageTitle } from "~/components/AppPage";
 import { DetailPanel } from "~/components/DetailPanel";
 import { Button } from "~/components/ui/button";
@@ -19,7 +20,7 @@ import { useSignals } from "./useSignals";
 
 const activityRoute = getRouteApi("/_shell/_authed/s/$slug/activity");
 
-/** The team's Record: every Cycle, beside the Rating or an open entry's proof. */
+/** The team's Record: every Cycle, beside the Rating or an open entry's What shipped. */
 export function ActivityPage() {
 	const { startup } = useWorkspace();
 	const signals = useSignals(startup.slug);
@@ -31,6 +32,20 @@ export function ActivityPage() {
 	function select(id: string | undefined) {
 		void navigate({ search: (prev) => ({ ...prev, entry: id }) });
 	}
+
+	// A link to a Card outside the loaded Cycles clears itself and says why.
+	// Only once loading is done, so a slow load never clears a good link.
+	const loaded = data !== undefined && !isLoadingEarlier;
+	useEffect(() => {
+		if (!loaded || !entryId || open) return;
+		void navigate({
+			search: (prev) => ({ ...prev, entry: undefined }),
+			replace: true,
+		});
+		toast("That Card is in an earlier Cycle. Show earlier to find it.", {
+			id: "stale-entry",
+		});
+	}, [loaded, entryId, open, navigate]);
 
 	const panel = useDetailPanel(open !== null, () => select(undefined));
 	const isMobile = panel.isMobile;
@@ -91,7 +106,7 @@ export function ActivityPage() {
 				<DetailPanel
 					shows={panel.shows}
 					title="What shipped"
-					description="The Card's proof."
+					description="What the Card shipped."
 					onClose={panel.close}
 					item={
 						open ? (
