@@ -79,11 +79,14 @@ export function useBoard(scope: BoardScope) {
 		}
 	}
 
+	/** Resolves `false` when it failed (the error is toasted). */
 	async function move(cardId: Id<"cards">, to: "todo" | "in_progress") {
 		try {
 			await moveOptimistically({ cardId, to });
+			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));
+			return false;
 		}
 	}
 

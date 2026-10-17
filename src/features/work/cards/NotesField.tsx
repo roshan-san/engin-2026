@@ -1,5 +1,5 @@
 import { TEXT } from "@convex/shared/limits";
-import { type RefObject, useEffect, useRef } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
 import { Textarea } from "~/components/ui/textarea";
 import { PersonName } from "~/features/people/PersonName";
@@ -15,16 +15,22 @@ export function NotesField({
 	onSave,
 	isReadOnly = false,
 	isDiscarded,
+	inputRef,
 }: {
 	readonly card: CardView;
 	/** Shows the notes as text: nothing can change them any more. */
 	readonly isReadOnly?: boolean;
 	/** True while the Card is being deleted: nothing more is saved. */
 	readonly isDiscarded: RefObject<boolean>;
+	/** The field itself, so the panel can move focus to it. */
+	readonly inputRef?: RefObject<HTMLTextAreaElement | null>;
 	readonly onSave: (notes: string) => Promise<boolean>;
 }) {
 	const { draft, setDraft, setIsFocused, expect, settle } = useDraft(
 		card.notes,
+	);
+	const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">(
+		"idle",
 	);
 	const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const latest = useRef({ draft, saved: card.notes, onSave });
@@ -38,8 +44,10 @@ export function NotesField({
 		if (next === saved) return;
 
 		expect(next);
-		await send(next);
+		setSaveState("saving");
+		const isSaved = await send(next);
 		settle();
+		setSaveState(isSaved ? "saved" : "idle");
 	}
 
 	// Leaving the Card with a change still waiting: save it.
@@ -68,6 +76,7 @@ export function NotesField({
 	return (
 		<div className="flex flex-col gap-1.5">
 			<Textarea
+				ref={inputRef}
 				aria-label="Notes"
 				placeholder="Add notes"
 				value={draft}
@@ -75,6 +84,7 @@ export function NotesField({
 				className="min-h-24"
 				onChange={(e) => {
 					setDraft(e.target.value);
+					setSaveState("idle");
 					clearTimeout(timer.current);
 					timer.current = setTimeout(() => void save(), IDLE_MS);
 				}}
@@ -84,6 +94,13 @@ export function NotesField({
 					void save();
 				}}
 			/>
+			<div role="status">
+				{saveState === "idle" ? null : (
+					<MentorNote>
+						{saveState === "saving" ? "Saving…" : "Saved"}
+					</MentorNote>
+				)}
+			</div>
 			{edited}
 		</div>
 	);

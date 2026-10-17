@@ -27,6 +27,7 @@ import { useBoardScope } from "../board/BoardScope";
 import { isSendKey } from "../board/keys";
 import type { CardView } from "../board/types";
 import { landsIn } from "../cardRules";
+import { parseLink, shipMissing } from "./shipReady";
 import { useSubmit } from "./useSubmit";
 
 type Picture = {
@@ -35,19 +36,6 @@ type Picture = {
 	/** `null` while the file is still uploading. */
 	readonly storageId: Id<"_storage"> | null;
 };
-
-/** The link in `text` when it's an http(s) URL, else `null`. */
-function parseLink(text: string): string | null {
-	const trimmed = text.trim();
-	try {
-		const url = new URL(trimmed);
-		return url.protocol === "http:" || url.protocol === "https:"
-			? trimmed
-			: null;
-	} catch {
-		return null;
-	}
-}
 
 /** What shipped: a line plus proof. The Card moves only once this is submitted. */
 export function ShipDialog({
@@ -74,9 +62,13 @@ export function ShipDialog({
 	const isUploading = pictures.some((picture) => picture.storageId === null);
 	// Closing mid-send or mid-upload would lose the proof and orphan its files.
 	const isBusy = isUploading || isSubmitting;
-	const hasProof = links.length > 0 || pictures.length > 0;
-	const canSubmit =
-		line.trim().length > 0 && hasProof && !isUploading && !isSubmitting;
+	const missing = shipMissing({
+		line,
+		links,
+		images: pictures.length,
+		linkText,
+	});
+	const canSubmit = missing === null && !isUploading && !isSubmitting;
 
 	// Thumbnails hold object URLs; free them when the dialog goes.
 	useEffect(
@@ -137,9 +129,11 @@ export function ShipDialog({
 		if (!canSubmit) return;
 		setIsSubmitting(true);
 		const images = pictures.flatMap((p) => (p.storageId ? [p.storageId] : []));
+		// A link typed but never added still ships.
+		const typed = parseLink(linkText);
 		const isSubmitted = await submit(card._id, {
 			line: line.trim(),
-			links,
+			links: typed && !links.includes(typed) ? [...links, typed] : links,
 			images,
 		});
 		if (isSubmitted) {
@@ -204,13 +198,13 @@ export function ShipDialog({
 								<Badge
 									key={link}
 									variant="outline"
-									className="max-w-full gap-1"
+									className="max-w-full gap-1 py-0 pr-0"
 								>
 									<span className="truncate">{link}</span>
 									<button
 										type="button"
 										aria-label={`Remove ${link}`}
-										className="rounded-full hover:text-foreground"
+										className="flex size-8 shrink-0 items-center justify-center rounded-full hover:text-foreground focus-ring"
 										onClick={() => setLinks(links.filter((l) => l !== link))}
 									>
 										<XIcon />
@@ -265,10 +259,12 @@ export function ShipDialog({
 									<button
 										type="button"
 										aria-label="Remove image"
-										className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 hover:bg-background"
+										className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full focus-ring"
 										onClick={() => removePicture(picture)}
 									>
-										<XIcon className="size-3" />
+										<span className="rounded-full bg-background/80 p-0.5">
+											<XIcon className="size-3" />
+										</span>
 									</button>
 								</li>
 							))}
@@ -299,7 +295,14 @@ export function ShipDialog({
 					</div>
 				</div>
 
-				<DialogFooter>
+				<DialogFooter className="sm:items-center">
+					{missing ? (
+						<MentorNote>
+							{missing === "line"
+								? "Add what shipped"
+								: "Add a link or an image"}
+						</MentorNote>
+					) : null}
 					<Button disabled={!canSubmit} onClick={() => void handleSubmit()}>
 						{isBusy ? <Spinner /> : null}
 						{marksDone ? "Mark done" : "Submit"}

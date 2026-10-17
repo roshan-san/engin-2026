@@ -199,6 +199,8 @@ function OpenCard({
 	const { update, remove } = useCardActions();
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [isVerifying, setIsVerifying] = useState(false);
+	const [isSendingBack, setIsSendingBack] = useState(false);
+	const notesRef = useRef<HTMLTextAreaElement>(null);
 	const isDeleting = useRef(false);
 	const panelRef = useRef<HTMLDivElement>(null);
 	useCardFocus(card, panelRef, isDeleting);
@@ -211,6 +213,8 @@ function OpenCard({
 	const current = COLUMNS.find((column) => column.id === card.status);
 	const canDelete = can({ kind: "delete" });
 	const canVerify = can({ kind: "verify" });
+	const canSendBack =
+		card.status === "review" && can({ kind: "move", to: "in_progress" });
 
 	function changeColumn(to: Column) {
 		const action = dropAction(card, to, scope);
@@ -226,6 +230,22 @@ function OpenCard({
 		await verify(card);
 		setIsVerifying(false);
 	}
+
+	async function handleSendBack() {
+		setIsSendingBack(true);
+		const isSent = await move(card._id, "in_progress");
+		setIsSendingBack(false);
+		// The Founder says what to change, in Notes.
+		if (isSent) notesRef.current?.focus();
+	}
+
+	// Reviewing: the work comes first, then the Founder's notes on it.
+	const isReviewing = card.status === "review" && canVerify;
+	const shipped = card.shipped ? (
+		<Section label="What shipped" as="h3">
+			<ShippedView card={card} />
+		</Section>
+	) : null;
 
 	return (
 		<div
@@ -312,27 +332,36 @@ function OpenCard({
 					</Badge>
 				) : null}
 
+				{isReviewing ? shipped : null}
+
 				<Section label="Notes" as="h3">
 					<NotesField
 						card={card}
+						inputRef={notesRef}
 						isReadOnly={!can({ kind: "editNotes" })}
 						isDiscarded={isDeleting}
 						onSave={(notes) => update(card._id, { notes })}
 					/>
 				</Section>
 
-				{card.shipped ? (
-					<Section label="What shipped" as="h3">
-						<ShippedView card={card} />
-					</Section>
-				) : null}
+				{isReviewing ? null : shipped}
 			</PanelBody>
 
 			{canVerify ? (
-				<div className="shrink-0 border-t border-border p-3">
+				<div className="flex shrink-0 gap-2 border-t border-border p-3">
+					{canSendBack ? (
+						<Button
+							variant="outline"
+							disabled={isSendingBack || isVerifying}
+							onClick={() => void handleSendBack()}
+						>
+							{isSendingBack ? <Spinner /> : null}
+							Send back
+						</Button>
+					) : null}
 					<Button
-						className="w-full"
-						disabled={isVerifying}
+						className="flex-1"
+						disabled={isVerifying || isSendingBack}
 						onClick={() => void handleVerify()}
 					>
 						{isVerifying ? <Spinner /> : null}

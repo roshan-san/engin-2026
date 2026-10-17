@@ -28,9 +28,14 @@ export function ShippedView({ card }: { readonly card: CardView }) {
 			) : null}
 			{shipped.imageUrls.length > 0 ? (
 				<ul className="flex flex-wrap gap-2">
-					{shipped.imageUrls.map((url) => (
+					{shipped.imageUrls.map((url, index) => (
 						<li key={url}>
-							<a href={url} target="_blank" rel="noreferrer noopener">
+							<a
+								href={url}
+								target="_blank"
+								rel="noreferrer noopener"
+								aria-label={`Image ${index + 1} of What shipped`}
+							>
 								<img
 									src={url}
 									alt=""
