@@ -68,7 +68,7 @@ export function EntryPanel({
 						<Section label="Card" as="h3">
 							<p className="text-sm break-words">{card.title}</p>
 						</Section>
-						<Section label="Proof" as="h3">
+						<Section label="What shipped" as="h3">
 							<EntryProof entry={entry} card={card} size="panel" />
 						</Section>
 					</>
