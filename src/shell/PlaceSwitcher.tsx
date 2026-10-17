@@ -21,6 +21,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Skeleton } from "~/components/ui/skeleton";
 import { roleLabel } from "~/features/hiring/jobChips";
+import { participantStatusText } from "~/features/hiring/participant/participantStatus";
 import { cn } from "~/lib/utils";
 import {
 	type CurrentPlace,
@@ -29,7 +30,6 @@ import {
 	isSamePlace,
 	othersWaiting,
 	placeHint,
-	switcherPhaseText,
 } from "~/shell/places";
 import { usePlaces } from "~/shell/usePlaces";
 
@@ -150,7 +150,7 @@ export function PlaceSwitcher({
 						) : null}
 						{shown?.hackathons.length ? (
 							<>
-								<SectionLabel>Hackathons</SectionLabel>
+								<SectionLabel>Your Hackathons</SectionLabel>
 								{shown.hackathons.map((hackathon) => (
 									<PlaceRow
 										key={hackathon.hackathonId}
@@ -162,7 +162,7 @@ export function PlaceSwitcher({
 										logoName={hackathon.startupName}
 										logoUrl={hackathon.startupLogoUrl}
 										waiting={hackathon.waiting}
-										who={`${hackathon.startupName} · ${switcherPhaseText(hackathon, Date.now())}`}
+										who={`${hackathon.startupName} · ${participantStatusText(hackathon, hackathon.decision, Date.now())}`}
 										isCurrent={isSamePlace(
 											{
 												kind: "hackathon",

@@ -1,5 +1,4 @@
 import type { api } from "@convex/_generated/api";
-import { type HackathonPhase, phaseOf } from "@convex/shared/hackathonPhase";
 import type { WaitingReason } from "@convex/shared/places";
 import type { FunctionReturnType } from "convex/server";
 import { roleLabel } from "~/features/hiring/jobChips";
@@ -145,28 +144,6 @@ export function placeHint(
 	return rest.length
 		? `${reasonLine(first)} · +${rest.length} more`
 		: reasonLine(first);
-}
-
-/** Where a Participant's Hackathon is, in a word, for the place switcher. */
-export function switcherPhaseText(
-	hackathon: {
-		readonly status: HackathonPhase;
-		readonly endsAt: number;
-		readonly decision: "hired" | "not_this_time" | null;
-	},
-	now: number,
-): string {
-	switch (phaseOf(hackathon, now)) {
-		case "draft":
-		case "open":
-			return "Starts soon";
-		case "live":
-			return "Live";
-		case "deciding":
-			return "Founder deciding";
-		case "done":
-			return hackathon.decision === "hired" ? "Hired" : "Finished";
-	}
 }
 
 /** Places whose name matches the search; blank keeps all. */

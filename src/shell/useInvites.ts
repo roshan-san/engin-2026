@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 
-/** Your open Invites, with Join and Decline. Failures are toasted and resolve `false`. */
+/** Your open Invites, with Join and Decline. Failures are toasted and resolve `false`; a Decline that went through says so. */
 export function useInvites() {
 	const invites = useQuery(api.startups.invites.listMine, {});
 	const acceptInvite = useMutation(api.startups.invites.accept);
@@ -23,7 +23,17 @@ export function useInvites() {
 	return {
 		invites,
 		join: (inviteId: Id<"invites">) => run(() => acceptInvite({ inviteId })),
-		decline: (inviteId: Id<"invites">) =>
-			run(() => declineInvite({ inviteId })),
+		decline: async (inviteId: Id<"invites">) => {
+			const startupName = invites?.find(
+				(invite) => invite.inviteId === inviteId,
+			)?.startupName;
+			const declined = await run(() => declineInvite({ inviteId }));
+			if (declined) {
+				toast.success(
+					startupName ? `Declined ${startupName}'s invite` : "Declined invite",
+				);
+			}
+			return declined;
+		},
 	};
 }

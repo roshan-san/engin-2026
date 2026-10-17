@@ -1,7 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import type { WaitingReason } from "@convex/shared/places";
 import { describe, expect, it } from "vitest";
-import { participantStatusText } from "~/features/hiring/participant/participantStatus";
 import {
 	canSeeSettings,
 	currentPlaceView,
@@ -13,7 +12,6 @@ import {
 	placeFromRoute,
 	placeHint,
 	reasonLine,
-	switcherPhaseText,
 	tabsForSignedOut,
 	tabsFromRoute,
 } from "./places";
@@ -222,31 +220,6 @@ describe("placeHint", () => {
 				"Founder",
 			),
 		).toBe("Unread team messages · +1 more");
-	});
-});
-
-describe("switcherPhaseText", () => {
-	const endsAt = 1_000;
-
-	it.each([
-		["open", null, "Starts soon"],
-		["live", null, "Live"],
-		["deciding", null, "Founder deciding"],
-		["done", "hired", "Hired"],
-		["done", "not_this_time", "Finished"],
-	] as const)("%s (%s) reads %s", (status, decision, phase) => {
-		expect(switcherPhaseText({ status, endsAt, decision }, 0)).toBe(phase);
-	});
-
-	it("agrees with the tab row once a Live Hackathon has ended", () => {
-		const hackathon = {
-			status: "live" as const,
-			startsAt: 0,
-			endsAt,
-			decision: null,
-		};
-		expect(switcherPhaseText(hackathon, endsAt)).toBe("Founder deciding");
-		expect(participantStatusText(hackathon, null, endsAt)).toBe("Deciding");
 	});
 });
 

@@ -15,6 +15,7 @@ export function InviteTray() {
 	const { invites, join, decline } = useInvites();
 	const navigate = useNavigate();
 	const [answering, setAnswering] = useState<Id<"invites"> | null>(null);
+	const [open, setOpen] = useState(false);
 
 	if (!invites || invites.length === 0) {
 		return null;
@@ -34,10 +35,10 @@ export function InviteTray() {
 	}
 
 	return (
-		<Popover>
+		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger
-				aria-label="Invites"
-				className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted focus-ring"
+				aria-label={`Invites, ${invites.length}`}
+				className="flex h-9 min-w-9 shrink-0 items-center justify-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted focus-ring md:h-8 md:min-w-8"
 			>
 				<Mail aria-hidden className="size-4" />
 				{invites.length}
@@ -70,6 +71,7 @@ export function InviteTray() {
 								if (
 									await answer(invite.inviteId, () => join(invite.inviteId))
 								) {
+									setOpen(false);
 									await navigate({
 										to: "/s/$slug/board",
 										params: { slug: invite.slug },

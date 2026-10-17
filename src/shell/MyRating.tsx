@@ -14,7 +14,7 @@ export function MyRating() {
 			params={{ username: me.username }}
 			aria-label={`Your Rating, ${me.rating}`}
 			className={cn(
-				"flex h-8 shrink-0 items-center rounded-md px-2 text-sm font-semibold tabular-nums transition-colors hover:bg-muted focus-ring",
+				"flex h-9 min-w-9 shrink-0 items-center justify-center rounded-md px-2 text-sm font-semibold tabular-nums transition-colors hover:bg-muted focus-ring md:h-8 md:min-w-8",
 				tierText(me.rating),
 			)}
 		>

@@ -1,6 +1,7 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
-import { Navigate, Outlet } from "@tanstack/react-router";
+import { Outlet } from "@tanstack/react-router";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { SignInCard } from "~/features/people/auth/SignInCard";
 import { AppShell } from "~/shell/AppShell";
 import { PublicShell } from "~/shell/PublicShell";
 
@@ -27,12 +28,22 @@ export function ShellLayout() {
 	);
 }
 
-/** Gates sign-in-only screens. Sign-in lives on the landing page. */
+/** Gates sign-in-only screens. Signed out, a deep link shows a sign-in card in place and Sign in comes back to it. */
 export function AuthedLayout() {
-	const { isAuthenticated } = useConvexAuth();
+	const { isLoading, isAuthenticated } = useConvexAuth();
+
+	if (isLoading) {
+		return <GlobalSpinner />;
+	}
 
 	if (!isAuthenticated) {
-		return <Navigate to="/" replace />;
+		return (
+			<div className="flex flex-1 items-center justify-center px-4 py-10">
+				<div className="w-full max-w-sm">
+					<SignInCard>Sign in to see this page.</SignInCard>
+				</div>
+			</div>
+		);
 	}
 
 	return <Outlet />;

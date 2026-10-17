@@ -25,7 +25,7 @@ export function TopBar() {
 				<Link
 					to="/explore"
 					aria-label="Explore"
-					className="flex h-8 shrink-0 items-center rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted focus-ring aria-[current=page]:text-foreground"
+					className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-md px-2 text-sm md:h-8 md:min-w-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted focus-ring aria-[current=page]:text-foreground"
 				>
 					<Compass aria-hidden className="size-4 md:hidden" />
 					<span className="hidden md:inline">Explore</span>
