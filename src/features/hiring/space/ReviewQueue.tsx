@@ -68,7 +68,9 @@ export function ReviewQueue({
 		);
 	}
 	if (queue.length === 0) {
-		return (
+		return founder.phase === "done" ? (
+			<EmptyState title="Nothing waiting. This Hackathon is done." />
+		) : (
 			<EmptyState
 				title="Nothing to review."
 				body="Cards land here when a Participant ships them."
@@ -105,15 +107,26 @@ export function ReviewQueue({
 									>
 										{card.title}
 									</button>
-									{!canVerify(card) ? null : (
+									<div className="ml-auto flex shrink-0 items-center gap-2">
 										<Button
+											variant="outline"
 											size="sm"
-											className="ml-auto shrink-0"
-											onClick={() => void verify(card._id)}
+											onClick={() =>
+												card.owner && onOpen(card.owner._id, card._id)
+											}
 										>
-											Verify
+											Open
 										</Button>
-									)}
+										{canVerify(card) ? (
+											<Button size="sm" onClick={() => void verify(card._id)}>
+												Verify
+											</Button>
+										) : (
+											<span className="text-xs text-muted-foreground">
+												Closed
+											</span>
+										)}
+									</div>
 								</header>
 								<ShippedView card={card} />
 							</article>

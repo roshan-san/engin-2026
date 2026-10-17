@@ -57,6 +57,8 @@ export function ParticipantView({
 	const navigate = route.useNavigate();
 	const participantId = row.user._id;
 	const phase = phaseOf(hackathon, Date.now());
+	// Deciding is the job now, so Decide leads on a phone until they're decided.
+	const isDeciding = phase === "deciding" && !row.application.decision;
 
 	const scope = useMemo<BoardScope>(
 		() => ({
@@ -118,12 +120,15 @@ export function ParticipantView({
 					<PanelHeader className="gap-3 md:px-6">
 						<ParticipantHeader row={row} hackathon={hackathon} />
 						<Button
-							variant="ghost"
+							variant={isDeciding ? "default" : "ghost"}
 							size="sm"
 							className="ml-auto md:hidden"
-							onClick={detail.open}
+							onClick={() => {
+								if (isDeciding) setPane("decide");
+								detail.open();
+							}}
 						>
-							Thread and Decide
+							{isDeciding ? "Decide" : "Thread and Decide"}
 							{isThreadUnread ? <UnreadDot /> : null}
 						</Button>
 					</PanelHeader>

@@ -2,6 +2,7 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
+import { EmptyState } from "~/components/EmptyState";
 import { UnreadDot } from "~/components/UnreadDot";
 import {
 	Select,
@@ -16,6 +17,7 @@ import { useWorkspace } from "~/features/work/board/StartupContext";
 import { cn } from "~/lib/utils";
 import { EveryonePanel } from "./EveryonePanel";
 import { ParticipantView } from "./ParticipantView";
+import { participantOptionLabel } from "./participantOptionLabel";
 import { ReviewQueue } from "./ReviewQueue";
 import {
 	resolveView,
@@ -74,9 +76,17 @@ export function RunningView({
 		{ value: "everyone", label: "# Everyone" },
 		...items.participants.map((participant) => ({
 			value: participant.userId,
-			label: participant.name,
+			label: participantOptionLabel(participant),
 		})),
 	];
+
+	// Only a Hackathon that finished with nobody accepted gets here empty: removing a
+	// Participant is a Screening-only action, and goLive ends it at the start otherwise.
+	if (applicants !== undefined && participants.length === 0 && isClosed) {
+		return (
+			<EmptyState title="Nobody was accepted, so this Hackathon ended when it was due to start." />
+		);
+	}
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col md:flex-row">

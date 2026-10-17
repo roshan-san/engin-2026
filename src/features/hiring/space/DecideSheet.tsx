@@ -40,6 +40,8 @@ export function DecideSheet({
 	const [confirming, setConfirming] = useState<Decision | null>(null);
 	const state = decideState(application, hackathon, Date.now());
 	const name = user.name ?? user.username ?? "them";
+	const firstName = name.split(/\s+/)[0];
+	const note = feedback.trim();
 
 	if (state.decided) {
 		return (
@@ -129,6 +131,7 @@ export function DecideSheet({
 						<>
 							<MentorNote>
 								Due {dayLabel(lastDay(hackathon.decideBy))}. They see your note.
+								Anyone left undecided by then stays undecided.
 							</MentorNote>
 							<Input
 								aria-label="Note for them"
@@ -180,10 +183,16 @@ export function DecideSheet({
 								? `Hire ${name}?`
 								: `Tell ${name} not this time?`}
 						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{confirming === "hired"
-								? "They get an Invite to join."
-								: "They see your note."}
+						<AlertDialogDescription className="flex flex-col gap-1">
+							<span>
+								{confirming === "hired"
+									? "They get an Invite to join."
+									: "They see your note."}
+							</span>
+							<span className="break-words">
+								{note ? `Your note: “${note}”` : "No note"}
+							</span>
+							<span>This can't be changed.</span>
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -193,7 +202,9 @@ export function DecideSheet({
 								if (confirming) void decide(confirming, feedback);
 							}}
 						>
-							Confirm
+							{confirming === "hired"
+								? `Hire ${firstName}`
+								: "Send Not this time"}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
