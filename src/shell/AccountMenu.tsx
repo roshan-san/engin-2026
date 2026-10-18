@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import {
 	DropdownMenu,
@@ -16,6 +16,15 @@ export function AccountMenu() {
 	const { signOut } = useAuthActions();
 	const me = useMe();
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const navigate = useNavigate();
+	const router = useRouter();
+
+	// Leave first, so you land on the landing page and a page with unsaved work can ask.
+	async function handleSignOut() {
+		await navigate({ to: "/" });
+		if (router.state.location.pathname !== "/") return;
+		await signOut();
+	}
 
 	return (
 		<>
@@ -47,7 +56,7 @@ export function AccountMenu() {
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="cursor-pointer"
-						onClick={() => void signOut()}
+						onClick={() => void handleSignOut()}
 					>
 						Sign out
 					</DropdownMenuItem>
