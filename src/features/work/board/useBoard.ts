@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 import { type BoardScope, boardQuery } from "./BoardScope";
 import type { CardView } from "./types";
+import { verifiedLocally } from "./verifiedLocally";
 
 /** Rewrites the scope's cached Cards, for optimistic updates. */
 export function patchBoardCards(
@@ -66,6 +67,15 @@ export function useBoard(scope: BoardScope) {
 			}),
 		[moveCard, scope],
 	);
+	const verifyOptimistically = useMemo(
+		() =>
+			verifyCard.withOptimisticUpdate((store, args) => {
+				patchBoardCards(store, scope, (current) =>
+					verifiedLocally(current, args.cardId, Date.now()),
+				);
+			}),
+		[verifyCard, scope],
+	);
 
 	/** Resolves `false` when the Card wasn't created (the error is toasted). */
 	async function create(title: string) {
@@ -93,7 +103,7 @@ export function useBoard(scope: BoardScope) {
 	/** Founder only, from Review. Toasts the success; resolves `false` when it failed (the error is toasted). */
 	async function verify(card: Pick<CardView, "_id" | "title">) {
 		try {
-			await verifyCard({ cardId: card._id });
+			await verifyOptimistically({ cardId: card._id });
 			toast.success(`Verified · ${card.title}`);
 			return true;
 		} catch (error) {

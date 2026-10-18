@@ -58,6 +58,8 @@ export function useBoardKeys({
 			const active = document.activeElement;
 
 			if (event.key === "v" || event.key === "V") {
+				// Holding V would open a Card and then verify it unseen.
+				if (event.repeat) return;
 				const focusedId =
 					active?.closest<HTMLElement>("[data-card-id]")?.dataset.cardId;
 				if (focusedId && focusedId !== openCardId) {
