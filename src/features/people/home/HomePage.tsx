@@ -48,7 +48,8 @@ export function HomePage() {
 		}
 	}, [target, navigate]);
 
-	if (places === undefined || me === undefined) {
+	// A pending redirect shows the spinner too, so Home doesn't flash first.
+	if (places === undefined || me === undefined || target !== null) {
 		return <GlobalSpinner fill />;
 	}
 	const now = Date.now();
