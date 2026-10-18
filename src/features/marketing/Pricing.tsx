@@ -25,12 +25,7 @@ export function Pricing() {
 						Board, Cycles, What shipped, team chat, public Startup page.
 						Unlimited people.
 					</p>
-					<GoogleButton
-						label="Get started"
-						size="sm"
-						className="mt-auto"
-						returnTo={POST_INTENT_PATH}
-					/>
+					<GoogleButton label="Get started" size="sm" className="mt-auto" />
 				</div>
 				{planLines().map((plan) => (
 					<div
