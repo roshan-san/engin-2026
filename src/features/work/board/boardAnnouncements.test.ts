@@ -10,12 +10,13 @@ const titles: Record<string, string> = { c1: "Fix login" };
 const labels: Record<string, string> = { review: "Review", todo: "To do" };
 
 function announcements(
-	isAccepted: (cardId: string, columnId: string) => boolean = () => true,
+	dropOf: (cardId: string, columnId: string) => "move" | "ship" | null = () =>
+		"move",
 ) {
 	return boardAnnouncements(
 		(id) => titles[id] ?? "a Card",
 		(id) => labels[id] ?? id,
-		isAccepted,
+		dropOf,
 	);
 }
 
@@ -46,6 +47,15 @@ describe("the Board's screen-reader announcements", () => {
 		).toBe("Fix login moved to Review");
 	});
 
+	it("asks for what shipped when the drop on Review opens What shipped, instead of saying it moved", () => {
+		expect(
+			announcements(() => "ship").onDragEnd?.({
+				active,
+				over: { id: "review" },
+			} as unknown as DragEndEvent),
+		).toBe("Fix login: say what shipped to move it to Review");
+	});
+
 	it("says nothing moved when the Card is dropped outside every column", () => {
 		expect(
 			announcements().onDragEnd?.({
@@ -57,7 +67,7 @@ describe("the Board's screen-reader announcements", () => {
 
 	it("says nothing moved when the column refuses the Card", () => {
 		expect(
-			announcements(() => false).onDragEnd?.({
+			announcements(() => null).onDragEnd?.({
 				active,
 				over: { id: "review" },
 			} as unknown as DragEndEvent),

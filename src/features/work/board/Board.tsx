@@ -121,12 +121,9 @@ export function Board({
 				COLUMNS.find((column) => column.id === columnId)?.label ?? columnId,
 			(cardId, columnId) => {
 				const card = cardOf(cardId);
-				return (
-					card !== undefined &&
-					COLUMN_IDS.has(columnId) &&
-					dropAction(card, columnId as Column, announceLatest.current.scope) !==
-						null
-				);
+				return card !== undefined && COLUMN_IDS.has(columnId)
+					? dropAction(card, columnId as Column, announceLatest.current.scope)
+					: null;
 			},
 		);
 		return { announcements };
