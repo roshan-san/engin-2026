@@ -473,7 +473,7 @@ describe("locks", () => {
 
 		for (const attempt of attempts) {
 			await expect(attempt).rejects.toThrow(
-				"Template Cards change only while the Hackathon is a draft",
+				"Template Cards change in the Hackathon's post",
 			);
 		}
 		const after = await founder.query(api.hiring.hackathons.get, {

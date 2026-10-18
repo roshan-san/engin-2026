@@ -60,9 +60,7 @@ export async function requireCardAccess(
 	const role = await getHackathonRole(ctx, startup, hackathon._id, userId);
 	// An ownerless Hackathon Card is a template: the draft's brief, changed only by `hackathons.update`.
 	if (role === "founder" && !card.ownerId) {
-		throw new ConvexError(
-			"Template Cards change only while the Hackathon is a draft",
-		);
+		throw new ConvexError("Template Cards change in the Hackathon's post");
 	}
 	if (
 		role === "founder" ||
