@@ -48,7 +48,7 @@ export function PinnedStrip({
 						<Button
 							variant="ghost"
 							size="sm"
-							className="h-6 px-2 text-xs"
+							className="h-6 px-2 text-xs pointer-coarse:h-8 pointer-coarse:min-w-8"
 							onClick={() => onUnpin(message._id)}
 						>
 							Unpin

@@ -36,4 +36,22 @@ describe("isSendKey", () => {
 			false,
 		);
 	});
+
+	it("is false for a plain Enter on a touch screen, where Send is the button", () => {
+		expect(
+			isSendKey(
+				{ key: "Enter", shiftKey: false, isComposing: false },
+				{ coarse: true },
+			),
+		).toBe(false);
+	});
+
+	it("is still true for a plain Enter when the pointer is not coarse", () => {
+		expect(
+			isSendKey(
+				{ key: "Enter", shiftKey: false, isComposing: false },
+				{ coarse: false },
+			),
+		).toBe(true);
+	});
 });

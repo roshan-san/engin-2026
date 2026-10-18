@@ -92,7 +92,11 @@ export function ThreadPanel({
 							canPin ? (messageId) => void pin(messageId, true) : undefined
 						}
 					/>
-					{isReadOnly ? null : (
+					{isReadOnly ? (
+						<p className="shrink-0 px-4 pb-3 text-sm text-muted-foreground">
+							This Hackathon has ended. Chat is read-only.
+						</p>
+					) : (
 						<Composer
 							onSend={send}
 							placeholder={placeholder}

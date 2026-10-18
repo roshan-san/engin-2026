@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { isSendKey } from "~/features/work/board/keys";
+import { isCoarsePointer, isSendKey } from "~/features/work/board/keys";
 import { errorMessage } from "~/lib/errors";
 import { pickImages } from "~/lib/images";
 import { useUpload } from "~/lib/useUpload";
@@ -190,7 +190,7 @@ export function Composer({
 
 	return (
 		<section
-			aria-label="Message Team"
+			aria-label={placeholder}
 			className="relative shrink-0 px-3 pb-3"
 			onPaste={(e) => {
 				const files = [...e.clipboardData.files];
@@ -259,10 +259,10 @@ export function Composer({
 								<button
 									type="button"
 									aria-label="Remove image"
-									className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 hover:bg-background"
+									className="absolute top-0 right-0 flex size-8 items-start justify-end p-0.5 focus-ring"
 									onClick={() => removePicture(picture)}
 								>
-									<XIcon className="size-3" />
+									<XIcon className="size-4 rounded-full bg-background/80 p-0.5 hover:bg-background" />
 								</button>
 							</li>
 						))}
@@ -305,7 +305,8 @@ export function Composer({
 								return;
 							}
 						}
-						if (isSendKey(native)) {
+						// On a phone Enter is a newline; the Send button sends.
+						if (isSendKey(native, { coarse: isCoarsePointer() })) {
 							e.preventDefault();
 							void handleSend();
 						}
@@ -333,9 +334,11 @@ export function Composer({
 					>
 						<ImageIcon />
 					</Button>
-					<span className="hidden text-xs text-subtle-foreground md:inline">
-						# to mention a Card
-					</span>
+					{mentionStartupId ? (
+						<span className="hidden text-xs text-subtle-foreground md:inline">
+							# to mention a Card
+						</span>
+					) : null}
 					<Button
 						type="button"
 						size="icon-sm"
