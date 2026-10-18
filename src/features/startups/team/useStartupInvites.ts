@@ -24,7 +24,9 @@ export function useStartupInvites(
 	async function send(email: string) {
 		try {
 			await createInvite({ startupId, email });
-			toast.success("Invite sent");
+			toast.success(
+				`Invite created. Tell them to sign in with ${email.trim()}.`,
+			);
 			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));
@@ -32,11 +34,15 @@ export function useStartupInvites(
 		}
 	}
 
+	/** Resolves `true` once revoked; failures are toasted. */
 	async function revoke(inviteId: Id<"invites">) {
 		try {
 			await revokeInvite({ inviteId });
+			toast.success("Invite revoked");
+			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));
+			return false;
 		}
 	}
 

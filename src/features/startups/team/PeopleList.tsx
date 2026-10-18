@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Row, RowList } from "~/components/RowList";
 import { Section } from "~/components/Section";
 import {
@@ -32,7 +33,8 @@ export function PeopleList({
 	readonly people: TeamPeople | undefined;
 	/** The Founder can remove Contributors. */
 	readonly canRemove: boolean;
-	readonly onRemove: (person: TeamPerson) => Promise<void>;
+	/** Resolves `true` once removed (the error is shown already otherwise). */
+	readonly onRemove: (person: TeamPerson, name: string) => Promise<boolean>;
 }) {
 	if (people === undefined) {
 		return (
@@ -116,10 +118,13 @@ function RemoveButton({
 	onRemove,
 }: {
 	readonly person: TeamPerson;
-	readonly onRemove: (person: TeamPerson) => Promise<void>;
+	readonly onRemove: (person: TeamPerson, name: string) => Promise<boolean>;
 }) {
+	const [isOpen, setIsOpen] = useState(false);
+	const [isRemoving, setIsRemoving] = useState(false);
+
 	return (
-		<AlertDialog>
+		<AlertDialog open={isOpen} onOpenChange={setIsOpen}>
 			<AlertDialogTrigger asChild>
 				<Button variant="ghost" size="sm" className="text-muted-foreground">
 					Remove
@@ -134,7 +139,16 @@ function RemoveButton({
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction onClick={() => void onRemove(person)}>
+					<AlertDialogAction
+						variant="destructive"
+						disabled={isRemoving}
+						onClick={async (event) => {
+							event.preventDefault();
+							setIsRemoving(true);
+							if (await onRemove(person, displayName(person))) setIsOpen(false);
+							setIsRemoving(false);
+						}}
+					>
 						Remove
 					</AlertDialogAction>
 				</AlertDialogFooter>

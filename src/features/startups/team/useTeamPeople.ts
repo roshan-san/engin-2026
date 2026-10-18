@@ -15,11 +15,15 @@ export function useTeamPeople(startupId: Id<"startups">) {
 	const people = useQuery(api.startups.contributors.list, { startupId });
 	const removeContributor = useMutation(api.startups.contributors.remove);
 
-	async function remove(userId: Id<"users">) {
+	/** Resolves `true` once removed; failures are toasted. */
+	async function remove(userId: Id<"users">, name: string) {
 		try {
 			await removeContributor({ startupId, userId });
+			toast.success(`${name} removed`);
+			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));
+			return false;
 		}
 	}
 

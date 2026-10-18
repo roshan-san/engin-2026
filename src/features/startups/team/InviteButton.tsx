@@ -35,18 +35,24 @@ export function InviteButton({
 				<Button size="sm">Invite</Button>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-80">
-				<form onSubmit={submit} className="flex gap-2">
-					<Input
-						type="email"
-						aria-label="Email"
-						placeholder="name@company.com"
-						autoComplete="off"
-						value={email}
-						onChange={(event) => setEmail(event.target.value)}
-					/>
-					<Button type="submit" disabled={!email.trim() || isSending}>
-						Send
-					</Button>
+				<form onSubmit={submit} className="flex flex-col gap-2">
+					<div className="flex gap-2">
+						<Input
+							type="email"
+							aria-label="Email"
+							placeholder="name@company.com"
+							autoComplete="off"
+							value={email}
+							onChange={(event) => setEmail(event.target.value)}
+						/>
+						<Button type="submit" disabled={!email.trim() || isSending}>
+							Send
+						</Button>
+					</div>
+					<p className="text-xs text-muted-foreground">
+						They'll see it under Invites when they sign in to engin with this
+						email.
+					</p>
 				</form>
 			</PopoverContent>
 		</Popover>

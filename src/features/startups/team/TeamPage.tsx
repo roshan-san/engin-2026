@@ -1,4 +1,5 @@
 import { AppPage, PageTitle } from "~/components/AppPage";
+import { EmptyState } from "~/components/EmptyState";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { InviteButton } from "./InviteButton";
 import { PendingInvites } from "./PendingInvites";
@@ -35,8 +36,15 @@ export function TeamPage() {
 			<PeopleList
 				people={people}
 				canRemove={isFounder}
-				onRemove={(person) => remove(person._id)}
+				onRemove={(person, name) => remove(person._id, name)}
 			/>
+			{isFounder && people && people.contributors.length === 0 ? (
+				<EmptyState
+					size="compact"
+					title="Invite your first Contributor"
+					action={<InviteButton onSend={send} />}
+				/>
+			) : null}
 			{isFounder ? (
 				<PendingInvites
 					invites={invites}
