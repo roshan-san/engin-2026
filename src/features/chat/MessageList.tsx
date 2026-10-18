@@ -96,7 +96,11 @@ export function MessageList({
 					ref={scroller}
 					role="log"
 					aria-live="polite"
-					className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-5"
+					// Only new messages are read out, not the "2m ago" labels ticking over.
+					aria-relevant="additions"
+					// The New messages pill hands focus here as it goes.
+					tabIndex={-1}
+					className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-5 focus-ring"
 					onScroll={(e) => {
 						const el = e.currentTarget;
 						isNearBottom.current =
@@ -183,6 +187,8 @@ export function MessageList({
 						className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full shadow-md"
 						onClick={() => {
 							scrollToBottom();
+							// The pill goes away; keep keyboard focus in the thread.
+							scroller.current?.focus({ preventScroll: true });
 							setHasNewBelow(false);
 						}}
 					>
