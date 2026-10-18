@@ -1,8 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 /** Everyone who applied, Participants first, for the Founder. */
 export function useApplicants(hackathonId: Id<"hackathons">) {
@@ -22,20 +21,10 @@ export function useScreening() {
 	const acceptApplication = useMutation(api.hiring.applications.accept);
 	const declineApplication = useMutation(api.hiring.applications.decline);
 
-	async function run(action: () => Promise<unknown>) {
-		try {
-			await action();
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
-	}
-
 	return {
 		accept: (applicationId: Id<"applications">) =>
-			run(() => acceptApplication({ applicationId })),
+			attempt(() => acceptApplication({ applicationId })),
 		decline: (applicationId: Id<"applications">) =>
-			run(() => declineApplication({ applicationId })),
+			attempt(() => declineApplication({ applicationId })),
 	};
 }

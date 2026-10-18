@@ -4,7 +4,7 @@ import type { OptimisticLocalStore } from "convex/browser";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 import { type BoardScope, boardQuery } from "./BoardScope";
 import type { CardView } from "./types";
 import { verifiedLocally } from "./verifiedLocally";
@@ -80,36 +80,20 @@ export function useBoard(scope: BoardScope) {
 	/** Resolves `false` when the Card wasn't created (the error is toasted). */
 	async function create(title: string) {
 		if (scope.kind !== "startup") return false;
-		try {
-			await createCard({ startupId: scope.startupId, title });
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		return attempt(() => createCard({ startupId: scope.startupId, title }));
 	}
 
 	/** Resolves `false` when it failed (the error is toasted). */
 	async function move(cardId: Id<"cards">, to: "todo" | "in_progress") {
-		try {
-			await moveOptimistically({ cardId, to });
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		return attempt(() => moveOptimistically({ cardId, to }));
 	}
 
 	/** Founder only, from Review. Toasts the success; resolves `false` when it failed (the error is toasted). */
 	async function verify(card: Pick<CardView, "_id" | "title">) {
-		try {
+		return attempt(async () => {
 			await verifyOptimistically({ cardId: card._id });
 			toast.success(`Verified · ${card.title}`);
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		});
 	}
 
 	return { cards, create, move, verify };

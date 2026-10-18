@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useState } from "react";
 import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 type Invite = FunctionReturnType<typeof api.startups.invites.listMine>[number];
 
@@ -33,15 +33,9 @@ export function useInvites() {
 		action: () => Promise<unknown>,
 	) {
 		setAnswering(inviteId);
-		try {
-			await action();
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		} finally {
-			setAnswering(null);
-		}
+		const isAnswered = await attempt(action);
+		setAnswering(null);
+		return isAnswered;
 	}
 
 	return {

@@ -1,8 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 /** ★ Shortlist, Walkthrough done, then Hired or Not this time. Failures are toasted and resolve `false`. */
 export function useDecide(applicationId: Id<"applications">) {
@@ -12,28 +11,18 @@ export function useDecide(applicationId: Id<"applications">) {
 	);
 	const decideParticipant = useMutation(api.hiring.applications.decide);
 
-	async function run(action: () => Promise<unknown>) {
-		try {
-			await action();
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
-	}
-
 	return {
 		shortlist: (shortlisted: boolean) =>
-			run(() => shortlistParticipant({ applicationId, shortlisted })),
+			attempt(() => shortlistParticipant({ applicationId, shortlisted })),
 		markWalkthrough: (notes: string) =>
-			run(() =>
+			attempt(() =>
 				markWalkthroughDone({
 					applicationId,
 					notes: notes.trim() || undefined,
 				}),
 			),
 		decide: (decision: "hired" | "not_this_time", feedback: string) =>
-			run(() =>
+			attempt(() =>
 				decideParticipant({
 					applicationId,
 					decision,

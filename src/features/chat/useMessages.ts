@@ -2,8 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 export type MessageView = FunctionReturnType<
 	typeof api.chat.messages.list
@@ -22,13 +21,7 @@ export function useMessages(threadId: Id<"threads"> | undefined) {
 	/** Resolves `false` when it wasn't sent (the error is toasted). */
 	async function send(body: string, images: Id<"_storage">[]) {
 		if (!threadId) return false;
-		try {
-			await sendMessage({ threadId, body, images });
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		return attempt(() => sendMessage({ threadId, body, images }));
 	}
 
 	function markRead() {
@@ -40,11 +33,7 @@ export function useMessages(threadId: Id<"threads"> | undefined) {
 
 	/** Founder only, in Everyone. */
 	async function pin(messageId: MessageView["_id"], pinned: boolean) {
-		try {
-			await pinMessage({ messageId, pinned });
-		} catch (error) {
-			toast.error(errorMessage(error));
-		}
+		await attempt(() => pinMessage({ messageId, pinned }));
 	}
 
 	return {

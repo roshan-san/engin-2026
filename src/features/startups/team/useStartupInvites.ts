@@ -3,7 +3,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 /**
  * The Founder's pending Invites for the Startup, sending and revoking them.
@@ -22,28 +22,20 @@ export function useStartupInvites(
 
 	/** Resolves `true` once sent; failures are toasted. */
 	async function send(email: string) {
-		try {
+		return attempt(async () => {
 			await createInvite({ startupId, email });
 			toast.success(
 				`Invite created. Tell them to sign in with ${email.trim()}.`,
 			);
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		});
 	}
 
 	/** Resolves `true` once revoked; failures are toasted. */
 	async function revoke(inviteId: Id<"invites">) {
-		try {
+		return attempt(async () => {
 			await revokeInvite({ inviteId });
 			toast.success("Invite revoked");
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		});
 	}
 
 	return { invites, send, revoke };

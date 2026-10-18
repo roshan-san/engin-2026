@@ -1,8 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { useAction } from "convex/react";
 import { useState } from "react";
-import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 /**
  * Sends the browser to Dodo's customer portal. `isOpening` stays on until the page leaves,
@@ -14,13 +13,11 @@ export function usePortal() {
 
 	async function openPortal() {
 		setIsOpening(true);
-		try {
+		const isOpened = await attempt(async () => {
 			const { url } = await open({});
 			window.location.assign(url);
-		} catch (error) {
-			toast.error(errorMessage(error));
-			setIsOpening(false);
-		}
+		});
+		if (!isOpened) setIsOpening(false);
 	}
 
 	return { openPortal, isOpening };

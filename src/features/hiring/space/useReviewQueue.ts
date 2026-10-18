@@ -2,8 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
-import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 /** Every Participant Card waiting in Review, oldest submission first, and Verify. */
 export function useReviewQueue(hackathonId: Id<"hackathons">) {
@@ -29,13 +28,7 @@ export function useReviewQueue(hackathonId: Id<"hackathons">) {
 
 	/** Resolves `false` after toasting a failure. */
 	async function verify(cardId: Id<"cards">) {
-		try {
-			await verifyOptimistically({ cardId });
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		return attempt(() => verifyOptimistically({ cardId }));
 	}
 
 	return { queue, verify };

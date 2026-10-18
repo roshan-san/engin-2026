@@ -1,4 +1,5 @@
 import { ConvexError } from "convex/values";
+import { toast } from "sonner";
 
 /** The message a server guard threw: production redacts everything else. */
 function convexErrorData(error: unknown): string | undefined {
@@ -22,4 +23,17 @@ export function errorMessage(error: unknown): string {
 	return message && message !== "Server Error"
 		? message
 		: "Something went wrong";
+}
+
+/** Runs `action` and toasts its error instead of throwing. Resolves `true` when it went through. */
+export async function attempt(
+	action: () => Promise<unknown>,
+): Promise<boolean> {
+	try {
+		await action();
+		return true;
+	} catch (error) {
+		toast.error(errorMessage(error));
+		return false;
+	}
 }

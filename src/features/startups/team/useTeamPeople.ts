@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
 import { displayName } from "~/lib/displayName";
-import { errorMessage } from "~/lib/errors";
+import { attempt } from "~/lib/errors";
 
 export type TeamPeople = FunctionReturnType<
 	typeof api.startups.contributors.list
@@ -18,14 +18,10 @@ export function useTeamPeople(startupId: Id<"startups">) {
 
 	/** Resolves `true` once removed; failures are toasted. */
 	async function remove(person: TeamPerson) {
-		try {
+		return attempt(async () => {
 			await removeContributor({ startupId, userId: person._id });
 			toast.success(`${displayName(person)} removed`);
-			return true;
-		} catch (error) {
-			toast.error(errorMessage(error));
-			return false;
-		}
+		});
 	}
 
 	return { people, remove };
