@@ -10,14 +10,17 @@ import { weekOf, weekStart } from "../shared/cycles";
 import { phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_BOARD_CARDS,
+	MAX_HACKATHON_CARDS,
+	MAX_PARTICIPANTS,
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
 	TEXT,
 } from "../shared/limits";
 import { appendActivity } from "./activity";
-import { isParticipant } from "./applications";
+import { getHackathonRole } from "./applications";
+import { loadImageUrls } from "./files";
 import { getTeamRole, requireTeam } from "./teamAccess";
-import { assertUrl, requireLimitedText } from "./text";
+import { assertUrl, limitText, requireLimitedText } from "./text";
 import { loadPublicUser } from "./users";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -28,6 +31,7 @@ export type Shipped = NonNullable<Doc<"cards">["shipped"]>;
  * The one access path to a Card: who is acting on it, for `cardRefusal` to rule on.
  * Startup Cards belong to the team. Hackathon Cards (`hackathonId` set) to the
  * Founder and the Participant who owns them; nobody else, Contributors included.
+ * Template Cards are nobody's to work.
  */
 export async function requireCardAccess(
 	ctx: Ctx,
@@ -46,7 +50,6 @@ export async function requireCardAccess(
 		const { startup, role } = await requireTeam(ctx, card.startupId, userId);
 		return { card, startup, actor: { userId, role, phase: null } };
 	}
-
 	const [hackathon, startup] = await Promise.all([
 		ctx.db.get(card.hackathonId),
 		ctx.db.get(card.startupId),
@@ -54,15 +57,19 @@ export async function requireCardAccess(
 	if (!hackathon || !startup) {
 		throw new ConvexError("This Card doesn't exist");
 	}
-	const phase = phaseOf(hackathon, Date.now());
-	if (startup.founderId === userId) {
-		return { card, startup, actor: { userId, role: "founder", phase } };
+	const role = await getHackathonRole(ctx, startup, hackathon._id, userId);
+	// An ownerless Hackathon Card is a template: the draft's brief, changed only by `hackathons.update`.
+	if (role === "founder" && !card.ownerId) {
+		throw new ConvexError(
+			"Template Cards change only while the Hackathon is a draft",
+		);
 	}
 	if (
-		card.ownerId === userId &&
-		(await isParticipant(ctx, hackathon._id, userId))
+		role === "founder" ||
+		(role === "participant" && card.ownerId === userId)
 	) {
-		return { card, startup, actor: { userId, role: "participant", phase } };
+		const phase = phaseOf(hackathon, Date.now());
+		return { card, startup, actor: { userId, role, phase } };
 	}
 	throw new ConvexError("This Card isn't yours");
 }
@@ -87,16 +94,14 @@ export async function requireParticipantBoardAccess(
 	userId: Id<"users">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (!hackathon) {
+	const startup = hackathon && (await ctx.db.get(hackathon.startupId));
+	if (!startup) {
 		throw new ConvexError("This Hackathon doesn't exist");
 	}
-	const startup = await ctx.db.get(hackathon.startupId);
-	if (startup?.founderId === userId) {
-		return;
-	}
+	const role = await getHackathonRole(ctx, startup, hackathonId, userId);
 	if (
-		participantId !== userId ||
-		!(await isParticipant(ctx, hackathonId, userId))
+		role !== "founder" &&
+		!(role === "participant" && participantId === userId)
 	) {
 		throw new ConvexError("This Card isn't yours");
 	}
@@ -126,11 +131,7 @@ export function normalizeTitle(title: string): string {
 }
 
 export function normalizeNotes(notes: string): string {
-	const trimmed = notes.trim();
-	if (trimmed.length > TEXT.notes) {
-		throw new ConvexError(`Notes must be under ${TEXT.notes} characters`);
-	}
-	return trimmed;
+	return limitText(notes, "Notes", TEXT.notes) ?? "";
 }
 
 /** Validates What shipped: a line, http(s) links and images, with at least one link or image. */
@@ -167,7 +168,7 @@ export async function loadBoardCards(
 	const open = (status: "todo" | "in_progress" | "review") =>
 		ctx.db
 			.query("cards")
-			.withIndex("by_startup_and_hackathon_and_status", (q) =>
+			.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
 				q
 					.eq("startupId", startupId)
 					.eq("hackathonId", undefined)
@@ -197,6 +198,20 @@ export async function loadBoardCards(
 	return [...todo, ...inProgress, ...review, ...done];
 }
 
+/** Participants' Cards waiting in Review on the Hackathon. */
+export async function loadHackathonCardsInReview(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"cards">[]> {
+	const inReview = await ctx.db
+		.query("cards")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "review"),
+		)
+		.take(MAX_PARTICIPANTS * MAX_HACKATHON_CARDS);
+	return inReview.filter((card) => card.ownerId !== undefined);
+}
+
 export type CardView = Awaited<ReturnType<typeof toCardView>>;
 
 export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
@@ -224,15 +239,6 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 			card.ownerId !== undefined &&
 			card.verifiedBy === card.ownerId,
 	};
-}
-
-/** Serving URLs for stored images, skipping any that are gone. */
-async function loadImageUrls(
-	ctx: Ctx,
-	images: Id<"_storage">[],
-): Promise<string[]> {
-	const urls = await Promise.all(images.map((id) => ctx.storage.getUrl(id)));
-	return urls.filter((url): url is string => url !== null);
 }
 
 /** Moves a Card to Done, locking its What shipped, and logs it on the Startup's Activity. The owner verifying their own Card is self-verified. */

@@ -336,7 +336,6 @@ describe("publish", () => {
 				_id: hackathonId,
 				status: "open",
 				applicantCount: 0,
-				participantCount: 0,
 				toReview: 0,
 				toDecide: 0,
 			},
@@ -360,7 +359,6 @@ async function addParticipant(
 			status: "participating",
 			shortlisted: false,
 		});
-		await ctx.db.patch(hackathonId, { participantCount: 1 });
 	});
 	return person;
 }

@@ -10,7 +10,9 @@ import {
 } from "../shared/cycles";
 import { MAX_CYCLE_ENTRIES, MAX_LISTED_CYCLES } from "../shared/limits";
 import type { activityKind, jobRole } from "../shared/validators";
+import { loadImageUrls } from "./files";
 import { loadGoal } from "./goals";
+import { buildRhythmStrip } from "./startups";
 import {
 	buildParts,
 	countedWeeks,
@@ -77,14 +79,15 @@ async function loadCard(ctx: QueryCtx, row: Doc<"activity">) {
 	if (!card) {
 		return null;
 	}
-	const urls = await Promise.all(
-		(card.shipped?.images ?? []).map((id) => ctx.storage.getUrl(id)),
-	);
+	const [imageUrls, verifier] = await Promise.all([
+		loadImageUrls(ctx, card.shipped?.images ?? []),
+		loadPublicUser(ctx, card.verifiedBy),
+	]);
 	return {
 		title: card.title,
 		links: card.shipped?.links ?? [],
-		imageUrls: urls.filter((url) => url !== null),
-		verifier: await loadPublicUser(ctx, card.verifiedBy),
+		imageUrls,
+		verifier,
 	};
 }
 
@@ -111,6 +114,17 @@ async function toEntryView(
 	};
 }
 
+/** A Cycle's week, number and bounds. */
+export function cycleHeader(startup: Doc<"startups">, week: string) {
+	const startsAt = weekStart(week);
+	return {
+		week,
+		number: cycleNumber(startup._creationTime, startsAt),
+		startsAt,
+		endsAt: startsAt + WEEK_MS,
+	};
+}
+
 async function loadCycle(
 	ctx: QueryCtx,
 	startup: Doc<"startups">,
@@ -127,13 +141,9 @@ async function loadCycle(
 	const shown = masked
 		? rows.filter((row) => MILESTONES.includes(row.kind))
 		: rows;
-	const startsAt = weekStart(week);
 
 	return {
-		week,
-		number: cycleNumber(startup._creationTime, startsAt),
-		startsAt,
-		endsAt: startsAt + WEEK_MS,
+		...cycleHeader(startup, week),
 		goal: masked ? null : await loadGoal(ctx, startup._id, week),
 		shippedCount: rows.filter((row) => row.kind === "card_verified").length,
 		entries: await Promise.all(
@@ -193,14 +203,7 @@ export async function loadSignals(
 	const counted = await loadStartupCounts(ctx, startup._id, span);
 	const countOf = new Map(span.map((week, i) => [week, counted[i]]));
 
-	const strip = Array.from({ length: RATING.weeks }, (_, i) => {
-		const week = shiftWeek(thisWeek, i + 1 - RATING.weeks);
-		return {
-			week,
-			startsAt: weekStart(week),
-			count: countOf.get(week) ?? null,
-		};
-	});
+	const strip = buildRhythmStrip(counted.slice(-RATING.weeks), thisWeek);
 	const parts = buildParts(
 		countedWeeks(startup._creationTime, shiftWeek(thisWeek, -1)).map(
 			(week) => countOf.get(week) ?? 0,

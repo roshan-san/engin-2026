@@ -1,4 +1,6 @@
 import type { Infer } from "convex/values";
+import { WEEK_MS } from "./cycles";
+import { DECIDE_GRACE_MS } from "./limits";
 import type { hackathonStatus } from "./validators";
 
 export type HackathonPhase = Infer<typeof hackathonStatus>;
@@ -27,4 +29,13 @@ export function isRunning(phase: HackathonPhase): boolean {
 /** Live or Deciding: started and not yet Done. */
 export function isUnderway(phase: HackathonPhase): boolean {
 	return phase === "live" || phase === "deciding";
+}
+
+/** When a Hackathon starting at `startsAt` ends, and when its decisions are due. */
+export function hackathonDates(
+	startsAt: number,
+	weeks: 1 | 2,
+): { endsAt: number; decideBy: number } {
+	const endsAt = startsAt + weeks * WEEK_MS;
+	return { endsAt, decideBy: endsAt + DECIDE_GRACE_MS };
 }

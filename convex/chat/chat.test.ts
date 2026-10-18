@@ -461,7 +461,6 @@ describe("card mentions", () => {
 				startsAt: 0,
 				endsAt: 0,
 				decideBy: 0,
-				participantCount: 0,
 				applicantCount: 0,
 			});
 			return await ctx.db.insert("cards", {

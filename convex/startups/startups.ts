@@ -6,6 +6,7 @@ import { requireUserId } from "../model/auth";
 import { loadHiringRecord } from "../model/hiringRecord";
 import {
 	buildUniqueSlug,
+	loadFoundedStartups,
 	getStartupBySlug,
 	loadOpenHackathons,
 	matchesExploreStartup,
@@ -98,11 +99,7 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		// Billing counts Hackathons across these, so the cap must hold exactly.
-		const founded = await ctx.db
-			.query("startups")
-			.withIndex("by_founder", (q) => q.eq("founderId", userId))
-			.take(MAX_USER_STARTUPS);
+		const founded = await loadFoundedStartups(ctx, userId);
 		if (founded.length >= MAX_USER_STARTUPS) {
 			throw new ConvexError(
 				`You can found up to ${MAX_USER_STARTUPS} Startups`,

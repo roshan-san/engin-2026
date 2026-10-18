@@ -4,7 +4,6 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { shiftWeek, weekOf } from "../shared/cycles";
 import { phaseOf } from "../shared/hackathonPhase";
 import {
-	MAX_LISTED_HACKATHONS,
 	MAX_USER_APPLICATIONS,
 	STARTING_RATING,
 	WEEK_COUNT_CAP,
@@ -181,19 +180,26 @@ export async function loadOutcomes(
 		.query("applications")
 		.withIndex("by_user", (q) => q.eq("userId", userId))
 		.take(MAX_USER_APPLICATIONS);
-	const outcomes: { outcome: Outcome; hackathon: Doc<"hackathons"> }[] = [];
-	for (const application of applications) {
-		const outcome = outcomeOf(application);
-		if (!outcome) continue;
-		const hackathon = await ctx.db.get(application.hackathonId);
-		if (!hackathon) continue;
-		const phase = phaseOf(hackathon, Date.now());
-		if (phase !== "deciding" && phase !== "done") {
-			continue;
-		}
-		outcomes.push({ outcome, hackathon });
-	}
-	return outcomes.sort((a, b) => b.hackathon.endsAt - a.hackathon.endsAt);
+	const now = Date.now();
+	const outcomes = await Promise.all(
+		applications.map(async (application) => {
+			const outcome = outcomeOf(application);
+			if (!outcome) {
+				return [];
+			}
+			const hackathon = await ctx.db.get(application.hackathonId);
+			if (!hackathon) {
+				return [];
+			}
+			const phase = phaseOf(hackathon, now);
+			return phase === "deciding" || phase === "done"
+				? [{ outcome, hackathon }]
+				: [];
+		}),
+	);
+	return outcomes
+		.flat()
+		.sort((a, b) => b.hackathon.endsAt - a.hackathon.endsAt);
 }
 
 /** Outcomes of Hackathons that ended within the last 365 days. */
@@ -211,11 +217,13 @@ async function hasFinishedHackathon(
 	ctx: QueryCtx,
 	startupId: Id<"startups">,
 ): Promise<boolean> {
-	const hackathons = await ctx.db
+	const done = await ctx.db
 		.query("hackathons")
-		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
-		.take(MAX_LISTED_HACKATHONS);
-	return hackathons.some((hackathon) => hackathon.status === "done");
+		.withIndex("by_startup_and_status", (q) =>
+			q.eq("startupId", startupId).eq("status", "done"),
+		)
+		.first();
+	return done !== null;
 }
 
 /** Moves one Startup's Rating for `week`. A rerun of the same week does nothing. */
@@ -264,8 +272,10 @@ export async function rateUser(
 		await ctx.db.patch(user._id, { ratedThrough: week });
 		return;
 	}
-	const counts = await loadPersonCounts(ctx, user._id, weeks);
-	const outcomes = await loadOutcomes(ctx, user._id);
+	const [counts, outcomes] = await Promise.all([
+		loadPersonCounts(ctx, user._id, weeks),
+		loadOutcomes(ctx, user._id),
+	]);
 	const current = user.rating ?? STARTING_RATING;
 	const rating = nextRating(
 		current,

@@ -1,13 +1,17 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { isRunning, phaseOf } from "../shared/hackathonPhase";
+import { phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_APPLICATIONS,
 	MAX_BOARD_CARDS,
 	MAX_LISTED_HACKATHONS,
-	MAX_PARTICIPANTS,
+	MAX_USER_APPLICATIONS,
 } from "../shared/limits";
 import type { WaitingReason } from "../shared/places";
+import { loadParticipants } from "./applications";
+import { loadHackathonCardsInReview } from "./cards";
+import { loadRunningHackathons } from "./hackathons";
+import { loadLogoUrl } from "./startups";
 import {
 	isThreadUnread,
 	loadHackathonThreads,
@@ -36,17 +40,16 @@ async function anyUnread(
 	return false;
 }
 
-async function countCardsInReview(
+async function countStartupCardsInReview(
 	ctx: QueryCtx,
 	startupId: Id<"startups">,
-	hackathonId: Id<"hackathons"> | undefined,
 ): Promise<number> {
 	const cards = await ctx.db
 		.query("cards")
-		.withIndex("by_startup_and_hackathon_and_status", (q) =>
+		.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
 			q
 				.eq("startupId", startupId)
-				.eq("hackathonId", hackathonId)
+				.eq("hackathonId", undefined)
 				.eq("status", "review"),
 		)
 		.take(MAX_BOARD_CARDS);
@@ -74,11 +77,7 @@ async function hackathonReasons(
 		}
 	}
 	if (phase === "live") {
-		const count = await countCardsInReview(
-			ctx,
-			hackathon.startupId,
-			hackathon._id,
-		);
+		const count = (await loadHackathonCardsInReview(ctx, hackathon._id)).length;
 		if (count > 0) {
 			reasons.push({ kind: "participant_cards_to_review", role, count });
 		}
@@ -93,12 +92,7 @@ async function hackathonReasons(
 		}
 	}
 	if (phase === "deciding") {
-		const participants = await ctx.db
-			.query("applications")
-			.withIndex("by_hackathon_and_status", (q) =>
-				q.eq("hackathonId", hackathon._id).eq("status", "participating"),
-			)
-			.take(MAX_PARTICIPANTS);
+		const participants = await loadParticipants(ctx, hackathon._id);
 		const count = participants.filter(
 			(application) => application.decision === undefined,
 		).length;
@@ -124,18 +118,18 @@ export async function startupReasons(
 		return reasons;
 	}
 
-	const toVerify = await countCardsInReview(ctx, startupId, undefined);
+	const toVerify = await countStartupCardsInReview(ctx, startupId);
 	if (toVerify > 0) {
 		reasons.push({ kind: "cards_to_verify", count: toVerify });
 	}
-	const hackathons = await ctx.db
-		.query("hackathons")
-		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
-		.order("desc")
-		.take(MAX_LISTED_HACKATHONS);
+	const running = await loadRunningHackathons(
+		ctx,
+		startupId,
+		MAX_LISTED_HACKATHONS,
+	);
 	const perHackathon = await Promise.all(
-		hackathons
-			.filter((hackathon) => isRunning(hackathon.status))
+		running
+			.sort((a, b) => b._creationTime - a._creationTime)
 			.map((hackathon) => hackathonReasons(ctx, hackathon, userId)),
 	);
 	return [...reasons, ...perHackathon.flat()];
@@ -167,4 +161,58 @@ export async function participantReasons(
 		reasons.push({ kind: "promise_pending" });
 	}
 	return reasons;
+}
+
+/**
+ * The Hackathons the person builds in or applied to. A finished Hackathon stays
+ * until its Participant answers the promise question; applications leave when it ends.
+ */
+export async function loadHackathonPlaces(ctx: QueryCtx, userId: Id<"users">) {
+	const applications = await ctx.db
+		.query("applications")
+		.withIndex("by_user", (q) => q.eq("userId", userId))
+		.take(MAX_USER_APPLICATIONS);
+
+	const loaded = await Promise.all(
+		applications.map(async (application) => {
+			const hackathon = await ctx.db.get(application.hackathonId);
+			const shown =
+				hackathon &&
+				(hackathon.status !== "done" ||
+					(application.status === "participating" &&
+						isPromisePending(application)));
+			const startup = shown ? await ctx.db.get(hackathon.startupId) : null;
+			if (!hackathon || !startup) {
+				return { building: null, applied: null };
+			}
+			const place = {
+				hackathonId: hackathon._id,
+				job: hackathon.job,
+				startupName: startup.name,
+				startupSlug: startup.slug,
+				startupLogoUrl: await loadLogoUrl(ctx, startup),
+			};
+			if (application.status !== "participating") {
+				return {
+					building: null,
+					applied: { ...place, status: application.status },
+				};
+			}
+			return {
+				building: {
+					...place,
+					status: hackathon.status,
+					startsAt: hackathon.startsAt,
+					endsAt: hackathon.endsAt,
+					decision: application.decision ?? null,
+					waiting: await participantReasons(ctx, application),
+				},
+				applied: null,
+			};
+		}),
+	);
+	return {
+		hackathons: loaded.flatMap(({ building }) => (building ? [building] : [])),
+		applied: loaded.flatMap(({ applied }) => (applied ? [applied] : [])),
+	};
 }

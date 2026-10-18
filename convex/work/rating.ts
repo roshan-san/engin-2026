@@ -19,9 +19,9 @@ export const rateStartups = internalMutation({
 			.query("startups")
 			.paginate({ cursor: args.cursor ?? null, numItems: RATING_PAGE });
 
-		for (const startup of page.page) {
-			await rateStartup(ctx, startup, week);
-		}
+		await Promise.all(
+			page.page.map((startup) => rateStartup(ctx, startup, week)),
+		);
 
 		if (!page.isDone) {
 			await ctx.scheduler.runAfter(0, internal.work.rating.rateStartups, {
@@ -43,9 +43,7 @@ export const rateUsers = internalMutation({
 			.query("users")
 			.paginate({ cursor: args.cursor ?? null, numItems: RATING_PAGE });
 
-		for (const user of page.page) {
-			await rateUser(ctx, user, week, now);
-		}
+		await Promise.all(page.page.map((user) => rateUser(ctx, user, week, now)));
 
 		if (!page.isDone) {
 			await ctx.scheduler.runAfter(0, internal.work.rating.rateUsers, {

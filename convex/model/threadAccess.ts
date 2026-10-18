@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { isParticipant } from "./applications";
 import { getTeamRole } from "./teamAccess";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -35,14 +36,7 @@ export async function getThreadAccess(
 		return null;
 	}
 
-	const hackathonId = thread.hackathonId;
-	const application = await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon_and_user", (q) =>
-			q.eq("hackathonId", hackathonId).eq("userId", userId),
-		)
-		.unique();
-	return application?.status === "participating"
+	return (await isParticipant(ctx, thread.hackathonId, userId))
 		? { thread, isFounder: false }
 		: null;
 }

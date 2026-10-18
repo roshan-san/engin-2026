@@ -19,11 +19,7 @@ export const workTables = {
 		verifiedAt: v.optional(v.number()),
 		verifiedBy: v.optional(v.id("users")),
 	})
-		.index("by_startup_and_hackathon_and_status", [
-			"startupId",
-			"hackathonId",
-			"status",
-		])
+		// Open Cards have no `verifiedAt`, so the prefix serves them too.
 		.index("by_startup_and_hackathon_and_status_and_verifiedAt", [
 			"startupId",
 			"hackathonId",
@@ -31,8 +27,7 @@ export const workTables = {
 			"verifiedAt",
 		])
 		.index("by_hackathon_and_owner", ["hackathonId", "ownerId"])
-		.index("by_hackathon_and_status", ["hackathonId", "status"])
-		.index("by_owner", ["ownerId"]),
+		.index("by_hackathon_and_status", ["hackathonId", "status"]),
 
 	cycleGoals: defineTable({
 		startupId: v.id("startups"),

@@ -85,19 +85,25 @@ export async function buildThreadViews(
 	threads: Doc<"threads">[],
 	userId: Id<"users">,
 ) {
-	const views = [];
-	for (const thread of threads) {
-		if (!(await getThreadAccess(ctx, thread, userId))) {
-			continue;
-		}
-		const read = await loadThreadRead(ctx, thread._id, userId);
-		views.push({
-			_id: thread._id,
-			kind: thread.kind,
-			participant: await loadPublicUser(ctx, thread.participantId),
-			lastMessageAt: thread.lastMessageAt ?? null,
-			unread: isThreadUnread(thread, read),
-		});
-	}
-	return views;
+	const views = await Promise.all(
+		threads.map(async (thread) => {
+			if (!(await getThreadAccess(ctx, thread, userId))) {
+				return [];
+			}
+			const [read, participant] = await Promise.all([
+				loadThreadRead(ctx, thread._id, userId),
+				loadPublicUser(ctx, thread.participantId),
+			]);
+			return [
+				{
+					_id: thread._id,
+					kind: thread.kind,
+					participant,
+					lastMessageAt: thread.lastMessageAt ?? null,
+					unread: isThreadUnread(thread, read),
+				},
+			];
+		}),
+	);
+	return views.flat();
 }

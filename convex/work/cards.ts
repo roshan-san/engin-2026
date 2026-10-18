@@ -3,6 +3,7 @@ import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
 import {
 	loadBoardCards,
+	loadHackathonCardsInReview,
 	markVerified,
 	normalizeNotes,
 	normalizeTitle,
@@ -13,10 +14,12 @@ import {
 	requireTeamOwner,
 	toCardView,
 } from "../model/cards";
-import { requireHackathonFounder } from "../model/hackathons";
+import {
+	loadHackathonCards,
+	requireHackathonFounder,
+} from "../model/hackathons";
 import { requireTeam } from "../model/teamAccess";
 import { submitLandsIn } from "../shared/cardRules";
-import { MAX_HACKATHON_CARDS, MAX_PARTICIPANTS } from "../shared/limits";
 import { shipped } from "../shared/validators";
 
 export const listBoard = query({
@@ -42,12 +45,11 @@ export const listParticipantBoard = query({
 			userId,
 		);
 
-		const cards = await ctx.db
-			.query("cards")
-			.withIndex("by_hackathon_and_owner", (q) =>
-				q.eq("hackathonId", args.hackathonId).eq("ownerId", args.participantId),
-			)
-			.take(MAX_HACKATHON_CARDS);
+		const cards = await loadHackathonCards(
+			ctx,
+			args.hackathonId,
+			args.participantId,
+		);
 		return await Promise.all(cards.map((card) => toCardView(ctx, card)));
 	},
 });
@@ -59,15 +61,9 @@ export const listReviewQueue = query({
 		const userId = await requireUserId(ctx);
 		await requireHackathonFounder(ctx, args.hackathonId, userId);
 
-		const inReview = await ctx.db
-			.query("cards")
-			.withIndex("by_hackathon_and_status", (q) =>
-				q.eq("hackathonId", args.hackathonId).eq("status", "review"),
-			)
-			.take(MAX_PARTICIPANTS * MAX_HACKATHON_CARDS);
-		const queue = inReview
-			.filter((card) => card.ownerId !== undefined)
-			.sort((a, b) => (a.submittedAt ?? 0) - (b.submittedAt ?? 0));
+		const queue = (
+			await loadHackathonCardsInReview(ctx, args.hackathonId)
+		).sort((a, b) => (a.submittedAt ?? 0) - (b.submittedAt ?? 0));
 		return await Promise.all(
 			queue.map(async (card) => ({
 				...(await toCardView(ctx, card)),

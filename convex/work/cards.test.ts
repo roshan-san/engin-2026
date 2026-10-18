@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
 import { MAX_BOARD_CARDS } from "../shared/limits";
 import { cardOn, SHIPPED } from "../testing/cards.setup";
+import { publishedHackathon } from "../testing/hackathons.setup";
 import {
 	addContributor,
 	type Setup,
@@ -432,7 +434,6 @@ describe("locks", () => {
 				startsAt: 0,
 				endsAt: 0,
 				decideBy: 0,
-				participantCount: 0,
 				applicantCount: 0,
 			});
 			return await ctx.db.insert("cards", {
@@ -451,6 +452,38 @@ describe("locks", () => {
 
 		await expect(update).rejects.toThrow("This Card isn't yours");
 		expect(await boardOf(setup)).toEqual([]);
+	});
+
+	it("a published Hackathon's template Cards can't be worked as Cards, not even by the Founder", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const space = await setup.founder.as.query(api.hiring.hackathons.get, {
+			hackathonId,
+		});
+		const cardId = space?.cards[0]._id as Id<"cards">;
+		const founder = setup.founder.as;
+
+		const attempts = [
+			founder.mutation(api.work.cards.update, { cardId, title: "Changed" }),
+			founder.mutation(api.work.cards.update, { cardId, notes: "Changed" }),
+			founder.mutation(api.work.cards.move, { cardId, to: "in_progress" }),
+			founder.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED }),
+			founder.mutation(api.work.cards.remove, { cardId }),
+		];
+
+		for (const attempt of attempts) {
+			await expect(attempt).rejects.toThrow(
+				"Template Cards change only while the Hackathon is a draft",
+			);
+		}
+		const after = await founder.query(api.hiring.hackathons.get, {
+			hackathonId,
+		});
+		expect(after?.cards[0]).toMatchObject({
+			title: space?.cards[0].title,
+			notes: space?.cards[0].notes,
+			status: "todo",
+		});
 	});
 });
 
@@ -568,7 +601,6 @@ describe("card view", () => {
 					startsAt: 0,
 					endsAt: 0,
 					decideBy: 0,
-					participantCount: 0,
 					applicantCount: 0,
 				}),
 		);
@@ -611,7 +643,6 @@ describe("card view", () => {
 				startsAt: 0,
 				endsAt: 0,
 				decideBy: 0,
-				participantCount: 0,
 				applicantCount: 0,
 			});
 			return await ctx.db.insert("cards", {

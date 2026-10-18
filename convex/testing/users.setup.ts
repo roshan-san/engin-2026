@@ -1,5 +1,6 @@
 import type { Id } from "../_generated/dataModel";
 import { onUserSignedIn } from "../model/users";
+import { STARTING_RATING } from "../shared/limits";
 import type { Client, TestConvex } from "./test.setup";
 
 export type Person = { userId: Id<"users">; as: Client };
@@ -12,7 +13,7 @@ export async function signUp(t: TestConvex, name: string): Promise<Person> {
 				name,
 				email: `${name.toLowerCase()}@example.com`,
 				username: name.toLowerCase(),
-				rating: 1000,
+				rating: STARTING_RATING,
 				ratingChange: 0,
 				ratedWeeks: 0,
 			}),

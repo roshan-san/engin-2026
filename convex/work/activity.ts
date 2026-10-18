@@ -4,6 +4,7 @@ import { query } from "../_generated/server";
 import { loadCycles, loadSignals } from "../model/activity";
 import { requireUserId } from "../model/auth";
 import { getStartupBySlug } from "../model/startups";
+import { isInvestorPro } from "../model/users";
 import { requireTeam } from "../model/teamAccess";
 import { CYCLES_PAGE } from "../shared/limits";
 
@@ -40,7 +41,7 @@ export const listPublic = query({
 		}
 		const userId = await getAuthUserId(ctx);
 		const viewer = userId ? await ctx.db.get(userId) : null;
-		const full = viewer?.investorVerifiedAt !== undefined;
+		const full = isInvestorPro(viewer);
 
 		const { cycles, hasMore } = await loadCycles(ctx, startup, {
 			count: args.count ?? CYCLES_PAGE,

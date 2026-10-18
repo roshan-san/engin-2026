@@ -4,23 +4,13 @@ import { requireUserId } from "../model/auth";
 import {
 	hasPaymentIssue,
 	loadPlanView,
+	subscriptionEvent,
 	syncSubscription,
 } from "../model/billing";
-import { MAX_USER_SUBSCRIPTIONS } from "../shared/limits";
-import { subscriptionStatus } from "../shared/validators";
 
 /** Every Dodo subscription webhook lands here. */
 export const sync = internalMutation({
-	args: {
-		dodoSubscriptionId: v.string(),
-		dodoCustomerId: v.string(),
-		productId: v.string(),
-		status: subscriptionStatus,
-		periodStart: v.number(),
-		periodEnd: v.number(),
-		userId: v.optional(v.string()),
-		eventAt: v.number(),
-	},
+	args: subscriptionEvent,
 	handler: async (ctx, args) => {
 		await syncSubscription(ctx, args);
 	},
@@ -57,11 +47,11 @@ export const checkoutCustomer = internalQuery({
 export const customerIdFor = internalQuery({
 	args: { userId: v.id("users") },
 	handler: async (ctx, args) => {
-		const subscriptions = await ctx.db
+		const latest = await ctx.db
 			.query("subscriptions")
 			.withIndex("by_user", (q) => q.eq("userId", args.userId))
 			.order("desc")
-			.take(MAX_USER_SUBSCRIPTIONS);
-		return subscriptions[0]?.dodoCustomerId ?? null;
+			.first();
+		return latest?.dodoCustomerId ?? null;
 	},
 });

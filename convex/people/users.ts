@@ -4,7 +4,8 @@ import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
 import { assertUrl, limitText } from "../model/text";
-import { normalizeUsername, requireUsername } from "../model/username";
+import { requireUsername } from "../model/username";
+import { normalizeUsername } from "../shared/username";
 import {
 	loadProfileRecord,
 	toOwnProfile,

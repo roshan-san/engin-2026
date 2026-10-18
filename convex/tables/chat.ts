@@ -30,7 +30,5 @@ export const chatTables = {
 		threadId: v.id("threads"),
 		userId: v.id("users"),
 		lastReadAt: v.number(),
-	})
-		.index("by_thread_and_user", ["threadId", "userId"])
-		.index("by_user", ["userId"]),
+	}).index("by_thread_and_user", ["threadId", "userId"]),
 };

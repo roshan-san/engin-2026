@@ -5,6 +5,7 @@ import {
 	applicationStatus,
 	decision,
 	hackathonStatus,
+	hackathonWeeks,
 	jobMode,
 	jobPay,
 	jobRole,
@@ -16,13 +17,12 @@ export const hiringTables = {
 		status: hackathonStatus,
 		job: v.object({ role: jobRole, pay: jobPay, mode: jobMode }),
 		problem: v.string(),
-		weeks: v.union(v.literal(1), v.literal(2)),
+		weeks: hackathonWeeks,
 		startsAt: v.number(),
 		endsAt: v.number(),
 		/** endsAt + 7 days. */
 		decideBy: v.number(),
 		participantsGet: v.optional(v.string()),
-		participantCount: v.number(),
 		applicantCount: v.number(),
 		/** Set when published; counts against the plan's Hackathons for the billing period. */
 		publishedAt: v.optional(v.number()),

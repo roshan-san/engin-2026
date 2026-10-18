@@ -6,6 +6,7 @@ import {
 	getApplication,
 	loadApplicationsForFounder,
 	loadParticipantProgress,
+	loadParticipants,
 	requireApplicationFounder,
 	requireDecidable,
 	requireOpen,
@@ -25,7 +26,7 @@ import {
 	toPublicProfile,
 	toPublicUser,
 } from "../model/users";
-import { MAX_PARTICIPANTS, STARTING_RATING, TEXT } from "../shared/limits";
+import { MAX_PARTICIPANTS, TEXT } from "../shared/limits";
 import { decision } from "../shared/validators";
 
 /** Everyone who applied, for the Founder. Never includes email. */
@@ -48,7 +49,6 @@ export const listForHackathon = query({
 							application: toFounderApplicationView(application),
 							user: {
 								...toPublicUser(user),
-								rating: user.rating ?? STARTING_RATING,
 								isProvisional: isProvisional(user),
 							},
 							progress:
@@ -135,14 +135,12 @@ export const accept = mutation({
 		if (application.status === "participating") {
 			return;
 		}
-		if (hackathon.participantCount >= MAX_PARTICIPANTS) {
+		const participants = await loadParticipants(ctx, hackathon._id);
+		if (participants.length >= MAX_PARTICIPANTS) {
 			throw new ConvexError(`${MAX_PARTICIPANTS} Participants is the limit`);
 		}
 
 		await ctx.db.patch(application._id, { status: "participating" });
-		await ctx.db.patch(hackathon._id, {
-			participantCount: hackathon.participantCount + 1,
-		});
 		await ensurePrivateThread(ctx, hackathon, application.userId);
 	},
 });
@@ -159,11 +157,6 @@ export const decline = mutation({
 		requireOpen(hackathon);
 
 		await ctx.db.patch(application._id, { status: "declined" });
-		if (application.status === "participating") {
-			await ctx.db.patch(hackathon._id, {
-				participantCount: hackathon.participantCount - 1,
-			});
-		}
 	},
 });
 

@@ -1,39 +1,18 @@
 import { ConvexError } from "convex/values";
 import type { MutationCtx } from "../_generated/server";
-
-const USERNAME_PATTERN = /^[a-z][a-z0-9_]{2,19}$/;
-
-const RESERVED_USERNAMES = new Set([
-	"app",
-	"admin",
-	"api",
-	"auth",
-	"explore",
-	"home",
-	"invite",
-	"login",
-	"messages",
-	"opportunities",
-	"profile",
-	"score",
-	"settings",
-	"startup",
-	"startups",
-	"team",
-	"upgrade",
-	"work",
-]);
-
-export function normalizeUsername(value: string): string {
-	return value.trim().toLowerCase();
-}
+import { MIN_USERNAME_LENGTH, TEXT } from "../shared/limits";
+import {
+	normalizeUsername,
+	RESERVED_USERNAMES,
+	USERNAME_PATTERN,
+} from "../shared/username";
 
 export function requireUsername(value: string): string {
 	const username = normalizeUsername(value);
 
 	if (!USERNAME_PATTERN.test(username)) {
 		throw new ConvexError(
-			"Username must be 3–20 characters, start with a letter, and use only lowercase letters, numbers, or underscores",
+			`Username must be ${MIN_USERNAME_LENGTH}–${TEXT.username} characters, start with a letter, and use only lowercase letters, numbers, or underscores`,
 		);
 	}
 

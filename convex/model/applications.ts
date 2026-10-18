@@ -2,12 +2,8 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { isUnderway, phaseOf } from "../shared/hackathonPhase";
-import {
-	MAX_APPLICATIONS,
-	MAX_HACKATHON_CARDS,
-	MAX_PARTICIPANTS,
-} from "../shared/limits";
-import { requireHackathonFounder } from "./hackathons";
+import { MAX_APPLICATIONS, MAX_PARTICIPANTS } from "../shared/limits";
+import { loadHackathonCards, requireHackathonFounder } from "./hackathons";
 
 type Ctx = QueryCtx | MutationCtx;
 
@@ -33,6 +29,32 @@ export async function isParticipant(
 ): Promise<boolean> {
 	const application = await getApplication(ctx, hackathonId, userId);
 	return application?.status === "participating";
+}
+
+/** The person's place on a Hackathon of `startup`: its Founder, a Participant, or neither. */
+export async function getHackathonRole(
+	ctx: Ctx,
+	startup: Doc<"startups">,
+	hackathonId: Id<"hackathons">,
+	userId: Id<"users">,
+): Promise<"founder" | "participant" | null> {
+	if (startup.founderId === userId) {
+		return "founder";
+	}
+	return (await isParticipant(ctx, hackathonId, userId)) ? "participant" : null;
+}
+
+/** The Hackathon's Participants' applications. */
+export async function loadParticipants(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"applications">[]> {
+	return await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "participating"),
+		)
+		.take(MAX_PARTICIPANTS);
 }
 
 /** The application and its Hackathon, once the person is confirmed as the Founder. */
@@ -111,10 +133,7 @@ export async function loadApplicationsForFounder(
 	ctx: Ctx,
 	hackathonId: Id<"hackathons">,
 ): Promise<Doc<"applications">[]> {
-	const byStatus = async (
-		status: Doc<"applications">["status"],
-		limit: number,
-	) =>
+	const byStatus = async (status: "applied" | "declined", limit: number) =>
 		limit <= 0
 			? []
 			: await ctx.db
@@ -124,7 +143,7 @@ export async function loadApplicationsForFounder(
 					)
 					.take(limit);
 
-	const participants = await byStatus("participating", MAX_PARTICIPANTS);
+	const participants = await loadParticipants(ctx, hackathonId);
 	const others: Doc<"applications">[] = [];
 	for (const status of ["applied", "declined"] as const) {
 		others.push(...(await byStatus(status, MAX_APPLICATIONS - others.length)));
@@ -138,12 +157,7 @@ export async function loadParticipantProgress(
 	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
 ): Promise<{ done: number; total: number }> {
-	const cards = await ctx.db
-		.query("cards")
-		.withIndex("by_hackathon_and_owner", (q) =>
-			q.eq("hackathonId", hackathonId).eq("ownerId", userId),
-		)
-		.take(MAX_HACKATHON_CARDS);
+	const cards = await loadHackathonCards(ctx, hackathonId, userId);
 	return {
 		done: cards.filter((card) => card.status === "done").length,
 		total: cards.length,

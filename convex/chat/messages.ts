@@ -16,18 +16,12 @@ export const list = query({
 		const userId = await requireUserId(ctx);
 		const { thread } = await requireThreadAccess(ctx, args.threadId, userId);
 
-		return {
-			pinned: await buildMessageViews(
-				ctx,
-				thread,
-				await loadPinnedMessages(ctx, args.threadId),
+		const [pinned, messages] = await Promise.all(
+			[loadPinnedMessages, loadLatestMessages].map(async (load) =>
+				buildMessageViews(ctx, thread, await load(ctx, args.threadId)),
 			),
-			messages: await buildMessageViews(
-				ctx,
-				thread,
-				await loadLatestMessages(ctx, args.threadId),
-			),
-		};
+		);
+		return { pinned, messages };
 	},
 });
 

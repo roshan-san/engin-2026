@@ -41,7 +41,7 @@ export async function loadWorkingOn(
 ): Promise<Map<Id<"users">, WorkingOn>> {
 	const cards = await ctx.db
 		.query("cards")
-		.withIndex("by_startup_and_hackathon_and_status", (q) =>
+		.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
 			q
 				.eq("startupId", startupId)
 				.eq("hackathonId", undefined)

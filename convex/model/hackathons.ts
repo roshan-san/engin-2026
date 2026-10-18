@@ -1,12 +1,10 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
+import { weekOf, weekStart } from "../shared/cycles";
+import { hackathonDates, RUNNING } from "../shared/hackathonPhase";
 import {
-	DECIDE_GRACE_MS,
-	MAX_APPLICATIONS,
 	MAX_HACKATHON_CARDS,
-	MAX_PARTICIPANTS,
 	MIN_HACKATHON_CARDS,
 	TEXT,
 } from "../shared/limits";
@@ -57,14 +55,12 @@ export function requireValidDraft(input: DraftInput, now: number) {
 		);
 	}
 
-	const endsAt = input.startsAt + weeks * WEEK_MS;
 	return {
 		job: input.job,
 		problem: requireLimitedText(input.problem, "Problem", TEXT.problem),
 		weeks,
 		startsAt: input.startsAt,
-		endsAt,
-		decideBy: endsAt + DECIDE_GRACE_MS,
+		...hackathonDates(input.startsAt, weeks),
 		participantsGet: limitText(
 			input.participantsGet,
 			"Participants get",
@@ -91,15 +87,35 @@ export async function requireHackathonFounder(
 	return hackathon;
 }
 
-/** The Cards every Participant starts with: ownerless Cards on the Hackathon. */
-export async function loadTemplateCards(
+/** A Startup's open, live and deciding Hackathons, up to `limit` of each. */
+export async function loadRunningHackathons(
+	ctx: QueryCtx | MutationCtx,
+	startupId: Id<"startups">,
+	limit: number,
+): Promise<Doc<"hackathons">[]> {
+	const byStatus = await Promise.all(
+		RUNNING.map((status) =>
+			ctx.db
+				.query("hackathons")
+				.withIndex("by_startup_and_status", (q) =>
+					q.eq("startupId", startupId).eq("status", status),
+				)
+				.take(limit),
+		),
+	);
+	return byStatus.flat();
+}
+
+/** A Participant's Cards on the Hackathon. Without an owner, the template Cards every Participant starts with. */
+export async function loadHackathonCards(
 	ctx: QueryCtx | MutationCtx,
 	hackathonId: Id<"hackathons">,
+	ownerId?: Id<"users">,
 ): Promise<Doc<"cards">[]> {
 	return await ctx.db
 		.query("cards")
 		.withIndex("by_hackathon_and_owner", (q) =>
-			q.eq("hackathonId", hackathonId).eq("ownerId", undefined),
+			q.eq("hackathonId", hackathonId).eq("ownerId", ownerId),
 		)
 		.take(MAX_HACKATHON_CARDS);
 }
@@ -125,7 +141,7 @@ export async function replaceTemplateCards(
 	hackathon: Pick<Doc<"hackathons">, "_id" | "startupId">,
 	cards: { title: string; notes: string }[],
 ): Promise<void> {
-	for (const old of await loadTemplateCards(ctx, hackathon._id)) {
+	for (const old of await loadHackathonCards(ctx, hackathon._id)) {
 		await ctx.db.delete(old._id);
 	}
 	await insertTemplateCards(ctx, hackathon, cards);
@@ -146,7 +162,7 @@ export async function copyTemplateCardsTo(
 	if (existing) {
 		return;
 	}
-	for (const card of await loadTemplateCards(ctx, hackathon._id)) {
+	for (const card of await loadHackathonCards(ctx, hackathon._id)) {
 		await ctx.db.insert("cards", {
 			startupId: hackathon.startupId,
 			hackathonId: hackathon._id,
@@ -156,40 +172,6 @@ export async function copyTemplateCardsTo(
 			status: "todo",
 		});
 	}
-}
-
-/**
- * Declines up to one batch of applicants still `applied`. Applications are
- * unlimited, so returns true when the batch was full and more may remain.
- */
-export async function declineAppliedBatch(
-	ctx: MutationCtx,
-	hackathonId: Id<"hackathons">,
-): Promise<boolean> {
-	const applied = await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon_and_status", (q) =>
-			q.eq("hackathonId", hackathonId).eq("status", "applied"),
-		)
-		.take(MAX_APPLICATIONS);
-	for (const application of applied) {
-		await ctx.db.patch(application._id, { status: "declined" });
-	}
-	return applied.length === MAX_APPLICATIONS;
-}
-
-/** Participants still waiting for a decision from the Founder. */
-export async function countUndecidedParticipants(
-	ctx: QueryCtx | MutationCtx,
-	hackathonId: Id<"hackathons">,
-): Promise<number> {
-	const participants = await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon_and_status", (q) =>
-			q.eq("hackathonId", hackathonId).eq("status", "participating"),
-		)
-		.take(MAX_PARTICIPANTS);
-	return participants.filter((participant) => !participant.decision).length;
 }
 
 /** Whether the Hackathon passes every filter that is set. `paid` means Participants get something. */

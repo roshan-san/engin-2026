@@ -4,6 +4,7 @@ import { appendActivity } from "../model/activity";
 import { requireUserId } from "../model/auth";
 import {
 	createInvite,
+	loadOpenInvitesTo,
 	normalizeEmail,
 	requireOpenInviteFor,
 } from "../model/invites";
@@ -46,15 +47,7 @@ export const listMine = query({
 			return [];
 		}
 
-		const pending = await ctx.db
-			.query("invites")
-			.withIndex("by_email_and_status_and_expiresAt", (q) =>
-				q
-					.eq("email", normalizeEmail(user.email ?? ""))
-					.eq("status", "pending")
-					.gt("expiresAt", Date.now()),
-			)
-			.take(MAX_INVITES);
+		const pending = await loadOpenInvitesTo(ctx, normalizeEmail(user.email));
 
 		const open = await Promise.all(
 			pending.map(async (invite) => {

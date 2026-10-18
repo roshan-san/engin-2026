@@ -83,18 +83,26 @@ export async function ensureHireInvite(
 	});
 }
 
+/** The pending, unexpired Invites for this normalised email. */
+export async function loadOpenInvitesTo(
+	ctx: QueryCtx | MutationCtx,
+	email: string,
+): Promise<Doc<"invites">[]> {
+	return await ctx.db
+		.query("invites")
+		.withIndex("by_email_and_status_and_expiresAt", (q) =>
+			q.eq("email", email).eq("status", "pending").gt("expiresAt", Date.now()),
+		)
+		.take(MAX_INVITES);
+}
+
 /** The pending, unexpired Invite for this email to the Startup, or null. */
 async function loadOpenInvite(
 	ctx: QueryCtx | MutationCtx,
 	startupId: Id<"startups">,
 	email: string,
 ): Promise<Doc<"invites"> | null> {
-	const pending = await ctx.db
-		.query("invites")
-		.withIndex("by_email_and_status_and_expiresAt", (q) =>
-			q.eq("email", email).eq("status", "pending").gt("expiresAt", Date.now()),
-		)
-		.take(MAX_INVITES);
+	const pending = await loadOpenInvitesTo(ctx, email);
 	return pending.find((invite) => invite.startupId === startupId) ?? null;
 }
 

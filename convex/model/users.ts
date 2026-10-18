@@ -44,6 +44,11 @@ export async function loadPublicUser(
 	return user ? toPublicUser(user) : null;
 }
 
+/** A verified investor, who sees a Startup's full public Activity. */
+export function isInvestorPro(user: Doc<"users"> | null): boolean {
+	return user?.investorVerifiedAt !== undefined;
+}
+
 /** Set weekly by the Rating run (`model/rating.ts`). */
 export function isProvisional(user: Doc<"users">): boolean {
 	return user.provisional ?? true;
@@ -77,7 +82,7 @@ export function toOwnProfile(user: Doc<"users">) {
 		...toPublicProfile(user),
 		...toProfileAbout(user),
 		email: user.email ?? null,
-		isInvestorPro: user.investorVerifiedAt !== undefined,
+		isInvestorPro: isInvestorPro(user),
 	};
 }
 
@@ -108,46 +113,61 @@ export async function loadProfileRecord(
 	now: number,
 ) {
 	const weeks = countedWeeks(user._creationTime, shiftWeek(weekOf(now), -1));
-	const parts = buildParts(await loadPersonCounts(ctx, user._id, weeks));
-	const outcomes = await loadOutcomes(ctx, user._id);
-
-	const hackathons = [];
-	for (const { outcome, hackathon } of outcomes) {
-		const startup = await ctx.db.get(hackathon.startupId);
-		if (!startup) continue;
-		hackathons.push({
-			startup: { name: startup.name, slug: startup.slug },
-			job: { role: hackathon.job.role },
-			outcome,
-			endsAt: hackathon.endsAt,
-		});
-	}
-
-	const rows = await ctx.db
-		.query("activity")
-		.withIndex("by_actor_and_kind_and_selfVerified_and_week", (q) =>
-			q
-				.eq("actorId", user._id)
-				.eq("kind", "card_verified")
-				.eq("selfVerified", false),
-		)
-		.order("desc")
-		.take(MAX_PROFILE_ROWS);
+	const [weekCounts, outcomes, rows] = await Promise.all([
+		loadPersonCounts(ctx, user._id, weeks),
+		loadOutcomes(ctx, user._id),
+		ctx.db
+			.query("activity")
+			.withIndex("by_actor_and_kind_and_selfVerified_and_week", (q) =>
+				q
+					.eq("actorId", user._id)
+					.eq("kind", "card_verified")
+					.eq("selfVerified", false),
+			)
+			.order("desc")
+			.take(MAX_PROFILE_ROWS),
+	]);
+	const parts = buildParts(weekCounts);
 	const capped = rows.length === MAX_PROFILE_ROWS;
 	const counts = new Map<Id<"startups">, number>();
 	for (const row of rows) {
 		counts.set(row.startupId, (counts.get(row.startupId) ?? 0) + 1);
 	}
-	const work = [];
-	for (const [startupId, count] of counts) {
-		const startup = await ctx.db.get(startupId);
-		if (!startup) continue;
-		work.push({
-			startup: { name: startup.name, slug: startup.slug },
-			count,
-			capped,
-		});
-	}
+
+	// Each Startup once, for both lists.
+	const startupIds = new Set([
+		...outcomes.map(({ hackathon }) => hackathon.startupId),
+		...counts.keys(),
+	]);
+	const startups = new Map(
+		await Promise.all(
+			[...startupIds].map(
+				async (startupId) => [startupId, await ctx.db.get(startupId)] as const,
+			),
+		),
+	);
+	const nameOf = (startupId: Id<"startups">) => {
+		const startup = startups.get(startupId);
+		return startup ? { name: startup.name, slug: startup.slug } : null;
+	};
+
+	const hackathons = outcomes.flatMap(({ outcome, hackathon }) => {
+		const startup = nameOf(hackathon.startupId);
+		return startup
+			? [
+					{
+						startup,
+						job: { role: hackathon.job.role },
+						outcome,
+						endsAt: hackathon.endsAt,
+					},
+				]
+			: [];
+	});
+	const work = [...counts].flatMap(([startupId, count]) => {
+		const startup = nameOf(startupId);
+		return startup ? [{ startup, count, capped }] : [];
+	});
 
 	return {
 		parts: {

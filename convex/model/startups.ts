@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { shiftWeek, weekStart } from "../shared/cycles";
-import { MAX_LISTED_HACKATHONS } from "../shared/limits";
+import { MAX_LISTED_HACKATHONS, MAX_USER_STARTUPS } from "../shared/limits";
 import { RATING } from "./rating";
 import { slugify } from "./text";
 import { loadPublicUser } from "./users";
@@ -16,16 +16,35 @@ export async function getStartupBySlug(
 		.unique();
 }
 
+/** The Startups this person founded. Billing counts Hackathons across them, so `startups.create` holds the cap exactly. */
+export async function loadFoundedStartups(
+	ctx: QueryCtx | MutationCtx,
+	userId: Id<"users">,
+): Promise<Doc<"startups">[]> {
+	return await ctx.db
+		.query("startups")
+		.withIndex("by_founder", (q) => q.eq("founderId", userId))
+		.take(MAX_USER_STARTUPS);
+}
+
 /** A Startup's Hackathons taking applications. */
 export async function loadOpenHackathons(
 	ctx: QueryCtx | MutationCtx,
 	startupId: Id<"startups">,
 ): Promise<Doc<"hackathons">[]> {
-	const hackathons = await ctx.db
+	return await ctx.db
 		.query("hackathons")
-		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
+		.withIndex("by_startup_and_status", (q) =>
+			q.eq("startupId", startupId).eq("status", "open"),
+		)
 		.take(MAX_LISTED_HACKATHONS);
-	return hackathons.filter((hackathon) => hackathon.status === "open");
+}
+
+export async function loadLogoUrl(
+	ctx: QueryCtx | MutationCtx,
+	startup: Doc<"startups">,
+): Promise<string | null> {
+	return startup.logo ? await ctx.storage.getUrl(startup.logo) : null;
 }
 
 /** `acme`, then `acme-2`, `acme-3`, … until no Startup has it. */
@@ -52,7 +71,7 @@ export async function toPublicStartup(
 		slug: startup.slug,
 		oneLiner: startup.oneLiner ?? null,
 		website: startup.website ?? null,
-		logo: startup.logo ? await ctx.storage.getUrl(startup.logo) : null,
+		logo: await loadLogoUrl(ctx, startup),
 		stage: startup.stage,
 		category: startup.category,
 		city: startup.city,
@@ -114,7 +133,7 @@ export async function toExploreStartup(
 		rating: startup.rating,
 		ratingChange: startup.ratingChange,
 		isProvisional: startup.provisional,
-		logoUrl: startup.logo ? await ctx.storage.getUrl(startup.logo) : null,
+		logoUrl: await loadLogoUrl(ctx, startup),
 		strip: buildRhythmStrip(startup.rhythm, startup.ratedThrough ?? endWeek),
 		isHiring: (await loadOpenHackathons(ctx, startup._id)).length > 0,
 	};

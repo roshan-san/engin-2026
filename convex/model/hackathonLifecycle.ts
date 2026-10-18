@@ -1,18 +1,32 @@
+import { ConvexError } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import { MAX_PARTICIPANTS } from "../shared/limits";
+import { MAX_APPLICATIONS } from "../shared/limits";
+import { publishBlockFor, publishBlockMessage } from "../shared/plans";
 import { appendActivity } from "./activity";
-import { declineAppliedBatch } from "./hackathons";
+import { loadParticipants } from "./applications";
+import { loadPlanView } from "./billing";
 
 // Every write to a Hackathon's `status` lives here. Explicit return types: this file
 // schedules `internal.hiring.hackathons`, whose handlers call back into it, so inference would loop.
 
-/** Opens a draft for applications and schedules each step after it. The caller checks the Founder and billing. */
+/** Opens a draft for applications, when the Founder's plan allows, and schedules each step after it. The caller checks `founderId` is the Founder. */
 export async function publish(
 	ctx: MutationCtx,
 	hackathon: Doc<"hackathons">,
+	founderId: Id<"users">,
 ): Promise<void> {
+	if (hackathon.status !== "draft") {
+		throw new ConvexError("Already published");
+	}
+	if (hackathon.startsAt <= Date.now()) {
+		throw new ConvexError("Start on a coming Monday");
+	}
+	const block = publishBlockFor(await loadPlanView(ctx, founderId));
+	if (block) {
+		throw new ConvexError(publishBlockMessage(block));
+	}
 	await ctx.db.patch(hackathon._id, {
 		status: "open",
 		publishedAt: Date.now(),
@@ -49,11 +63,7 @@ export async function goLive(
 		return;
 	}
 
-	if (await declineAppliedBatch(ctx, hackathon._id)) {
-		await ctx.scheduler.runAfter(0, internal.hiring.hackathons.declineApplied, {
-			hackathonId: hackathon._id,
-		});
-	}
+	await declineAppliedBatch(ctx, hackathon._id);
 
 	const participants = await loadParticipants(ctx, hackathon._id);
 	if (participants.length === 0) {
@@ -66,6 +76,46 @@ export async function goLive(
 		await ctx.scheduler.runAfter(0, internal.hiring.hackathons.copyCardsFor, {
 			hackathonId: hackathon._id,
 			userId: participant.userId,
+		});
+	}
+}
+
+/** Declines the rest of the applicants not picked, once the Hackathon is past open. */
+export async function declineApplied(
+	ctx: MutationCtx,
+	hackathonId: Id<"hackathons">,
+): Promise<void> {
+	const hackathon = await ctx.db.get(hackathonId);
+	if (
+		!hackathon ||
+		hackathon.status === "draft" ||
+		hackathon.status === "open"
+	) {
+		return;
+	}
+	await declineAppliedBatch(ctx, hackathon._id);
+}
+
+/**
+ * Declines one batch of applicants still `applied`. Applications are unlimited,
+ * so a full batch schedules the next.
+ */
+async function declineAppliedBatch(
+	ctx: MutationCtx,
+	hackathonId: Id<"hackathons">,
+): Promise<void> {
+	const applied = await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "applied"),
+		)
+		.take(MAX_APPLICATIONS);
+	for (const application of applied) {
+		await ctx.db.patch(application._id, { status: "declined" });
+	}
+	if (applied.length === MAX_APPLICATIONS) {
+		await ctx.scheduler.runAfter(0, internal.hiring.hackathons.declineApplied, {
+			hackathonId,
 		});
 	}
 }
@@ -130,16 +180,4 @@ async function finish(
 			hackathonId: hackathon._id,
 		});
 	}
-}
-
-async function loadParticipants(
-	ctx: MutationCtx,
-	hackathonId: Id<"hackathons">,
-): Promise<Doc<"applications">[]> {
-	return await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon_and_status", (q) =>
-			q.eq("hackathonId", hackathonId).eq("status", "participating"),
-		)
-		.take(MAX_PARTICIPANTS);
 }

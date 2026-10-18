@@ -120,3 +120,6 @@ export const subscriptionStatus = v.union(
 	v.literal("failed"),
 	v.literal("expired"),
 );
+
+/** How long a Hackathon runs, in weeks. */
+export const hackathonWeeks = v.union(v.literal(1), v.literal(2));

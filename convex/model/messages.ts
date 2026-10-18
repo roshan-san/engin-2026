@@ -8,8 +8,9 @@ import {
 	TEXT,
 } from "../shared/limits";
 import { parseMentions } from "../shared/mentions";
+import { loadImageUrls } from "./files";
 import { limitText } from "./text";
-import { loadPublicUser } from "./users";
+import { loadPublicUser, type PublicUser } from "./users";
 
 /** A trimmed message that has text, images, or both. */
 export function parseMessage(
@@ -67,15 +68,18 @@ async function loadMentionedCards(
 	if (thread.kind !== "team") {
 		return [];
 	}
-	const mentions = [];
-	for (const id of parseMentions(body).slice(0, MAX_MESSAGE_MENTIONS)) {
-		const cardId = ctx.db.normalizeId("cards", id);
-		const card = cardId ? await ctx.db.get(cardId) : null;
-		if (card && card.startupId === thread.startupId && !card.hackathonId) {
-			mentions.push({ cardId: card._id, title: card.title });
-		}
-	}
-	return mentions;
+	const mentions = await Promise.all(
+		parseMentions(body)
+			.slice(0, MAX_MESSAGE_MENTIONS)
+			.map(async (id) => {
+				const cardId = ctx.db.normalizeId("cards", id);
+				const card = cardId ? await ctx.db.get(cardId) : null;
+				return card && card.startupId === thread.startupId && !card.hackathonId
+					? [{ cardId: card._id, title: card.title }]
+					: [];
+			}),
+	);
+	return mentions.flat();
 }
 
 export async function buildMessageViews(
@@ -83,39 +87,38 @@ export async function buildMessageViews(
 	thread: Doc<"threads">,
 	messages: Doc<"messages">[],
 ) {
-	const authors = new Map<
-		Id<"users">,
-		Awaited<ReturnType<typeof loadPublicUser>>
-	>();
-	const views = [];
-	for (const message of messages) {
-		if (!authors.has(message.authorId)) {
-			authors.set(
-				message.authorId,
-				await loadPublicUser(ctx, message.authorId),
-			);
-		}
-		const author = authors.get(message.authorId);
+	// One read per author, however many messages they wrote.
+	const authors = new Map<Id<"users">, Promise<PublicUser | null>>();
+	const authorOf = (authorId: Id<"users">) => {
+		let author = authors.get(authorId);
 		if (!author) {
-			continue;
+			author = loadPublicUser(ctx, authorId);
+			authors.set(authorId, author);
 		}
+		return author;
+	};
 
-		const imageUrls: string[] = [];
-		for (const image of message.images) {
-			const url = await ctx.storage.getUrl(image);
-			if (url) {
-				imageUrls.push(url);
-			}
-		}
-		views.push({
-			_id: message._id,
-			author,
-			body: message.body,
-			mentions: await loadMentionedCards(ctx, thread, message.body),
-			imageUrls,
-			pinned: message.pinned,
-			at: message._creationTime,
-		});
-	}
-	return views;
+	const views = await Promise.all(
+		messages.map(async (message) => {
+			const [author, mentions, imageUrls] = await Promise.all([
+				authorOf(message.authorId),
+				loadMentionedCards(ctx, thread, message.body),
+				loadImageUrls(ctx, message.images),
+			]);
+			return author
+				? [
+						{
+							_id: message._id,
+							author,
+							body: message.body,
+							mentions,
+							imageUrls,
+							pinned: message.pinned,
+							at: message._creationTime,
+						},
+					]
+				: [];
+		}),
+	);
+	return views.flat();
 }

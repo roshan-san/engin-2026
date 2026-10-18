@@ -1,28 +1,28 @@
+import { type ObjectType, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { RUNNING } from "../shared/hackathonPhase";
-import {
-	MAX_OPEN_HACKATHONS,
-	MAX_USER_STARTUPS,
-	MAX_USER_SUBSCRIPTIONS,
-} from "../shared/limits";
-import {
-	PLANS,
-	type PlanKey,
-	type PlanView,
-	type PublishBlock,
-	publishBlockFor,
-} from "../shared/plans";
+import { MAX_OPEN_HACKATHONS, MAX_USER_SUBSCRIPTIONS } from "../shared/limits";
+import { PLANS, type PlanKey, type PlanView } from "../shared/plans";
+import { subscriptionStatus } from "../shared/validators";
+import { loadRunningHackathons } from "./hackathons";
+import { loadFoundedStartups } from "./startups";
 
-/** The Founder's plan: their active subscription that runs longest, or null. */
-export async function loadPlan(
+async function loadSubscriptions(
 	ctx: QueryCtx,
 	userId: Id<"users">,
-): Promise<Doc<"subscriptions"> | null> {
-	const subscriptions = await ctx.db
+): Promise<Doc<"subscriptions">[]> {
+	return await ctx.db
 		.query("subscriptions")
 		.withIndex("by_user", (q) => q.eq("userId", userId))
 		.take(MAX_USER_SUBSCRIPTIONS);
+}
+
+/** The Founder's plan: their active subscription that runs longest, or null. */
+async function loadPlan(
+	ctx: QueryCtx,
+	userId: Id<"users">,
+): Promise<Doc<"subscriptions"> | null> {
+	const subscriptions = await loadSubscriptions(ctx, userId);
 	let plan: Doc<"subscriptions"> | null = null;
 	for (const subscription of subscriptions) {
 		if (
@@ -43,10 +43,7 @@ export async function hasPaymentIssue(
 	ctx: QueryCtx,
 	userId: Id<"users">,
 ): Promise<boolean> {
-	const subscriptions = await ctx.db
-		.query("subscriptions")
-		.withIndex("by_user", (q) => q.eq("userId", userId))
-		.take(MAX_USER_SUBSCRIPTIONS);
+	const subscriptions = await loadSubscriptions(ctx, userId);
 	if (subscriptions.some((subscription) => subscription.status === "active")) {
 		return false;
 	}
@@ -54,17 +51,6 @@ export async function hasPaymentIssue(
 		(subscription) =>
 			subscription.status === "on_hold" || subscription.status === "paused",
 	);
-}
-
-async function loadFoundedStartupIds(
-	ctx: QueryCtx,
-	userId: Id<"users">,
-): Promise<Id<"startups">[]> {
-	const startups = await ctx.db
-		.query("startups")
-		.withIndex("by_founder", (q) => q.eq("founderId", userId))
-		.take(MAX_USER_STARTUPS);
-	return startups.map((startup) => startup._id);
 }
 
 /** Hackathons published since `since` across the Startups, counting up to `limit`. */
@@ -93,20 +79,12 @@ async function countRunning(
 	ctx: QueryCtx,
 	startupIds: Id<"startups">[],
 ): Promise<number> {
-	let count = 0;
-	for (const startupId of startupIds) {
-		for (const status of RUNNING) {
-			const running = await ctx.db
-				.query("hackathons")
-				.withIndex("by_startup_and_status", (q) =>
-					q.eq("startupId", startupId).eq("status", status),
-				)
-				.take(MAX_OPEN_HACKATHONS - count);
-			count += running.length;
-			if (count >= MAX_OPEN_HACKATHONS) return count;
-		}
-	}
-	return count;
+	const running = await Promise.all(
+		startupIds.map((startupId) =>
+			loadRunningHackathons(ctx, startupId, MAX_OPEN_HACKATHONS),
+		),
+	);
+	return Math.min(running.flat().length, MAX_OPEN_HACKATHONS);
 }
 
 /** The Founder's plan with what's left of it, or null without Pro. */
@@ -119,7 +97,9 @@ export async function loadPlanView(
 		return null;
 	}
 	const allowance = PLANS[plan.plan].hackathonsPerPeriod;
-	const startupIds = await loadFoundedStartupIds(ctx, userId);
+	const startupIds = (await loadFoundedStartups(ctx, userId)).map(
+		(startup) => startup._id,
+	);
 	const published = await countPublishedSince(
 		ctx,
 		startupIds,
@@ -133,14 +113,6 @@ export async function loadPlanView(
 		hackathonsLeft: allowance - published,
 		running: await countRunning(ctx, startupIds),
 	};
-}
-
-/** Why this Founder can't publish now, or null when they can. */
-export async function canPublishHackathon(
-	ctx: QueryCtx,
-	userId: Id<"users">,
-): Promise<PublishBlock | null> {
-	return publishBlockFor(await loadPlanView(ctx, userId));
 }
 
 const PRODUCT_ENV: Record<PlanKey, string> = {
@@ -166,18 +138,20 @@ export function planForProduct(productId: string): PlanKey | null {
 }
 
 /** One Dodo subscription event, flattened by the webhook. */
-export type SubscriptionEvent = {
-	dodoSubscriptionId: string;
-	dodoCustomerId: string;
-	productId: string;
-	status: Doc<"subscriptions">["status"];
-	periodStart: number;
-	periodEnd: number;
+export const subscriptionEvent = {
+	dodoSubscriptionId: v.string(),
+	dodoCustomerId: v.string(),
+	productId: v.string(),
+	status: subscriptionStatus,
+	periodStart: v.number(),
+	periodEnd: v.number(),
 	/** `metadata.userId`, set by checkout. */
-	userId?: string;
+	userId: v.optional(v.string()),
 	/** When Dodo sent the event. */
-	eventAt: number;
+	eventAt: v.number(),
 };
+
+type SubscriptionEvent = ObjectType<typeof subscriptionEvent>;
 
 /**
  * Copies a Dodo subscription event in. Bad data is logged and dropped, never

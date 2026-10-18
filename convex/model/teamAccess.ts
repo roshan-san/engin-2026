@@ -13,16 +13,21 @@ export async function getTeamRole(
 	userId: Id<"users">,
 ): Promise<TeamRole | null> {
 	const startup = await ctx.db.get(startupId);
-	if (!startup) {
-		return null;
-	}
+	return startup ? await roleOn(ctx, startup, userId) : null;
+}
+
+async function roleOn(
+	ctx: Ctx,
+	startup: Doc<"startups">,
+	userId: Id<"users">,
+): Promise<TeamRole | null> {
 	if (startup.founderId === userId) {
 		return "founder";
 	}
 	const contributor = await ctx.db
 		.query("contributors")
 		.withIndex("by_startup_and_user", (q) =>
-			q.eq("startupId", startupId).eq("userId", userId),
+			q.eq("startupId", startup._id).eq("userId", userId),
 		)
 		.unique();
 	return contributor ? "contributor" : null;
@@ -34,7 +39,7 @@ export async function requireTeam(
 	userId: Id<"users">,
 ): Promise<{ startup: Doc<"startups">; role: TeamRole }> {
 	const startup = await ctx.db.get(startupId);
-	const role = startup ? await getTeamRole(ctx, startupId, userId) : null;
+	const role = startup ? await roleOn(ctx, startup, userId) : null;
 	if (!startup || !role) {
 		throw new ConvexError("You're not on this startup");
 	}

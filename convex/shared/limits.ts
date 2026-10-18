@@ -42,6 +42,8 @@ export const INVITE_TTL_MS = 14 * DAY_MS;
 /** How long after a Hackathon ends the Founder has to decide. */
 export const DECIDE_GRACE_MS = 7 * DAY_MS;
 
+export const MIN_USERNAME_LENGTH = 3;
+
 /** Longest allowed text per field. */
 export const TEXT = {
 	cardTitle: 120,
@@ -57,6 +59,7 @@ export const TEXT = {
 	walkthroughNotes: 2000,
 	message: 2000,
 	bio: 280,
+	username: 20,
 	sessionId: 64,
 };
 

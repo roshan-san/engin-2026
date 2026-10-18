@@ -1,18 +1,18 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
-import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
-import { toMyApplicationView } from "../model/applications";
+import {
+	getApplication,
+	loadParticipants,
+	toMyApplicationView,
+} from "../model/applications";
 import { requireUserId } from "../model/auth";
-import { canPublishHackathon } from "../model/billing";
 import {
 	copyTemplateCardsTo,
-	countUndecidedParticipants,
-	declineAppliedBatch,
 	draftArgs,
 	insertTemplateCards,
-	loadTemplateCards,
+	loadHackathonCards,
 	matchesExplore,
 	replaceTemplateCards,
 	requireHackathonFounder,
@@ -21,18 +21,17 @@ import {
 	toExploreHackathon,
 } from "../model/hackathons";
 import * as lifecycle from "../model/hackathonLifecycle";
-import { type HiringRecord, loadHiringRecord } from "../model/hiringRecord";
-import { toPublicStartup } from "../model/startups";
+import { loadHackathonCardsInReview } from "../model/cards";
+import {
+	type HiringRecord,
+	loadHiringRecord,
+	tallyParticipants,
+} from "../model/hiringRecord";
+import { loadLogoUrl, toPublicStartup } from "../model/startups";
 import { getTeamRole, requireFounder, requireTeam } from "../model/teamAccess";
 import { phaseOf } from "../shared/hackathonPhase";
-import {
-	MAX_EXPLORE_ROWS,
-	MAX_HACKATHON_CARDS,
-	MAX_LISTED_HACKATHONS,
-	MAX_PARTICIPANTS,
-} from "../shared/limits";
-import { publishBlockMessage } from "../shared/plans";
-import { jobRole } from "../shared/validators";
+import { MAX_EXPLORE_ROWS, MAX_LISTED_HACKATHONS } from "../shared/limits";
+import { hackathonWeeks, jobRole } from "../shared/validators";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -53,18 +52,11 @@ export const list = query({
 
 		return await Promise.all(
 			visible.map(async (hackathon) => {
-				const participants = await ctx.db
-					.query("applications")
-					.withIndex("by_hackathon_and_status", (q) =>
-						q.eq("hackathonId", hackathon._id).eq("status", "participating"),
-					)
-					.take(MAX_PARTICIPANTS);
-				const inReview = await ctx.db
-					.query("cards")
-					.withIndex("by_hackathon_and_status", (q) =>
-						q.eq("hackathonId", hackathon._id).eq("status", "review"),
-					)
-					.take(MAX_PARTICIPANTS * MAX_HACKATHON_CARDS);
+				const [participants, inReview] = await Promise.all([
+					loadParticipants(ctx, hackathon._id),
+					loadHackathonCardsInReview(ctx, hackathon._id),
+				]);
+				const tally = tallyParticipants(hackathon, participants);
 				return {
 					_id: hackathon._id,
 					job: hackathon.job,
@@ -74,22 +66,13 @@ export const list = query({
 					endsAt: hackathon.endsAt,
 					decideBy: hackathon.decideBy,
 					applicantCount: hackathon.applicantCount,
-					participantCount: hackathon.participantCount,
-					toReview: inReview.filter((card) => card.ownerId).length,
+					participantCount: participants.length,
+					toReview: inReview.length,
 					toDecide:
 						phaseOf(hackathon, Date.now()) === "deciding"
-							? await countUndecidedParticipants(ctx, hackathon._id)
+							? participants.filter((p) => !p.decision).length
 							: 0,
-					hires: participants.filter((b) => b.decision === "hired").length,
-					promisesKept: participants.filter((b) => b.promiseKept === true)
-						.length,
-					promisesAnswered: participants.filter(
-						(b) => b.promiseKept !== undefined,
-					).length,
-					undecided:
-						hackathon.status === "done"
-							? participants.filter((b) => !b.decision).length
-							: 0,
+					...tally,
 				};
 			}),
 		);
@@ -110,7 +93,7 @@ export const get = query({
 			return null;
 		}
 
-		return { hackathon, cards: await loadTemplateCards(ctx, hackathon._id) };
+		return { hackathon, cards: await loadHackathonCards(ctx, hackathon._id) };
 	},
 });
 
@@ -130,12 +113,7 @@ export const getPublic = query({
 
 		const userId = await getAuthUserId(ctx);
 		const application = userId
-			? await ctx.db
-					.query("applications")
-					.withIndex("by_hackathon_and_user", (q) =>
-						q.eq("hackathonId", hackathon._id).eq("userId", userId),
-					)
-					.unique()
+			? await getApplication(ctx, hackathon._id, userId)
 			: null;
 
 		const publicStartup = await toPublicStartup(ctx, startup);
@@ -146,7 +124,7 @@ export const getPublic = query({
 			problem: hackathon.problem,
 			/** The Card titles, only for people who are signed in. */
 			cards: userId
-				? (await loadTemplateCards(ctx, hackathon._id)).map(
+				? (await loadHackathonCards(ctx, hackathon._id)).map(
 						(card) => card.title,
 					)
 				: null,
@@ -179,7 +157,7 @@ export const getPublic = query({
 export const explore = query({
 	args: {
 		role: v.optional(jobRole),
-		weeks: v.optional(v.union(v.literal(1), v.literal(2))),
+		weeks: v.optional(hackathonWeeks),
 		paid: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args) => {
@@ -202,6 +180,9 @@ export const explore = query({
 			.filter((hackathon) => matchesExplore(hackathon, args))
 			.slice(0, MAX_EXPLORE_ROWS);
 
+		const startupIds = [
+			...new Set(shown.map((hackathon) => hackathon.startupId)),
+		];
 		const startups = new Map<
 			Id<"startups">,
 			{
@@ -209,25 +190,21 @@ export const explore = query({
 				hiringRecord: HiringRecord;
 				logoUrl: string | null;
 			} | null
-		>();
-		for (const { startupId } of shown) {
-			if (startups.has(startupId)) {
-				continue;
-			}
-			const startup = await ctx.db.get(startupId);
-			startups.set(
-				startupId,
-				startup
-					? {
-							startup,
-							hiringRecord: await loadHiringRecord(ctx, startupId),
-							logoUrl: startup.logo
-								? await ctx.storage.getUrl(startup.logo)
-								: null,
-						}
-					: null,
-			);
-		}
+		>(
+			await Promise.all(
+				startupIds.map(async (startupId) => {
+					const startup = await ctx.db.get(startupId);
+					if (!startup) {
+						return [startupId, null] as const;
+					}
+					const [hiringRecord, logoUrl] = await Promise.all([
+						loadHiringRecord(ctx, startupId),
+						loadLogoUrl(ctx, startup),
+					]);
+					return [startupId, { startup, hiringRecord, logoUrl }] as const;
+				}),
+			),
+		);
 
 		return shown.flatMap((hackathon) => {
 			const loaded = startups.get(hackathon.startupId);
@@ -255,7 +232,6 @@ export const create = mutation({
 		const hackathonId = await ctx.db.insert("hackathons", {
 			startupId: args.startupId,
 			status: "draft",
-			participantCount: 0,
 			applicantCount: 0,
 			...draft,
 		});
@@ -297,19 +273,7 @@ export const publish = mutation({
 			args.hackathonId,
 			userId,
 		);
-		if (hackathon.status !== "draft") {
-			throw new ConvexError("Already published");
-		}
-		if (hackathon.startsAt <= Date.now()) {
-			throw new ConvexError("Start on a coming Monday");
-		}
-
-		const block = await canPublishHackathon(ctx, userId);
-		if (block) {
-			throw new ConvexError(publishBlockMessage(block));
-		}
-
-		await lifecycle.publish(ctx, hackathon);
+		await lifecycle.publish(ctx, hackathon, userId);
 	},
 });
 
@@ -324,23 +288,7 @@ export const goLive = internalMutation({
 export const declineApplied = internalMutation({
 	args: { hackathonId: v.id("hackathons") },
 	handler: async (ctx, args) => {
-		const hackathon = await ctx.db.get(args.hackathonId);
-		if (
-			!hackathon ||
-			hackathon.status === "draft" ||
-			hackathon.status === "open"
-		) {
-			return;
-		}
-		if (await declineAppliedBatch(ctx, hackathon._id)) {
-			await ctx.scheduler.runAfter(
-				0,
-				internal.hiring.hackathons.declineApplied,
-				{
-					hackathonId: hackathon._id,
-				},
-			);
-		}
+		await lifecycle.declineApplied(ctx, args.hackathonId);
 	},
 });
 
