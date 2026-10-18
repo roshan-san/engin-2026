@@ -76,3 +76,30 @@ export function pickLanding(
 		? lastPlace.path
 		: "/home";
 }
+
+declare module "@tanstack/react-router" {
+	interface HistoryState {
+		/** Set by Sign out on its trip to the landing page, which signs you out on arrival. */
+		signingOut?: true;
+	}
+}
+
+/** What the landing page shows. */
+export type LandingView = "wait" | "signOut" | "redirect" | "page";
+
+/**
+ * Decides the landing page: a signed-in visitor goes to their last place,
+ * unless they arrived through Sign out, in which case they're signed out here.
+ */
+export function landingView(
+	auth: { readonly isLoading: boolean; readonly isAuthenticated: boolean },
+	signingOut: boolean,
+): LandingView {
+	if (auth.isLoading) {
+		return "wait";
+	}
+	if (auth.isAuthenticated) {
+		return signingOut ? "signOut" : "redirect";
+	}
+	return "page";
+}

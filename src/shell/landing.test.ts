@@ -1,6 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+	landingView,
 	pickLanding,
 	readLastPlace,
 	rememberedFrom,
@@ -165,5 +166,29 @@ describe("remembered place with blocked storage", () => {
 		});
 
 		expect(readLastPlace()).toBeNull();
+	});
+});
+
+describe("landingView", () => {
+	const signedIn = { isLoading: false, isAuthenticated: true };
+	const signedOut = { isLoading: false, isAuthenticated: false };
+
+	it("waits while sign-in state is loading", () => {
+		expect(landingView({ isLoading: true, isAuthenticated: false }, true)).toBe(
+			"wait",
+		);
+	});
+
+	it("sends a signed-in visitor to their last place", () => {
+		expect(landingView(signedIn, false)).toBe("redirect");
+	});
+
+	it("signs out a signed-in visitor who arrived through Sign out, instead of sending them back", () => {
+		expect(landingView(signedIn, true)).toBe("signOut");
+	});
+
+	it("shows the landing page once signed out, whether or not Sign out brought them", () => {
+		expect(landingView(signedOut, true)).toBe("page");
+		expect(landingView(signedOut, false)).toBe("page");
 	});
 });

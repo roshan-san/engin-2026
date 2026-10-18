@@ -1,5 +1,12 @@
-import { useConvexAuth } from "@convex-dev/auth/react";
-import { Link, Navigate } from "@tanstack/react-router";
+import { useAuthActions, useConvexAuth } from "@convex-dev/auth/react";
+import {
+	Link,
+	Navigate,
+	useLocation,
+	useNavigate,
+	useRouter,
+} from "@tanstack/react-router";
+import { useEffect } from "react";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { TILE } from "~/components/tile";
 import { BoardMock } from "~/features/marketing/BoardMock";
@@ -8,7 +15,7 @@ import { Pricing } from "~/features/marketing/Pricing";
 import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { POST_INTENT_PATH } from "~/features/people/home/homeIntent";
 import { cn } from "~/lib/utils";
-import { pickLanding, readLastPlace } from "~/shell/landing";
+import { landingView, pickLanding, readLastPlace } from "~/shell/landing";
 import { PublicShell } from "~/shell/PublicShell";
 import { usePlaces } from "~/shell/usePlaces";
 
@@ -57,14 +64,42 @@ function LandingRedirect() {
 	return <Navigate to={pickLanding(places, readLastPlace())} replace />;
 }
 
-export function LandingPage() {
-	const { isAuthenticated, isLoading } = useConvexAuth();
+/**
+ * Signs you out once Sign out's trip here wasn't stopped by unsaved work, then
+ * drops the marker so coming Back to this entry later doesn't sign you out again.
+ */
+function SigningOut() {
+	const { signOut } = useAuthActions();
+	const navigate = useNavigate();
+	const router = useRouter();
 
-	if (isLoading) {
+	useEffect(() => {
+		void signOut().then(() => {
+			if (router.state.location.state.signingOut) {
+				void navigate({ to: "/", replace: true });
+			}
+		});
+	}, [signOut, navigate, router]);
+
+	return <GlobalSpinner />;
+}
+
+export function LandingPage() {
+	const auth = useConvexAuth();
+	const signingOut = useLocation({
+		select: (location) => location.state.signingOut === true,
+	});
+	const view = landingView(auth, signingOut);
+
+	if (view === "wait") {
 		return <GlobalSpinner />;
 	}
 
-	if (isAuthenticated) {
+	if (view === "signOut") {
+		return <SigningOut />;
+	}
+
+	if (view === "redirect") {
 		return <LandingRedirect />;
 	}
 
