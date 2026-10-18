@@ -1,37 +1,18 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { MAX_MESSAGE_IMAGES, TEXT } from "@convex/shared/limits";
-import { mentionToken, parseMentions } from "@convex/shared/mentions";
-import { ImageIcon, SendIcon, XIcon } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { mentionToken } from "@convex/shared/mentions";
+import { ImageIcon, SendIcon } from "lucide-react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { isSendKey } from "~/features/work/board/keys";
-import { errorMessage } from "~/lib/errors";
-import { pickImages } from "~/lib/images";
 import { isCoarsePointer } from "~/lib/platform";
-import { useUpload } from "~/lib/useUpload";
 import { cn } from "~/lib/utils";
 import { MentionPicker } from "./MentionPicker";
-import { useMentionCards } from "./useMentionCards";
-
-/** The most Cards the picker lists at once. */
-const MAX_OPTIONS = 8;
-
-type Picture = {
-	readonly key: string;
-	readonly previewUrl: string;
-	/** `null` while the file is still uploading. */
-	readonly storageId: Id<"_storage"> | null;
-};
-
-/** The `#query` being typed right before the caret, if any. */
-function findTrigger(text: string, caret: number) {
-	const match = text.slice(0, caret).match(/(?:^|\s)#([^\s#]*)$/);
-	if (!match) return null;
-	return { start: caret - match[1].length - 1, query: match[1] };
-}
+import { PictureStrip } from "./PictureStrip";
+import { useMentions } from "./useMentions";
+import { usePictures } from "./usePictures";
 
 /** Write a message: text, pasted or dropped images, and in Team `#` to mention a Card. */
 export function Composer({
@@ -45,40 +26,36 @@ export function Composer({
 	/** The Board whose Cards `#` mentions. Team threads only. */
 	readonly mentionStartupId?: Id<"startups">;
 }) {
-	const cards = useMentionCards(mentionStartupId);
-	const { upload } = useUpload();
 	const [text, setText] = useState("");
 	const [caret, setCaret] = useState(0);
-	const [dismissedAt, setDismissedAt] = useState<number | null>(null);
-	const [activeId, setActiveId] = useState("");
-	const [pictures, setPictures] = useState<Picture[]>([]);
 	const [isSending, setIsSending] = useState(false);
 	const [isDragOver, setIsDragOver] = useState(false);
 	const textarea = useRef<HTMLTextAreaElement>(null);
 	const fileInput = useRef<HTMLInputElement>(null);
-	const picturesRef = useRef<Picture[]>([]);
-	picturesRef.current = pictures;
+	const {
+		trigger,
+		options,
+		isPickerOpen,
+		active,
+		setActiveId,
+		mentioned,
+		moveActive,
+		dismiss,
+	} = useMentions({ startupId: mentionStartupId, text, caret });
+	const {
+		pictures,
+		isUploading,
+		addImages,
+		removePicture,
+		take,
+		restore,
+		release,
+	} = usePictures();
 
-	const isUploading = pictures.some((picture) => picture.storageId === null);
 	const canSend =
 		(text.trim().length > 0 || pictures.length > 0) &&
 		!isUploading &&
 		!isSending;
-
-	const trigger = findTrigger(text, caret);
-	const query = trigger?.query.toLowerCase() ?? "";
-	const options =
-		trigger && trigger.start !== dismissedAt
-			? (cards ?? [])
-					.filter((card) => card.title.toLowerCase().includes(query))
-					.slice(0, MAX_OPTIONS)
-			: [];
-	const isPickerOpen = options.length > 0;
-	const active = options.find((o) => o._id === activeId) ?? options[0];
-	const mentioned = parseMentions(text).flatMap((id) => {
-		const card = cards?.find((c) => c._id === id);
-		return card ? [card] : [];
-	});
 
 	// Grow with the text up to about six lines, where browsers lack field-sizing.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: resize when the text changes
@@ -88,50 +65,6 @@ export function Composer({
 		el.style.height = "auto";
 		el.style.height = `${el.scrollHeight}px`;
 	}, [text]);
-
-	// Thumbnails hold object URLs; free them when the composer goes.
-	useEffect(
-		() => () => {
-			for (const picture of picturesRef.current) {
-				URL.revokeObjectURL(picture.previewUrl);
-			}
-		},
-		[],
-	);
-
-	function addImages(files: File[]) {
-		const { accepted, skipped } = pickImages(
-			files,
-			MAX_MESSAGE_IMAGES - pictures.length,
-		);
-		if (skipped > 0) toast(`Images only, up to ${MAX_MESSAGE_IMAGES}.`);
-
-		for (const file of accepted) {
-			const picture: Picture = {
-				key: crypto.randomUUID(),
-				previewUrl: URL.createObjectURL(file),
-				storageId: null,
-			};
-			setPictures((current) => [...current, picture]);
-			upload(file).then(
-				(storageId) =>
-					setPictures((current) =>
-						current.map((p) =>
-							p.key === picture.key ? { ...p, storageId } : p,
-						),
-					),
-				(error) => {
-					toast.error(errorMessage(error));
-					removePicture(picture);
-				},
-			);
-		}
-	}
-
-	function removePicture(picture: Picture) {
-		URL.revokeObjectURL(picture.previewUrl);
-		setPictures((current) => current.filter((p) => p.key !== picture.key));
-	}
 
 	function pick(option: { readonly _id: string }) {
 		if (!trigger) return;
@@ -146,33 +79,23 @@ export function Composer({
 		});
 	}
 
-	function moveActive(step: 1 | -1) {
-		const index = options.findIndex((o) => o._id === active?._id);
-		const next = options[(index + step + options.length) % options.length];
-		setActiveId(next._id);
-	}
-
 	async function handleSend() {
 		if (!canSend) return;
 		// Clear first, so what's typed while sending is kept and not erased after.
 		const sentText = text;
-		const sentPictures = pictures;
-		const images = sentPictures.flatMap((p) =>
-			p.storageId ? [p.storageId] : [],
-		);
 		setIsSending(true);
 		setText("");
 		setCaret(0);
-		setPictures((current) =>
-			current.filter((p) => !sentPictures.some((sent) => sent.key === p.key)),
+		const sentPictures = take();
+		const images = sentPictures.flatMap((p) =>
+			p.storageId ? [p.storageId] : [],
 		);
 		textarea.current?.focus();
 
 		const isSent = await onSend(sentText.trim(), images);
 		setIsSending(false);
 		if (isSent) {
-			for (const picture of sentPictures)
-				URL.revokeObjectURL(picture.previewUrl);
+			release(sentPictures);
 			return;
 		}
 
@@ -180,13 +103,7 @@ export function Composer({
 		setText((current) =>
 			current ? `${sentText} ${current}`.slice(0, TEXT.message) : sentText,
 		);
-		setPictures((current) => {
-			const all = [...sentPictures, ...current];
-			for (const extra of all.slice(MAX_MESSAGE_IMAGES)) {
-				URL.revokeObjectURL(extra.previewUrl);
-			}
-			return all.slice(0, MAX_MESSAGE_IMAGES);
-		});
+		restore(sentPictures);
 	}
 
 	return (
@@ -241,33 +158,7 @@ export function Composer({
 				) : null}
 
 				{pictures.length > 0 ? (
-					<ul className="flex flex-wrap gap-2 px-3 pt-3">
-						{pictures.map((picture) => (
-							<li
-								key={picture.key}
-								className="relative size-14 overflow-hidden rounded-md border border-border"
-							>
-								<img
-									src={picture.previewUrl}
-									alt=""
-									className="size-full object-cover"
-								/>
-								{picture.storageId === null ? (
-									<div className="absolute inset-0 flex items-center justify-center bg-background/60">
-										<Spinner />
-									</div>
-								) : null}
-								<button
-									type="button"
-									aria-label="Remove image"
-									className="absolute top-0 right-0 flex size-8 items-start justify-end p-0.5 focus-ring"
-									onClick={() => removePicture(picture)}
-								>
-									<XIcon className="size-4 rounded-full bg-background/80 p-0.5 hover:bg-background" />
-								</button>
-							</li>
-						))}
-					</ul>
+					<PictureStrip pictures={pictures} onRemove={removePicture} />
 				) : null}
 
 				<Textarea
@@ -302,7 +193,7 @@ export function Composer({
 							if (e.key === "Escape") {
 								e.preventDefault();
 								e.stopPropagation();
-								setDismissedAt(trigger?.start ?? null);
+								dismiss();
 								return;
 							}
 						}
