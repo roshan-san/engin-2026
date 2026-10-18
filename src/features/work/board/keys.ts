@@ -1,12 +1,15 @@
 /**
  * Plain Enter sends; Shift+Enter is a newline and an IME's Enter just confirms text.
- * On a touch screen (`coarse`) Enter is a newline too, and the Send button sends.
+ * On a touch screen (`coarse`) Enter is a newline too, and the Send button sends;
+ * Cmd/Ctrl+Enter still sends there, for a tablet with a hardware keyboard.
  */
 export function isSendKey(
 	e: {
 		key: string;
 		shiftKey: boolean;
 		isComposing: boolean;
+		metaKey?: boolean;
+		ctrlKey?: boolean;
 		/** Safari reports 229 for an IME's Enter after composition ends. */
 		keyCode?: number;
 	},
@@ -17,7 +20,7 @@ export function isSendKey(
 		!e.shiftKey &&
 		!e.isComposing &&
 		e.keyCode !== 229 &&
-		!options?.coarse
+		(!options?.coarse || e.metaKey === true || e.ctrlKey === true)
 	);
 }
 

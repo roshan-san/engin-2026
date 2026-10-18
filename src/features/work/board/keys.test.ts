@@ -54,4 +54,19 @@ describe("isSendKey", () => {
 			),
 		).toBe(true);
 	});
+
+	it("is true for Cmd+Enter or Ctrl+Enter on a touch screen, for a hardware keyboard", () => {
+		const enter = { key: "Enter", shiftKey: false, isComposing: false };
+		expect(isSendKey({ ...enter, metaKey: true }, { coarse: true })).toBe(true);
+		expect(isSendKey({ ...enter, ctrlKey: true }, { coarse: true })).toBe(true);
+	});
+
+	it("is false for Cmd+Enter while an IME is composing, even on a touch screen", () => {
+		expect(
+			isSendKey(
+				{ key: "Enter", shiftKey: false, isComposing: true, metaKey: true },
+				{ coarse: true },
+			),
+		).toBe(false);
+	});
 });

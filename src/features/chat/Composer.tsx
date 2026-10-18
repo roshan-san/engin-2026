@@ -306,7 +306,7 @@ export function Composer({
 								return;
 							}
 						}
-						// On a phone Enter is a newline; the Send button sends.
+						// On a phone Enter is a newline; the Send button (or Cmd/Ctrl+Enter) sends.
 						if (isSendKey(native, { coarse: isCoarsePointer() })) {
 							e.preventDefault();
 							void handleSend();
