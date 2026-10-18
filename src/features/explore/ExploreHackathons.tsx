@@ -1,8 +1,10 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { EmptyState } from "~/components/EmptyState";
 import { RowList } from "~/components/RowList";
+import { Button } from "~/components/ui/button";
 import { ROLES } from "~/features/hiring/jobChips";
 import { ExploreLayout } from "./ExploreLayout";
+import { hasFilters } from "./exploreSearch";
 import { FilterChips } from "./FilterChips";
 import { HackathonExploreRow } from "./HackathonExploreRow";
 import { RowsSkeleton } from "./RowsSkeleton";
@@ -21,7 +23,7 @@ const PAID = [{ value: "paid", label: "Paid" }] as const;
 export function ExploreHackathons() {
 	const search = route.useSearch();
 	const navigate = route.useNavigate();
-	const hackathons = useExploreHackathons(search);
+	const { hackathons, isLoading } = useExploreHackathons(search);
 
 	return (
 		<ExploreLayout
@@ -37,7 +39,10 @@ export function ExploreHackathons() {
 						options={ROLES}
 						value={search.role}
 						onChange={(role) =>
-							void navigate({ search: (prev) => ({ ...prev, role }) })
+							void navigate({
+								search: (prev) => ({ ...prev, role }),
+								replace: true,
+							})
 						}
 					/>
 					<FilterChips
@@ -45,7 +50,10 @@ export function ExploreHackathons() {
 						options={LENGTHS}
 						value={search.weeks}
 						onChange={(weeks) =>
-							void navigate({ search: (prev) => ({ ...prev, weeks }) })
+							void navigate({
+								search: (prev) => ({ ...prev, weeks }),
+								replace: true,
+							})
 						}
 					/>
 					<FilterChips
@@ -55,16 +63,31 @@ export function ExploreHackathons() {
 						onChange={(paid) =>
 							void navigate({
 								search: (prev) => ({ ...prev, paid: paid ? true : undefined }),
+								replace: true,
 							})
 						}
 					/>
 				</>
 			}
 		>
-			{hackathons === undefined ? (
+			{hackathons === undefined || (isLoading && hackathons.length === 0) ? (
 				<RowsSkeleton rowClassName="h-20" />
 			) : hackathons.length === 0 ? (
-				<EmptyState title="No open hackathons yet." />
+				hasFilters(search) ? (
+					<EmptyState
+						title="No hackathons match these filters"
+						action={
+							<Button
+								variant="outline"
+								onClick={() => void navigate({ search: {}, replace: true })}
+							>
+								Clear filters
+							</Button>
+						}
+					/>
+				) : (
+					<EmptyState title="No open hackathons yet." />
+				)
 			) : (
 				<RowList>
 					{hackathons.map((hackathon) => (

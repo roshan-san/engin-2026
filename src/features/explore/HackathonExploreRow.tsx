@@ -38,6 +38,7 @@ export function HackathonExploreRow({
 							<span className="truncate">{hackathon.startup.name}</span>
 							<RatingBadge
 								size="sm"
+								inLink
 								rating={hackathon.startup.rating}
 								ratingChange={hackathon.startup.ratingChange}
 								isProvisional={hackathon.startup.isProvisional}

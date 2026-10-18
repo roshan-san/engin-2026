@@ -63,3 +63,8 @@ export function parseStartupSearch(
 
 	return { stage, category, city };
 }
+
+/** True when any filter is on. The parsers set every key, so an off filter is a key holding `undefined`. */
+export function hasFilters(search: HackathonSearch | StartupSearch): boolean {
+	return Object.values(search).some((value) => value !== undefined);
+}

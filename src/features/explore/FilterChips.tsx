@@ -7,7 +7,7 @@ type FilterChipsProps<T extends string | number> = {
 	readonly onChange: (next: T | undefined) => void;
 };
 
-/** One filter: pill buttons, at most one on. Clicking the chosen one clears it. */
+/** One filter: a muted label, then pill buttons, at most one on. Clicking the chosen one clears it. */
 export function FilterChips<T extends string | number>({
 	label,
 	options,
@@ -17,6 +17,9 @@ export function FilterChips<T extends string | number>({
 	return (
 		<fieldset className="flex min-w-0 shrink-0 items-center gap-2">
 			<legend className="sr-only">{label}</legend>
+			<span aria-hidden className="text-xs text-muted-foreground">
+				{label}
+			</span>
 			<div className="flex gap-1.5">
 				{options.map((option) => {
 					const on = option.value === value;
@@ -27,7 +30,7 @@ export function FilterChips<T extends string | number>({
 							aria-pressed={on}
 							onClick={() => onChange(on ? undefined : option.value)}
 							className={cn(
-								"shrink-0 rounded-full border px-2.5 py-0.5 text-xs whitespace-nowrap transition-colors focus-ring",
+								"shrink-0 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap transition-colors focus-ring",
 								on
 									? "border-foreground bg-foreground text-background"
 									: "border-input hover:border-foreground/25 hover:bg-accent",

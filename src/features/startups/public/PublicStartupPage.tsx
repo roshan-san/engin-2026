@@ -54,7 +54,16 @@ export function PublicStartupPage() {
 		return <GlobalSpinner fill />;
 	}
 	if (startup === null) {
-		return <GlobalNotFound />;
+		return (
+			<GlobalNotFound
+				title={`No startup at /startups/${slug}`}
+				action={
+					<Button asChild>
+						<Link to="/explore/startups">Explore startups</Link>
+					</Button>
+				}
+			/>
+		);
 	}
 
 	const hiring = hiringLine(startup.hiringRecord);
@@ -70,26 +79,28 @@ export function PublicStartupPage() {
 		<div className="flex flex-col">
 			<section className="border-b border-border bg-[radial-gradient(circle_at_top_right,var(--glow),transparent_60%)]">
 				<div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10 md:px-6 md:py-14">
-					<div className="flex items-start gap-4">
-						<PlaceLogo name={startup.name} url={startup.logo} size={64} />
-						<div className="flex min-w-0 flex-1 flex-col gap-2">
-							<h1 className="text-3xl font-semibold break-words">
-								{startup.name}
-							</h1>
-							{startup.oneLiner ? (
-								<p className="text-lg text-muted-foreground">
-									{startup.oneLiner}
-								</p>
-							) : null}
-							<div className="flex flex-wrap items-center gap-2">
-								{chips.map((chip) => (
-									<Badge key={chip} variant="secondary">
-										{chip}
-									</Badge>
-								))}
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+						<div className="flex min-w-0 flex-1 items-start gap-4">
+							<PlaceLogo name={startup.name} url={startup.logo} size={64} />
+							<div className="flex min-w-0 flex-1 flex-col gap-2">
+								<h1 className="text-3xl font-semibold break-words">
+									{startup.name}
+								</h1>
+								{startup.oneLiner ? (
+									<p className="text-lg text-muted-foreground">
+										{startup.oneLiner}
+									</p>
+								) : null}
+								<div className="flex flex-wrap items-center gap-2">
+									{chips.map((chip) => (
+										<Badge key={chip} variant="secondary">
+											{chip}
+										</Badge>
+									))}
+								</div>
 							</div>
 						</div>
-						<div className="flex shrink-0 flex-col items-end">
+						<div className="flex shrink-0 flex-col items-start sm:items-end">
 							<span
 								className={cn(
 									"text-3xl font-semibold tabular-nums",
@@ -112,7 +123,7 @@ export function PublicStartupPage() {
 								{startup.website.replace(/^https?:\/\//, "")}
 							</a>
 						) : null}
-						<span>On Engin since {SINCE.format(startup.createdAt)}</span>
+						<span>On engin since {SINCE.format(startup.createdAt)}</span>
 						{isOnTeam ? (
 							<Button asChild size="sm" className="ml-auto">
 								<Link to="/s/$slug/board" params={{ slug }}>

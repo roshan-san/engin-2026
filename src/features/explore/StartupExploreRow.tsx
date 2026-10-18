@@ -64,6 +64,7 @@ export function StartupExploreRow({
 				<div className="flex shrink-0 items-center justify-between gap-6 sm:justify-end">
 					<RatingBadge
 						size="sm"
+						inLink
 						rating={startup.rating}
 						ratingChange={startup.ratingChange}
 						isProvisional={startup.isProvisional}

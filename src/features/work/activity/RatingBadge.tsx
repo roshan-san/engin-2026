@@ -15,12 +15,15 @@ export function RatingBadge({
 	ratingChange,
 	isProvisional,
 	size = "lg",
+	inLink = false,
 }: {
 	readonly rating: number;
 	readonly ratingChange: number;
 	readonly isProvisional: boolean;
 	/** `sm` sits inside a card or a row; `lg` heads a page. */
 	readonly size?: "sm" | "lg";
+	/** Inside a link the Provisional badge must not take its own tab stop. */
+	readonly inLink?: boolean;
 }) {
 	const change = ratingChangeLabel(ratingChange);
 
@@ -54,7 +57,7 @@ export function RatingBadge({
 						<TooltipTrigger asChild>
 							<Badge
 								variant="outline"
-								tabIndex={0}
+								tabIndex={inLink ? undefined : 0}
 								className="cursor-help text-muted-foreground"
 							>
 								Provisional
