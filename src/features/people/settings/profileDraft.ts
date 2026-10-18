@@ -63,3 +63,24 @@ export function toProfileArgs(
 	}
 	return changed;
 }
+
+/**
+ * Where to go after a save: the new username when the save renamed you and the
+ * page is your own profile (so the old URL doesn't 404), otherwise nowhere.
+ */
+export function renamedProfileTarget(
+	where: {
+		/** The `/u/$username` in the URL, if the page is a profile. */
+		readonly pageUsername: string | undefined;
+		/** Your username before the save. */
+		readonly savedUsername: string | null;
+	},
+	nextUsername: string | undefined,
+): string | null {
+	if (nextUsername === undefined || where.pageUsername === undefined) {
+		return null;
+	}
+	return where.pageUsername.toLowerCase() === where.savedUsername
+		? nextUsername
+		: null;
+}

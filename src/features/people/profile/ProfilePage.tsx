@@ -1,7 +1,7 @@
 import type { api } from "@convex/_generated/api";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AppPage } from "~/components/AppPage";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
@@ -32,13 +32,23 @@ type Details = NonNullable<Profile["details"]>;
 /** A person's Profile. Signed in, the whole Record in the app shape; signed out, a public card and Sign in. */
 export function ProfilePage() {
 	const { username } = route.useParams();
-	const profile = useProfile(username);
+	const me = useMe();
+	const profile = useHeldOwnProfile(username, useProfile(username), me?._id);
 
 	if (profile === undefined) {
 		return <GlobalSpinner fill />;
 	}
 	if (profile === null) {
-		return <GlobalNotFound />;
+		return (
+			<GlobalNotFound
+				title={`No one is @${username}`}
+				action={
+					<Button asChild>
+						<Link to="/explore/startups">Explore startups</Link>
+					</Button>
+				}
+			/>
+		);
 	}
 	// The query sends `details` only to people who are signed in.
 	return profile.details ? (
@@ -46,6 +56,30 @@ export function ProfilePage() {
 	) : (
 		<SignedOutProfile profile={profile} />
 	);
+}
+
+/**
+ * Renaming yourself empties the query for your old username a moment before
+ * the page navigates to the new one. Keep showing your own profile through that
+ * moment so the not-found page doesn't flash.
+ */
+function useHeldOwnProfile(
+	username: string,
+	profile: Profile | null | undefined,
+	myId: Profile["_id"] | undefined,
+) {
+	const held = useRef<{ username: string; profile: Profile } | null>(null);
+	if (profile) {
+		held.current = { username, profile };
+	}
+	if (
+		profile === null &&
+		held.current?.username === username &&
+		held.current.profile._id === myId
+	) {
+		return held.current.profile;
+	}
+	return profile;
 }
 
 function SignedInProfile({
@@ -128,9 +162,14 @@ function SignedInProfile({
 
 			<Section label="Hackathons">
 				{details.hackathons.length === 0 ? (
-					<p className="py-2 text-sm text-muted-foreground">
-						No hackathons yet
-					</p>
+					<div className="flex flex-wrap items-center gap-3 py-2">
+						<p className="text-sm text-muted-foreground">No hackathons yet</p>
+						{isMine ? (
+							<Button asChild variant="outline" size="sm">
+								<Link to="/explore/hackathons">Find a hackathon</Link>
+							</Button>
+						) : null}
+					</div>
 				) : (
 					<RowList>
 						{details.hackathons.map((hackathon) => (

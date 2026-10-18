@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
 	type ProfileSource,
+	renamedProfileTarget,
 	toProfileArgs,
 	toProfileDraft,
 } from "./profileDraft";
@@ -85,5 +86,49 @@ describe("profile settings draft", () => {
 			portfolioUrl: "",
 		});
 		expect(toProfileArgs(draft, bare)).toEqual({});
+	});
+});
+
+describe("renamedProfileTarget", () => {
+	test("renaming yourself while on your own profile goes to the new username", () => {
+		expect(
+			renamedProfileTarget(
+				{ pageUsername: "fay", savedUsername: "fay" },
+				"fay_d",
+			),
+		).toBe("fay_d");
+	});
+
+	test("the page's username may differ in case", () => {
+		expect(
+			renamedProfileTarget(
+				{ pageUsername: "Fay", savedUsername: "fay" },
+				"fay_d",
+			),
+		).toBe("fay_d");
+	});
+
+	test("saving without a rename stays put", () => {
+		expect(
+			renamedProfileTarget(
+				{ pageUsername: "fay", savedUsername: "fay" },
+				undefined,
+			),
+		).toBeNull();
+	});
+
+	test("saving from another page stays put", () => {
+		expect(
+			renamedProfileTarget(
+				{ pageUsername: undefined, savedUsername: "fay" },
+				"fay_d",
+			),
+		).toBeNull();
+		expect(
+			renamedProfileTarget(
+				{ pageUsername: "asha", savedUsername: "fay" },
+				"fay_d",
+			),
+		).toBeNull();
 	});
 });

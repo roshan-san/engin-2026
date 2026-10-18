@@ -17,6 +17,7 @@ export function useStartupSettings(startupId: Id<"startups">, slug: string) {
 	async function save(changes: Partial<SettingsDraft>) {
 		try {
 			await updateStartup({ startupId, ...changes });
+			toast.success("Saved");
 			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));

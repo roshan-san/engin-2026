@@ -1,7 +1,8 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ChipPicker } from "~/components/ChipPicker";
+import { DiscardChangesDialog } from "~/components/DiscardChangesDialog";
 import { MentorNote } from "~/components/MentorNote";
 import { PlaceLogo } from "~/components/PlaceLogo";
 import { Button } from "~/components/ui/button";
@@ -17,6 +18,7 @@ import {
 } from "~/components/ui/sheet";
 import { Spinner } from "~/components/ui/spinner";
 import { useStartup } from "~/features/work/board/useStartup";
+import { useDiscardGuard } from "~/lib/useDiscardGuard";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import {
 	type SettingsDraft,
@@ -36,33 +38,48 @@ export function StartupSettingsSheet({
 	readonly onOpenChange: (open: boolean) => void;
 }) {
 	const found = useStartup(open ? slug : undefined);
+	const guard = useDiscardGuard(onOpenChange);
 
 	return (
-		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent className="overflow-y-auto">
-				<SheetHeader>
-					<SheetTitle>Startup settings</SheetTitle>
-					<SheetDescription>
-						What people see on your Startup's page.
-					</SheetDescription>
-				</SheetHeader>
-				{found?.role === "founder" ? (
-					<StartupSettings
-						startup={found.startup}
-						onSaved={() => onOpenChange(false)}
-					/>
-				) : null}
-			</SheetContent>
-		</Sheet>
+		<>
+			<Sheet open={open} onOpenChange={guard.guardedOpenChange}>
+				<SheetContent className="overflow-y-auto">
+					<SheetHeader>
+						<SheetTitle>Startup settings</SheetTitle>
+						<SheetDescription>
+							What people see on your Startup's page.
+						</SheetDescription>
+					</SheetHeader>
+					{found === undefined ? (
+						<div className="flex justify-center py-6">
+							<Spinner />
+						</div>
+					) : found?.role === "founder" ? (
+						<StartupSettings
+							startup={found.startup}
+							onChangedChange={guard.setIsChanged}
+							onSaved={() => onOpenChange(false)}
+						/>
+					) : null}
+				</SheetContent>
+			</Sheet>
+			<DiscardChangesDialog
+				open={guard.isAsking}
+				onKeepEditing={guard.keepEditing}
+				onDiscard={guard.discard}
+			/>
+		</>
 	);
 }
 
 /** One Save sends only what changed; the logo saves on pick. */
 function StartupSettings({
 	startup,
+	onChangedChange,
 	onSaved,
 }: {
 	readonly startup: Doc<"startups">;
+	readonly onChangedChange: (isChanged: boolean) => void;
 	readonly onSaved: () => void;
 }) {
 	const { logoUrl, save, saveLogo } = useStartupSettings(
@@ -75,6 +92,12 @@ function StartupSettings({
 	const fileInput = useRef<HTMLInputElement>(null);
 	const changes = toUpdateArgs(draft, startup);
 	const isChanged = Object.keys(changes).length > 0;
+	const isNameBlank = draft.name.trim() === "";
+
+	useEffect(() => {
+		onChangedChange(isChanged);
+		return () => onChangedChange(false);
+	}, [isChanged, onChangedChange]);
 
 	function set<K extends keyof SettingsDraft>(key: K, value: SettingsDraft[K]) {
 		setDraft((current) => ({ ...current, [key]: value }));
@@ -82,7 +105,7 @@ function StartupSettings({
 
 	async function submit(event: FormEvent) {
 		event.preventDefault();
-		if (!isChanged || isSaving) return;
+		if (!isChanged || isSaving || isNameBlank) return;
 		setIsSaving(true);
 		const saved = await save(changes);
 		setIsSaving(false);
@@ -182,7 +205,7 @@ function StartupSettings({
 			</div>
 
 			<SheetFooter className="px-0">
-				<Button type="submit" disabled={!isChanged || isSaving}>
+				<Button type="submit" disabled={!isChanged || isSaving || isNameBlank}>
 					{isSaving ? <Spinner /> : null}
 					Save
 				</Button>
