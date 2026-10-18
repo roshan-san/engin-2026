@@ -38,9 +38,8 @@ export function DraftView({
 	const { update, publish } = useHackathonForm();
 	const plan = usePlan();
 	const hasPaymentIssue = usePaymentIssue();
-	const { openPortal } = usePortal();
+	const { openPortal, isOpening } = usePortal();
 	const [isPlansOpen, setPlansOpen] = useState(false);
-	const [isOpening, setIsOpening] = useState(false);
 	const [initial] = useState<HackathonDraft>(() => ({
 		job: hackathon.job,
 		problem: hackathon.problem,
@@ -54,12 +53,6 @@ export function DraftView({
 		hasPaymentIssue,
 		isBackFromCheckout: checkout === "done",
 	});
-
-	async function manageBilling() {
-		setIsOpening(true);
-		const isLeavingForDodo = await openPortal();
-		if (!isLeavingForDodo) setIsOpening(false);
-	}
 
 	return (
 		<div className="min-h-0 flex-1 overflow-y-auto">
@@ -77,7 +70,7 @@ export function DraftView({
 								variant="outline"
 								size="sm"
 								disabled={isOpening}
-								onClick={() => void manageBilling()}
+								onClick={() => void openPortal()}
 							>
 								{isOpening ? <Spinner /> : null}
 								Manage billing

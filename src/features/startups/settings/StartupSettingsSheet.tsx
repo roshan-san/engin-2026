@@ -1,6 +1,6 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { ChipPicker } from "~/components/ChipPicker";
 import { DiscardChangesDialog } from "~/components/DiscardChangesDialog";
 import { MentorNote } from "~/components/MentorNote";
@@ -18,7 +18,7 @@ import {
 } from "~/components/ui/sheet";
 import { Spinner } from "~/components/ui/spinner";
 import { useStartup } from "~/features/work/board/useStartup";
-import { useDiscardGuard } from "~/lib/useDiscardGuard";
+import { useDiscardGuard, useReportChanged } from "~/lib/useDiscardGuard";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import {
 	type SettingsDraft,
@@ -94,10 +94,7 @@ function StartupSettings({
 	const isChanged = Object.keys(changes).length > 0;
 	const isNameBlank = draft.name.trim() === "";
 
-	useEffect(() => {
-		onChangedChange(isChanged);
-		return () => onChangedChange(false);
-	}, [isChanged, onChangedChange]);
+	useReportChanged(isChanged, onChangedChange);
 
 	function set<K extends keyof SettingsDraft>(key: K, value: SettingsDraft[K]) {
 		setDraft((current) => ({ ...current, [key]: value }));

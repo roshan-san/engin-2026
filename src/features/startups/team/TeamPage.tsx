@@ -33,11 +33,7 @@ export function TeamPage() {
 				actions: isFounder ? <InviteButton onSend={send} /> : null,
 			}}
 		>
-			<PeopleList
-				people={people}
-				canRemove={isFounder}
-				onRemove={(person, name) => remove(person._id, name)}
-			/>
+			<PeopleList people={people} canRemove={isFounder} onRemove={remove} />
 			{isFounder && people && people.contributors.length === 0 ? (
 				<EmptyState
 					size="compact"

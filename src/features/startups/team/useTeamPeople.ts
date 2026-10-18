@@ -3,6 +3,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
+import { displayName } from "~/lib/displayName";
 import { errorMessage } from "~/lib/errors";
 
 export type TeamPeople = FunctionReturnType<
@@ -16,10 +17,10 @@ export function useTeamPeople(startupId: Id<"startups">) {
 	const removeContributor = useMutation(api.startups.contributors.remove);
 
 	/** Resolves `true` once removed; failures are toasted. */
-	async function remove(userId: Id<"users">, name: string) {
+	async function remove(person: TeamPerson) {
 		try {
-			await removeContributor({ startupId, userId });
-			toast.success(`${name} removed`);
+			await removeContributor({ startupId, userId: person._id });
+			toast.success(`${displayName(person)} removed`);
 			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));

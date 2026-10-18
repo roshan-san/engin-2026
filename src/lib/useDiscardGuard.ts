@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Closing a form sheet with unsaved edits asks first. The form reports whether
- * it has changes through `setIsChanged` (and clears that when it unmounts);
- * `onOpenChange` is what the sheet should call instead of its own.
+ * it has changes with `useReportChanged(isChanged, guard.setIsChanged)`;
+ * `guardedOpenChange` is what the sheet should call instead of its own.
  */
 export function useDiscardGuard(onOpenChange: (open: boolean) => void) {
 	const [isChanged, setIsChanged] = useState(false);
@@ -33,4 +33,15 @@ export function useDiscardGuard(onOpenChange: (open: boolean) => void) {
 		keepEditing,
 		discard,
 	};
+}
+
+/** Tells the guard whether the form has changes, and clears that when the form unmounts. */
+export function useReportChanged(
+	isChanged: boolean,
+	report: (isChanged: boolean) => void,
+) {
+	useEffect(() => {
+		report(isChanged);
+		return () => report(false);
+	}, [isChanged, report]);
 }

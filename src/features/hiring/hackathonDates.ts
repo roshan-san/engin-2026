@@ -1,6 +1,3 @@
-import { WEEK_MS } from "@convex/shared/cycles";
-import { DECIDE_GRACE_MS } from "@convex/shared/limits";
-
 const DAY = new Intl.DateTimeFormat("en-US", {
 	timeZone: "Asia/Kolkata",
 	weekday: "short",
@@ -32,13 +29,4 @@ export function lastDay(endsAt: number): number {
 /** "Mon, Oct 12 – Sun, Oct 18": the days a Hackathon is built. */
 export function buildDaysLabel(startsAt: number, endsAt: number): string {
 	return `${dayLabel(startsAt)} – ${dayLabel(lastDay(endsAt))}`;
-}
-
-/** When it ends and when decisions are due, the way `hackathons.create` sets them. */
-export function hackathonDates(
-	startsAt: number,
-	weeks: 1 | 2,
-): { endsAt: number; decideBy: number } {
-	const endsAt = startsAt + weeks * WEEK_MS;
-	return { endsAt, decideBy: endsAt + DECIDE_GRACE_MS };
 }

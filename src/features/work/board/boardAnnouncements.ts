@@ -9,7 +9,7 @@ import type { Announcements } from "@dnd-kit/core";
 export function boardAnnouncements(
 	titleOf: (cardId: string) => string,
 	columnLabel: (columnId: string) => string,
-	isAccepted: (cardId: string, columnId: string) => boolean = () => true,
+	isAccepted: (cardId: string, columnId: string) => boolean,
 ): Announcements {
 	return {
 		onDragStart: ({ active }) => `Picked up ${titleOf(String(active.id))}`,

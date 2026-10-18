@@ -10,7 +10,7 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
@@ -74,10 +74,13 @@ export function Board({
 		}),
 	);
 
+	const cardById = (cardId: string | null) =>
+		cards?.find((card) => card._id === cardId);
+
 	// Always the latest cards and verify, but one stable function for the key listener.
 	const verifyLatest = useRef((_cardId: string) => {});
 	verifyLatest.current = (cardId) => {
-		const card = cards?.find((c) => c._id === cardId);
+		const card = cardById(cardId);
 		if (card && refusalFor(card, { kind: "verify" }, scope) === null) {
 			void verify(card);
 		}
@@ -97,7 +100,7 @@ export function Board({
 		isPaused: draggedId !== null,
 	});
 
-	const dragged = cards?.find((card) => card._id === draggedId) ?? null;
+	const dragged = cardById(draggedId) ?? null;
 
 	/** Shown while dragging, so a refused column fades before the drop, not after. */
 	function dropStateOf(column: Column): DropState {
@@ -105,19 +108,29 @@ export function Board({
 		return dropAction(dragged, column, scope) ? "accept" : "refuse";
 	}
 
-	const announcements = boardAnnouncements(
-		(cardId) => cards?.find((card) => card._id === cardId)?.title ?? "a Card",
-		(columnId) =>
-			COLUMNS.find((column) => column.id === columnId)?.label ?? columnId,
-		(cardId, columnId) => {
-			const card = cards?.find((c) => c._id === cardId);
-			return (
-				card !== undefined &&
-				COLUMN_IDS.has(columnId) &&
-				dropAction(card, columnId as Column, scope) !== null
-			);
-		},
-	);
+	// One stable object, so dnd-kit doesn't resubscribe its monitor on every render; the
+	// lookups run when an event fires, so they read the latest cards through the ref.
+	const announceLatest = useRef({ cards, scope });
+	announceLatest.current = { cards, scope };
+	const accessibility = useMemo(() => {
+		const cardOf = (cardId: string) =>
+			announceLatest.current.cards?.find((card) => card._id === cardId);
+		const announcements = boardAnnouncements(
+			(cardId) => cardOf(cardId)?.title ?? "a Card",
+			(columnId) =>
+				COLUMNS.find((column) => column.id === columnId)?.label ?? columnId,
+			(cardId, columnId) => {
+				const card = cardOf(cardId);
+				return (
+					card !== undefined &&
+					COLUMN_IDS.has(columnId) &&
+					dropAction(card, columnId as Column, announceLatest.current.scope) !==
+						null
+				);
+			},
+		);
+		return { announcements };
+	}, []);
 
 	function handleDragEnd(overId: string | undefined) {
 		setDraggedId(null);
@@ -155,7 +168,7 @@ export function Board({
 		<DndContext
 			sensors={sensors}
 			collisionDetection={collisionDetection}
-			accessibility={{ announcements }}
+			accessibility={accessibility}
 			onDragStart={(event) => setDraggedId(String(event.active.id))}
 			onDragEnd={(event) =>
 				handleDragEnd(event.over ? String(event.over.id) : undefined)

@@ -14,18 +14,11 @@ export function PlanSection() {
 	const plan = usePlan();
 	const hasPaymentIssue = usePaymentIssue();
 	const { pathname } = useLocation();
-	const { openPortal } = usePortal();
+	const { openPortal, isOpening } = usePortal();
 	const [isPlansOpen, setPlansOpen] = useState(false);
-	const [isOpening, setIsOpening] = useState(false);
 
 	if (plan === undefined || hasPaymentIssue === undefined) {
 		return null;
-	}
-
-	async function manage() {
-		setIsOpening(true);
-		const isLeavingForDodo = await openPortal();
-		if (!isLeavingForDodo) setIsOpening(false);
 	}
 
 	return (
@@ -41,7 +34,7 @@ export function PlanSection() {
 						size="sm"
 						className="self-start"
 						disabled={isOpening}
-						onClick={() => void manage()}
+						onClick={() => void openPortal()}
 					>
 						{isOpening ? <Spinner /> : null}
 						Manage billing

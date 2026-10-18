@@ -1,15 +1,11 @@
+import { hackathonDates } from "@convex/shared/hackathonPhase";
 import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
 import { Section } from "~/components/Section";
 import { Badge } from "~/components/ui/badge";
 import { SignInCard } from "~/features/people/auth/SignInCard";
 import { cn } from "~/lib/utils";
-import {
-	buildDaysLabel,
-	dayLabel,
-	hackathonDates,
-	lastDay,
-} from "../hackathonDates";
+import { buildDaysLabel, dayLabel, lastDay } from "../hackathonDates";
 import {
 	type JobMode,
 	type JobPay,

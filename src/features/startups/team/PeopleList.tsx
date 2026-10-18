@@ -1,28 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { ConfirmButton } from "~/components/ConfirmButton";
 import { Row, RowList } from "~/components/RowList";
 import { Section } from "~/components/Section";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
+import { displayName } from "~/lib/displayName";
 import type { TeamPeople, TeamPerson } from "./useTeamPeople";
-
-function displayName(person: TeamPerson) {
-	return person.name ?? person.username ?? "Someone";
-}
 
 /** The Founder and Contributors: face, name, Rating and what they verified this Cycle. */
 export function PeopleList({
@@ -34,7 +19,7 @@ export function PeopleList({
 	/** The Founder can remove Contributors. */
 	readonly canRemove: boolean;
 	/** Resolves `true` once removed (the error is shown already otherwise). */
-	readonly onRemove: (person: TeamPerson, name: string) => Promise<boolean>;
+	readonly onRemove: (person: TeamPerson) => Promise<boolean>;
 }) {
 	if (people === undefined) {
 		return (
@@ -58,7 +43,13 @@ export function PeopleList({
 						position="Contributor"
 						remove={
 							canRemove ? (
-								<RemoveButton person={person} onRemove={onRemove} />
+								<ConfirmButton
+									label="Remove"
+									title={`Remove ${displayName(person)}?`}
+									description="They lose access to this Board."
+									actionLabel="Remove"
+									onConfirm={() => onRemove(person)}
+								/>
 							) : null
 						}
 					/>
@@ -110,49 +101,5 @@ function PersonRow({
 				</div>
 			}
 		/>
-	);
-}
-
-function RemoveButton({
-	person,
-	onRemove,
-}: {
-	readonly person: TeamPerson;
-	readonly onRemove: (person: TeamPerson, name: string) => Promise<boolean>;
-}) {
-	const [isOpen, setIsOpen] = useState(false);
-	const [isRemoving, setIsRemoving] = useState(false);
-
-	return (
-		<AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-			<AlertDialogTrigger asChild>
-				<Button variant="ghost" size="sm" className="text-muted-foreground">
-					Remove
-				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Remove {displayName(person)}?</AlertDialogTitle>
-					<AlertDialogDescription>
-						They lose access to this Board.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction
-						variant="destructive"
-						disabled={isRemoving}
-						onClick={async (event) => {
-							event.preventDefault();
-							setIsRemoving(true);
-							if (await onRemove(person, displayName(person))) setIsOpen(false);
-							setIsRemoving(false);
-						}}
-					>
-						Remove
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
 	);
 }

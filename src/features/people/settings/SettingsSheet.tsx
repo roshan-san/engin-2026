@@ -1,6 +1,6 @@
 import { TEXT } from "@convex/shared/limits";
 import { useMatch, useNavigate } from "@tanstack/react-router";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { ChipPicker } from "~/components/ChipPicker";
 import { DiscardChangesDialog } from "~/components/DiscardChangesDialog";
 import { MentorNote } from "~/components/MentorNote";
@@ -20,7 +20,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { PlanSection } from "~/features/billing/PlanSection";
 import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
-import { useDiscardGuard } from "~/lib/useDiscardGuard";
+import { useDiscardGuard, useReportChanged } from "~/lib/useDiscardGuard";
 import { useMe } from "~/shell/useMe";
 import {
 	type ProfileDraft,
@@ -31,8 +31,6 @@ import {
 } from "./profileDraft";
 import { usernameProblem } from "./usernameRule";
 import { useUpdateProfile } from "./useUpdateProfile";
-
-const USERNAME_MAX_LENGTH = 20;
 
 /** Your profile: username, discipline, bio and links. One Save sends only what changed. */
 export function SettingsSheet({
@@ -99,10 +97,7 @@ function SettingsForm({
 	const usernameError =
 		changes.username === undefined ? null : usernameProblem(changes.username);
 
-	useEffect(() => {
-		onChangedChange(isChanged);
-		return () => onChangedChange(false);
-	}, [isChanged, onChangedChange]);
+	useReportChanged(isChanged, onChangedChange);
 
 	function set<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
 		setDraft((current) => ({ ...current, [key]: value }));
@@ -143,7 +138,7 @@ function SettingsForm({
 					<Input
 						id="profile-username"
 						value={draft.username}
-						maxLength={USERNAME_MAX_LENGTH}
+						maxLength={TEXT.username}
 						autoCapitalize="none"
 						autoComplete="off"
 						spellCheck={false}

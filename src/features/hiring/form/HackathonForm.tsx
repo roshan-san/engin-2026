@@ -1,6 +1,12 @@
 import { TEXT } from "@convex/shared/limits";
 import { useBlocker } from "@tanstack/react-router";
-import { type FormEvent, type ReactNode, useRef, useState } from "react";
+import {
+	type FormEvent,
+	type ReactNode,
+	useCallback,
+	useRef,
+	useState,
+} from "react";
 import { CharCount } from "~/components/CharCount";
 import { ChipPicker } from "~/components/ChipPicker";
 import { MentorNote } from "~/components/MentorNote";
@@ -114,13 +120,17 @@ export function HackathonForm({
 	const savedRef = useRef(false);
 	const latest = useRef({ draft, pending });
 	latest.current = { draft, pending };
-	const leaveGuard = () =>
-		shouldBlockLeave(
-			latest.current.draft,
-			initial,
-			latest.current.pending,
-			savedRef.current,
-		);
+	// Stable, so the blocker registers once rather than on every keystroke.
+	const leaveGuard = useCallback(
+		() =>
+			shouldBlockLeave(
+				latest.current.draft,
+				initial,
+				latest.current.pending,
+				savedRef.current,
+			),
+		[initial],
+	);
 	const blocker = useBlocker({
 		shouldBlockFn: leaveGuard,
 		enableBeforeUnload: leaveGuard,

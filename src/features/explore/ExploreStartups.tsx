@@ -1,10 +1,10 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { EmptyState } from "~/components/EmptyState";
 import { RowList } from "~/components/RowList";
-import { Button } from "~/components/ui/button";
 import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { hasFilters } from "./exploreSearch";
+import { NoMatches } from "./NoMatches";
 import { FilterChips } from "./FilterChips";
 import { RowsSkeleton } from "./RowsSkeleton";
 import { StartupExploreRow } from "./StartupExploreRow";
@@ -17,6 +17,10 @@ export function ExploreStartups() {
 	const search = route.useSearch();
 	const navigate = route.useNavigate();
 	const { startups, isLoading } = useExploreStartups(search);
+
+	function setFilter(patch: Partial<typeof search>) {
+		void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+	}
 
 	return (
 		<ExploreLayout
@@ -31,34 +35,19 @@ export function ExploreStartups() {
 						label="Stage"
 						options={STAGES}
 						value={search.stage}
-						onChange={(stage) =>
-							void navigate({
-								search: (prev) => ({ ...prev, stage }),
-								replace: true,
-							})
-						}
+						onChange={(stage) => setFilter({ stage })}
 					/>
 					<FilterChips
 						label="Kind"
 						options={KINDS}
 						value={search.category}
-						onChange={(category) =>
-							void navigate({
-								search: (prev) => ({ ...prev, category }),
-								replace: true,
-							})
-						}
+						onChange={(category) => setFilter({ category })}
 					/>
 					<FilterChips
 						label="City"
 						options={CITIES}
 						value={search.city}
-						onChange={(city) =>
-							void navigate({
-								search: (prev) => ({ ...prev, city }),
-								replace: true,
-							})
-						}
+						onChange={(city) => setFilter({ city })}
 					/>
 				</>
 			}
@@ -67,16 +56,9 @@ export function ExploreStartups() {
 				<RowsSkeleton rowClassName="h-16" />
 			) : startups.length === 0 ? (
 				hasFilters(search) ? (
-					<EmptyState
-						title="No startups match these filters"
-						action={
-							<Button
-								variant="outline"
-								onClick={() => void navigate({ search: {}, replace: true })}
-							>
-								Clear filters
-							</Button>
-						}
+					<NoMatches
+						noun="startups"
+						onClear={() => void navigate({ search: {}, replace: true })}
 					/>
 				) : (
 					<EmptyState title="No startups yet." />

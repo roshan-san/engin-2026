@@ -1,10 +1,6 @@
+import { hackathonDates } from "@convex/shared/hackathonPhase";
 import { describe, expect, it } from "vitest";
-import {
-	buildDaysLabel,
-	dayLabel,
-	hackathonDates,
-	lastDay,
-} from "./hackathonDates";
+import { buildDaysLabel, dayLabel, lastDay } from "./hackathonDates";
 
 /** A moment in IST, as a timestamp. */
 function ist(day: number, hour: number) {

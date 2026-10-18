@@ -10,6 +10,7 @@ import { cn } from "~/lib/utils";
 import { pickLanding, readLastPlace } from "~/shell/landing";
 import { PublicShell } from "~/shell/PublicShell";
 import { usePlaces } from "~/shell/usePlaces";
+import { POST_INTENT_PATH } from "~/features/people/home/homeIntent";
 
 const STEPS = [
 	{
@@ -88,7 +89,7 @@ export function LandingPage() {
 								label="Post a hackathon"
 								variant="default"
 								size="lg"
-								returnTo="/home?intent=post"
+								returnTo={POST_INTENT_PATH}
 							/>
 							<Link
 								to="/explore/hackathons"
@@ -148,7 +149,7 @@ export function LandingPage() {
 						label="Post a hackathon"
 						variant="default"
 						size="lg"
-						returnTo="/home?intent=post"
+						returnTo={POST_INTENT_PATH}
 					/>
 				</section>
 			</div>

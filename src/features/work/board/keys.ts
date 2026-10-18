@@ -21,15 +21,6 @@ export function isSendKey(
 	);
 }
 
-/** Whether the main pointer is a finger. Read when a key is pressed, as it can change. */
-export function isCoarsePointer(): boolean {
-	return (
-		typeof window !== "undefined" &&
-		typeof window.matchMedia === "function" &&
-		window.matchMedia("(pointer: coarse)").matches
-	);
-}
-
 /** Whether keys typed at `target` belong to a text field, not to shortcuts. */
 export function isTypingTarget(target: EventTarget | null): boolean {
 	const element = target as HTMLElement | null;

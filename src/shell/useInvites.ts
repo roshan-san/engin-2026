@@ -1,39 +1,65 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
+import { useState } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "~/lib/errors";
 
-/** Your open Invites, with Join and Decline. Failures are toasted and resolve `false`; a Decline that went through says so. */
+type Invite = FunctionReturnType<typeof api.startups.invites.listMine>[number];
+
+/** How an Invite is named: a hire from a Hackathon, or a plain invite. */
+export function inviteTitle(invite: Invite): string {
+	return invite.fromHackathon
+		? `Hired at ${invite.startupName}`
+		: `${invite.startupName} invited you`;
+}
+
+/**
+ * Your open Invites, with Join and Decline. `answering` is the Invite whose answer is in
+ * flight. Join goes to the Startup's Board once it went through; a Decline that went
+ * through says so. Failures are toasted.
+ */
 export function useInvites() {
 	const invites = useQuery(api.startups.invites.listMine, {});
 	const acceptInvite = useMutation(api.startups.invites.accept);
 	const declineInvite = useMutation(api.startups.invites.decline);
+	const navigate = useNavigate();
+	const [answering, setAnswering] = useState<Id<"invites"> | null>(null);
 
-	async function run(action: () => Promise<unknown>) {
+	async function answer(
+		inviteId: Id<"invites">,
+		action: () => Promise<unknown>,
+	) {
+		setAnswering(inviteId);
 		try {
 			await action();
 			return true;
 		} catch (error) {
 			toast.error(errorMessage(error));
 			return false;
+		} finally {
+			setAnswering(null);
 		}
 	}
 
 	return {
 		invites,
-		join: (inviteId: Id<"invites">) => run(() => acceptInvite({ inviteId })),
-		decline: async (inviteId: Id<"invites">) => {
-			const startupName = invites?.find(
-				(invite) => invite.inviteId === inviteId,
-			)?.startupName;
-			const declined = await run(() => declineInvite({ inviteId }));
-			if (declined) {
-				toast.success(
-					startupName ? `Declined ${startupName}'s invite` : "Declined invite",
-				);
+		answering,
+		/** `onJoined` runs before the page moves, e.g. to close a popover. */
+		join: async (invite: Invite, onJoined?: () => void) => {
+			const { inviteId, slug } = invite;
+			if (await answer(inviteId, () => acceptInvite({ inviteId }))) {
+				onJoined?.();
+				await navigate({ to: "/s/$slug/board", params: { slug } });
 			}
-			return declined;
+		},
+		decline: async (invite: Invite) => {
+			const { inviteId, startupName } = invite;
+			if (await answer(inviteId, () => declineInvite({ inviteId }))) {
+				toast.success(`Declined ${startupName}'s invite`);
+			}
 		},
 	};
 }

@@ -2,6 +2,7 @@ import { TILE } from "~/components/tile";
 import { planLines } from "~/features/billing/planLines";
 import { GoogleButton } from "~/features/people/auth/GoogleButton";
 import { cn } from "~/lib/utils";
+import { POST_INTENT_PATH } from "~/features/people/home/homeIntent";
 
 /** Free next to the three Pro plans, read from PLANS. Pro is hiring only. */
 export function Pricing() {
@@ -28,7 +29,7 @@ export function Pricing() {
 						label="Get started"
 						size="sm"
 						className="mt-auto"
-						returnTo="/home?intent=post"
+						returnTo={POST_INTENT_PATH}
 					/>
 				</div>
 				{planLines().map((plan) => (
@@ -52,7 +53,7 @@ export function Pricing() {
 							label="Get started"
 							size="sm"
 							className="mt-auto"
-							returnTo="/home?intent=post"
+							returnTo={POST_INTENT_PATH}
 						/>
 					</div>
 				))}

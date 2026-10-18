@@ -1,3 +1,6 @@
+/** Where to send someone who wants to post a Hackathon, through sign-in if they need it. */
+export const POST_INTENT_PATH = "/home?intent=post";
+
 /** Where `/home?intent=post` should go once places have loaded; `null` means stay on Home. */
 export function homeIntent(
 	intent: "post" | undefined,

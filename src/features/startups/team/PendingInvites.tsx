@@ -1,19 +1,7 @@
-import { useState } from "react";
+import { ConfirmButton } from "~/components/ConfirmButton";
 import { Row, RowList } from "~/components/RowList";
 import { Section } from "~/components/Section";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { dayLabel } from "~/features/hiring/hackathonDates";
 import type { StartupInvite } from "./useStartupInvites";
 
@@ -41,58 +29,18 @@ export function PendingInvites({
 								{invite.fromHackathon ? (
 									<Badge variant="outline">Hired</Badge>
 								) : null}
-								<RevokeButton invite={invite} onRevoke={onRevoke} />
+								<ConfirmButton
+									label="Revoke"
+									title={`Revoke the invite for ${invite.email}?`}
+									description="They won't be able to join with it."
+									actionLabel="Revoke invite"
+									onConfirm={() => onRevoke(invite)}
+								/>
 							</div>
 						}
 					/>
 				))}
 			</RowList>
 		</Section>
-	);
-}
-
-function RevokeButton({
-	invite,
-	onRevoke,
-}: {
-	readonly invite: StartupInvite;
-	readonly onRevoke: (invite: StartupInvite) => Promise<boolean>;
-}) {
-	const [isOpen, setIsOpen] = useState(false);
-	const [isRevoking, setIsRevoking] = useState(false);
-
-	return (
-		<AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-			<AlertDialogTrigger asChild>
-				<Button variant="ghost" size="sm" className="text-muted-foreground">
-					Revoke
-				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>
-						Revoke the invite for {invite.email}?
-					</AlertDialogTitle>
-					<AlertDialogDescription>
-						They won't be able to join with it.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction
-						variant="destructive"
-						disabled={isRevoking}
-						onClick={async (event) => {
-							event.preventDefault();
-							setIsRevoking(true);
-							if (await onRevoke(invite)) setIsOpen(false);
-							setIsRevoking(false);
-						}}
-					>
-						Revoke invite
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
 	);
 }

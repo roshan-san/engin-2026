@@ -10,7 +10,7 @@ const titles: Record<string, string> = { c1: "Fix login" };
 const labels: Record<string, string> = { review: "Review", todo: "To do" };
 
 function announcements(
-	isAccepted?: (cardId: string, columnId: string) => boolean,
+	isAccepted: (cardId: string, columnId: string) => boolean = () => true,
 ) {
 	return boardAnnouncements(
 		(id) => titles[id] ?? "a Card",
