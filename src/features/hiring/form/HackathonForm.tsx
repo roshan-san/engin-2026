@@ -1,12 +1,5 @@
 import { TEXT } from "@convex/shared/limits";
-import { useBlocker } from "@tanstack/react-router";
-import {
-	type FormEvent,
-	type ReactNode,
-	useCallback,
-	useRef,
-	useState,
-} from "react";
+import { type FormEvent, useCallback, useRef, useState } from "react";
 import { CharCount } from "~/components/CharCount";
 import { ChipPicker } from "~/components/ChipPicker";
 import { MentorNote } from "~/components/MentorNote";
@@ -26,14 +19,11 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { monthDayLabel } from "../hackathonDates";
 import { MODES, PAYS, ROLES } from "../jobChips";
-import { HackathonPost } from "../public/HackathonPost";
 import { CardRows } from "./CardRows";
-import {
-	type HackathonDraft,
-	missingParts,
-	PARTICIPANTS_GET,
-	toParticipantsGet,
-} from "./draft";
+import { type HackathonDraft, missingParts, PARTICIPANTS_GET } from "./draft";
+import { Field, Part } from "./FormPart";
+import { FormPreview } from "./FormPreview";
+import { LeaveGuardDialog } from "./LeaveGuardDialog";
 import { shouldBlockLeave } from "./leaveGuard";
 import { startOptions } from "./startOptions";
 
@@ -46,43 +36,6 @@ const PARTICIPANTS_GET_CHIPS = [...PARTICIPANTS_GET, "Custom"].map((value) => ({
 	value,
 	label: value,
 }));
-
-/** One numbered part of the form: its label, then its mentor note, then the fields. */
-function Part({
-	label,
-	note,
-	children,
-}: {
-	readonly label: string;
-	readonly note?: string;
-	readonly children: ReactNode;
-}) {
-	return (
-		<section className="flex min-w-0 flex-col gap-3">
-			<div className="flex flex-col gap-0.5">
-				<h2 className="text-lg font-semibold">{label}</h2>
-				{note ? <MentorNote>{note}</MentorNote> : null}
-			</div>
-			{children}
-		</section>
-	);
-}
-
-/** A chip row with its own small label, inside a Part. */
-function Field({
-	label,
-	children,
-}: {
-	readonly label: string;
-	readonly children: ReactNode;
-}) {
-	return (
-		<div className="flex flex-col gap-1.5">
-			<span className="text-xs text-muted-foreground">{label}</span>
-			{children}
-		</div>
-	);
-}
 
 /** The Hackathon post: mostly chips, a mentor note on each part, and a live preview beside it. */
 export function HackathonForm({
@@ -131,11 +84,6 @@ export function HackathonForm({
 			),
 		[initial],
 	);
-	const blocker = useBlocker({
-		shouldBlockFn: leaveGuard,
-		enableBeforeUnload: leaveGuard,
-		withResolver: true,
-	});
 	const [options] = useState(() => startOptions(Date.now()));
 	// A saved start that has passed isn't offered; the Founder picks a new one.
 	const startValue =
@@ -322,27 +270,7 @@ export function HackathonForm({
 				</div>
 			</form>
 
-			<AlertDialog
-				open={blocker.status === "blocked"}
-				onOpenChange={(open) => {
-					if (!open) blocker.reset?.();
-				}}
-			>
-				<AlertDialogContent size="sm">
-					<AlertDialogHeader>
-						<AlertDialogTitle>Leave without saving?</AlertDialogTitle>
-						<AlertDialogDescription>
-							What you wrote here will be lost.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Stay</AlertDialogCancel>
-						<AlertDialogAction onClick={() => blocker.proceed?.()}>
-							Leave
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<LeaveGuardDialog shouldBlock={leaveGuard} />
 
 			<AlertDialog open={isConfirming} onOpenChange={setConfirming}>
 				<AlertDialogContent>
@@ -365,32 +293,11 @@ export function HackathonForm({
 				</AlertDialogContent>
 			</AlertDialog>
 
-			<aside
-				aria-label="Preview"
-				className="hidden lg:sticky lg:top-6 lg:block lg:self-start"
-			>
-				<p className="mb-3 text-xs text-muted-foreground">
-					Preview · what Applicants see
-				</p>
-				<div className="max-h-[calc(100dvh-8rem)] overflow-y-auto rounded-xl border border-border p-6">
-					<HackathonPost
-						size="preview"
-						post={{
-							startupName,
-							job: draft.job,
-							problem: draft.problem,
-							cards: draft.cards.map((card) => card.title),
-							weeks: draft.weeks,
-							startsAt: startValue === null ? null : draft.startsAt,
-							participantsGet:
-								toParticipantsGet(
-									draft.participantsGet.choice,
-									draft.participantsGet.custom,
-								) ?? null,
-						}}
-					/>
-				</div>
-			</aside>
+			<FormPreview
+				startupName={startupName}
+				draft={draft}
+				startsAt={startValue === null ? null : draft.startsAt}
+			/>
 		</div>
 	);
 }
