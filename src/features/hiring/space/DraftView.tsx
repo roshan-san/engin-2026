@@ -19,7 +19,7 @@ import {
 } from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";
 import { useHackathonForm } from "../form/useHackathonForm";
-import { dayLabel } from "../hackathonDates";
+import { dayLabel, lastDay } from "../hackathonDates";
 import { roleLabel } from "../jobChips";
 import { copyHackathonLink } from "./copyHackathonLink";
 
@@ -106,7 +106,7 @@ export function DraftView({
 										description: `Applications open now${
 											draft.startsAt === null
 												? ""
-												: ` and close ${dayLabel(draft.startsAt)}`
+												: ` and run until ${dayLabel(lastDay(draft.startsAt))}`
 										}. You can't edit the post after it's published.`,
 									},
 						onSubmit: async (draft) => {

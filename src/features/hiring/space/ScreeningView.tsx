@@ -23,7 +23,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { useDetailPanel } from "~/components/useDetailPanel";
 import { useWorkspace } from "~/features/work/board/StartupContext";
 import { displayName } from "~/lib/displayName";
-import { dayLabel } from "../hackathonDates";
+import { dayLabel, lastDay } from "../hackathonDates";
 import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";
@@ -83,7 +83,7 @@ export function ScreeningView({
 	// Accept and the A key both stop at the limit.
 	const canAccept = participantCount < MAX_PARTICIPANTS;
 	const removing = rows.find((row) => row.application._id === removingId);
-	const startNote = `Accept by ${dayLabel(hackathon.startsAt)}. Anyone you haven't accepted is declined then; if nobody's accepted, the Hackathon ends.`;
+	const startNote = `Accept by ${dayLabel(lastDay(hackathon.startsAt))}. Anyone you haven't accepted is declined when it starts on ${dayLabel(hackathon.startsAt)}; if nobody's accepted, the Hackathon ends.`;
 
 	function select(id: string) {
 		void navigate({ search: (prev) => ({ ...prev, view: id }), replace: true });
