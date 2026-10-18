@@ -71,6 +71,7 @@ export function HackathonPost({
 	].filter((fact) => fact !== null);
 	const problem = post.problem.trim();
 	const isPage = size === "page";
+	const Title = isPage ? "h1" : "h2";
 
 	return (
 		<article
@@ -80,9 +81,12 @@ export function HackathonPost({
 				<p className="text-sm text-muted-foreground">
 					{post.startupName} is hiring
 				</p>
-				<h1 className={cn("font-semibold", isPage ? "text-3xl" : "text-2xl")}>
+				{/* A preview sits under its page's own h1. */}
+				<Title
+					className={cn("font-semibold", isPage ? "text-3xl" : "text-2xl")}
+				>
 					{role ?? <Unwritten>The role</Unwritten>}
-				</h1>
+				</Title>
 				<ul className="flex flex-wrap gap-2">
 					{facts.map((fact) => (
 						<li key={fact}>
