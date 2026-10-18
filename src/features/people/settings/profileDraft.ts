@@ -1,5 +1,6 @@
 import type { discipline } from "@convex/shared/validators";
 import type { Infer } from "convex/values";
+import { changedFields } from "~/lib/changedFields";
 
 type Discipline = Infer<typeof discipline>;
 
@@ -54,14 +55,7 @@ export function toProfileArgs(
 		githubUrl: draft.githubUrl.trim(),
 		portfolioUrl: draft.portfolioUrl.trim(),
 	};
-
-	const changed: ReturnType<typeof toProfileArgs> = {};
-	for (const key of Object.keys(next) as (keyof ProfileDraft)[]) {
-		if (next[key] !== saved[key]) {
-			Object.assign(changed, { [key]: next[key] });
-		}
-	}
-	return changed;
+	return changedFields(next, saved);
 }
 
 /**

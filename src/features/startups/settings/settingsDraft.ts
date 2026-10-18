@@ -1,4 +1,5 @@
 import type { Doc } from "@convex/_generated/dataModel";
+import { changedFields } from "~/lib/changedFields";
 
 type SettingsStartup = Pick<
 	Doc<"startups">,
@@ -42,12 +43,5 @@ export function toUpdateArgs(
 		oneLiner: draft.oneLiner.trim(),
 		website: draft.website.trim(),
 	};
-
-	const changed: Partial<SettingsDraft> = {};
-	for (const key of Object.keys(next) as (keyof SettingsDraft)[]) {
-		if (next[key] !== saved[key]) {
-			Object.assign(changed, { [key]: next[key] });
-		}
-	}
-	return changed;
+	return changedFields(next, saved);
 }
