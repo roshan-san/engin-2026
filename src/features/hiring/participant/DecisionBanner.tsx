@@ -1,12 +1,17 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
 import { decisionTitle } from "./decisionCopy";
 import { useKeepPromise } from "./useKeepPromise";
 
 /** The Founder's decision, their note, and the one-tap promise question. */
 export function DecisionBanner({
+	startupName,
 	application,
 }: {
+	readonly startupName: string;
 	readonly application: {
 		readonly applicationId: Id<"applications">;
 		readonly decision: "hired" | "not_this_time";
@@ -15,6 +20,13 @@ export function DecisionBanner({
 	};
 }) {
 	const keepPromise = useKeepPromise(application.applicationId);
+	const [saving, setSaving] = useState<boolean | null>(null);
+
+	async function answer(kept: boolean) {
+		setSaving(kept);
+		await keepPromise(kept);
+		setSaving(null);
+	}
 
 	return (
 		<section
@@ -29,28 +41,41 @@ export function DecisionBanner({
 					<span className="text-muted-foreground"> {application.feedback}</span>
 				) : null}
 				{application.decision === "hired" ? (
-					<> Join from your Invites.</>
+					<>
+						{" "}
+						<Link
+							to="/home"
+							className="underline underline-offset-2 hover:text-foreground focus-ring"
+						>
+							Join {startupName} from Home
+						</Link>
+						.
+					</>
 				) : null}
 			</p>
 			{application.promiseAnswered ? (
 				<p className="text-sm text-muted-foreground">Thanks.</p>
 			) : (
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					<span className="text-sm">
-						Did the founder do what they promised?
+						Did the Founder do what they promised?
 					</span>
 					<Button
 						size="sm"
 						variant="outline"
-						onClick={() => void keepPromise(true)}
+						disabled={saving !== null}
+						onClick={() => void answer(true)}
 					>
+						{saving === true ? <Spinner /> : null}
 						Yes
 					</Button>
 					<Button
 						size="sm"
 						variant="outline"
-						onClick={() => void keepPromise(false)}
+						disabled={saving !== null}
+						onClick={() => void answer(false)}
 					>
+						{saving === false ? <Spinner /> : null}
 						No
 					</Button>
 				</div>

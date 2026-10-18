@@ -131,6 +131,7 @@ export function ParticipantPage() {
 			notice={
 				page.myApplication?.decision ? (
 					<DecisionBanner
+						startupName={page.startup.name}
 						application={{
 							...page.myApplication,
 							decision: page.myApplication.decision,

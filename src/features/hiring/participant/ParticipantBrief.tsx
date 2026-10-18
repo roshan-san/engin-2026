@@ -18,24 +18,38 @@ export function ParticipantBrief({
 	const cards = useBoardCards(useBoardScope());
 	const done = cards?.filter((card) => card.status === "done").length ?? 0;
 	const total = cards?.length ?? 0;
+	const hasStarted = Date.now() >= hackathon.startsAt;
 
 	return (
 		<div className="flex flex-col gap-10">
 			<section className="flex flex-col gap-2">
 				<p className="flex items-baseline justify-between gap-3 text-sm">
 					<span className="font-medium">
-						{done} of {total} Cards done
+						{cards === undefined
+							? null
+							: total === 0 && !hasStarted
+								? `Your Cards arrive ${dayLabel(hackathon.startsAt)}`
+								: `${done} of ${total} Cards done`}
 					</span>
 					<span className="text-xs text-muted-foreground">
 						{buildDaysLabel(hackathon.startsAt, hackathon.endsAt)}
 					</span>
 				</p>
-				<div className="h-1.5 overflow-hidden rounded-full bg-muted">
+				{total > 0 ? (
 					<div
-						className="h-full rounded-full bg-success transition-[width]"
-						style={{ width: total > 0 ? `${(done / total) * 100}%` : 0 }}
-					/>
-				</div>
+						role="progressbar"
+						aria-label="Cards done"
+						aria-valuemin={0}
+						aria-valuemax={total}
+						aria-valuenow={done}
+						className="h-1.5 overflow-hidden rounded-full bg-muted"
+					>
+						<div
+							className="h-full rounded-full bg-success transition-[width]"
+							style={{ width: `${(done / total) * 100}%` }}
+						/>
+					</div>
+				) : null}
 			</section>
 
 			<Section label="The problem" as="h3">
