@@ -27,13 +27,35 @@ export function applyState(
 }
 
 export const APPLY_COPY = {
-	applied: "Sent. You'll hear before it starts.",
+	applied: "Applied.",
 	participating: "You're in.",
 	declined: "Not this time. Thanks for applying.",
 } as const;
 
+/** What the top bar offers for each state: the panel, the Board, or nothing. */
+export type ApplyBarAction =
+	| { kind: "panel"; label: "Apply" | "Your application" }
+	| { kind: "board" };
+
+export function applyBarAction(state: ApplyState): ApplyBarAction | null {
+	switch (state) {
+		case "form":
+		case "sign_in":
+			return { kind: "panel", label: "Apply" };
+		case "applied":
+		case "declined":
+			return { kind: "panel", label: "Your application" };
+		case "participating":
+			return { kind: "board" };
+		case "closed":
+		case "team":
+			return null;
+	}
+}
+
 export function closedLabel(status: "live" | "deciding" | "done"): string {
-	return status === "live" ? "Live now" : "Finished";
+	if (status === "live") return "Live now";
+	return status === "deciding" ? "Deciding" : "Finished";
 }
 
 /** Where an unsent answer waits in `localStorage`. */

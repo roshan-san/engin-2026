@@ -1,4 +1,5 @@
 import { phaseOf } from "@convex/shared/hackathonPhase";
+import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { AppPage } from "~/components/AppPage";
@@ -21,7 +22,12 @@ import { dayLabel, lastDay } from "../hackathonDates";
 import { roleLabel } from "../jobChips";
 import { STAGE } from "../stage";
 import { ApplyForm } from "./ApplyForm";
-import { APPLY_COPY, applyState, closedLabel } from "./applyStatus";
+import {
+	APPLY_COPY,
+	applyBarAction,
+	applyState,
+	closedLabel,
+} from "./applyStatus";
 import { HackathonPost } from "./HackathonPost";
 import { useHackathon } from "./useHackathon";
 
@@ -65,34 +71,43 @@ function postOf(page: HackathonView) {
 function SignedInPage({ page }: { readonly page: HackathonView }) {
 	const panel = useDetailPanel(false, () => {});
 	const stage = STAGE[phaseOf(page, Date.now())];
+	const action = applyBarAction(applyState(page, true));
+	const panelTitle = action?.kind === "panel" ? action.label : "Apply";
 
 	return (
 		<AppPage
 			bar={{
 				title: (
-					<h1 className="truncate text-sm font-medium">
+					<p className="truncate text-sm font-medium">
 						{roleLabel(page.job.role)}
 						<span className="text-muted-foreground">
 							{" "}
 							· {page.startup.name}
 						</span>
-					</h1>
+					</p>
 				),
 				badge: (
 					<Badge variant="status" tone={stage.tone} className="shrink-0">
 						{stage.label}
 					</Badge>
 				),
-				actions: (
-					<Button size="sm" className="md:hidden" onClick={panel.open}>
-						Apply
-					</Button>
-				),
+				actions:
+					action?.kind === "panel" ? (
+						<Button size="sm" className="md:hidden" onClick={panel.open}>
+							{action.label}
+						</Button>
+					) : action?.kind === "board" ? (
+						<Button asChild size="sm">
+							<Link to="/h/$id" params={{ id: page._id }}>
+								Open your Board
+							</Link>
+						</Button>
+					) : undefined,
 			}}
 			panel={
 				<DetailPanel
 					shows={panel.shows}
-					title="Apply"
+					title={panelTitle}
 					description="Apply, and who's hiring."
 					onClose={panel.close}
 					hasCloseButton
@@ -100,7 +115,7 @@ function SignedInPage({ page }: { readonly page: HackathonView }) {
 					fallback={
 						<div className="flex min-h-0 flex-1 flex-col">
 							<PanelHeader>
-								<h2 className="text-sm font-medium">Apply</h2>
+								<h2 className="text-sm font-medium">{panelTitle}</h2>
 							</PanelHeader>
 							<PanelBody>
 								<div className="flex flex-col gap-3">
@@ -225,7 +240,8 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 				<>
 					<p className="text-sm font-medium">{APPLY_COPY.applied}</p>
 					<p className="text-sm text-muted-foreground">
-						It starts {dayLabel(page.startsAt)}.
+						The Founder picks up to {MAX_PARTICIPANTS} before it starts on{" "}
+						{dayLabel(page.startsAt)}. You'll see the answer on Home.
 					</p>
 				</>
 			);
@@ -235,9 +251,7 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 			return (
 				<>
 					<p className="text-sm font-medium">
-						{closedLabel(
-							phaseOf(page, Date.now()) === "live" ? "live" : "done",
-						)}
+						{closedLabel(closedPhase(page))}
 					</p>
 					<p className="text-sm text-muted-foreground">
 						Applications are closed.
@@ -259,4 +273,10 @@ function ApplyHeading({ page }: { readonly page: HackathonView }) {
 			</p>
 		</div>
 	);
+}
+
+/** The phases a Hackathon closed to applicants can be in. */
+function closedPhase(page: HackathonView): "live" | "deciding" | "done" {
+	const phase = phaseOf(page, Date.now());
+	return phase === "live" || phase === "deciding" ? phase : "done";
 }

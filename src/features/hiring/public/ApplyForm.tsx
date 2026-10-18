@@ -1,6 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useState } from "react";
+import { CharCount } from "~/components/CharCount";
 import { Kbd } from "~/components/Kbd";
 import { MentorNote } from "~/components/MentorNote";
 import { Button } from "~/components/ui/button";
@@ -76,7 +77,12 @@ export function ApplyForm({
 					}
 				}}
 			/>
-			<MentorNote>A few lines. How you'd start.</MentorNote>
+			<CharCount value={answer} max={TEXT.answer} />
+			<MentorNote>
+				{canSend
+					? "A few lines. How you'd start."
+					: "Write your answer to send"}
+			</MentorNote>
 			<Button type="submit" disabled={!canSend}>
 				{isSending ? <Spinner /> : null}
 				Send
