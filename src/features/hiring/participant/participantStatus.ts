@@ -1,5 +1,6 @@
 import { type HackathonPhase, phaseOf } from "@convex/shared/hackathonPhase";
-import { dayLabel, lastDay } from "../hackathonDates";
+import { dayLabel } from "~/lib/dates";
+import { lastDay } from "../hackathonDates";
 
 export type ParticipantStatus = {
 	/** The header line: "Starts Mon, Oct 19", "Ends Sun, Oct 25", "Ended". */

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { isTypingTarget } from "~/features/work/board/keys";
+import { shouldIgnoreShortcut } from "~/lib/keys";
 
 /**
  * Keys for a list worked from the keyboard: J/K move, and each extra key
@@ -27,16 +27,7 @@ export function useListKeys({
 		if (!isEnabled) return;
 
 		function onKeyDown(event: KeyboardEvent) {
-			if (event.defaultPrevented) return;
-			if (event.ctrlKey || event.metaKey || event.altKey) return;
-			if (isTypingTarget(event.target)) return;
-			if (
-				(event.target as HTMLElement | null)?.closest?.(
-					"[role=dialog], [role=alertdialog], [role=listbox], [role=menu]",
-				)
-			) {
-				return;
-			}
+			if (shouldIgnoreShortcut(event)) return;
 
 			const { ids, activeId, onMove, keys } = latest.current;
 			const key = event.key.toLowerCase();

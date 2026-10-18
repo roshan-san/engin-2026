@@ -7,14 +7,14 @@ import { DetailPanel } from "~/components/DetailPanel";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useDetailPanel } from "~/components/useDetailPanel";
+import { useWorkspace } from "~/features/work/StartupContext";
+import { tierText } from "~/features/work/tierText";
 import { cn } from "~/lib/utils";
-import { useWorkspace } from "../board/StartupContext";
 import { ActivityFeed } from "./ActivityFeed";
 import { EntryPanel } from "./EntryPanel";
 import { RecordPanel } from "./RecordPanel";
 import { RecordSignals } from "./RecordSignals";
 import { findEntry } from "./record";
-import { tierText } from "./tierText";
 import { useActivity } from "./useActivity";
 import { useSignals } from "./useSignals";
 

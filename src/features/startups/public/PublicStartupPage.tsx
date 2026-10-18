@@ -9,12 +9,12 @@ import { TILE, TILE_LINK } from "~/components/tile";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { dayLabel } from "~/features/hiring/hackathonDates";
 import { jobLine } from "~/features/hiring/jobChips";
 import { ActivityFeed } from "~/features/work/activity/ActivityFeed";
 import { RecordSignals } from "~/features/work/activity/RecordSignals";
-import { tierText } from "~/features/work/activity/tierText";
 import { useSignals } from "~/features/work/activity/useSignals";
+import { tierText } from "~/features/work/tierText";
+import { dayLabel, monthYearLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 import { usePlaces } from "~/shell/usePlaces";
 import { CITIES, KINDS, STAGES } from "../startupChips";
@@ -23,12 +23,6 @@ import { usePublicActivity } from "./usePublicActivity";
 import { usePublicStartup } from "./usePublicStartup";
 
 const route = getRouteApi("/_shell/startups/$slug");
-
-const SINCE = new Intl.DateTimeFormat("en-US", {
-	timeZone: "Asia/Kolkata",
-	month: "short",
-	year: "numeric",
-});
 
 function labelOf<T extends string>(
 	chips: readonly { value: T; label: string }[],
@@ -123,7 +117,7 @@ export function PublicStartupPage() {
 								{startup.website.replace(/^https?:\/\//, "")}
 							</a>
 						) : null}
-						<span>On engin since {SINCE.format(startup.createdAt)}</span>
+						<span>On engin since {monthYearLabel(startup.createdAt)}</span>
 						{isOnTeam ? (
 							<Button asChild size="sm" className="ml-auto">
 								<Link to="/s/$slug/board" params={{ slug }}>

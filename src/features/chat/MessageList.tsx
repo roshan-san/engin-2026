@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog";
 import { Skeleton } from "~/components/ui/skeleton";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
-import { relativeTime } from "~/lib/relativeTime";
+import { relativeTime } from "~/lib/dates";
 import { groupMessages } from "./groupMessages";
 import { MessageBody } from "./MessageBody";
 import type { MessageView } from "./useMessages";

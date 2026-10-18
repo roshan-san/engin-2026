@@ -15,10 +15,11 @@ import {
 	CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { tierText } from "~/features/work/activity/tierText";
+import { tierText } from "~/features/work/tierText";
+import { weekdayLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 import { EntryProof } from "./EntryProof";
-import { type EntryView, entryDay, entrySummary } from "./record";
+import { type EntryView, entrySummary } from "./record";
 
 const ROW = "flex w-full items-center gap-3 px-2 py-2 text-left text-sm";
 const INTERACTIVE = "rounded-md transition-colors hover:bg-accent focus-ring";
@@ -153,7 +154,7 @@ function EntryLine({
 				dateTime={new Date(entry.at).toISOString()}
 				className="w-8 shrink-0 text-right text-xs text-muted-foreground tabular-nums"
 			>
-				{entryDay(entry.at)}
+				{weekdayLabel(entry.at)}
 			</time>
 		</>
 	);

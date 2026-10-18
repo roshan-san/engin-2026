@@ -1,10 +1,9 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { MAX_MESSAGE_IMAGES } from "@convex/shared/limits";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { errorMessage } from "~/lib/errors";
-import { pickImages } from "~/lib/images";
-import { useUpload } from "~/lib/useUpload";
+import { errorMessage } from "./errors";
+import { pickImages } from "./images";
+import { useUpload } from "./useUpload";
 
 export type Picture = {
 	readonly key: string;
@@ -13,8 +12,17 @@ export type Picture = {
 	readonly storageId: Id<"_storage"> | null;
 };
 
-/** The images attached to a message: upload on add, free the previews, put them back if a send fails. */
-export function usePictures() {
+/**
+ * Images attached to a form, at most `max`: upload on add, free the previews, put them back
+ * if a send fails. `skippedMessage` is toasted when a file isn't an image or doesn't fit.
+ */
+export function usePictures({
+	max,
+	skippedMessage,
+}: {
+	readonly max: number;
+	readonly skippedMessage: string;
+}) {
 	const { upload } = useUpload();
 	const [pictures, setPictures] = useState<Picture[]>([]);
 	const picturesRef = useRef<Picture[]>([]);
@@ -22,7 +30,7 @@ export function usePictures() {
 
 	const isUploading = pictures.some((picture) => picture.storageId === null);
 
-	// Thumbnails hold object URLs; free them when the composer goes.
+	// Thumbnails hold object URLs; free them when the form goes.
 	useEffect(
 		() => () => {
 			for (const picture of picturesRef.current) {
@@ -33,11 +41,8 @@ export function usePictures() {
 	);
 
 	function addImages(files: File[]) {
-		const { accepted, skipped } = pickImages(
-			files,
-			MAX_MESSAGE_IMAGES - pictures.length,
-		);
-		if (skipped > 0) toast(`Images only, up to ${MAX_MESSAGE_IMAGES}.`);
+		const { accepted, skipped } = pickImages(files, max - pictures.length);
+		if (skipped > 0) toast(skippedMessage);
 
 		for (const file of accepted) {
 			const picture: Picture = {
@@ -79,10 +84,10 @@ export function usePictures() {
 	function restore(sent: Picture[]) {
 		setPictures((current) => {
 			const all = [...sent, ...current];
-			for (const extra of all.slice(MAX_MESSAGE_IMAGES)) {
+			for (const extra of all.slice(max)) {
 				URL.revokeObjectURL(extra.previewUrl);
 			}
-			return all.slice(0, MAX_MESSAGE_IMAGES);
+			return all.slice(0, max);
 		});
 	}
 

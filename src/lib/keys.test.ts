@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSendKey } from "./keys";
+import { isSendKey, shouldIgnoreShortcut } from "./keys";
 
 describe("isSendKey", () => {
 	it("is true for a plain Enter", () => {
@@ -68,5 +68,62 @@ describe("isSendKey", () => {
 				{ coarse: true },
 			),
 		).toBe(false);
+	});
+});
+
+describe("shouldIgnoreShortcut", () => {
+	function element(tagName: string, insideRole?: string) {
+		return {
+			tagName,
+			isContentEditable: false,
+			closest: () => (insideRole ? {} : null),
+		} as unknown as EventTarget;
+	}
+	const plain = {
+		defaultPrevented: false,
+		ctrlKey: false,
+		metaKey: false,
+		altKey: false,
+		target: element("DIV"),
+	};
+
+	it("lets a plain key on the page through", () => {
+		expect(shouldIgnoreShortcut(plain)).toBe(false);
+	});
+
+	it("lets a key with no element target through", () => {
+		expect(shouldIgnoreShortcut({ ...plain, target: null })).toBe(false);
+	});
+
+	it("ignores a key something else already handled", () => {
+		expect(shouldIgnoreShortcut({ ...plain, defaultPrevented: true })).toBe(
+			true,
+		);
+	});
+
+	it("ignores a key with a modifier held", () => {
+		expect(shouldIgnoreShortcut({ ...plain, ctrlKey: true })).toBe(true);
+		expect(shouldIgnoreShortcut({ ...plain, metaKey: true })).toBe(true);
+		expect(shouldIgnoreShortcut({ ...plain, altKey: true })).toBe(true);
+	});
+
+	it("ignores typing in an input, a textarea or editable text", () => {
+		expect(shouldIgnoreShortcut({ ...plain, target: element("INPUT") })).toBe(
+			true,
+		);
+		expect(
+			shouldIgnoreShortcut({ ...plain, target: element("TEXTAREA") }),
+		).toBe(true);
+		const editable = {
+			...element("DIV"),
+			isContentEditable: true,
+		} as unknown as EventTarget;
+		expect(shouldIgnoreShortcut({ ...plain, target: editable })).toBe(true);
+	});
+
+	it("ignores a key inside a dialog, list or menu", () => {
+		expect(
+			shouldIgnoreShortcut({ ...plain, target: element("BUTTON", "dialog") }),
+		).toBe(true);
 	});
 });

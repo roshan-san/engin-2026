@@ -12,8 +12,8 @@ import {
 	SelectValue,
 } from "~/components/ui/select";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { tierText } from "~/features/work/activity/tierText";
-import { useWorkspace } from "~/features/work/board/StartupContext";
+import { useWorkspace } from "~/features/work/StartupContext";
+import { tierText } from "~/features/work/tierText";
 import { cn } from "~/lib/utils";
 import { EveryonePanel } from "./EveryonePanel";
 import { ParticipantView } from "./ParticipantView";

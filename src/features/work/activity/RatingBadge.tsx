@@ -5,9 +5,9 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { tierText } from "~/features/work/tierText";
 import { cn } from "~/lib/utils";
 import { ratingChangeLabel } from "./record";
-import { tierText } from "./tierText";
 
 /** "1184 ▲ 12": the Rating in its Tier colour, its last move, and Provisional while it settles. */
 export function RatingBadge({

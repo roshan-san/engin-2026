@@ -11,7 +11,7 @@ import { UnreadDot } from "~/components/UnreadDot";
 import { Button } from "~/components/ui/button";
 import { roleLabel } from "~/features/hiring/jobChips";
 import { participantStatusText } from "~/features/hiring/participant/participantStatus";
-import { tierText } from "~/features/work/activity/tierText";
+import { tierText } from "~/features/work/tierText";
 import { cn } from "~/lib/utils";
 import { isWaiting, type Places, reasonLine } from "~/shell/places";
 import { useMe } from "~/shell/useMe";

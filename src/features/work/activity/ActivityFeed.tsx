@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import { cycleDates } from "../board/cycleDates";
+import { dateRange } from "~/lib/dates";
 import { ActivityEntry } from "./ActivityEntry";
 import { buildFeed, type CycleView, quietLabel } from "./record";
 
@@ -61,7 +61,7 @@ export function ActivityFeed({
 								<h3 className="text-sm font-medium">Cycle {cycle.number}</h3>
 								{mode === "full" ? (
 									<span className="text-sm text-muted-foreground">
-										{cycleDates(cycle.startsAt, cycle.endsAt)}
+										{dateRange(cycle.startsAt, cycle.endsAt)}
 									</span>
 								) : null}
 								{isCurrent ? (

@@ -3,8 +3,8 @@ import { useRef, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
-import { cycleDates } from "./cycleDates";
-import { useWorkspace } from "./StartupContext";
+import { useWorkspace } from "~/features/work/StartupContext";
+import { dateRange } from "~/lib/dates";
 import { useCycle } from "./useCycle";
 import { useSetGoal } from "./useSetGoal";
 
@@ -31,7 +31,7 @@ export function CycleHeader() {
 			Cycle {cycle.number}
 			<span className="hidden sm:inline">
 				{" · "}
-				{cycleDates(cycle.startsAt, cycle.endsAt)}
+				{dateRange(cycle.startsAt, cycle.endsAt)}
 			</span>
 		</span>
 	);

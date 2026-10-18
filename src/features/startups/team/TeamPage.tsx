@@ -1,6 +1,6 @@
 import { AppPage, PageTitle } from "~/components/AppPage";
 import { EmptyState } from "~/components/EmptyState";
-import { useWorkspace } from "~/features/work/board/StartupContext";
+import { useWorkspace } from "~/features/work/StartupContext";
 import { InviteButton } from "./InviteButton";
 import { PendingInvites } from "./PendingInvites";
 import { PeopleList } from "./PeopleList";

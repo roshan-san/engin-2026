@@ -4,8 +4,9 @@ import type { ReactNode } from "react";
 import { Section } from "~/components/Section";
 import { Badge } from "~/components/ui/badge";
 import { SignInCard } from "~/features/people/auth/SignInCard";
+import { dayLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";
-import { buildDaysLabel, dayLabel, lastDay } from "../hackathonDates";
+import { buildDaysLabel, lastDay } from "../hackathonDates";
 import {
 	type JobMode,
 	type JobPay,

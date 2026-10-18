@@ -3,8 +3,8 @@ import { WEEK_MS } from "@convex/shared/cycles";
 import { WEEK_COUNT_CAP } from "@convex/shared/limits";
 import type { FunctionReturnType } from "convex/server";
 import { roleLabel } from "~/features/hiring/jobChips";
-import { displayName } from "../../../lib/displayName";
-import { cycleDates } from "../board/cycleDates";
+import { dateRange } from "~/lib/dates";
+import { displayName } from "~/lib/displayName";
 
 export type ActivityView = FunctionReturnType<typeof api.work.activity.list>;
 export type CycleView = ActivityView["cycles"][number];
@@ -13,11 +13,6 @@ export type SignalsView = NonNullable<
 	FunctionReturnType<typeof api.work.activity.getSignals>
 >;
 export type StripCell = SignalsView["strip"][number];
-
-const WEEKDAY = new Intl.DateTimeFormat("en-US", {
-	timeZone: "Asia/Kolkata",
-	weekday: "short",
-});
 
 /** "▲ 12" up, "▼ 8" down, nothing when flat. Never red. */
 export function ratingChangeLabel(change: number): {
@@ -43,7 +38,7 @@ export function stripTooltip(cell: Pick<StripCell, "startsAt" | "count">) {
 	if (cell.count === null) return "Before Engin";
 	const count =
 		cell.count >= WEEK_COUNT_CAP ? `${WEEK_COUNT_CAP}+` : cell.count;
-	return `${cycleDates(cell.startsAt, cell.startsAt + WEEK_MS)} · ${count} verified`;
+	return `${dateRange(cell.startsAt, cell.startsAt + WEEK_MS)} · ${count} verified`;
 }
 
 /** Who an entry is about and what happened; the actor reads in bold before `text`. */
@@ -65,18 +60,6 @@ export function entrySummary(entry: EntryView): {
 	}
 }
 
-const DATE = new Intl.DateTimeFormat("en-US", {
-	timeZone: "Asia/Kolkata",
-	weekday: "short",
-	month: "short",
-	day: "numeric",
-});
-
-/** The IST day an entry happened in full, e.g. "Tue, Oct 13". */
-export function entryDate(at: number): string {
-	return DATE.format(at);
-}
-
 /** A loaded entry and the Cycle it sits in, or null once it's out of the list. */
 export function findEntry(cycles: CycleView[], entryId: string | undefined) {
 	if (!entryId) return null;
@@ -85,11 +68,6 @@ export function findEntry(cycles: CycleView[], entryId: string | undefined) {
 		if (entry) return { entry, cycle };
 	}
 	return null;
-}
-
-/** The IST weekday an entry happened, e.g. "Tue". */
-export function entryDay(at: number): string {
-	return WEEKDAY.format(at);
 }
 
 /** A proof link without its scheme: "github.com/acme/app/pull/12". */
@@ -140,6 +118,6 @@ export function quietLabel(item: Extract<FeedItem, { kind: "quiet" }>) {
 			newest.number === oldest.number
 				? `Cycle ${newest.number}`
 				: `Cycles ${oldest.number}–${newest.number}`,
-		dates: cycleDates(oldest.startsAt, newest.endsAt),
+		dates: dateRange(oldest.startsAt, newest.endsAt),
 	};
 }

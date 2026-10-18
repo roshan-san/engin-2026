@@ -1,11 +1,10 @@
-import type { Id } from "@convex/_generated/dataModel";
 import {
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
 	TEXT,
 } from "@convex/shared/limits";
 import { XIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { MentorNote } from "~/components/MentorNote";
 import { Badge } from "~/components/ui/badge";
@@ -20,22 +19,13 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { errorMessage } from "~/lib/errors";
-import { pickImages } from "../../../lib/images";
-import { useUpload } from "../../../lib/useUpload";
+import { isSendKey } from "~/lib/keys";
+import { usePictures } from "~/lib/usePictures";
 import { useBoardScope } from "../board/BoardScope";
-import { isSendKey } from "../board/keys";
 import type { CardView } from "../board/types";
 import { landsIn } from "../cardRules";
 import { parseLink, shipMissing } from "./shipReady";
 import { useSubmit } from "./useSubmit";
-
-type Picture = {
-	readonly key: string;
-	readonly previewUrl: string;
-	/** `null` while the file is still uploading. */
-	readonly storageId: Id<"_storage"> | null;
-};
 
 /** What shipped: a line plus proof. The Card moves only once this is submitted. */
 export function ShipDialog({
@@ -47,19 +37,18 @@ export function ShipDialog({
 }) {
 	const scope = useBoardScope();
 	const { submit } = useSubmit();
-	const { upload } = useUpload();
 	const [line, setLine] = useState("");
 	const [links, setLinks] = useState<string[]>([]);
 	const [linkText, setLinkText] = useState("");
-	const [pictures, setPictures] = useState<Picture[]>([]);
+	const { pictures, isUploading, addImages, removePicture } = usePictures({
+		max: MAX_SHIPPED_IMAGES,
+		skippedMessage: `Some files were skipped. Add up to ${MAX_SHIPPED_IMAGES} images.`,
+	});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isDragOver, setIsDragOver] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const picturesRef = useRef<Picture[]>([]);
-	picturesRef.current = pictures;
 
 	const marksDone = landsIn(card, scope) === "done";
-	const isUploading = pictures.some((picture) => picture.storageId === null);
 	// Closing mid-send or mid-upload would lose the proof and orphan its files.
 	const isBusy = isUploading || isSubmitting;
 	const missing = shipMissing({
@@ -70,16 +59,6 @@ export function ShipDialog({
 	});
 	const canSubmit = missing === null && !isUploading && !isSubmitting;
 
-	// Thumbnails hold object URLs; free them when the dialog goes.
-	useEffect(
-		() => () => {
-			for (const picture of picturesRef.current) {
-				URL.revokeObjectURL(picture.previewUrl);
-			}
-		},
-		[],
-	);
-
 	function addLink(text: string) {
 		const link = parseLink(text);
 		if (!link) {
@@ -88,41 +67,6 @@ export function ShipDialog({
 		}
 		if (!links.includes(link)) setLinks([...links, link]);
 		setLinkText("");
-	}
-
-	function addImages(files: File[]) {
-		const { accepted, skipped } = pickImages(
-			files,
-			MAX_SHIPPED_IMAGES - pictures.length,
-		);
-		if (skipped > 0)
-			toast(`Some files were skipped. Add up to ${MAX_SHIPPED_IMAGES} images.`);
-
-		for (const file of accepted) {
-			const picture: Picture = {
-				key: crypto.randomUUID(),
-				previewUrl: URL.createObjectURL(file),
-				storageId: null,
-			};
-			setPictures((current) => [...current, picture]);
-			upload(file).then(
-				(storageId) =>
-					setPictures((current) =>
-						current.map((p) =>
-							p.key === picture.key ? { ...p, storageId } : p,
-						),
-					),
-				(error) => {
-					toast.error(errorMessage(error));
-					removePicture(picture);
-				},
-			);
-		}
-	}
-
-	function removePicture(picture: Picture) {
-		URL.revokeObjectURL(picture.previewUrl);
-		setPictures((current) => current.filter((p) => p.key !== picture.key));
 	}
 
 	async function handleSubmit() {

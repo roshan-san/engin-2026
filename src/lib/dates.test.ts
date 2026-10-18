@@ -1,5 +1,6 @@
+import { WEEK_MS, weekStart } from "@convex/shared/cycles";
 import { describe, expect, it } from "vitest";
-import { relativeTime } from "./relativeTime";
+import { dateRange, hourOfDay, relativeTime } from "./dates";
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -35,5 +36,31 @@ describe("relativeTime", () => {
 	it("uses the IST day, not the UTC day", () => {
 		// 01:00 IST on Oct 1 is still Sep 30 in UTC.
 		expect(relativeTime(ist("2026-10-01", "01:00"), now)).toBe("Oct 1");
+	});
+});
+
+describe("dateRange", () => {
+	function weekOf(week: string) {
+		const startsAt = weekStart(week);
+		return dateRange(startsAt, startsAt + WEEK_MS);
+	}
+
+	it("shows one month once when the week stays inside it", () => {
+		expect(weekOf("2026-W42")).toBe("Oct 12 – 18");
+	});
+
+	it("shows both months when the week crosses a month", () => {
+		expect(weekOf("2026-W40")).toBe("Sep 28 – Oct 4");
+	});
+
+	it("shows a week that starts the new year's first Monday", () => {
+		expect(weekOf("2027-W01")).toBe("Jan 4 – 10");
+	});
+});
+
+describe("hourOfDay", () => {
+	it("reads the hour in IST on a 24-hour clock", () => {
+		expect(hourOfDay(ist("2026-10-11", "00:30"))).toBe(0);
+		expect(hourOfDay(ist("2026-10-11", "17:05"))).toBe(17);
 	});
 });

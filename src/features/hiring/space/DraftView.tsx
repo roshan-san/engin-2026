@@ -11,7 +11,8 @@ import { PlansDialog } from "~/features/billing/PlansDialog";
 import { usePaymentIssue } from "~/features/billing/usePaymentIssue";
 import { usePlan } from "~/features/billing/usePlan";
 import { usePortal } from "~/features/billing/usePortal";
-import { useWorkspace } from "~/features/work/board/StartupContext";
+import { useWorkspace } from "~/features/work/StartupContext";
+import { dayLabel } from "~/lib/dates";
 import {
 	draftCard,
 	fromParticipantsGet,
@@ -19,7 +20,7 @@ import {
 } from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";
 import { useHackathonForm } from "../form/useHackathonForm";
-import { dayLabel, lastDay } from "../hackathonDates";
+import { lastDay } from "../hackathonDates";
 import { roleLabel } from "../jobChips";
 import { copyHackathonLink } from "./copyHackathonLink";
 

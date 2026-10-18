@@ -6,13 +6,13 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { isSendKey } from "~/features/work/board/keys";
+import { isSendKey } from "~/lib/keys";
 import { isCoarsePointer } from "~/lib/platform";
+import { usePictures } from "~/lib/usePictures";
 import { cn } from "~/lib/utils";
 import { MentionPicker } from "./MentionPicker";
 import { PictureStrip } from "./PictureStrip";
 import { useMentions } from "./useMentions";
-import { usePictures } from "./usePictures";
 
 /** Write a message: text, pasted or dropped images, and in Team `#` to mention a Card. */
 export function Composer({
@@ -50,7 +50,10 @@ export function Composer({
 		take,
 		restore,
 		release,
-	} = usePictures();
+	} = usePictures({
+		max: MAX_MESSAGE_IMAGES,
+		skippedMessage: `Images only, up to ${MAX_MESSAGE_IMAGES}.`,
+	});
 
 	const canSend =
 		(text.trim().length > 0 || pictures.length > 0) &&

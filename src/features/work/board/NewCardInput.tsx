@@ -4,7 +4,7 @@ import { type Ref, useState } from "react";
 import { Kbd } from "~/components/Kbd";
 import { MentorNote } from "~/components/MentorNote";
 import { Textarea } from "~/components/ui/textarea";
-import { isSendKey } from "./keys";
+import { isSendKey } from "~/lib/keys";
 
 /** Adds a Card to To do: Enter creates and stays focused, Esc leaves. */
 export function NewCardInput({

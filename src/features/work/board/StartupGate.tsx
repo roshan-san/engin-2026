@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { StartupContext } from "~/features/work/StartupContext";
 import { useMe } from "~/shell/useMe";
 import { BoardScopeContext } from "./BoardScope";
-import { StartupContext } from "./StartupContext";
 import { useStartup } from "./useStartup";
 
 /** Loads the Startup at `slug` and gives its page the workspace; 404s for non-team. */

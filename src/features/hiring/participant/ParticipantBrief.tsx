@@ -1,7 +1,8 @@
 import { Section } from "~/components/Section";
 import { useBoardScope } from "~/features/work/board/BoardScope";
 import { useBoardCards } from "~/features/work/board/useBoard";
-import { buildDaysLabel, dayLabel, lastDay } from "../hackathonDates";
+import { dayLabel } from "~/lib/dates";
+import { buildDaysLabel, lastDay } from "../hackathonDates";
 
 /** What a Participant keeps coming back to: how far they've got, the problem, and how it ends. */
 export function ParticipantBrief({

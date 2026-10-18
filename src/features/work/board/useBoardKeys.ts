@@ -1,5 +1,5 @@
 import { type RefObject, useEffect } from "react";
-import { isTypingTarget } from "./keys";
+import { shouldIgnoreShortcut } from "~/lib/keys";
 
 const NEXT = new Set(["j", "ArrowDown"]);
 const PREVIOUS = new Set(["k", "ArrowUp"]);
@@ -38,17 +38,7 @@ export function useBoardKeys({
 	useEffect(() => {
 		function onKeyDown(event: KeyboardEvent) {
 			const root = rootRef.current;
-			if (!root || isPaused || event.defaultPrevented) return;
-			if (event.ctrlKey || event.metaKey || event.altKey) return;
-			if (isTypingTarget(event.target)) return;
-			// Dialogs, lists and menus own their keys; the Board is behind them.
-			if (
-				(event.target as HTMLElement | null)?.closest?.(
-					"[role=dialog], [role=alertdialog], [role=listbox], [role=menu]",
-				)
-			) {
-				return;
-			}
+			if (!root || isPaused || shouldIgnoreShortcut(event)) return;
 
 			if (event.key === "Escape") {
 				onClose();

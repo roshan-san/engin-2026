@@ -2,7 +2,7 @@ import { ConfirmButton } from "~/components/ConfirmButton";
 import { Row, RowList } from "~/components/RowList";
 import { Section } from "~/components/Section";
 import { Badge } from "~/components/ui/badge";
-import { dayLabel } from "~/features/hiring/hackathonDates";
+import { dayLabel } from "~/lib/dates";
 import type { StartupInvite } from "./useStartupInvites";
 
 /** The Founder's pending Invites, each with Revoke. Nothing shows while there are none. */

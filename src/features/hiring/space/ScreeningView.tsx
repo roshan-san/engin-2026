@@ -21,9 +21,10 @@ import {
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useDetailPanel } from "~/components/useDetailPanel";
-import { useWorkspace } from "~/features/work/board/StartupContext";
+import { useWorkspace } from "~/features/work/StartupContext";
+import { dayLabel } from "~/lib/dates";
 import { displayName } from "~/lib/displayName";
-import { dayLabel, lastDay } from "../hackathonDates";
+import { lastDay } from "../hackathonDates";
 import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";

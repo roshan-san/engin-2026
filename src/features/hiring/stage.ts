@@ -1,4 +1,5 @@
-import { dayLabel, lastDay, monthDayLabel } from "./hackathonDates";
+import { dayLabel, monthDayLabel } from "~/lib/dates";
+import { lastDay } from "./hackathonDates";
 
 type Status = "draft" | "open" | "live" | "deciding" | "done";
 type Tone = "neutral" | "link" | "success" | "warning";

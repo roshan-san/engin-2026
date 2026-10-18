@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
-import { useKept } from "~/shell/useKept";
+import { useKept } from "~/lib/useKept";
 import type { HackathonSearch } from "./exploreSearch";
 
 /**

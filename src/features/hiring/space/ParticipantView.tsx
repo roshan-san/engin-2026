@@ -13,7 +13,6 @@ import { useDetailPanel } from "~/components/useDetailPanel";
 import { ThreadPanel } from "~/features/chat/ThreadPanel";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
-import { tierText } from "~/features/work/activity/tierText";
 import { Board } from "~/features/work/board/Board";
 import {
 	type BoardScope,
@@ -22,6 +21,7 @@ import {
 import type { CardView } from "~/features/work/board/types";
 import { CardPanel } from "~/features/work/cards/CardPanel";
 import { ShipDialog } from "~/features/work/cards/ShipDialog";
+import { tierText } from "~/features/work/tierText";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";

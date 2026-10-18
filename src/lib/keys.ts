@@ -24,10 +24,29 @@ export function isSendKey(
 	);
 }
 
-/** Whether keys typed at `target` belong to a text field, not to shortcuts. */
-export function isTypingTarget(target: EventTarget | null): boolean {
-	const element = target as HTMLElement | null;
+/**
+ * Whether a page shortcut should leave this key alone: something handled it already,
+ * a modifier is held, you're typing in a field, or a dialog, list or menu has focus
+ * (they own their keys; the page is behind them).
+ */
+export function shouldIgnoreShortcut(event: {
+	readonly defaultPrevented: boolean;
+	readonly ctrlKey: boolean;
+	readonly metaKey: boolean;
+	readonly altKey: boolean;
+	readonly target: EventTarget | null;
+}): boolean {
+	if (event.defaultPrevented) return true;
+	if (event.ctrlKey || event.metaKey || event.altKey) return true;
+	const element = event.target as HTMLElement | null;
 	if (!element || typeof element.tagName !== "string") return false;
 	const tag = element.tagName.toLowerCase();
-	return tag === "input" || tag === "textarea" || element.isContentEditable;
+	if (tag === "input" || tag === "textarea" || element.isContentEditable) {
+		return true;
+	}
+	return (
+		element.closest(
+			"[role=dialog], [role=alertdialog], [role=listbox], [role=menu]",
+		) !== null
+	);
 }

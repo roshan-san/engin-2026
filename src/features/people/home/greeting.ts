@@ -1,12 +1,8 @@
-const HOUR = new Intl.DateTimeFormat("en-GB", {
-	hour: "numeric",
-	hourCycle: "h23",
-	timeZone: "Asia/Kolkata",
-});
+import { hourOfDay } from "~/lib/dates";
 
 /** "Good evening, Roshan", by the hour in India. Never a pronoun. */
 export function greeting(now: number, name: string | null): string {
-	const hour = Number(HOUR.format(now));
+	const hour = hourOfDay(now);
 	const part =
 		hour >= 5 && hour < 12
 			? "morning"

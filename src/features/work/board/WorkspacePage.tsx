@@ -8,11 +8,11 @@ import { useDetailPanel } from "~/components/useDetailPanel";
 import { TeamPanel } from "~/features/chat/TeamPanel";
 import { useHeartbeat } from "~/features/chat/useHeartbeat";
 import { useTeamThread } from "~/features/chat/useTeamThread";
+import { useWorkspace } from "~/features/work/StartupContext";
 import { CardPanel } from "../cards/CardPanel";
 import { ShipDialog } from "../cards/ShipDialog";
 import { Board } from "./Board";
 import { CycleHeader } from "./CycleHeader";
-import { useWorkspace } from "./StartupContext";
 import type { CardView } from "./types";
 
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");

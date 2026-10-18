@@ -1,12 +1,11 @@
 import { WEEK_MS, weekStart } from "@convex/shared/cycles";
 import { WEEK_COUNT_CAP } from "@convex/shared/limits";
 import { describe, expect, it } from "vitest";
+import { dayLabel, weekdayLabel } from "~/lib/dates";
 import {
 	buildFeed,
 	type CycleView,
 	type EntryView,
-	entryDate,
-	entryDay,
 	entrySummary,
 	findEntry,
 	linkLabel,
@@ -70,8 +69,8 @@ describe("record", () => {
 			actor: "Sam",
 			text: "Sent welcome sequence",
 		});
-		expect(entryDay(verified.at)).toBe("Tue");
-		expect(entryDate(verified.at)).toBe("Tue, Oct 13");
+		expect(weekdayLabel(verified.at)).toBe("Tue");
+		expect(dayLabel(verified.at)).toBe("Tue, Oct 13");
 	});
 
 	it("an entry without its person says Someone", () => {

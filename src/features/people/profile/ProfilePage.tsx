@@ -16,7 +16,7 @@ import { PersonName } from "~/features/people/PersonName";
 import { SettingsSheet } from "~/features/people/settings/SettingsSheet";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
 import { RatingParts } from "~/features/work/activity/RatingParts";
-import { tierText } from "~/features/work/activity/tierText";
+import { tierText } from "~/features/work/tierText";
 import { cn } from "~/lib/utils";
 import { useMe } from "~/shell/useMe";
 import { disciplineLabel, hackathonLine, workLine } from "./profileText";

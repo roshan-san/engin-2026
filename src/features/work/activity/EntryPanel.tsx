@@ -5,8 +5,9 @@ import { Section } from "~/components/Section";
 import { Button } from "~/components/ui/button";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
 import { PersonName } from "~/features/people/PersonName";
+import { dayLabel } from "~/lib/dates";
 import { EntryProof } from "./EntryProof";
-import { type CycleView, type EntryView, entryDate } from "./record";
+import type { CycleView, EntryView } from "./record";
 
 /** One verified Card's What shipped and proof, in the side panel. */
 export function EntryPanel({
@@ -60,7 +61,7 @@ export function EntryPanel({
 						{entry.line ?? card?.title}
 					</p>
 					<p className="text-xs text-muted-foreground">
-						Cycle {cycle.number} · {entryDate(entry.at)}
+						Cycle {cycle.number} · {dayLabel(entry.at)}
 					</p>
 				</div>
 				{card ? (

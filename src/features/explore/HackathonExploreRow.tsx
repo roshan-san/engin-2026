@@ -2,10 +2,10 @@ import type { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { PlaceLogo } from "~/components/PlaceLogo";
-import { dayLabel } from "~/features/hiring/hackathonDates";
 import { jobLine } from "~/features/hiring/jobChips";
 import { hiringLine } from "~/features/startups/public/hiringLine";
 import { RatingBadge } from "~/features/work/activity/RatingBadge";
+import { dayLabel } from "~/lib/dates";
 
 export type HackathonExploreRowData = FunctionReturnType<
 	typeof api.hiring.hackathons.explore
