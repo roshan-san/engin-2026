@@ -1,5 +1,15 @@
-import { type KeyboardEvent, useRef } from "react";
+import { RadioGroup, ToggleGroup } from "radix-ui";
 import { cn } from "~/lib/utils";
+
+/** A pill button's look, on or off. */
+export function chipClassName(isOn: boolean): string {
+	return cn(
+		"rounded-full border px-3 py-1.5 text-sm transition-colors focus-ring",
+		isOn
+			? "border-foreground bg-foreground text-background"
+			: "border-input hover:border-foreground/25 hover:bg-accent",
+	);
+}
 
 type ChipPickerProps<T extends string> = {
 	readonly label: string;
@@ -10,7 +20,7 @@ type ChipPickerProps<T extends string> = {
 	readonly pickOnArrow?: boolean;
 };
 
-/** A radiogroup of pill buttons. Arrow keys move and pick; Space or Enter picks. */
+/** A radiogroup of pill buttons. Arrow keys move and pick (or only move); Space picks. */
 export function ChipPicker<T extends string>({
 	label,
 	options,
@@ -18,55 +28,47 @@ export function ChipPicker<T extends string>({
 	onChange,
 	pickOnArrow = true,
 }: ChipPickerProps<T>) {
-	const refs = useRef<(HTMLButtonElement | null)[]>([]);
-	const focusable = value ?? options[0]?.value;
+	const className = "flex flex-wrap gap-2";
 
-	function moveTo(index: number) {
-		const target = (index + options.length) % options.length;
-		const next = options[target];
-		if (!next) return;
-		if (pickOnArrow) onChange(next.value);
-		refs.current[target]?.focus();
-	}
-
-	function onKeyDown(event: KeyboardEvent, index: number) {
-		if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-			event.preventDefault();
-			moveTo(index + 1);
-		} else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-			event.preventDefault();
-			moveTo(index - 1);
-		}
+	if (pickOnArrow) {
+		return (
+			<RadioGroup.Root
+				aria-label={label}
+				value={value ?? ""}
+				onValueChange={(next) => onChange(next as T)}
+				className={className}
+			>
+				{options.map((option) => (
+					<RadioGroup.Item
+						key={option.value}
+						value={option.value}
+						className={chipClassName(option.value === value)}
+					>
+						{option.label}
+					</RadioGroup.Item>
+				))}
+			</RadioGroup.Root>
+		);
 	}
 
 	return (
-		<div role="radiogroup" aria-label={label} className="flex flex-wrap gap-2">
-			{options.map((option, index) => {
-				const checked = option.value === value;
-				return (
-					// biome-ignore lint/a11y/useSemanticElements: pill buttons styled as a radiogroup, per the design
-					<button
-						key={option.value}
-						ref={(node) => {
-							refs.current[index] = node;
-						}}
-						type="button"
-						role="radio"
-						aria-checked={checked}
-						tabIndex={option.value === focusable ? 0 : -1}
-						onClick={() => onChange(option.value)}
-						onKeyDown={(event) => onKeyDown(event, index)}
-						className={cn(
-							"rounded-full border px-3 py-1.5 text-sm transition-colors focus-ring focus-visible:outline-hidden",
-							checked
-								? "border-foreground bg-foreground text-background"
-								: "border-input hover:border-foreground/25 hover:bg-accent",
-						)}
-					>
-						{option.label}
-					</button>
-				);
-			})}
-		</div>
+		<ToggleGroup.Root
+			type="single"
+			aria-label={label}
+			value={value ?? ""}
+			// Clicking the chosen chip again would clear it; keep the pick.
+			onValueChange={(next) => next && onChange(next as T)}
+			className={className}
+		>
+			{options.map((option) => (
+				<ToggleGroup.Item
+					key={option.value}
+					value={option.value}
+					className={chipClassName(option.value === value)}
+				>
+					{option.label}
+				</ToggleGroup.Item>
+			))}
+		</ToggleGroup.Root>
 	);
 }

@@ -1,3 +1,4 @@
+import { chipClassName } from "~/components/ChipPicker";
 import { cn } from "~/lib/utils";
 
 type FilterChipsProps<T extends string | number> = {
@@ -29,12 +30,7 @@ export function FilterChips<T extends string | number>({
 							type="button"
 							aria-pressed={on}
 							onClick={() => onChange(on ? undefined : option.value)}
-							className={cn(
-								"shrink-0 rounded-full border px-3 py-1.5 text-sm whitespace-nowrap transition-colors focus-ring",
-								on
-									? "border-foreground bg-foreground text-background"
-									: "border-input hover:border-foreground/25 hover:bg-accent",
-							)}
+							className={cn(chipClassName(on), "shrink-0 whitespace-nowrap")}
 						>
 							{option.label}
 						</button>
