@@ -62,7 +62,12 @@ export function ScreeningView({
 		"applicant",
 	);
 	// Who the Founder is about to remove, while the question is open.
-	const [removingId, setRemovingId] = useState<Id<"applications"> | null>(null);
+	// Kept after the dialog closes, so its title doesn't change as it fades out.
+	const [removing, setRemoving] = useState<{
+		id: Id<"applications">;
+		name: string;
+	} | null>(null);
+	const [isRemoveOpen, setIsRemoveOpen] = useState(false);
 	const view = route.useSearch({ select: (search) => search.view });
 	const navigate = route.useNavigate();
 	// On a phone, an Applicant opens in the sheet; # Everyone is the sheet's own panel.
@@ -82,7 +87,6 @@ export function ScreeningView({
 	).length;
 	// Accept and the A key both stop at the limit.
 	const canAccept = participantCount < MAX_PARTICIPANTS;
-	const removing = rows.find((row) => row.application._id === removingId);
 	const startNote = `Accept by ${dayLabel(lastDay(hackathon.startsAt))}. Anyone you haven't accepted is declined when it starts on ${dayLabel(hackathon.startsAt)}; if nobody's accepted, the Hackathon ends.`;
 
 	function select(id: string) {
@@ -105,7 +109,11 @@ export function ScreeningView({
 	function requestDecline(id: string) {
 		const row = rows.find((candidate) => candidate.application._id === id);
 		if (row?.application.status === "participating") {
-			setRemovingId(row.application._id);
+			setRemoving({
+				id: row.application._id,
+				name: displayName(row.user ?? null),
+			});
+			setIsRemoveOpen(true);
 			return;
 		}
 		void act(id, decline);
@@ -260,17 +268,10 @@ export function ScreeningView({
 				}
 			/>
 
-			<AlertDialog
-				open={removing !== undefined}
-				onOpenChange={(open) => {
-					if (!open) setRemovingId(null);
-				}}
-			>
+			<AlertDialog open={isRemoveOpen} onOpenChange={setIsRemoveOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>
-							Remove {displayName(removing?.user ?? null)}?
-						</AlertDialogTitle>
+						<AlertDialogTitle>Remove {removing?.name}?</AlertDialogTitle>
 						<AlertDialogDescription>
 							They stop being a Participant. You can accept them again before
 							the start.
@@ -281,7 +282,7 @@ export function ScreeningView({
 						<AlertDialogAction
 							variant="destructive"
 							onClick={() => {
-								if (removingId) void act(removingId, decline);
+								if (removing) void act(removing.id, decline);
 							}}
 						>
 							Remove
