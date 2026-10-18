@@ -1,4 +1,5 @@
 import { TEXT } from "@convex/shared/limits";
+import { usernameProblem } from "@convex/shared/username";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { ChipPicker } from "~/components/ChipPicker";
@@ -29,7 +30,6 @@ import {
 	toProfileArgs,
 	toProfileDraft,
 } from "./profileDraft";
-import { usernameProblem } from "./usernameRule";
 import { useUpdateProfile } from "./useUpdateProfile";
 
 /** Your profile: username, discipline, bio and links. One Save sends only what changed. */

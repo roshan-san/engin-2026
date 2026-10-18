@@ -132,6 +132,15 @@ describe("users", () => {
 		).rejects.toThrow("This username is not available");
 	});
 
+	it("a malformed username is refused with what's wrong, as the form says it", async () => {
+		const t = createTest();
+		const fay = await signUp(t, "Fay");
+
+		await expect(
+			fay.as.mutation(api.people.users.updateProfile, { username: "1fay" }),
+		).rejects.toThrow("Start with a letter.");
+	});
+
 	it("someone signed out sees no account", async () => {
 		const t = createTest();
 

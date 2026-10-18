@@ -1,26 +1,17 @@
 import { ConvexError } from "convex/values";
 import type { MutationCtx } from "../_generated/server";
-import { MIN_USERNAME_LENGTH, TEXT } from "../shared/limits";
 import {
 	normalizeUsername,
 	RESERVED_USERNAMES,
-	USERNAME_PATTERN,
+	usernameProblem,
 } from "../shared/username";
 
 export function requireUsername(value: string): string {
-	const username = normalizeUsername(value);
-
-	if (!USERNAME_PATTERN.test(username)) {
-		throw new ConvexError(
-			`Username must be ${MIN_USERNAME_LENGTH}–${TEXT.username} characters, start with a letter, and use only lowercase letters, numbers, or underscores`,
-		);
+	const problem = usernameProblem(value);
+	if (problem) {
+		throw new ConvexError(problem);
 	}
-
-	if (RESERVED_USERNAMES.has(username)) {
-		throw new ConvexError("This username is not available");
-	}
-
-	return username;
+	return normalizeUsername(value);
 }
 
 const FALLBACK_USERNAME = "participant";
