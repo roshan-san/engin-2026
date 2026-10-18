@@ -16,8 +16,26 @@ describe("what Ship is still missing", () => {
 		expect(shipMissing({ ...ready, linkText: "https://x.dev" })).toBeNull();
 	});
 
-	it("does not count typed text that is not a link", () => {
-		expect(shipMissing({ ...ready, linkText: "not a url" })).toBe("link");
+	it("does not count typed text that is not a link, and says why", () => {
+		expect(shipMissing({ ...ready, linkText: "not a url" })).toBe(
+			"invalidLink",
+		);
+	});
+
+	it("blocks a typed link that does not parse even with an image, so it isn't dropped", () => {
+		expect(
+			shipMissing({ ...ready, images: 1, linkText: "github.com/x/pull/1" }),
+		).toBe("invalidLink");
+	});
+
+	it("is ready with an image and a valid typed link", () => {
+		expect(
+			shipMissing({ ...ready, images: 1, linkText: "https://github.com/x" }),
+		).toBeNull();
+	});
+
+	it("ignores blank typed text", () => {
+		expect(shipMissing({ ...ready, images: 1, linkText: "   " })).toBeNull();
 	});
 
 	it("counts an added link", () => {

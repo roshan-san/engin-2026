@@ -13,18 +13,19 @@ export function parseLink(text: string): string | null {
 
 /**
  * What Ship still needs: the line first, then a link or an image. A valid link
- * typed but not yet added counts. `null` when it's ready.
+ * typed but not yet added counts; typed text that isn't a link blocks, so it
+ * isn't dropped silently. `null` when it's ready.
  */
 export function shipMissing(input: {
 	readonly line: string;
 	readonly links: readonly string[];
 	readonly images: number;
 	readonly linkText: string;
-}): "line" | "link" | null {
+}): "line" | "invalidLink" | "link" | null {
 	if (input.line.trim().length === 0) return "line";
+	const typed = input.linkText.trim();
+	if (typed.length > 0 && parseLink(typed) === null) return "invalidLink";
 	const hasProof =
-		input.links.length > 0 ||
-		input.images > 0 ||
-		parseLink(input.linkText) !== null;
+		input.links.length > 0 || input.images > 0 || parseLink(typed) !== null;
 	return hasProof ? null : "link";
 }

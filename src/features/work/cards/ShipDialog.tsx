@@ -300,7 +300,9 @@ export function ShipDialog({
 						<MentorNote>
 							{missing === "line"
 								? "Add what shipped"
-								: "Add a link or an image"}
+								: missing === "invalidLink"
+									? "Links start with https://"
+									: "Add a link or an image"}
 						</MentorNote>
 					) : null}
 					<Button disabled={!canSubmit} onClick={() => void handleSubmit()}>
