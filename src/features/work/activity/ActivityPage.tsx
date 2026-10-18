@@ -36,16 +36,21 @@ export function ActivityPage() {
 	// A link to a Card outside the loaded Cycles clears itself and says why.
 	// Only once loading is done, so a slow load never clears a good link.
 	const loaded = data !== undefined && !isLoadingEarlier;
+	const hasEarlier = data?.hasMore === true;
 	useEffect(() => {
 		if (!loaded || !entryId || open) return;
 		void navigate({
 			search: (prev) => ({ ...prev, entry: undefined }),
 			replace: true,
 		});
-		toast("That Card is in an earlier Cycle. Show earlier to find it.", {
-			id: "stale-entry",
-		});
-	}, [loaded, entryId, open, navigate]);
+		// Show earlier is only a hint when there are earlier Cycles to show.
+		toast(
+			hasEarlier
+				? "That Card is in an earlier Cycle. Show earlier to find it."
+				: "That Card isn't in Activity.",
+			{ id: "stale-entry" },
+		);
+	}, [loaded, hasEarlier, entryId, open, navigate]);
 
 	const panel = useDetailPanel(open !== null, () => select(undefined));
 	const isMobile = panel.isMobile;
