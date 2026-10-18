@@ -25,6 +25,7 @@ import { ApplyForm } from "./ApplyForm";
 import {
 	APPLY_COPY,
 	applyBarAction,
+	applyPanelTitle,
 	applyState,
 	closedLabel,
 } from "./applyStatus";
@@ -71,8 +72,9 @@ function postOf(page: HackathonView) {
 function SignedInPage({ page }: { readonly page: HackathonView }) {
 	const panel = useDetailPanel(false, () => {});
 	const stage = STAGE[phaseOf(page, Date.now())];
-	const action = applyBarAction(applyState(page, true));
-	const panelTitle = action?.kind === "panel" ? action.label : "Apply";
+	const state = applyState(page, true);
+	const action = applyBarAction(state);
+	const panelTitle = applyPanelTitle(state);
 
 	return (
 		<AppPage
@@ -102,7 +104,16 @@ function SignedInPage({ page }: { readonly page: HackathonView }) {
 								Open your Board
 							</Link>
 						</Button>
-					) : undefined,
+					) : (
+						<Button
+							variant="ghost"
+							size="sm"
+							className="md:hidden"
+							onClick={panel.open}
+						>
+							Details
+						</Button>
+					),
 			}}
 			panel={
 				<DetailPanel

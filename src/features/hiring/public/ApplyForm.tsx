@@ -55,7 +55,7 @@ export function ApplyForm({
 	}
 
 	if (isSent) {
-		return <p className="text-sm font-medium">Sent.</p>;
+		return <p className="text-sm font-medium">Applied.</p>;
 	}
 
 	return (
@@ -79,9 +79,9 @@ export function ApplyForm({
 			/>
 			<CharCount value={answer} max={TEXT.answer} />
 			<MentorNote>
-				{canSend
-					? "A few lines. How you'd start."
-					: "Write your answer to send"}
+				{answer.trim().length === 0
+					? "Write your answer to send"
+					: "A few lines. How you'd start."}
 			</MentorNote>
 			<Button type="submit" disabled={!canSend}>
 				{isSending ? <Spinner /> : null}

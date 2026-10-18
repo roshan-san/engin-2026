@@ -4,6 +4,7 @@ import {
 	type ApplyState,
 	answerKey,
 	applyBarAction,
+	applyPanelTitle,
 	applyState,
 	closedLabel,
 } from "./applyStatus";
@@ -89,5 +90,17 @@ describe("applyBarAction", () => {
 		for (const state of none) {
 			expect(applyBarAction(state)).toBeNull();
 		}
+	});
+});
+
+describe("applyPanelTitle", () => {
+	it("the panel is titled for what it holds", () => {
+		expect(applyPanelTitle("form")).toBe("Apply");
+		expect(applyPanelTitle("sign_in")).toBe("Apply");
+		expect(applyPanelTitle("applied")).toBe("Your application");
+		expect(applyPanelTitle("declined")).toBe("Your application");
+		expect(applyPanelTitle("participating")).toBe("Details");
+		expect(applyPanelTitle("closed")).toBe("Details");
+		expect(applyPanelTitle("team")).toBe("Details");
 	});
 });

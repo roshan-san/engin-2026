@@ -53,6 +53,14 @@ export function applyBarAction(state: ApplyState): ApplyBarAction | null {
 	}
 }
 
+/** What the detail panel is called: Apply, your application, or just Details. */
+export function applyPanelTitle(
+	state: ApplyState,
+): "Apply" | "Your application" | "Details" {
+	const action = applyBarAction(state);
+	return action?.kind === "panel" ? action.label : "Details";
+}
+
 export function closedLabel(status: "live" | "deciding" | "done"): string {
 	if (status === "live") return "Live now";
 	return status === "deciding" ? "Deciding" : "Finished";
