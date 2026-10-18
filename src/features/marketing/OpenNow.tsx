@@ -22,7 +22,7 @@ function OpenNowSkeleton() {
 
 /** Up to three live Hackathons; nothing at all once loaded and none are open. */
 export function OpenNow() {
-	const hackathons = useExploreHackathons({});
+	const { hackathons } = useExploreHackathons({});
 	const open = hackathons?.filter((h) => h.status === "open").slice(0, 3) ?? [];
 	if (hackathons && open.length === 0) {
 		return null;
