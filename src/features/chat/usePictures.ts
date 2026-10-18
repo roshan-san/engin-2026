@@ -68,7 +68,7 @@ export function usePictures() {
 
 	/** Remove the current pictures and return them, to send. */
 	function take() {
-		const taken = picturesRef.current;
+		const taken = pictures;
 		setPictures((current) =>
 			current.filter((p) => !taken.some((sent) => sent.key === p.key)),
 		);

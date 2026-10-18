@@ -3,6 +3,7 @@ import { MODES, PAYS, ROLES } from "../jobChips";
 import type { HackathonDraft } from "./draft";
 import { Field, Part } from "./FormPart";
 
+/** The job: role, pay and where, as chips. */
 export function JobPart({
 	job,
 	onChange,

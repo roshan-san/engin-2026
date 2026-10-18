@@ -10,6 +10,7 @@ const PARTICIPANTS_GET_CHIPS = [...PARTICIPANTS_GET, "Custom"].map((value) => ({
 	label: value,
 }));
 
+/** What Participants get: a preset, or a custom line. */
 export function ParticipantsGetPart({
 	value,
 	onChange,
