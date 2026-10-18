@@ -5,7 +5,6 @@ import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
 import { assertUrl, limitText } from "../model/text";
 import { requireUsername } from "../model/username";
-import { normalizeUsername } from "../shared/username";
 import {
 	loadProfileRecord,
 	toOwnProfile,
@@ -13,6 +12,7 @@ import {
 	toPublicProfile,
 } from "../model/users";
 import { TEXT } from "../shared/limits";
+import { normalizeUsername } from "../shared/username";
 import { discipline } from "../shared/validators";
 
 export const getMe = query({

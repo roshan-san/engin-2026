@@ -4,9 +4,9 @@ import { RowList } from "~/components/RowList";
 import { ROLES } from "~/features/hiring/jobChips";
 import { ExploreLayout } from "./ExploreLayout";
 import { hasFilters } from "./exploreSearch";
-import { NoMatches } from "./NoMatches";
 import { FilterChips } from "./FilterChips";
 import { HackathonExploreRow } from "./HackathonExploreRow";
+import { NoMatches } from "./NoMatches";
 import { RowsSkeleton } from "./RowsSkeleton";
 import { useExploreHackathons } from "./useExploreHackathons";
 

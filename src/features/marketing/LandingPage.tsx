@@ -6,11 +6,11 @@ import { BoardMock } from "~/features/marketing/BoardMock";
 import { OpenNow } from "~/features/marketing/OpenNow";
 import { Pricing } from "~/features/marketing/Pricing";
 import { GoogleButton } from "~/features/people/auth/GoogleButton";
+import { POST_INTENT_PATH } from "~/features/people/home/homeIntent";
 import { cn } from "~/lib/utils";
 import { pickLanding, readLastPlace } from "~/shell/landing";
 import { PublicShell } from "~/shell/PublicShell";
 import { usePlaces } from "~/shell/usePlaces";
-import { POST_INTENT_PATH } from "~/features/people/home/homeIntent";
 
 const STEPS = [
 	{

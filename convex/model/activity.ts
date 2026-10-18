@@ -12,7 +12,6 @@ import { MAX_CYCLE_ENTRIES, MAX_LISTED_CYCLES } from "../shared/limits";
 import type { activityKind, jobRole } from "../shared/validators";
 import { loadImageUrls } from "./files";
 import { loadGoal } from "./goals";
-import { buildRhythmStrip } from "./startups";
 import {
 	buildParts,
 	countedWeeks,
@@ -20,6 +19,7 @@ import {
 	RATING,
 	toPartsView,
 } from "./rating";
+import { buildRhythmStrip } from "./startups";
 import { loadPublicUser, type PublicUser } from "./users";
 
 type ActivityKind = Infer<typeof activityKind>;

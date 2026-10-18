@@ -4,8 +4,8 @@ import { query } from "../_generated/server";
 import { loadCycles, loadSignals } from "../model/activity";
 import { requireUserId } from "../model/auth";
 import { getStartupBySlug } from "../model/startups";
-import { isInvestorPro } from "../model/users";
 import { requireTeam } from "../model/teamAccess";
+import { isInvestorPro } from "../model/users";
 import { CYCLES_PAGE } from "../shared/limits";
 
 /** The team's full Activity: the newest `count` Cycles. */

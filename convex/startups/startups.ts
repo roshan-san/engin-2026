@@ -6,8 +6,8 @@ import { requireUserId } from "../model/auth";
 import { loadHiringRecord } from "../model/hiringRecord";
 import {
 	buildUniqueSlug,
-	loadFoundedStartups,
 	getStartupBySlug,
+	loadFoundedStartups,
 	loadOpenHackathons,
 	matchesExploreStartup,
 	toExploreStartup,

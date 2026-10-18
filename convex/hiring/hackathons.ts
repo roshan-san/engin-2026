@@ -8,6 +8,8 @@ import {
 	toMyApplicationView,
 } from "../model/applications";
 import { requireUserId } from "../model/auth";
+import { loadHackathonCardsInReview } from "../model/cards";
+import * as lifecycle from "../model/hackathonLifecycle";
 import {
 	copyTemplateCardsTo,
 	draftArgs,
@@ -20,8 +22,6 @@ import {
 	sortExplore,
 	toExploreHackathon,
 } from "../model/hackathons";
-import * as lifecycle from "../model/hackathonLifecycle";
-import { loadHackathonCardsInReview } from "../model/cards";
 import {
 	type HiringRecord,
 	loadHiringRecord,
