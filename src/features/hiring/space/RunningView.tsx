@@ -13,7 +13,7 @@ import {
 } from "~/components/ui/select";
 import { PersonAvatar } from "~/features/people";
 import { useWorkspace } from "~/features/startups";
-import { tierText } from "~/features/work";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 import { EveryonePanel } from "./EveryonePanel";
 import { ParticipantView } from "./ParticipantView";

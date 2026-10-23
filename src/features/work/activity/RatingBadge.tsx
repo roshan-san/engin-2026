@@ -5,7 +5,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { tierText } from "~/features/work/tierText";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 import { ratingChangeLabel } from "./record";
 

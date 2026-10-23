@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useRef, useState } from "react";
 import { ShipDialog } from "../cards/ShipDialog";
 import type { CardView } from "./types";
 
@@ -28,16 +28,22 @@ export function CardBoard({
 	readonly children: React.ReactNode;
 }) {
 	const [shipping, setShipping] = useState<CardView | null>(null);
+	// Always the latest onCardChange, but stable functions, so the Board's key
+	// listener isn't re-added on every render of the page.
+	const changeLatest = useRef(onCardChange);
+	changeLatest.current = onCardChange;
+	const value = useMemo(
+		() => ({
+			openCardId: cardId,
+			open: (id: string) => changeLatest.current(id),
+			close: () => changeLatest.current(undefined),
+			ship: setShipping,
+		}),
+		[cardId],
+	);
 
 	return (
-		<CardBoardContext.Provider
-			value={{
-				openCardId: cardId,
-				open: onCardChange,
-				close: () => onCardChange(undefined),
-				ship: setShipping,
-			}}
-		>
+		<CardBoardContext.Provider value={value}>
 			{children}
 			{shipping ? (
 				<ShipDialog card={shipping} onClose={() => setShipping(null)} />

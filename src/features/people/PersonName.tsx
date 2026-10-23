@@ -1,5 +1,5 @@
-import { tierText } from "~/features/work";
 import { displayName } from "~/lib/displayName";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 
 /** A person's name in their Rating's Tier colour; "Someone" when there's nobody. */

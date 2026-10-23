@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { tierText } from "~/features/work";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 import { useMe } from "~/shell/useMe";
 

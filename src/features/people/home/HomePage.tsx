@@ -10,7 +10,7 @@ import { TILE_LINK } from "~/components/tile";
 import { UnreadDot } from "~/components/UnreadDot";
 import { Button } from "~/components/ui/button";
 import { participantStatusText, roleLabel } from "~/features/hiring";
-import { tierText } from "~/features/work";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 import { isWaiting, type Places, reasonLine } from "~/shell/places";
 import { useMe } from "~/shell/useMe";

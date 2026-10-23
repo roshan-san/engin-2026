@@ -1,5 +1,5 @@
 import { PersonAvatar, PersonName } from "~/features/people";
-import { tierText } from "~/features/work";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 import type { ApplicantRow } from "./applicantSort";
 

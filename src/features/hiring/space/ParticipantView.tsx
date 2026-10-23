@@ -18,8 +18,8 @@ import {
 	BoardScopeContext,
 	CardBoard,
 	OpenCardPanel,
-	tierText,
 } from "~/features/work";
+import { tierText } from "~/lib/tierText";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";

@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useDetailPanel } from "~/components/useDetailPanel";
 import { useWorkspace } from "~/features/startups";
-import { tierText } from "~/features/work/tierText";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 import { ActivityFeed } from "./ActivityFeed";
 import { EntryPanel } from "./EntryPanel";

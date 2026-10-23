@@ -10,13 +10,9 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { jobLine } from "~/features/hiring";
-import {
-	ActivityFeed,
-	RecordSignals,
-	tierText,
-	useSignals,
-} from "~/features/work";
+import { ActivityFeed, RecordSignals, useSignals } from "~/features/work";
 import { dayLabel, monthYearLabel } from "~/lib/dates";
+import { tierText } from "~/lib/tierText";
 import { cn } from "~/lib/utils";
 import { usePlaces } from "~/shell/usePlaces";
 import { CITIES, KINDS, STAGES } from "../startupChips";
