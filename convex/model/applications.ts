@@ -1,7 +1,11 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { isUnderway, phaseOf } from "../shared/hackathonPhase";
+import {
+	type ApplicationAction,
+	applicationRefusal,
+} from "../shared/applicationRules";
+import { phaseOf } from "../shared/hackathonPhase";
 import { MAX_APPLICATIONS, MAX_PARTICIPANTS } from "../shared/limits";
 import { loadHackathonCards, requireHackathonFounder } from "./hackathons";
 
@@ -81,24 +85,19 @@ export function requireOpen(hackathon: Doc<"hackathons">): void {
 	}
 }
 
-export function requireUnderway(hackathon: Doc<"hackathons">): void {
-	if (!isUnderway(hackathon.status)) {
-		throw new ConvexError("This Hackathon isn't running");
-	}
-}
-
-export function requireParticipating(application: Doc<"applications">): void {
-	if (application.status !== "participating") {
-		throw new ConvexError("They're not a Participant");
-	}
-}
-
-export function requireDecidable(
+/** Throws `applicationRefusal`'s reason when the Founder may not do `action` to `application` now. */
+export function requireApplicationAllowed(
+	application: Doc<"applications">,
 	hackathon: Doc<"hackathons">,
-	now: number,
+	action: ApplicationAction,
 ): void {
-	if (phaseOf(hackathon, now) !== "deciding") {
-		throw new ConvexError("Decide after the Hackathon ends");
+	const refusal = applicationRefusal(
+		application,
+		phaseOf(hackathon, Date.now()),
+		action,
+	);
+	if (refusal) {
+		throw new ConvexError(refusal);
 	}
 }
 

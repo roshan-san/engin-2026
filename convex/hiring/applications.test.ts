@@ -134,6 +134,28 @@ describe("applying", () => {
 		await expect(accept).rejects.toThrow("10 Participants is the limit");
 	});
 
+	it("a Participant is accepted once, and an Applicant declined once", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		const ben = await applicant(setup, hackathonId, "Ben");
+		await setup.founder.as.mutation(api.hiring.applications.decline, {
+			applicationId: ben.applicationId,
+		});
+
+		const acceptAgain = setup.founder.as.mutation(
+			api.hiring.applications.accept,
+			{ applicationId: ana.applicationId },
+		);
+		const declineAgain = setup.founder.as.mutation(
+			api.hiring.applications.decline,
+			{ applicationId: ben.applicationId },
+		);
+
+		await expect(acceptAgain).rejects.toThrow("They're already a Participant");
+		await expect(declineAgain).rejects.toThrow("They're already declined");
+	});
+
 	it("declining a Participant before the start frees their place", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
@@ -696,7 +718,64 @@ describe("deciding", () => {
 
 		await decide();
 
-		await expect(decide()).rejects.toThrow("Already decided");
+		await expect(decide()).rejects.toThrow("They're already decided");
+	});
+
+	it("a decided Participant's ★ and Walkthrough stay as they were", async () => {
+		const {
+			setup,
+			participants: [ana],
+		} = await ended();
+		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+			applicationId: ana.applicationId,
+			shortlisted: true,
+		});
+		await setup.founder.as.mutation(api.hiring.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+
+		const unstar = setup.founder.as.mutation(
+			api.hiring.applications.shortlist,
+			{ applicationId: ana.applicationId, shortlisted: false },
+		);
+		const mark = setup.founder.as.mutation(
+			api.hiring.applications.markWalkthrough,
+			{ applicationId: ana.applicationId },
+		);
+
+		await expect(unstar).rejects.toThrow("They're already decided");
+		await expect(mark).rejects.toThrow("They're already decided");
+	});
+
+	it("the Walkthrough happens once", async () => {
+		const {
+			setup,
+			participants: [ana],
+		} = await ended();
+		await walkthrough(setup, ana);
+
+		const again = setup.founder.as.mutation(
+			api.hiring.applications.markWalkthrough,
+			{ applicationId: ana.applicationId, notes: "Second go" },
+		);
+
+		await expect(again).rejects.toThrow("The Walkthrough is done");
+	});
+
+	it("the ★ stays once they've walked through", async () => {
+		const {
+			setup,
+			participants: [ana],
+		} = await ended();
+		await walkthrough(setup, ana);
+
+		const unstar = setup.founder.as.mutation(
+			api.hiring.applications.shortlist,
+			{ applicationId: ana.applicationId, shortlisted: false },
+		);
+
+		await expect(unstar).rejects.toThrow("The Walkthrough is done");
 	});
 
 	it("everyone decided finishes the Hackathon", async () => {

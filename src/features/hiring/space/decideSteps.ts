@@ -1,10 +1,9 @@
-import {
-	type HackathonPhase,
-	isUnderway,
-	phaseOf,
-} from "@convex/shared/hackathonPhase";
-
-type Decision = "hired" | "not_this_time";
+import type {
+	ApplicationAction,
+	Decision,
+} from "@convex/shared/applicationRules";
+import type { HackathonPhase } from "@convex/shared/hackathonPhase";
+import { refusalFor, type ViewedApplication } from "./applicationRules";
 
 export type DecideState = {
 	readonly canShortlist: boolean;
@@ -18,25 +17,23 @@ export type DecideState = {
 
 /** What the Founder can do next for one Participant: ★, then the Walkthrough, then the decision. */
 export function decideState(
-	application: {
-		shortlisted: boolean;
-		walkthroughAt: number | null;
-		decision: Decision | null;
-	},
+	application: ViewedApplication,
 	hackathon: { status: HackathonPhase; endsAt: number },
 	now: number,
 ): DecideState {
-	const phase = phaseOf(hackathon, now);
-	const isOpen = !application.decision && isUnderway(phase);
-	const canDecide = isOpen && phase === "deciding";
-	const isWalkedThrough = application.walkthroughAt !== null;
+	const refusal = (action: ApplicationAction) =>
+		refusalFor(application, hackathon, action, now);
+	const canDecide =
+		refusal({ kind: "decide", decision: "not_this_time" }) === null;
+	const hireRefusal = refusal({ kind: "decide", decision: "hired" });
 
 	return {
-		canShortlist: isOpen,
-		canWalkthrough: isOpen && application.shortlisted && !isWalkedThrough,
+		canShortlist:
+			refusal({ kind: "shortlist", on: !application.shortlisted }) === null,
+		canWalkthrough: refusal({ kind: "walkthrough" }) === null,
 		canDecide,
-		canHire: canDecide && isWalkedThrough,
-		hireHint: canDecide && !isWalkedThrough ? "Do the Walkthrough first" : null,
+		canHire: hireRefusal === null,
+		hireHint: canDecide ? hireRefusal : null,
 		decided: application.decision,
 	};
 }

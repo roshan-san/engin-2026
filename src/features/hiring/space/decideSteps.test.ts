@@ -2,29 +2,28 @@ import { describe, expect, it } from "vitest";
 import { decideState } from "./decideSteps";
 
 const endsAt = 1_000;
-const live = { status: "live" as const, endsAt };
-const fresh = { shortlisted: false, walkthroughAt: null, decision: null };
+const deciding = { status: "deciding" as const, endsAt };
+const shortlisted = {
+	status: "participating" as const,
+	shortlisted: true,
+	walkthroughAt: null,
+	decision: null,
+};
 
 describe("decideState", () => {
-	it("while live, shortlist but don't decide", () => {
-		const state = decideState(fresh, live, endsAt - 1);
+	it("while live, the steps are open but the decision isn't, and nothing hints", () => {
+		const state = decideState(shortlisted, { status: "live", endsAt }, 0);
 
-		expect(state).toMatchObject({ canShortlist: true, canDecide: false });
+		expect(state).toMatchObject({
+			canShortlist: true,
+			canWalkthrough: true,
+			canDecide: false,
+			hireHint: null,
+		});
 	});
 
-	it("the Walkthrough follows the shortlist", () => {
-		expect(decideState(fresh, live, 0).canWalkthrough).toBe(false);
-		expect(
-			decideState({ ...fresh, shortlisted: true }, live, 0).canWalkthrough,
-		).toBe(true);
-	});
-
-	it("after the end, Hired waits for the Walkthrough", () => {
-		const state = decideState(
-			{ ...fresh, shortlisted: true },
-			{ status: "deciding", endsAt },
-			endsAt + 1,
-		);
+	it("after the end, Hired says it waits for the Walkthrough", () => {
+		const state = decideState(shortlisted, deciding, endsAt + 1);
 
 		expect(state).toMatchObject({
 			canDecide: true,
@@ -33,45 +32,27 @@ describe("decideState", () => {
 		});
 	});
 
-	it("walked through, Hired opens", () => {
+	it("walked through, the ★ stays and Hired opens", () => {
 		const state = decideState(
-			{ shortlisted: true, walkthroughAt: 500, decision: null },
-			{ status: "deciding", endsAt },
-			endsAt + 1,
-		);
-
-		expect(state).toMatchObject({ canHire: true, hireHint: null });
-	});
-
-	it("once done, nothing can change", () => {
-		const state = decideState(
-			{ ...fresh, shortlisted: true },
-			{ status: "done", endsAt },
+			{ ...shortlisted, walkthroughAt: 500 },
+			deciding,
 			endsAt + 1,
 		);
 
 		expect(state).toMatchObject({
 			canShortlist: false,
-			canWalkthrough: false,
-			canDecide: false,
-			canHire: false,
+			canHire: true,
 			hireHint: null,
 		});
 	});
 
-	it("once decided, the decision stands", () => {
+	it("once decided, it says what was decided", () => {
 		const state = decideState(
-			{ shortlisted: true, walkthroughAt: 500, decision: "hired" },
-			{ status: "deciding", endsAt },
+			{ ...shortlisted, walkthroughAt: 500, decision: "hired" },
+			deciding,
 			endsAt + 1,
 		);
 
-		expect(state).toMatchObject({
-			decided: "hired",
-			canShortlist: false,
-			canWalkthrough: false,
-			canDecide: false,
-			canHire: false,
-		});
+		expect(state).toMatchObject({ decided: "hired", canDecide: false });
 	});
 });

@@ -29,6 +29,7 @@ import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";
 import { sortApplicants } from "./applicantSort";
+import { refusalFor } from "./applicationRules";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { EveryonePanel } from "./EveryonePanel";
 import { useApplicants, useScreening } from "./useApplicants";
@@ -86,9 +87,17 @@ export function ScreeningView({
 	const participantCount = rows.filter(
 		(row) => row.application.status === "participating",
 	).length;
-	// Accept and the A key both stop at the limit.
-	const canAccept = participantCount < MAX_PARTICIPANTS;
+	const now = Date.now();
 	const startNote = `Accept by ${dayLabel(lastDay(hackathon.startsAt))}. Anyone you haven't accepted is declined when it starts on ${dayLabel(hackathon.startsAt)}; if nobody's accepted, the Hackathon ends.`;
+
+	/** Why Accept or Decline is off for this row; `null` when it's on. Accept and the A key both stop at the limit. */
+	function refusalOf(id: string, kind: "accept" | "decline") {
+		const row = rows.find((candidate) => candidate.application._id === id);
+		if (!row) return null;
+		const action =
+			kind === "accept" ? { kind, participants: participantCount } : { kind };
+		return refusalFor(row.application, hackathon, action, now);
+	}
 
 	function select(id: string) {
 		void navigate({ search: (prev) => ({ ...prev, view: id }), replace: true });
@@ -108,6 +117,7 @@ export function ScreeningView({
 
 	/** Declining someone who was accepted takes them off the Hackathon, so it asks first. */
 	function requestDecline(id: string) {
+		if (refusalOf(id, "decline")) return;
 		const row = rows.find((candidate) => candidate.application._id === id);
 		if (row?.application.status === "participating") {
 			setRemoving({
@@ -126,7 +136,7 @@ export function ScreeningView({
 		onMove: select,
 		keys: {
 			a: (id) => {
-				if (canAccept) void act(id, accept);
+				if (!refusalOf(id, "accept")) void act(id, accept);
 			},
 			d: requestDecline,
 		},
@@ -137,7 +147,7 @@ export function ScreeningView({
 		<ApplicantDetail
 			key={activeId}
 			applicationId={activeId}
-			canAccept={canAccept}
+			acceptRefusal={refusalOf(activeId, "accept")}
 			onAccept={() => void act(activeId, accept)}
 			onDecline={() => requestDecline(activeId)}
 		/>

@@ -1,5 +1,4 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { Kbd } from "~/components/Kbd";
 import { PanelBody } from "~/components/PanelBody";
 import { Row, RowList } from "~/components/RowList";
@@ -18,13 +17,13 @@ import { useApplicant } from "./useApplicants";
 /** One Applicant: their answer, their Rating and its parts, and what they've done. */
 export function ApplicantDetail({
 	applicationId,
-	canAccept,
+	acceptRefusal,
 	onAccept,
 	onDecline,
 }: {
 	readonly applicationId: Id<"applications">;
-	/** False at the Participant limit: Accept is shown but off, with the reason. */
-	readonly canAccept: boolean;
+	/** Why Accept is off, such as the Participant limit: Accept is shown but off, with the reason. */
+	readonly acceptRefusal: string | null;
 	readonly onAccept: () => void;
 	readonly onDecline: () => void;
 }) {
@@ -115,17 +114,17 @@ export function ApplicantDetail({
 				)}
 				{isParticipant ? null : (
 					<>
-						<Button disabled={!canAccept} onClick={onAccept}>
+						<Button disabled={acceptRefusal !== null} onClick={onAccept}>
 							Accept
 							<Kbd className="border-primary-foreground/20 text-primary-foreground/60">
 								A
 							</Kbd>
 						</Button>
-						{canAccept ? null : (
+						{acceptRefusal ? (
 							<p className="min-w-0 text-xs text-muted-foreground">
-								{MAX_PARTICIPANTS} Participants is the limit
+								{acceptRefusal}
 							</p>
-						)}
+						) : null}
 					</>
 				)}
 			</div>
