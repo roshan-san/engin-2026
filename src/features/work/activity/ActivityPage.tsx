@@ -7,7 +7,7 @@ import { DetailPanel } from "~/components/DetailPanel";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useDetailPanel } from "~/components/useDetailPanel";
-import { useWorkspace } from "~/features/work/StartupContext";
+import { useWorkspace } from "~/features/startups/workspace/Workspace";
 import { tierText } from "~/features/work/tierText";
 import { cn } from "~/lib/utils";
 import { ActivityFeed } from "./ActivityFeed";

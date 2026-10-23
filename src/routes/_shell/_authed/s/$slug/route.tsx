@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { StartupGate } from "~/features/work/board/StartupGate";
+import { StartupGate } from "~/features/startups/workspace/StartupGate";
+import { StartupBoardScope } from "~/features/work/board/StartupBoardScope";
 
 export const Route = createFileRoute("/_shell/_authed/s/$slug")({
 	component: StartupLayout,
@@ -10,7 +11,9 @@ function StartupLayout() {
 
 	return (
 		<StartupGate slug={slug}>
-			<Outlet />
+			<StartupBoardScope>
+				<Outlet />
+			</StartupBoardScope>
 		</StartupGate>
 	);
 }

@@ -5,7 +5,7 @@ import { RowList } from "~/components/RowList";
 import { Section } from "~/components/Section";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useWorkspace } from "~/features/work/StartupContext";
+import { useWorkspace } from "~/features/startups/workspace/Workspace";
 import { HackathonRow } from "./HackathonRow";
 import { groupHackathons, type HiringRow, hiringSummary } from "./hiringGroups";
 import { useHackathons } from "./useHackathons";

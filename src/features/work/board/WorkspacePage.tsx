@@ -8,7 +8,7 @@ import { useDetailPanel } from "~/components/useDetailPanel";
 import { TeamPanel } from "~/features/chat/TeamPanel";
 import { useHeartbeat } from "~/features/chat/useHeartbeat";
 import { useTeamThread } from "~/features/chat/useTeamThread";
-import { useWorkspace } from "~/features/work/StartupContext";
+import { useWorkspace } from "~/features/startups/workspace/Workspace";
 import { CardPanel } from "../cards/CardPanel";
 import { ShipDialog } from "../cards/ShipDialog";
 import { Board } from "./Board";

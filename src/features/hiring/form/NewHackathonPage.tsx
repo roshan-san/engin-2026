@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AppPage, BackLink } from "~/components/AppPage";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { Page } from "~/components/Page";
-import { useWorkspace } from "~/features/work/StartupContext";
+import { useWorkspace } from "~/features/startups/workspace/Workspace";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";
 import { useHackathonForm } from "./useHackathonForm";

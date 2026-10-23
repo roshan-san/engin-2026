@@ -11,7 +11,7 @@ import { PlansDialog } from "~/features/billing/PlansDialog";
 import { usePaymentIssue } from "~/features/billing/usePaymentIssue";
 import { usePlan } from "~/features/billing/usePlan";
 import { usePortal } from "~/features/billing/usePortal";
-import { useWorkspace } from "~/features/work/StartupContext";
+import { useWorkspace } from "~/features/startups/workspace/Workspace";
 import { dayLabel } from "~/lib/dates";
 import {
 	draftCard,

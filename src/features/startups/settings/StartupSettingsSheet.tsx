@@ -17,7 +17,7 @@ import {
 	SheetTitle,
 } from "~/components/ui/sheet";
 import { Spinner } from "~/components/ui/spinner";
-import { useStartup } from "~/features/work/board/useStartup";
+import { useStartup } from "~/features/startups/workspace/useStartup";
 import { useDiscardGuard, useReportChanged } from "~/lib/useDiscardGuard";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import {

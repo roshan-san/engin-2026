@@ -12,7 +12,7 @@ import {
 	SelectValue,
 } from "~/components/ui/select";
 import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { useWorkspace } from "~/features/work/StartupContext";
+import { useWorkspace } from "~/features/startups/workspace/Workspace";
 import { tierText } from "~/features/work/tierText";
 import { cn } from "~/lib/utils";
 import { EveryonePanel } from "./EveryonePanel";
