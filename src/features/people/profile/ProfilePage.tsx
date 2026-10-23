@@ -92,11 +92,6 @@ function SignedInProfile({
 	const me = useMe();
 	const [isEditing, setIsEditing] = useState(false);
 	const isMine = me?._id === profile._id;
-	const links = [
-		{ label: "LinkedIn", url: details.links.linkedinUrl },
-		{ label: "GitHub", url: details.links.githubUrl },
-		{ label: "Portfolio", url: details.links.portfolioUrl },
-	].filter((link) => link.url !== null);
 
 	return (
 		<AppPage
@@ -132,21 +127,6 @@ function SignedInProfile({
 				{details.bio ? (
 					<p className="text-sm break-words whitespace-pre-wrap">
 						{details.bio}
-					</p>
-				) : null}
-				{links.length > 0 ? (
-					<p className="flex flex-wrap gap-x-3 text-xs">
-						{links.map((link) => (
-							<a
-								key={link.label}
-								href={link.url ?? undefined}
-								target="_blank"
-								rel="noreferrer"
-								className="text-link underline-offset-4 hover:underline"
-							>
-								{link.label}
-							</a>
-						))}
 					</p>
 				) : null}
 			</header>
@@ -240,7 +220,7 @@ function SignedOutProfile({ profile }: { readonly profile: Profile }) {
 				/>
 			</header>
 			<SignInCard>
-				Sign in to see their links, Hackathons and verified work.
+				Sign in to see their bio, Hackathons and verified work.
 			</SignInCard>
 		</Page>
 	);

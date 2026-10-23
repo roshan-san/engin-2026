@@ -64,15 +64,10 @@ export function toPublicProfile(user: Doc<"users">) {
 	};
 }
 
-/** A profile's bio and links, shown only to people who are signed in. */
+/** A profile's bio, shown only to people who are signed in. */
 export function toProfileAbout(user: Doc<"users">) {
 	return {
 		bio: user.bio ?? null,
-		links: {
-			linkedinUrl: user.linkedinUrl ?? null,
-			portfolioUrl: user.portfolioUrl ?? null,
-			githubUrl: user.githubUrl ?? null,
-		},
 	};
 }
 

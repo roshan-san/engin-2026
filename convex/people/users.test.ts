@@ -62,21 +62,19 @@ describe("users", () => {
 		).rejects.toThrow();
 	});
 
-	it("a profile is saved with its links and discipline", async () => {
+	it("a profile is saved with its bio and discipline", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");
 
 		await fay.as.mutation(api.people.users.updateProfile, {
 			bio: "  Builds things  ",
 			discipline: "designer",
-			githubUrl: "https://github.com/fay",
 		});
 
 		const profile = await fay.as.query(api.people.users.getMe);
 		expect(profile).toMatchObject({
 			bio: "Builds things",
 			discipline: "designer",
-			links: { githubUrl: "https://github.com/fay" },
 		});
 	});
 
@@ -95,32 +93,19 @@ describe("users", () => {
 		expect(me?.discipline).toBeNull();
 	});
 
-	it("a blank link and bio clear what was saved", async () => {
+	it("a blank bio clears what was saved", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");
 		await fay.as.mutation(api.people.users.updateProfile, {
 			bio: "Builds things",
-			githubUrl: "https://github.com/fay",
 		});
 
 		await fay.as.mutation(api.people.users.updateProfile, {
 			bio: "",
-			githubUrl: "",
 		});
 
 		const me = await fay.as.query(api.people.users.getMe, {});
-		expect(me).toMatchObject({ bio: null, links: { githubUrl: null } });
-	});
-
-	it("a link that is not a web address is refused", async () => {
-		const t = createTest();
-		const fay = await signUp(t, "Fay");
-
-		await expect(
-			fay.as.mutation(api.people.users.updateProfile, {
-				portfolioUrl: "not a link",
-			}),
-		).rejects.toThrow("Portfolio must start with http:// or https://");
+		expect(me).toMatchObject({ bio: null });
 	});
 
 	it("a reserved username is refused", async () => {
