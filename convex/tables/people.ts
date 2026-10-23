@@ -12,7 +12,6 @@ export const peopleTables = {
 		username: v.optional(v.string()),
 		bio: v.optional(v.string()),
 		discipline: v.optional(discipline),
-		portfolioUrl: v.optional(v.string()),
 		/** A person's Rating; starts at STARTING_RATING on sign-up. */
 		rating: v.optional(v.number()),
 		/** The Rating's change over the last rated week. */

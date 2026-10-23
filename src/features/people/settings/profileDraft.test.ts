@@ -10,9 +10,6 @@ const me: ProfileSource = {
 	username: "fay",
 	discipline: "designer",
 	bio: "Builds things",
-	links: {
-		portfolioUrl: "https://fay.test",
-	},
 };
 
 describe("profile settings draft", () => {
@@ -59,18 +56,17 @@ describe("profile settings draft", () => {
 		expect(toProfileArgs(draft, me)).toEqual({});
 	});
 
-	test("clearing a link sends an empty string", () => {
-		const draft = { ...toProfileDraft(me), portfolioUrl: "  " };
+	test("clearing the bio sends an empty string", () => {
+		const draft = { ...toProfileDraft(me), bio: "  " };
 
-		expect(toProfileArgs(draft, me)).toEqual({ portfolioUrl: "" });
+		expect(toProfileArgs(draft, me)).toEqual({ bio: "" });
 	});
 
-	test("a person with no links, bio or discipline starts with blank fields", () => {
+	test("a person with no bio or discipline starts with blank fields", () => {
 		const bare: ProfileSource = {
 			username: null,
 			discipline: null,
 			bio: null,
-			links: { portfolioUrl: null },
 		};
 
 		const draft = toProfileDraft(bare);
@@ -79,7 +75,6 @@ describe("profile settings draft", () => {
 			username: "",
 			discipline: null,
 			bio: "",
-			portfolioUrl: "",
 		});
 		expect(toProfileArgs(draft, bare)).toEqual({});
 	});

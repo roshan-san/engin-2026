@@ -32,7 +32,7 @@ import {
 } from "./profileDraft";
 import { useUpdateProfile } from "./useUpdateProfile";
 
-/** Your profile: username, discipline, bio and links. One Save sends only what changed. */
+/** Your profile: username, discipline and bio. One Save sends only what changed. */
 export function SettingsSheet({
 	open,
 	onOpenChange,
@@ -191,17 +191,6 @@ function SettingsForm({
 					value={draft.bio}
 					maxLength={TEXT.bio}
 					onChange={(event) => set("bio", event.target.value)}
-				/>
-			</div>
-
-			<div className="flex flex-col gap-1.5">
-				<Label htmlFor="profile-portfolio">Portfolio</Label>
-				<Input
-					id="profile-portfolio"
-					type="url"
-					placeholder="https://"
-					value={draft.portfolioUrl}
-					onChange={(event) => set("portfolioUrl", event.target.value)}
 				/>
 			</div>
 

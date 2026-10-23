@@ -3,7 +3,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { requireUserId } from "../model/auth";
-import { assertUrl, limitText } from "../model/text";
+import { limitText } from "../model/text";
 import { requireUsername } from "../model/username";
 import {
 	loadProfileRecord,
@@ -26,7 +26,7 @@ export const getMe = query({
 
 /**
  * A profile, for anyone. Signed out, it's only the name, Discipline and Rating
- * (`details` is null); signed in, `details` adds the bio, links and the Record.
+ * (`details` is null); signed in, `details` adds the bio and the Record.
  */
 export const getRecord = query({
 	args: { username: v.string() },
@@ -53,7 +53,7 @@ export const getRecord = query({
 });
 
 type ProfilePatch = Partial<
-	Pick<Doc<"users">, "username" | "bio" | "discipline" | "portfolioUrl">
+	Pick<Doc<"users">, "username" | "bio" | "discipline">
 >;
 
 export const updateProfile = mutation({
@@ -62,7 +62,6 @@ export const updateProfile = mutation({
 		bio: v.optional(v.string()),
 		/** `null` clears it. */
 		discipline: v.optional(v.union(discipline, v.null())),
-		portfolioUrl: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -84,9 +83,6 @@ export const updateProfile = mutation({
 		}
 		if (args.discipline !== undefined) {
 			patch.discipline = args.discipline ?? undefined;
-		}
-		if (args.portfolioUrl !== undefined) {
-			patch.portfolioUrl = assertUrl(args.portfolioUrl, "Portfolio");
 		}
 
 		await ctx.db.patch(userId, patch);
