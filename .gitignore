@@ -33,3 +33,11 @@ scripts/.jwks.txt
 .playwright-cli/
 
 .env*
+
+# AI tool files
+AGENTS.md
+.mcp.json
+.cursor/
+GEMINI.md
+.gemini/
+.windsurfrules
