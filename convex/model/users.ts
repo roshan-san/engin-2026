@@ -69,9 +69,7 @@ export function toProfileAbout(user: Doc<"users">) {
 	return {
 		bio: user.bio ?? null,
 		links: {
-			linkedinUrl: user.linkedinUrl ?? null,
 			portfolioUrl: user.portfolioUrl ?? null,
-			githubUrl: user.githubUrl ?? null,
 		},
 	};
 }

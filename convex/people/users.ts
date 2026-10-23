@@ -53,15 +53,7 @@ export const getRecord = query({
 });
 
 type ProfilePatch = Partial<
-	Pick<
-		Doc<"users">,
-		| "username"
-		| "bio"
-		| "discipline"
-		| "linkedinUrl"
-		| "portfolioUrl"
-		| "githubUrl"
-	>
+	Pick<Doc<"users">, "username" | "bio" | "discipline" | "portfolioUrl">
 >;
 
 export const updateProfile = mutation({
@@ -70,9 +62,7 @@ export const updateProfile = mutation({
 		bio: v.optional(v.string()),
 		/** `null` clears it. */
 		discipline: v.optional(v.union(discipline, v.null())),
-		linkedinUrl: v.optional(v.string()),
 		portfolioUrl: v.optional(v.string()),
-		githubUrl: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -95,14 +85,8 @@ export const updateProfile = mutation({
 		if (args.discipline !== undefined) {
 			patch.discipline = args.discipline ?? undefined;
 		}
-		if (args.linkedinUrl !== undefined) {
-			patch.linkedinUrl = assertUrl(args.linkedinUrl, "LinkedIn");
-		}
 		if (args.portfolioUrl !== undefined) {
 			patch.portfolioUrl = assertUrl(args.portfolioUrl, "Portfolio");
-		}
-		if (args.githubUrl !== undefined) {
-			patch.githubUrl = assertUrl(args.githubUrl, "GitHub");
 		}
 
 		await ctx.db.patch(userId, patch);

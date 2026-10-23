@@ -195,26 +195,6 @@ function SettingsForm({
 			</div>
 
 			<div className="flex flex-col gap-1.5">
-				<Label htmlFor="profile-linkedin">LinkedIn</Label>
-				<Input
-					id="profile-linkedin"
-					type="url"
-					placeholder="https://"
-					value={draft.linkedinUrl}
-					onChange={(event) => set("linkedinUrl", event.target.value)}
-				/>
-			</div>
-			<div className="flex flex-col gap-1.5">
-				<Label htmlFor="profile-github">GitHub</Label>
-				<Input
-					id="profile-github"
-					type="url"
-					placeholder="https://"
-					value={draft.githubUrl}
-					onChange={(event) => set("githubUrl", event.target.value)}
-				/>
-			</div>
-			<div className="flex flex-col gap-1.5">
 				<Label htmlFor="profile-portfolio">Portfolio</Label>
 				<Input
 					id="profile-portfolio"

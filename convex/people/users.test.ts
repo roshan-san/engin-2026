@@ -69,14 +69,14 @@ describe("users", () => {
 		await fay.as.mutation(api.people.users.updateProfile, {
 			bio: "  Builds things  ",
 			discipline: "designer",
-			githubUrl: "https://github.com/fay",
+			portfolioUrl: "https://fay.test",
 		});
 
 		const profile = await fay.as.query(api.people.users.getMe);
 		expect(profile).toMatchObject({
 			bio: "Builds things",
 			discipline: "designer",
-			links: { githubUrl: "https://github.com/fay" },
+			links: { portfolioUrl: "https://fay.test" },
 		});
 	});
 
@@ -100,16 +100,16 @@ describe("users", () => {
 		const fay = await signUp(t, "Fay");
 		await fay.as.mutation(api.people.users.updateProfile, {
 			bio: "Builds things",
-			githubUrl: "https://github.com/fay",
+			portfolioUrl: "https://fay.test",
 		});
 
 		await fay.as.mutation(api.people.users.updateProfile, {
 			bio: "",
-			githubUrl: "",
+			portfolioUrl: "",
 		});
 
 		const me = await fay.as.query(api.people.users.getMe, {});
-		expect(me).toMatchObject({ bio: null, links: { githubUrl: null } });
+		expect(me).toMatchObject({ bio: null, links: { portfolioUrl: null } });
 	});
 
 	it("a link that is not a web address is refused", async () => {

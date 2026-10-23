@@ -10,8 +10,6 @@ export type ProfileSource = {
 	readonly discipline: Discipline | null;
 	readonly bio: string | null;
 	readonly links: {
-		readonly linkedinUrl: string | null;
-		readonly githubUrl: string | null;
 		readonly portfolioUrl: string | null;
 	};
 };
@@ -21,8 +19,6 @@ export type ProfileDraft = {
 	username: string;
 	discipline: Discipline | null;
 	bio: string;
-	linkedinUrl: string;
-	githubUrl: string;
 	portfolioUrl: string;
 };
 
@@ -31,8 +27,6 @@ export function toProfileDraft(me: ProfileSource): ProfileDraft {
 		username: me.username ?? "",
 		discipline: me.discipline,
 		bio: me.bio ?? "",
-		linkedinUrl: me.links.linkedinUrl ?? "",
-		githubUrl: me.links.githubUrl ?? "",
 		portfolioUrl: me.links.portfolioUrl ?? "",
 	};
 }
@@ -51,8 +45,6 @@ export function toProfileArgs(
 		...draft,
 		username: draft.username.trim().toLowerCase(),
 		bio: draft.bio.trim(),
-		linkedinUrl: draft.linkedinUrl.trim(),
-		githubUrl: draft.githubUrl.trim(),
 		portfolioUrl: draft.portfolioUrl.trim(),
 	};
 	return changedFields(next, saved);

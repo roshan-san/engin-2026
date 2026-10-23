@@ -92,7 +92,7 @@ describe("profile record", () => {
 		const sam = await recordOf(setup, "sam");
 
 		expect(sam).toMatchObject({
-			links: { linkedinUrl: null, githubUrl: null, portfolioUrl: null },
+			links: { portfolioUrl: null },
 			parts: {
 				consistency: { active: 0, weeks: 0 },
 				volume: { perWeek: 0 },
@@ -108,7 +108,7 @@ describe("profile record", () => {
 		const sam = await addContributor(setup, "Sam");
 		await sam.as.mutation(api.people.users.updateProfile, {
 			discipline: "engineer",
-			githubUrl: "https://github.com/sam",
+			portfolioUrl: "https://sam.test",
 		});
 
 		const profile = await setup.t.query(api.people.users.getRecord, {
@@ -122,7 +122,7 @@ describe("profile record", () => {
 			rating: 1000,
 			details: null,
 		});
-		expect(JSON.stringify(profile)).not.toContain("github.com/sam");
+		expect(JSON.stringify(profile)).not.toContain("https://sam.test");
 		expect(profile).not.toHaveProperty("email");
 	});
 

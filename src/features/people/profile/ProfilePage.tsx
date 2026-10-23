@@ -93,8 +93,6 @@ function SignedInProfile({
 	const [isEditing, setIsEditing] = useState(false);
 	const isMine = me?._id === profile._id;
 	const links = [
-		{ label: "LinkedIn", url: details.links.linkedinUrl },
-		{ label: "GitHub", url: details.links.githubUrl },
 		{ label: "Portfolio", url: details.links.portfolioUrl },
 	].filter((link) => link.url !== null);
 
