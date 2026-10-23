@@ -18,10 +18,10 @@ import { refusalFor } from "../cardRules";
 import { BoardColumn, type DropState } from "./BoardColumn";
 import { useBoardScope } from "./BoardScope";
 import { boardAnnouncements } from "./boardAnnouncements";
+import { useCardBoard } from "./CardBoard";
 import { CardFace, TILE_CLASS } from "./CardTile";
 import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
 import { NewCardInput } from "./NewCardInput";
-import type { CardView } from "./types";
 import { useBoard } from "./useBoard";
 import { useBoardKeys } from "./useBoardKeys";
 
@@ -38,20 +38,8 @@ const collisionDetection: CollisionDetection = (args) => {
 };
 
 /** The four columns of Cards. Drag, or use the keyboard, to move them. */
-export function Board({
-	openCardId,
-	onShip,
-	onOpen,
-	onClose,
-}: {
-	/** The Card open in the side panel, marked on the Board. */
-	readonly openCardId: string | undefined;
-	/** Called when the owner drops a Card on Review; opens What shipped. */
-	readonly onShip: (card: CardView) => void;
-	readonly onOpen: (cardId: string) => void;
-	/** Closes the open Card (Esc). */
-	readonly onClose: () => void;
-}) {
+export function Board() {
+	const { openCardId, open: onOpen, close: onClose, ship } = useCardBoard();
 	const scope = useBoardScope();
 	const { cards, create, move, verify } = useBoard(scope);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -135,7 +123,7 @@ export function Board({
 		const to = overId as Column;
 		const action = dropAction(dragged, to, scope);
 		if (action === "ship") {
-			onShip(dragged);
+			ship(dragged);
 		} else if (action === "move" && (to === "todo" || to === "in_progress")) {
 			void move(dragged._id, to);
 		} else {

@@ -10,14 +10,13 @@ export {
 	BoardScopeContext,
 	useBoardScope,
 } from "./board/BoardScope";
+export { CardBoard } from "./board/CardBoard";
 export { TILE_CLASS } from "./board/CardTile";
 export { ColumnIcon } from "./board/ColumnIcon";
 export { NewCardInput } from "./board/NewCardInput";
 export { StartupBoardScope } from "./board/StartupBoardScope";
-export type { CardView } from "./board/types";
 export { useBoardCards } from "./board/useBoard";
 export { refusalFor } from "./cardRules";
-export { CardPanel } from "./cards/CardPanel";
-export { ShipDialog } from "./cards/ShipDialog";
+export { OpenCardPanel } from "./cards/OpenCardPanel";
 export { ShippedView } from "./cards/ShippedView";
 export { tierText } from "./tierText";

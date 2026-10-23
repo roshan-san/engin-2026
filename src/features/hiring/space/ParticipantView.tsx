@@ -16,9 +16,8 @@ import {
 	Board,
 	type BoardScope,
 	BoardScopeContext,
-	CardPanel,
-	type CardView,
-	ShipDialog,
+	CardBoard,
+	OpenCardPanel,
 	tierText,
 } from "~/features/work";
 import type { ApplicantRow } from "./applicantSort";
@@ -51,7 +50,6 @@ export function ParticipantView({
 	const [pane, setPane] = useState<"thread" | "decide">(
 		phaseOf(hackathon, Date.now()) === "deciding" ? "decide" : "thread",
 	);
-	const [shipping, setShipping] = useState<CardView | null>(null);
 	const cardId = route.useSearch({ select: (search) => search.card });
 	const navigate = route.useNavigate();
 	const participantId = row.user._id;
@@ -71,11 +69,11 @@ export function ParticipantView({
 		[hackathon._id, participantId, userId, phase],
 	);
 
-	function closeCard() {
-		void navigate({ search: (prev) => ({ ...prev, card: undefined }) });
+	function setCard(card: string | undefined) {
+		void navigate({ search: (prev) => ({ ...prev, card }) });
 	}
 
-	const detail = useDetailPanel(cardId !== undefined, closeCard);
+	const detail = useDetailPanel(cardId !== undefined, () => setCard(undefined));
 	const onClose = detail.isMobile ? detail.close : undefined;
 
 	const name = row.user.name ?? row.user.username ?? "them";
@@ -83,17 +81,14 @@ export function ParticipantView({
 		<Segmented label="Show" options={PANES} value={pane} onChange={setPane} />
 	);
 
-	const card = cardId ? (
-		<CardPanel
-			key={cardId}
-			cardId={cardId}
+	const card = (
+		<OpenCardPanel
 			backLabel={pane === "decide" ? "Decide" : "Thread"}
 			isBackUnread={pane === "thread" && isThreadUnread}
 			onBack={detail.back}
 			onClose={onClose}
-			onShip={setShipping}
 		/>
-	) : null;
+	);
 	const own =
 		pane === "thread" ? (
 			<ThreadPanel
@@ -114,44 +109,36 @@ export function ParticipantView({
 
 	return (
 		<BoardScopeContext.Provider value={scope}>
-			<div className="flex min-h-0 min-w-0 flex-1">
-				<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-					<PanelHeader className="gap-3 md:px-6">
-						<ParticipantHeader row={row} hackathon={hackathon} />
-						<Button
-							variant={isDeciding ? "default" : "ghost"}
-							size="sm"
-							className="ml-auto md:hidden"
-							onClick={() => {
-								if (isDeciding) setPane("decide");
-								detail.open();
-							}}
-						>
-							{isDeciding ? "Decide" : "Thread and Decide"}
-							{isThreadUnread ? <UnreadDot /> : null}
-						</Button>
-					</PanelHeader>
-					<Board
-						openCardId={cardId}
-						onShip={setShipping}
-						onOpen={(id) =>
-							void navigate({ search: (prev) => ({ ...prev, card: id }) })
-						}
-						onClose={closeCard}
+			<CardBoard cardId={cardId} onCardChange={setCard}>
+				<div className="flex min-h-0 min-w-0 flex-1">
+					<div className="flex min-h-0 min-w-0 flex-1 flex-col">
+						<PanelHeader className="gap-3 md:px-6">
+							<ParticipantHeader row={row} hackathon={hackathon} />
+							<Button
+								variant={isDeciding ? "default" : "ghost"}
+								size="sm"
+								className="ml-auto md:hidden"
+								onClick={() => {
+									if (isDeciding) setPane("decide");
+									detail.open();
+								}}
+							>
+								{isDeciding ? "Decide" : "Thread and Decide"}
+								{isThreadUnread ? <UnreadDot /> : null}
+							</Button>
+						</PanelHeader>
+						<Board />
+					</div>
+					<DetailPanel
+						shows={detail.shows}
+						title={row.user.name ?? "Participant"}
+						description="Thread, Decide and Cards."
+						onClose={detail.close}
+						item={card}
+						fallback={own}
 					/>
 				</div>
-				<DetailPanel
-					shows={detail.shows}
-					title={row.user.name ?? "Participant"}
-					description="Thread, Decide and Cards."
-					onClose={detail.close}
-					item={card}
-					fallback={own}
-				/>
-				{shipping ? (
-					<ShipDialog card={shipping} onClose={() => setShipping(null)} />
-				) : null}
-			</div>
+			</CardBoard>
 		</BoardScopeContext.Provider>
 	);
 }
