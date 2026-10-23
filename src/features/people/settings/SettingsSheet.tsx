@@ -19,7 +19,7 @@ import {
 } from "~/components/ui/sheet";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { PlanSection } from "~/features/billing/PlanSection";
+import { PlanSection } from "~/features/billing";
 import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
 import { useDiscardGuard, useReportChanged } from "~/lib/useDiscardGuard";
 import { useMe } from "~/shell/useMe";

@@ -1,7 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { EmptyState } from "~/components/EmptyState";
 import { RowList } from "~/components/RowList";
-import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
+import { CITIES, KINDS, STAGES } from "~/features/startups";
 import { ExploreLayout } from "./ExploreLayout";
 import { hasFilters } from "./exploreSearch";
 import { FilterChips } from "./FilterChips";

@@ -1,6 +1,5 @@
 import { ExternalLink } from "lucide-react";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { PersonName } from "~/features/people/PersonName";
+import { PersonAvatar, PersonName } from "~/features/people";
 import { cn } from "~/lib/utils";
 import { type EntryView, linkLabel } from "./record";
 

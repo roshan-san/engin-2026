@@ -21,7 +21,13 @@
 		"enabled": true,
 		"indentStyle": "tab"
 	},
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
@@ -47,7 +53,9 @@
 						"useSemanticElements": "off",
 						"useKeyWithClickEvents": "off"
 					},
-					"suspicious": { "noArrayIndexKey": "off" }
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
 				}
 			}
 		},
@@ -70,6 +78,348 @@
 											"!../**/convex/shared/**"
 										],
 										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/billing/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/billing/**",
+											"~/features/billing"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside billing/, import files directly, not ~/features/billing."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/chat/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/chat/**",
+											"~/features/chat"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside chat/, import files directly, not ~/features/chat."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/explore/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/explore/**",
+											"~/features/explore"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside explore/, import files directly, not ~/features/explore."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/hiring/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/hiring/**",
+											"~/features/hiring"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside hiring/, import files directly, not ~/features/hiring."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/marketing/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/marketing/**",
+											"~/features/marketing"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside marketing/, import files directly, not ~/features/marketing."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/people/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/people/**",
+											"~/features/people"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside people/, import files directly, not ~/features/people."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/startups/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/startups/**",
+											"~/features/startups"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside startups/, import files directly, not ~/features/startups."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/features/work/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": [
+											"~/features/*/**",
+											"!~/features/work/**",
+											"~/features/work"
+										],
+										"message": "From another area, import its front door (~/features/<area>). Inside work/, import files directly, not ~/features/work."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/shell/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": ["~/features/*/**"],
+										"message": "Import an area through its front door: ~/features/<area>."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/components/**/*", "**/src/lib/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"@convex/**",
+											"!@convex/_generated/**",
+											"!@convex/shared/**",
+											"../**/convex/**",
+											"!../**/convex/_generated/**",
+											"!../**/convex/shared/**"
+										],
+										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+									},
+									{
+										"group": ["~/features", "~/features/**"],
+										"message": "components/ and lib/ are below every area: they may not import features/. Move the piece down, or move this file up into an area or shell/."
 									}
 								]
 							}

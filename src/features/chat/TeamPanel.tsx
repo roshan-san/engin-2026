@@ -1,4 +1,4 @@
-import { useWorkspace } from "~/features/startups/workspace/Workspace";
+import { useWorkspace } from "~/features/startups";
 import { PresenceList } from "./PresenceList";
 import { ThreadPanel } from "./ThreadPanel";
 import { useTeamThread } from "./useTeamThread";

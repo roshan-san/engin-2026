@@ -1,4 +1,4 @@
-import { tierText } from "~/features/work/tierText";
+import { tierText } from "~/features/work";
 import { displayName } from "~/lib/displayName";
 import { cn } from "~/lib/utils";
 

@@ -3,7 +3,7 @@ import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
 import { Section } from "~/components/Section";
 import { Badge } from "~/components/ui/badge";
-import { SignInCard } from "~/features/people/auth/SignInCard";
+import { SignInCard } from "~/features/people";
 import { dayLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 import { buildDaysLabel, lastDay } from "../hackathonDates";

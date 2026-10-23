@@ -11,9 +11,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { useWorkspace } from "~/features/startups/workspace/Workspace";
-import { tierText } from "~/features/work/tierText";
+import { PersonAvatar } from "~/features/people";
+import { useWorkspace } from "~/features/startups";
+import { tierText } from "~/features/work";
 import { cn } from "~/lib/utils";
 import { EveryonePanel } from "./EveryonePanel";
 import { ParticipantView } from "./ParticipantView";

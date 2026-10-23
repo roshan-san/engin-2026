@@ -6,8 +6,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { PersonName } from "~/features/people/PersonName";
+import { PersonAvatar, PersonName } from "~/features/people";
 import type { CardView } from "../board/types";
 import { useTeam } from "./useTeam";
 

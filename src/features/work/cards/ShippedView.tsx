@@ -1,4 +1,4 @@
-import { PersonName } from "~/features/people/PersonName";
+import { PersonName } from "~/features/people";
 import { relativeTime } from "~/lib/dates";
 import type { CardView } from "../board/types";
 

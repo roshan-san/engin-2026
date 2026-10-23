@@ -3,9 +3,8 @@ import { Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { PlaceLogo } from "~/components/PlaceLogo";
 import { Badge } from "~/components/ui/badge";
-import { CITIES, KINDS, STAGES } from "~/features/startups/startupChips";
-import { RatingBadge } from "~/features/work/activity/RatingBadge";
-import { RhythmStrip } from "~/features/work/activity/RhythmStrip";
+import { CITIES, KINDS, STAGES } from "~/features/startups";
+import { RatingBadge, RhythmStrip } from "~/features/work";
 
 export type StartupExploreRowData = FunctionReturnType<
 	typeof api.startups.startups.explore

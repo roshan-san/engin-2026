@@ -6,7 +6,7 @@ import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { useWorkspace } from "~/features/startups/workspace/Workspace";
+import { useWorkspace } from "~/features/startups";
 import { roleLabel } from "../jobChips";
 import { STAGE, stageDate } from "../stage";
 import { CopyLinkButton } from "./CopyLinkButton";

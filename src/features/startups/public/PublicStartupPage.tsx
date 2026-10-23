@@ -9,11 +9,13 @@ import { TILE, TILE_LINK } from "~/components/tile";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { jobLine } from "~/features/hiring/jobChips";
-import { ActivityFeed } from "~/features/work/activity/ActivityFeed";
-import { RecordSignals } from "~/features/work/activity/RecordSignals";
-import { useSignals } from "~/features/work/activity/useSignals";
-import { tierText } from "~/features/work/tierText";
+import { jobLine } from "~/features/hiring";
+import {
+	ActivityFeed,
+	RecordSignals,
+	tierText,
+	useSignals,
+} from "~/features/work";
 import { dayLabel, monthYearLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";
 import { usePlaces } from "~/shell/usePlaces";

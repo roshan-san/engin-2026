@@ -1,7 +1,6 @@
 import { TILE } from "~/components/tile";
-import { planLines } from "~/features/billing/planLines";
-import { GoogleButton } from "~/features/people/auth/GoogleButton";
-import { POST_INTENT_PATH } from "~/features/people/home/homeIntent";
+import { planLines } from "~/features/billing";
+import { GoogleButton, POST_INTENT_PATH } from "~/features/people";
 import { cn } from "~/lib/utils";
 
 /** Free next to the three Pro plans, read from PLANS. Pro is hiring only. */

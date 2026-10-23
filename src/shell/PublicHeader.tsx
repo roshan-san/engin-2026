@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { GoogleButton } from "~/features/people/auth/GoogleButton";
+import { GoogleButton } from "~/features/people";
 import { EnginLogo } from "~/shell/EnginLogo";
 
 /** The signed-out bar: the logo, Explore and a sign-in button. */

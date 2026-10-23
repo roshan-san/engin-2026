@@ -3,9 +3,7 @@ import { XIcon } from "lucide-react";
 import { useState } from "react";
 import { CharCount } from "~/components/CharCount";
 import { MentorNote } from "~/components/MentorNote";
-import { TILE_CLASS } from "~/features/work/board/CardTile";
-import { ColumnIcon } from "~/features/work/board/ColumnIcon";
-import { NewCardInput } from "~/features/work/board/NewCardInput";
+import { ColumnIcon, NewCardInput, TILE_CLASS } from "~/features/work";
 import { cn } from "~/lib/utils";
 import { draftCard, type HackathonDraft } from "./draft";
 

@@ -1,6 +1,6 @@
 import { useMatches } from "@tanstack/react-router";
-import { PublicHeader } from "~/components/PublicHeader";
 import { SiteFooter } from "~/components/SiteFooter";
+import { PublicHeader } from "~/shell/PublicHeader";
 import { tabsFromRoute } from "~/shell/places";
 import { TabRow } from "~/shell/TabRow";
 

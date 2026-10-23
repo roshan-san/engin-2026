@@ -6,11 +6,13 @@ import { Row, RowList } from "~/components/RowList";
 import { Section } from "~/components/Section";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { PersonName } from "~/features/people/PersonName";
-import { hackathonLine, workLine } from "~/features/people/profile/profileText";
-import { RatingBadge } from "~/features/work/activity/RatingBadge";
-import { RatingParts } from "~/features/work/activity/RatingParts";
+import {
+	hackathonLine,
+	PersonAvatar,
+	PersonName,
+	workLine,
+} from "~/features/people";
+import { RatingBadge, RatingParts } from "~/features/work";
 import { useApplicant } from "./useApplicants";
 
 /** One Applicant: their answer, their Rating and its parts, and what they've done. */

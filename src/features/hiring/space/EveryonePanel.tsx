@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { ThreadPanel } from "~/features/chat/ThreadPanel";
+import { ThreadPanel } from "~/features/chat";
 import { useHackathonThreads } from "./useSpace";
 
 /** # Everyone for the Founder: answer questions, pin what matters. */

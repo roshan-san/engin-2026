@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useWorkspace } from "~/features/startups/workspace/Workspace";
+import { useWorkspace } from "~/features/startups";
 import { dateRange } from "~/lib/dates";
 import { useCycle } from "./useCycle";
 import { useSetGoal } from "./useSetGoal";

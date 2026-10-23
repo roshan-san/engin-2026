@@ -1,6 +1,6 @@
 import type { discipline } from "@convex/shared/validators";
 import type { Infer } from "convex/values";
-import { type JobRole, roleLabel } from "~/features/hiring/jobChips";
+import { type JobRole, roleLabel } from "~/features/hiring";
 
 type Discipline = Infer<typeof discipline>;
 type Outcome = "built" | "finalist" | "hired";

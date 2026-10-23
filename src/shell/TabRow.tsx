@@ -1,8 +1,7 @@
 import { Link, useMatches } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
-import { participantStatusText } from "~/features/hiring/participant/participantStatus";
-import { useHackathon } from "~/features/hiring/public/useHackathon";
-import { StartupSettingsSheet } from "~/features/startups/settings/StartupSettingsSheet";
+import { participantStatusText, useHackathon } from "~/features/hiring";
+import { StartupSettingsSheet } from "~/features/startups";
 import {
 	canSeeSettings,
 	tabsForSignedOut,

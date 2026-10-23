@@ -1,6 +1,5 @@
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { PersonName } from "~/features/people/PersonName";
-import { tierText } from "~/features/work/tierText";
+import { PersonAvatar, PersonName } from "~/features/people";
+import { tierText } from "~/features/work";
 import { cn } from "~/lib/utils";
 import type { ApplicantRow } from "./applicantSort";
 

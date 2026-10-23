@@ -6,8 +6,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { SettingsSheet } from "~/features/people/settings/SettingsSheet";
+import { PersonAvatar, SettingsSheet } from "~/features/people";
 import { useMe } from "~/shell/useMe";
 
 /** Your avatar, with your Profile, Settings and Sign out. */

@@ -6,7 +6,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
+import { PersonAvatar } from "~/features/people";
 import { displayName } from "~/lib/displayName";
 import { orderPresence, presenceLabel } from "./presence";
 import { useOnline } from "./useOnline";

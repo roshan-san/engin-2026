@@ -10,18 +10,17 @@ import { UnreadDot } from "~/components/UnreadDot";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useDetailPanel } from "~/components/useDetailPanel";
-import { ThreadPanel } from "~/features/chat/ThreadPanel";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { PersonName } from "~/features/people/PersonName";
-import { Board } from "~/features/work/board/Board";
+import { ThreadPanel } from "~/features/chat";
+import { PersonAvatar, PersonName } from "~/features/people";
 import {
+	Board,
 	type BoardScope,
 	BoardScopeContext,
-} from "~/features/work/board/BoardScope";
-import type { CardView } from "~/features/work/board/types";
-import { CardPanel } from "~/features/work/cards/CardPanel";
-import { ShipDialog } from "~/features/work/cards/ShipDialog";
-import { tierText } from "~/features/work/tierText";
+	CardPanel,
+	type CardView,
+	ShipDialog,
+	tierText,
+} from "~/features/work";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";

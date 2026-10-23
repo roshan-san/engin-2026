@@ -4,10 +4,7 @@ import { getRouteApi, Navigate, Outlet } from "@tanstack/react-router";
 import { createContext, useContext, useMemo } from "react";
 import { GlobalNotFound } from "~/components/GlobalNotFound";
 import { GlobalSpinner } from "~/components/GlobalSpinner";
-import {
-	type BoardScope,
-	BoardScopeContext,
-} from "~/features/work/board/BoardScope";
+import { type BoardScope, BoardScopeContext } from "~/features/work";
 import { useMe } from "~/shell/useMe";
 import { useHackathon } from "../public/useHackathon";
 import { type ParticipantStatus, participantStatus } from "./participantStatus";

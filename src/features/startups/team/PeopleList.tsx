@@ -3,9 +3,8 @@ import { ConfirmButton } from "~/components/ConfirmButton";
 import { Row, RowList } from "~/components/RowList";
 import { Section } from "~/components/Section";
 import { Skeleton } from "~/components/ui/skeleton";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
-import { PersonName } from "~/features/people/PersonName";
-import { RatingBadge } from "~/features/work/activity/RatingBadge";
+import { PersonAvatar, PersonName } from "~/features/people";
+import { RatingBadge } from "~/features/work";
 import { displayName } from "~/lib/displayName";
 import type { TeamPeople, TeamPerson } from "./useTeamPeople";
 

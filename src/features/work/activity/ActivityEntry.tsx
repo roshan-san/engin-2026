@@ -14,7 +14,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "~/components/ui/collapsible";
-import { PersonAvatar } from "~/features/people/PersonAvatar";
+import { PersonAvatar } from "~/features/people";
 import { tierText } from "~/features/work/tierText";
 import { weekdayLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";

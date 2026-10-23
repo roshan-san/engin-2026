@@ -2,7 +2,7 @@ import { TEXT } from "@convex/shared/limits";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { MentorNote } from "~/components/MentorNote";
 import { Textarea } from "~/components/ui/textarea";
-import { PersonName } from "~/features/people/PersonName";
+import { PersonName } from "~/features/people";
 import { relativeTime } from "~/lib/dates";
 import type { CardView } from "../board/types";
 import { useDraft } from "./useDraft";

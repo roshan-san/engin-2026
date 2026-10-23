@@ -5,7 +5,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
-import { PersonName } from "~/features/people/PersonName";
+import { PersonName } from "~/features/people";
 import { useBoardScope } from "../board/BoardScope";
 import { ColumnIcon } from "../board/ColumnIcon";
 import { COLUMNS, type Column, dropAction } from "../board/dropRules";

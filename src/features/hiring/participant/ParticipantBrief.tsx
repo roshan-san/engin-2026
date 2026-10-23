@@ -1,6 +1,5 @@
 import { Section } from "~/components/Section";
-import { useBoardScope } from "~/features/work/board/BoardScope";
-import { useBoardCards } from "~/features/work/board/useBoard";
+import { useBoardCards, useBoardScope } from "~/features/work";
 import { dayLabel } from "~/lib/dates";
 import { buildDaysLabel, lastDay } from "../hackathonDates";
 

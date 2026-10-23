@@ -2,7 +2,7 @@ import type { api } from "@convex/_generated/api";
 import { WEEK_MS } from "@convex/shared/cycles";
 import { WEEK_COUNT_CAP } from "@convex/shared/limits";
 import type { FunctionReturnType } from "convex/server";
-import { roleLabel } from "~/features/hiring/jobChips";
+import { roleLabel } from "~/features/hiring";
 import { dateRange } from "~/lib/dates";
 import { displayName } from "~/lib/displayName";
 
