@@ -11,7 +11,7 @@
     "lint": "biome lint --write .",
     "format": "biome format --write .",
     "check-types": "tsc --noEmit",
-    "check": "pnpm lint && pnpm format && pnpm check-types",
+    "check": "biome check --write . && pnpm check-types",
     "ui": "pnpm dlx shadcn@latest add",
     "test": "vitest run",
     "data:clear": "node scripts/clear-dev-data.mjs",
