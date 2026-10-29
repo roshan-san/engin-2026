@@ -1,10 +1,9 @@
 import { PeopleList, teamSummary, useTeamPeople } from "~/entities/contributor";
 import { PendingInvites, useStartupInvites } from "~/entities/invite";
 import { useWorkspace } from "~/entities/startup";
+import { InviteButton, useInviteActions } from "~/features/invite-contributor";
 import { AppPage, PageTitle } from "~/shared/ui/AppPage";
 import { EmptyState } from "~/shared/ui/EmptyState";
-import { InviteButton } from "./InviteButton";
-import { useInviteActions } from "./useInviteActions";
 import { useRemoveContributor } from "./useRemoveContributor";
 
 /** The Team tab: people and pending Invites. */
