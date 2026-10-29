@@ -48,6 +48,7 @@ import type * as model_username from "../model/username.js";
 import type * as model_users from "../model/users.js";
 import type * as people_places from "../people/places.js";
 import type * as people_users from "../people/users.js";
+import type * as shared_applicationRules from "../shared/applicationRules.js";
 import type * as shared_cardRules from "../shared/cardRules.js";
 import type * as shared_cycles from "../shared/cycles.js";
 import type * as shared_hackathonPhase from "../shared/hackathonPhase.js";
@@ -122,6 +123,7 @@ declare const fullApi: ApiFromModules<{
   "model/users": typeof model_users;
   "people/places": typeof people_places;
   "people/users": typeof people_users;
+  "shared/applicationRules": typeof shared_applicationRules;
   "shared/cardRules": typeof shared_cardRules;
   "shared/cycles": typeof shared_cycles;
   "shared/hackathonPhase": typeof shared_hackathonPhase;
