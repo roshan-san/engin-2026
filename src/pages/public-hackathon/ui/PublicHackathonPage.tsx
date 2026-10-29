@@ -36,7 +36,7 @@ const route = getRouteApi("/_shell/hackathons/$id");
 type HackathonView = NonNullable<ReturnType<typeof useHackathon>>;
 
 /** A Hackathon's post. Signed in, the app shape with Apply in the detail panel; signed out, a public page with the brief behind Sign in. */
-export function HackathonPage() {
+export function PublicHackathonPage() {
 	const { id } = route.useParams();
 	const page = useHackathon(id);
 

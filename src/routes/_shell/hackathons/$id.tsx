@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { HackathonPage } from "~/features/hiring/public/HackathonPage";
+import { PublicHackathonPage } from "~/pages/public-hackathon";
 
 export const Route = createFileRoute("/_shell/hackathons/$id")({
-	component: HackathonPage,
+	component: PublicHackathonPage,
 });
