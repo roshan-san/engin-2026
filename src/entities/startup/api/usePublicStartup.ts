@@ -3,5 +3,5 @@ import { useQuery } from "convex/react";
 
 /** The public startup page; `null` for an unknown slug. */
 export function usePublicStartup(slug: string | undefined) {
-	return useQuery(api.startups.startups.getPublic, slug ? { slug } : "skip");
+	return useQuery(api.startups.getPublic, slug ? { slug } : "skip");
 }

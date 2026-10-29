@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { MAX_BOARD_CARDS } from "../shared/limits";
-import { cardOn, SHIPPED } from "../testing/cards.setup";
-import { publishedHackathon } from "../testing/hackathons.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
-} from "../testing/startups.setup";
+} from "../startups/startups.setup";
+import { cardOn, SHIPPED } from "../testing/cards.setup";
+import { publishedHackathon } from "../testing/hackathons.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
@@ -554,7 +554,7 @@ describe("card view", () => {
 	it("a Card from another Startup isn't shown in this workspace", async () => {
 		const setup = await setUpStartup(createTest());
 		const { startupId: betaId } = await setup.founder.as.mutation(
-			api.startups.startups.create,
+			api.startups.create,
 			{
 				name: "Beta",
 				stage: "building",

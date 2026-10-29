@@ -19,8 +19,8 @@ import {
 } from "../rating/model";
 import { MAX_CYCLE_ENTRIES, MAX_LISTED_CYCLES } from "../shared/limits";
 import type { activityKind, jobRole } from "../shared/validators";
+import { buildRhythmStrip } from "../startups/model";
 import { loadPublicUser, type PublicUser } from "../users/model";
-import { buildRhythmStrip } from "./startups";
 
 type ActivityKind = Infer<typeof activityKind>;
 type JobRole = Infer<typeof jobRole>;

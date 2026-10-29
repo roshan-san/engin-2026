@@ -3,9 +3,9 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { loadCycles, loadSignals } from "../model/activity";
-import { getStartupBySlug } from "../model/startups";
-import { requireTeam } from "../model/teamAccess";
 import { CYCLES_PAGE } from "../shared/limits";
+import { getStartupBySlug } from "../startups/model";
+import { requireTeam } from "../startups/team";
 import { isInvestorPro } from "../users/model";
 
 /** The team's full Activity: the newest `count` Cycles. */

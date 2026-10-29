@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { addContributor, setUpStartup } from "../startups/startups.setup";
 import { cardOn } from "../testing/cards.setup";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { advancePast, createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 

@@ -2,17 +2,17 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { MAX_LISTED_CYCLES } from "../shared/limits";
 import {
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../startups/startups.setup";
+import {
 	endHackathon,
 	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { cardOn, SHIPPED } from "../testing/cards.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import {
-	addContributor,
-	type Setup,
-	setUpStartup,
-} from "../testing/startups.setup";
 import { advancePast, createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 

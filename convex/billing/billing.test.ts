@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { setUpStartup } from "../startups/startups.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import { setUpStartup } from "../testing/startups.setup";
 import { createTest, DAY, type TestConvex } from "../testing/test.setup";
 import { givePro } from "./billing.setup";
 import { planForProduct } from "./model";

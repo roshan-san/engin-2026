@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
+import { addContributor, setUpStartup } from "../startups/startups.setup";
 import { createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { cycleNumber, shiftWeek, weekOf, weekStart } from "./rules";

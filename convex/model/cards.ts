@@ -18,10 +18,10 @@ import {
 	MAX_SHIPPED_LINKS,
 	TEXT,
 } from "../shared/limits";
+import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
 import { appendActivity } from "./activity";
 import { getHackathonRole } from "./applications";
-import { getTeamRole, requireTeam } from "./teamAccess";
 
 type Ctx = QueryCtx | MutationCtx;
 

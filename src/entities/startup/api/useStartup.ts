@@ -6,5 +6,5 @@ import { useQuery } from "convex/react";
  * you're not on its team; `undefined` while loading or with no slug.
  */
 export function useStartup(slug: string | undefined) {
-	return useQuery(api.startups.startups.getBySlug, slug ? { slug } : "skip");
+	return useQuery(api.startups.getBySlug, slug ? { slug } : "skip");
 }

@@ -8,10 +8,10 @@ import {
 	MAX_USER_APPLICATIONS,
 } from "../shared/limits";
 import type { WaitingReason } from "../shared/places";
+import { loadLogoUrl } from "../startups/model";
 import { loadParticipants } from "./applications";
 import { loadHackathonCardsInReview } from "./cards";
 import { loadRunningHackathons } from "./hackathons";
-import { loadLogoUrl } from "./startups";
 import {
 	isThreadUnread,
 	loadHackathonThreads,

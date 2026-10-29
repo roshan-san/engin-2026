@@ -1,8 +1,8 @@
 import { query } from "../_generated/server";
 import { requireUserId } from "../lib/auth";
 import { loadHackathonPlaces, startupReasons } from "../model/places";
-import { loadFoundedStartups, loadLogoUrl } from "../model/startups";
 import { MAX_USER_STARTUPS } from "../shared/limits";
+import { loadFoundedStartups, loadLogoUrl } from "../startups/model";
 
 /** Every place the person can switch to, each with what is waiting on them. */
 export const list = query({

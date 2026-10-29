@@ -8,6 +8,11 @@ import {
 } from "../shared/limits";
 import { mentionToken } from "../shared/mentions";
 import {
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../startups/startups.setup";
+import {
 	closeHackathon,
 	endHackathon,
 	participants,
@@ -15,11 +20,6 @@ import {
 } from "../testing/applications.setup";
 import { cardOn } from "../testing/cards.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import {
-	addContributor,
-	type Setup,
-	setUpStartup,
-} from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
@@ -424,7 +424,7 @@ describe("card mentions", () => {
 		const setup = await setUpStartup(createTest());
 		const threadId = await teamThreadId(setup);
 		const { startupId: betaId } = await setup.founder.as.mutation(
-			api.startups.startups.create,
+			api.startups.create,
 			{
 				name: "Beta",
 				stage: "building",

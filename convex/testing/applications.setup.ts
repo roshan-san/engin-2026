@@ -1,8 +1,8 @@
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import type { Setup } from "../startups/startups.setup";
 import { type Person, signUp } from "../users/users.setup";
 import { publishedHackathon } from "./hackathons.setup";
-import type { Setup } from "./startups.setup";
 import { advancePast, HOUR } from "./test.setup";
 
 export type Applicant = Person & { applicationId: Id<"applications"> };

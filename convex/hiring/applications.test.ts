@@ -3,6 +3,11 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { MAX_APPLICATIONS } from "../shared/limits";
 import {
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../startups/startups.setup";
+import {
 	type Applicant,
 	applicant,
 	closeHackathon,
@@ -12,11 +17,6 @@ import {
 } from "../testing/applications.setup";
 import { SHIPPED } from "../testing/cards.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import {
-	addContributor,
-	type Setup,
-	setUpStartup,
-} from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
 
 async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
@@ -645,7 +645,7 @@ describe("deciding", () => {
 		await walkthrough(setup, ana);
 		await hire();
 
-		const invites = await ana.as.query(api.startups.invites.listMine, {});
+		const invites = await ana.as.query(api.invites.listMine, {});
 		expect(invites).toMatchObject([
 			{ startupName: "Acme", fromHackathon: true },
 		]);
@@ -658,7 +658,7 @@ describe("deciding", () => {
 			participants: [ana],
 		} = await ended(["Ana"]);
 		await walkthrough(setup, ana);
-		await setup.founder.as.mutation(api.startups.invites.create, {
+		await setup.founder.as.mutation(api.invites.create, {
 			startupId: setup.startupId,
 			email: "ana@example.com",
 		});
@@ -668,7 +668,7 @@ describe("deciding", () => {
 			decision: "hired",
 		});
 
-		const invites = await ana.as.query(api.startups.invites.listMine, {});
+		const invites = await ana.as.query(api.invites.listMine, {});
 		expect(invites).toHaveLength(1);
 		expect(invites).toMatchObject([
 			{ startupName: "Acme", fromHackathon: true },
@@ -682,12 +682,12 @@ describe("deciding", () => {
 			participants: [ana],
 		} = await ended(["Ana"]);
 		await walkthrough(setup, ana);
-		await setup.founder.as.mutation(api.startups.invites.create, {
+		await setup.founder.as.mutation(api.invites.create, {
 			startupId: setup.startupId,
 			email: "ana@example.com",
 		});
-		const [invite] = await ana.as.query(api.startups.invites.listMine, {});
-		await ana.as.mutation(api.startups.invites.accept, {
+		const [invite] = await ana.as.query(api.invites.listMine, {});
+		await ana.as.mutation(api.invites.accept, {
 			inviteId: invite.inviteId,
 		});
 
@@ -701,7 +701,7 @@ describe("deciding", () => {
 			{ hackathonId },
 		);
 		expect(list[0].application).toMatchObject({ decision: "hired" });
-		expect(await ana.as.query(api.startups.invites.listMine, {})).toEqual([]);
+		expect(await ana.as.query(api.invites.listMine, {})).toEqual([]);
 		expect(await activityKinds(setup)).toContain("participant_hired");
 	});
 

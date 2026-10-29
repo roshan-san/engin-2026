@@ -1,10 +1,10 @@
 import { ConvexError, v } from "convex/values";
-import type { Id } from "../_generated/dataModel";
-import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import { loadVerifiedThisCycle, toTeamPerson } from "../model/contributors";
-import { requireFounder, requireTeam } from "../model/teamAccess";
-import { MAX_CONTRIBUTORS } from "../shared/limits";
+import type { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
+import { loadVerifiedThisCycle, toTeamPerson } from "./contributors/model";
+import { requireUserId } from "./lib/auth";
+import { MAX_CONTRIBUTORS } from "./shared/limits";
+import { requireFounder, requireTeam } from "./startups/team";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

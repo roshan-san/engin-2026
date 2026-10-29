@@ -2,8 +2,8 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
-import { requireTeam } from "./model/teamAccess";
 import { loadWorkingOn, parseHeartbeat, presence } from "./presence/model";
+import { requireTeam } from "./startups/team";
 import { toPublicUser } from "./users/model";
 
 export const list = query({

@@ -4,7 +4,7 @@ import { loadGoal, saveGoal } from "./cycles/model";
 import { weekOf } from "./cycles/rules";
 import { requireUserId } from "./lib/auth";
 import { cycleHeader } from "./model/activity";
-import { requireFounder, requireTeam } from "./model/teamAccess";
+import { requireFounder, requireTeam } from "./startups/team";
 
 export const getCurrent = query({
 	args: { startupId: v.id("startups") },

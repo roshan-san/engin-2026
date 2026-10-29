@@ -1,8 +1,8 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { getTeamRole } from "../startups/team";
 import { isParticipant } from "./applications";
-import { getTeamRole } from "./teamAccess";
 
 type Ctx = QueryCtx | MutationCtx;
 

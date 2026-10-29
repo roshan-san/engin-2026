@@ -13,9 +13,9 @@ import {
 	TEXT,
 } from "../shared/limits";
 import { jobMode, jobPay, jobRole } from "../shared/validators";
+import { loadFoundedStartups } from "../startups/model";
+import { requireFounder } from "../startups/team";
 import type { HiringRecord } from "./hiringRecord";
-import { loadFoundedStartups } from "./startups";
-import { requireFounder } from "./teamAccess";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {

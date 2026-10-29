@@ -27,11 +27,11 @@ import {
 	loadHiringRecord,
 	tallyParticipants,
 } from "../model/hiringRecord";
-import { loadLogoUrl, toPublicStartup } from "../model/startups";
-import { getTeamRole, requireFounder, requireTeam } from "../model/teamAccess";
 import { phaseOf } from "../shared/hackathonPhase";
 import { MAX_EXPLORE_ROWS, MAX_LISTED_HACKATHONS } from "../shared/limits";
 import { hackathonWeeks, jobRole } from "../shared/validators";
+import { loadLogoUrl, toPublicStartup } from "../startups/model";
+import { getTeamRole, requireFounder, requireTeam } from "../startups/team";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

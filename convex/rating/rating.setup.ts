@@ -1,8 +1,8 @@
 import { vi } from "vitest";
 import { api, internal } from "../_generated/api";
+import type { Setup } from "../startups/startups.setup";
 import { cardOn, SHIPPED } from "../testing/cards.setup";
 import { nextMonday } from "../testing/hackathons.setup";
-import type { Setup } from "../testing/startups.setup";
 import { advancePast, HOUR, type TestConvex } from "../testing/test.setup";
 import type { Person } from "../users/users.setup";
 

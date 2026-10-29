@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { verifyCards } from "../rating/rating.setup";
-import { decidedHackathon } from "../testing/applications.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
-} from "../testing/startups.setup";
+} from "../startups/startups.setup";
+import { decidedHackathon } from "../testing/applications.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
@@ -19,13 +19,13 @@ async function busyStartup(): Promise<Setup> {
 	});
 	const sam = await addContributor(setup, "Sam");
 	await verifyCards(setup, sam, 1);
-	await setup.founder.as.mutation(api.startups.invites.create, {
+	await setup.founder.as.mutation(api.invites.create, {
 		startupId: setup.startupId,
 		email: "jo@example.com",
 	});
 	const jo = await signUp(setup.t, "Jo");
-	const [invite] = await jo.as.query(api.startups.invites.listMine, {});
-	await jo.as.mutation(api.startups.invites.accept, {
+	const [invite] = await jo.as.query(api.invites.listMine, {});
+	await jo.as.mutation(api.invites.accept, {
 		inviteId: invite.inviteId,
 	});
 	await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
@@ -127,6 +127,6 @@ describe("visibility", () => {
 
 		expect(await t.query(api.work.activity.getSignals, args)).toBeNull();
 		expect(await t.query(api.work.activity.listPublic, args)).toBeNull();
-		expect(await t.query(api.startups.startups.getPublic, args)).toBeNull();
+		expect(await t.query(api.startups.getPublic, args)).toBeNull();
 	});
 });

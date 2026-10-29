@@ -1,7 +1,7 @@
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import type { TestConvex } from "../testing/test.setup";
 import { type Person, signUp } from "../users/users.setup";
-import type { TestConvex } from "./test.setup";
 
 export type Setup = {
 	t: TestConvex;
@@ -13,15 +13,12 @@ export type Setup = {
 /** Acme, a building-stage SaaS in Bengaluru, owned by its Founder Fay. */
 export async function setUpStartup(t: TestConvex): Promise<Setup> {
 	const founder = await signUp(t, "Fay");
-	const { startupId, slug } = await founder.as.mutation(
-		api.startups.startups.create,
-		{
-			name: "Acme",
-			stage: "building",
-			category: "saas",
-			city: "bengaluru",
-		},
-	);
+	const { startupId, slug } = await founder.as.mutation(api.startups.create, {
+		name: "Acme",
+		stage: "building",
+		category: "saas",
+		city: "bengaluru",
+	});
 	return { t, founder, startupId, slug };
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { addContributor, setUpStartup } from "../startups/startups.setup";
 import {
 	applicant,
 	closeHackathon,
@@ -14,7 +15,6 @@ import {
 	draftHackathon,
 	publishedHackathon,
 } from "../testing/hackathons.setup";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
 import { type Person, signUp } from "../users/users.setup";
 
@@ -51,7 +51,7 @@ describe("groups", () => {
 	it("your Startups list as Founder and Contributor", async () => {
 		const setup = await setUpStartup(createTest());
 		const zedFounder = await signUp(setup.t, "Zed");
-		const zeta = await zedFounder.as.mutation(api.startups.startups.create, {
+		const zeta = await zedFounder.as.mutation(api.startups.create, {
 			name: "Zeta",
 			stage: "building",
 			category: "saas",

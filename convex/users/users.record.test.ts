@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { verifyCards } from "../rating/rating.setup";
 import {
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../startups/startups.setup";
+import {
 	decidedHackathon,
 	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import {
-	addContributor,
-	type Setup,
-	setUpStartup,
-} from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "./users.setup";
 
@@ -28,10 +28,12 @@ describe("profile record", () => {
 		const acme = await setUpStartup(createTest());
 		const sam = await addContributor(acme, "Sam");
 		const zed = await signUp(acme.t, "Zed");
-		const { startupId, slug } = await zed.as.mutation(
-			api.startups.startups.create,
-			{ name: "Zeta", stage: "idea", category: "ai", city: "remote" },
-		);
+		const { startupId, slug } = await zed.as.mutation(api.startups.create, {
+			name: "Zeta",
+			stage: "idea",
+			category: "ai",
+			city: "remote",
+		});
 		const zeta = { t: acme.t, founder: zed, startupId, slug };
 		await acme.t.run(
 			async (ctx) =>

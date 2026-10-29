@@ -13,8 +13,8 @@ import { attempt } from "~/shared/lib/errors";
  * through says so. Failures are toasted.
  */
 export function useAnswerInvite() {
-	const acceptInvite = useMutation(api.startups.invites.accept);
-	const declineInvite = useMutation(api.startups.invites.decline);
+	const acceptInvite = useMutation(api.invites.accept);
+	const declineInvite = useMutation(api.invites.decline);
 	const navigate = useNavigate();
 	const [answering, setAnswering] = useState<Id<"invites"> | null>(null);
 

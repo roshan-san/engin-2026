@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { addContributor, setUpStartup } from "../startups/startups.setup";
 import {
 	endHackathon,
 	participants,
 	startHackathon,
 } from "../testing/applications.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest, type TestConvex } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { runRating, toNextWeek, verifyCards } from "./rating.setup";
@@ -126,7 +126,7 @@ describe("rating", () => {
 		for (let i = 0; i < 25; i++) {
 			const founder = await signUp(t, `Founder${i}`);
 			const { startupId, slug } = await founder.as.mutation(
-				api.startups.startups.create,
+				api.startups.create,
 				{
 					name: `Startup ${i}`,
 					stage: "building",

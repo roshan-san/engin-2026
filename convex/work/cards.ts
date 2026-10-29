@@ -18,9 +18,9 @@ import {
 	loadHackathonCards,
 	requireHackathonFounder,
 } from "../model/hackathons";
-import { requireTeam } from "../model/teamAccess";
 import { submitLandsIn } from "../shared/cardRules";
 import { shipped } from "../shared/validators";
+import { requireTeam } from "../startups/team";
 
 export const listBoard = query({
 	args: { startupId: v.id("startups") },

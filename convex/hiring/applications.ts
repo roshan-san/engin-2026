@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { ensureHireInvite } from "../invites/model";
 import { requireUserId } from "../lib/auth";
 import { limitText, requireLimitedText } from "../lib/text";
 import { appendActivity } from "../model/activity";
@@ -16,10 +17,9 @@ import {
 } from "../model/applications";
 import { finishIfDecided } from "../model/hackathonLifecycle";
 import { requireHackathonFounder } from "../model/hackathons";
-import { ensureHireInvite } from "../model/invites";
-import { getTeamRole } from "../model/teamAccess";
 import { TEXT } from "../shared/limits";
 import { decision } from "../shared/validators";
+import { getTeamRole } from "../startups/team";
 import {
 	isProvisional,
 	loadProfileRecord,

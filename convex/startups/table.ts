@@ -2,7 +2,6 @@ import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
 import {
-	inviteStatus,
 	startupCategory,
 	startupCity,
 	startupStage,
@@ -33,31 +32,4 @@ export const startupsTables = {
 		.index("by_slug", ["slug"])
 		.index("by_rating", ["rating"])
 		.index("by_founder", ["founderId"]),
-
-	contributors: defineTable({
-		startupId: v.id("startups"),
-		userId: v.id("users"),
-	})
-		.index("by_startup_and_user", ["startupId", "userId"])
-		.index("by_user", ["userId"]),
-
-	invites: defineTable({
-		startupId: v.id("startups"),
-		email: v.string(),
-		invitedBy: v.id("users"),
-		status: inviteStatus,
-		expiresAt: v.number(),
-		/** Set when the Invite brings a hired Participant onto the Startup. */
-		hackathonId: v.optional(v.id("hackathons")),
-	})
-		.index("by_startup_and_status_and_expiresAt", [
-			"startupId",
-			"status",
-			"expiresAt",
-		])
-		.index("by_email_and_status_and_expiresAt", [
-			"email",
-			"status",
-			"expiresAt",
-		]),
 };

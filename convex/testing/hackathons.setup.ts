@@ -3,7 +3,7 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { givePro } from "../billing/billing.setup";
 import { WEEK_MS, weekOf, weekStart } from "../cycles/rules";
-import type { Setup } from "./startups.setup";
+import type { Setup } from "../startups/startups.setup";
 
 /** The Monday 00:00 IST that starts next week. */
 export function nextMonday(): number {

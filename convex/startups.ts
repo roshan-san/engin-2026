@@ -1,11 +1,23 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
-import type { Doc } from "../_generated/dataModel";
-import { mutation, query } from "../_generated/server";
-import { shiftWeek, weekOf } from "../cycles/rules";
-import { requireUserId } from "../lib/auth";
-import { assertUrl, limitText, requireLimitedText } from "../lib/text";
-import { loadHiringRecord } from "../model/hiringRecord";
+import type { Doc } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
+import { shiftWeek, weekOf } from "./cycles/rules";
+import { requireUserId } from "./lib/auth";
+import { assertUrl, limitText, requireLimitedText } from "./lib/text";
+import { loadHiringRecord } from "./model/hiringRecord";
+import {
+	EXPLORE_SCAN,
+	MAX_EXPLORE_ROWS,
+	MAX_USER_STARTUPS,
+	STARTING_RATING,
+	TEXT,
+} from "./shared/limits";
+import {
+	startupCategory,
+	startupCity,
+	startupStage,
+} from "./shared/validators";
 import {
 	buildUniqueSlug,
 	getStartupBySlug,
@@ -14,20 +26,8 @@ import {
 	matchesExploreStartup,
 	toExploreStartup,
 	toPublicStartup,
-} from "../model/startups";
-import { getTeamRole, requireFounder } from "../model/teamAccess";
-import {
-	EXPLORE_SCAN,
-	MAX_EXPLORE_ROWS,
-	MAX_USER_STARTUPS,
-	STARTING_RATING,
-	TEXT,
-} from "../shared/limits";
-import {
-	startupCategory,
-	startupCity,
-	startupStage,
-} from "../shared/validators";
+} from "./startups/model";
+import { getTeamRole, requireFounder } from "./startups/team";
 
 export const getBySlug = query({
 	args: { slug: v.string() },

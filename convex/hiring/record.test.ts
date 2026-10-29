@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { setUpStartup } from "../startups/startups.setup";
 import {
 	closeHackathon,
 	decidedHackathon,
 } from "../testing/applications.setup";
-import { setUpStartup } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
 
 describe("hiring record", () => {
@@ -21,7 +21,7 @@ describe("hiring record", () => {
 			});
 		}
 
-		const page = await setup.t.query(api.startups.startups.getPublic, {
+		const page = await setup.t.query(api.startups.getPublic, {
 			slug: setup.slug,
 		});
 
@@ -42,7 +42,7 @@ describe("hiring record", () => {
 		]);
 		await closeHackathon(setup, hackathonId);
 
-		const page = await setup.t.query(api.startups.startups.getPublic, {
+		const page = await setup.t.query(api.startups.getPublic, {
 			slug: setup.slug,
 		});
 

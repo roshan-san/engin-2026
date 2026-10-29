@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { toNextWeek, verifyCards } from "../rating/rating.setup";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
+import { addContributor, setUpStartup } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
 
 describe("the team", () => {
@@ -9,7 +9,7 @@ describe("the team", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 
-		const team = await sam.as.query(api.startups.contributors.list, {
+		const team = await sam.as.query(api.contributors.list, {
 			startupId: setup.startupId,
 		});
 
@@ -24,7 +24,7 @@ describe("the team", () => {
 		const sam = await addContributor(setup, "Sam");
 		await verifyCards(setup, sam, 2);
 
-		const team = await setup.founder.as.query(api.startups.contributors.list, {
+		const team = await setup.founder.as.query(api.contributors.list, {
 			startupId: setup.startupId,
 		});
 
@@ -36,7 +36,7 @@ describe("the team", () => {
 		const setup = await setUpStartup(createTest());
 		await verifyCards(setup, setup.founder, 1);
 
-		const team = await setup.founder.as.query(api.startups.contributors.list, {
+		const team = await setup.founder.as.query(api.contributors.list, {
 			startupId: setup.startupId,
 		});
 
@@ -50,7 +50,7 @@ describe("the team", () => {
 
 		await toNextWeek(setup.t);
 
-		const team = await setup.founder.as.query(api.startups.contributors.list, {
+		const team = await setup.founder.as.query(api.contributors.list, {
 			startupId: setup.startupId,
 		});
 		expect(team.contributors).toMatchObject([{ verifiedThisCycle: 0 }]);
@@ -61,7 +61,7 @@ describe("the team", () => {
 		const sam = await addContributor(setup, "Sam");
 
 		await expect(
-			sam.as.query(api.startups.contributors.list, {
+			sam.as.query(api.contributors.list, {
 				startupId: setup.startupId,
 			}),
 		).resolves.toMatchObject({ founder: { _id: setup.founder.userId } });

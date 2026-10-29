@@ -5,6 +5,11 @@ import { givePro } from "../billing/billing.setup";
 import { finishIfDecided } from "../model/hackathonLifecycle";
 import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import {
+	addContributor,
+	type Setup,
+	setUpStartup,
+} from "../startups/startups.setup";
+import {
 	closeHackathon,
 	decidedHackathon,
 	endHackathon,
@@ -17,11 +22,6 @@ import {
 	nextMonday,
 	publishedHackathon,
 } from "../testing/hackathons.setup";
-import {
-	addContributor,
-	type Setup,
-	setUpStartup,
-} from "../testing/startups.setup";
 import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
@@ -367,7 +367,7 @@ describe("publishing needs Pro", () => {
 	/** A second Startup founded by the same Founder. */
 	async function secondStartup(setup: Setup): Promise<Setup> {
 		const { startupId, slug } = await setup.founder.as.mutation(
-			api.startups.startups.create,
+			api.startups.create,
 			{ name: "Beta", stage: "building", category: "saas", city: "pune" },
 		);
 		return { ...setup, startupId, slug };
@@ -762,10 +762,12 @@ describe("explore", () => {
 	/** A second Startup with its own Founder, sharing the same deployment. */
 	async function otherStartup(setup: Setup, name: string): Promise<Setup> {
 		const founder = await signUp(setup.t, `${name} Founder`);
-		const { startupId, slug } = await founder.as.mutation(
-			api.startups.startups.create,
-			{ name, stage: "building", category: "saas", city: "pune" },
-		);
+		const { startupId, slug } = await founder.as.mutation(api.startups.create, {
+			name,
+			stage: "building",
+			category: "saas",
+			city: "pune",
+		});
 		return { t: setup.t, founder, startupId, slug };
 	}
 
