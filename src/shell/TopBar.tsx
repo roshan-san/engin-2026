@@ -4,9 +4,9 @@ import { MyRating } from "~/entities/person";
 import { placeFromRoute } from "~/entities/place";
 import { EnginLogo } from "~/shared/ui/EnginLogo";
 import { InviteTray } from "~/shell/InviteTray";
-import { PlaceSwitcher } from "~/shell/PlaceSwitcher";
 import { TabRow } from "~/shell/TabRow";
 import { AccountMenu } from "~/widgets/account";
+import { PlaceSwitcher } from "~/widgets/place-switcher";
 
 /** The signed-in bar: the logo, the place switcher, Explore, your Invites, your Rating and the account menu; the tab row below. */
 export function TopBar() {
