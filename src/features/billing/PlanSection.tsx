@@ -6,10 +6,10 @@ import {
 	usePaymentIssue,
 	usePlan,
 } from "~/entities/plan";
+import { usePortal } from "~/features/open-billing-portal";
 import { PlansDialog } from "~/features/upgrade-plan";
 import { Button } from "~/shared/ui/button";
 import { Spinner } from "~/shared/ui/spinner";
-import { usePortal } from "./usePortal";
 
 /** Your plan in Settings: what's left and Manage billing, or the plans when you have none. */
 export function PlanSection() {
