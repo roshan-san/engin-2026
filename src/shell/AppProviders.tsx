@@ -1,6 +1,6 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import type { ReactNode } from "react";
-import { convex } from "~/lib/convex";
+import { convex } from "~/shared/api/convex";
 
 export function AppProviders({ children }: { readonly children: ReactNode }) {
 	return (

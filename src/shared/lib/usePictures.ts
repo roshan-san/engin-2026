@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useUpload } from "~/lib/useUpload";
+import { useUpload } from "~/shared/api/useUpload";
 import { errorMessage } from "./errors";
 import { pickImages } from "./images";
 
