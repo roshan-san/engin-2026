@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { shiftWeek, weekOf } from "../cycles/rules";
 import {
 	buildParts,
 	countedWeeks,
@@ -9,7 +10,6 @@ import {
 	recentOutcomes,
 	toPartsView,
 } from "../rating/model";
-import { shiftWeek, weekOf } from "../shared/cycles";
 import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
 import { buildUniqueUsername } from "./username";
 

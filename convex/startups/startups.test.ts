@@ -9,7 +9,7 @@ import {
 } from "../testing/hackathons.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 const acme = {
 	name: "Acme",

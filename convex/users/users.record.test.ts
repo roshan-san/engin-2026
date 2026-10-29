@@ -13,11 +13,11 @@ import {
 	setUpStartup,
 } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "./users.setup";
 
 /** The Record as a signed-in person (the Founder) sees it. */
 async function recordOf(setup: Setup, username: string) {
-	const profile = await setup.founder.as.query(api.people.users.getRecord, {
+	const profile = await setup.founder.as.query(api.users.getRecord, {
 		username,
 	});
 	return profile?.details;
@@ -106,12 +106,12 @@ describe("profile record", () => {
 	it("signed out, a profile shows only the name, Discipline and Rating", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
-		await sam.as.mutation(api.people.users.updateProfile, {
+		await sam.as.mutation(api.users.updateProfile, {
 			discipline: "engineer",
 			bio: "Ships the onboarding flow",
 		});
 
-		const profile = await setup.t.query(api.people.users.getRecord, {
+		const profile = await setup.t.query(api.users.getRecord, {
 			username: "sam",
 		});
 
@@ -129,7 +129,7 @@ describe("profile record", () => {
 	it("an unknown username has no profile", async () => {
 		const setup = await setUpStartup(createTest());
 
-		const nobody = await setup.t.query(api.people.users.getRecord, {
+		const nobody = await setup.t.query(api.users.getRecord, {
 			username: "nobody",
 		});
 

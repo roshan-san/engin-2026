@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import {
@@ -8,7 +9,6 @@ import {
 	type CardActor,
 	cardRefusal,
 } from "../shared/cardRules";
-import { weekOf, weekStart } from "../shared/cycles";
 import { phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_BOARD_CARDS,
@@ -18,10 +18,10 @@ import {
 	MAX_SHIPPED_LINKS,
 	TEXT,
 } from "../shared/limits";
+import { loadPublicUser } from "../users/model";
 import { appendActivity } from "./activity";
 import { getHackathonRole } from "./applications";
 import { getTeamRole, requireTeam } from "./teamAccess";
-import { loadPublicUser } from "./users";
 
 type Ctx = QueryCtx | MutationCtx;
 

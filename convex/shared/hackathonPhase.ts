@@ -1,5 +1,5 @@
 import type { Infer } from "convex/values";
-import { WEEK_MS } from "./cycles";
+import { WEEK_MS } from "../cycles/rules";
 import { DECIDE_GRACE_MS } from "./limits";
 import type { hackathonStatus } from "./validators";
 

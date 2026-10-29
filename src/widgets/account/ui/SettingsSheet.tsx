@@ -1,5 +1,5 @@
 import { TEXT } from "@convex/shared/limits";
-import { usernameProblem } from "@convex/shared/username";
+import { usernameProblem } from "@convex/users/rules";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { DISCIPLINE_OPTIONS, useMe } from "~/entities/person";

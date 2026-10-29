@@ -8,12 +8,12 @@ import {
 	setUpStartup,
 } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 /** Acme with a goal, one verified Card, a joined Contributor and a hired Participant. */
 async function busyStartup(): Promise<Setup> {
 	const setup = await setUpStartup(createTest());
-	await setup.founder.as.mutation(api.work.cycles.setGoal, {
+	await setup.founder.as.mutation(api.cycles.setGoal, {
 		startupId: setup.startupId,
 		goal: "Get 10 paying users",
 	});

@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
+import { WEEK_MS, weekOf } from "./cycles/rules";
 import { rateStartup, rateUser } from "./rating/model";
-import { WEEK_MS, weekOf } from "./shared/cycles";
 import { RATING_PAGE } from "./shared/limits";
 
 const pageArgs = {

@@ -28,9 +28,7 @@ import { SettingsSheet } from "~/widgets/account";
 
 const route = getRouteApi("/_shell/u/$username");
 
-type Profile = NonNullable<
-	FunctionReturnType<typeof api.people.users.getRecord>
->;
+type Profile = NonNullable<FunctionReturnType<typeof api.users.getRecord>>;
 type Details = NonNullable<Profile["details"]>;
 
 /** A person's Profile. Signed in, the whole Record in the app shape; signed out, a public card and Sign in. */

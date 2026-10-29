@@ -3,8 +3,8 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { loadPlan, planViewFor } from "../billing/model";
 import { PLANS, type PlanView } from "../billing/rules";
+import { weekOf, weekStart } from "../cycles/rules";
 import { limitText, requireLimitedText } from "../lib/text";
-import { weekOf, weekStart } from "../shared/cycles";
 import { hackathonDates, RUNNING } from "../shared/hackathonPhase";
 import {
 	MAX_HACKATHON_CARDS,

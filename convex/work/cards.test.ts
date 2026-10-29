@@ -10,7 +10,7 @@ import {
 	setUpStartup,
 } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 async function boardOf(setup: Setup, who = setup.founder) {
 	return await who.as.query(api.work.cards.listBoard, {

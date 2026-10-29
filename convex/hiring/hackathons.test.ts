@@ -23,7 +23,7 @@ import {
 	setUpStartup,
 } from "../testing/startups.setup";
 import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {

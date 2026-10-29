@@ -1,19 +1,19 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
-import type { Doc } from "../_generated/dataModel";
-import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import { limitText } from "../lib/text";
-import { requireUsername } from "../model/username";
+import type { Doc } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
+import { requireUserId } from "./lib/auth";
+import { limitText } from "./lib/text";
+import { TEXT } from "./shared/limits";
+import { discipline } from "./shared/validators";
 import {
 	loadProfileRecord,
 	toOwnProfile,
 	toProfileAbout,
 	toPublicProfile,
-} from "../model/users";
-import { TEXT } from "../shared/limits";
-import { normalizeUsername } from "../shared/username";
-import { discipline } from "../shared/validators";
+} from "./users/model";
+import { normalizeUsername } from "./users/rules";
+import { requireUsername } from "./users/username";
 
 export const getMe = query({
 	args: {},

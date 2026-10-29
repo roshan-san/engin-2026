@@ -1,4 +1,4 @@
-import { weekStart } from "@convex/shared/cycles";
+import { weekStart } from "@convex/cycles/rules";
 import { WEEK_COUNT_CAP } from "@convex/shared/limits";
 import { describe, expect, it } from "vitest";
 import { ratingChangeLabel, stripLevel, stripTooltip } from "./rating";

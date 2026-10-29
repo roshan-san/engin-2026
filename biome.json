@@ -94,11 +94,15 @@
 											"!@convex/_generated/**",
 											"!@convex/shared/**",
 											"!@convex/billing/rules",
+											"!@convex/cycles/rules",
+											"!@convex/users/rules",
 											"!@convex/rating/rules",
 											"../**/convex/**",
 											"!../**/convex/_generated/**",
 											"!../**/convex/shared/**",
 											"!../**/convex/billing/rules",
+											"!../**/convex/cycles/rules",
+											"!../**/convex/users/rules",
 											"!../**/convex/rating/rules"
 										],
 										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
@@ -124,9 +128,10 @@
 											"convex/server",
 											"../**",
 											"!../_generated/api",
-											"!../_generated/dataModel"
+											"!../_generated/dataModel",
+											"!../cycles/rules"
 										],
-										"message": "convex/shared/ is browser-safe: from the rest of convex/ it may import only _generated/api and _generated/dataModel."
+										"message": "convex/shared/ is browser-safe: from the rest of convex/ it may import only _generated/api, _generated/dataModel and cycles/rules."
 									}
 								]
 							}

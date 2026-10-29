@@ -4,7 +4,7 @@ import { INVITE_TTL_MS, MAX_INVITES } from "../shared/limits";
 import { decidedHackathon } from "../testing/applications.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { advancePast, createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 describe("invites", () => {
 	it("an invited person joins as a Contributor", async () => {

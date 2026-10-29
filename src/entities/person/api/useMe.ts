@@ -3,5 +3,5 @@ import { useQuery } from "convex/react";
 
 /** Your own account; `undefined` while loading. */
 export function useMe() {
-	return useQuery(api.people.users.getMe);
+	return useQuery(api.users.getMe);
 }

@@ -14,7 +14,7 @@ import {
 	setUpStartup,
 } from "../testing/startups.setup";
 import { advancePast, createTest, DAY } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 async function verifiedCard(setup: Setup, title: string) {
 	const sam = await addContributor(setup, `Sam ${title}`);
@@ -37,7 +37,7 @@ async function list(setup: Setup, count?: number) {
 describe("activity", () => {
 	it("Activity groups verified work by Cycle", async () => {
 		const setup = await setUpStartup(createTest());
-		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+		await setup.founder.as.mutation(api.cycles.setGoal, {
 			startupId: setup.startupId,
 			goal: "Get 10 paying users",
 		});

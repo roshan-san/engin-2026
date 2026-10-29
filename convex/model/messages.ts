@@ -10,7 +10,7 @@ import {
 	TEXT,
 } from "../shared/limits";
 import { parseMentions } from "../shared/mentions";
-import { loadPublicUser, type PublicUser } from "./users";
+import { loadPublicUser, type PublicUser } from "../users/model";
 
 /** A trimmed message that has text, images, or both. */
 export function parseMessage(

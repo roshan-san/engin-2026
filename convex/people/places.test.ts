@@ -16,7 +16,7 @@ import {
 } from "../testing/hackathons.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
-import { type Person, signUp } from "../testing/users.setup";
+import { type Person, signUp } from "../users/users.setup";
 
 async function placesOf(person: Person) {
 	return await person.as.query(api.people.places.list, {});

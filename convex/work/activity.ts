@@ -5,8 +5,8 @@ import { requireUserId } from "../lib/auth";
 import { loadCycles, loadSignals } from "../model/activity";
 import { getStartupBySlug } from "../model/startups";
 import { requireTeam } from "../model/teamAccess";
-import { isInvestorPro } from "../model/users";
 import { CYCLES_PAGE } from "../shared/limits";
+import { isInvestorPro } from "../users/model";
 
 /** The team's full Activity: the newest `count` Cycles. */
 export const list = query({

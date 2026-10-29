@@ -9,7 +9,7 @@ import {
 import { publishedHackathon } from "../testing/hackathons.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest, type TestConvex } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 import { runRating, toNextWeek, verifyCards } from "./rating.setup";
 
 async function startupRow(t: TestConvex, startupId: Id<"startups">) {
@@ -156,7 +156,7 @@ describe("rating", () => {
 
 		await runRating(setup.t);
 
-		const profile = await setup.t.query(api.people.users.getRecord, {
+		const profile = await setup.t.query(api.users.getRecord, {
 			username: "sam",
 		});
 		expect(profile?.rating).toBeGreaterThan(1000);
@@ -169,7 +169,7 @@ describe("rating", () => {
 
 		await runRating(setup.t);
 
-		const founder = await setup.t.query(api.people.users.getRecord, {
+		const founder = await setup.t.query(api.users.getRecord, {
 			username: "fay",
 		});
 		expect(founder?.rating).toBeLessThanOrEqual(1000);
@@ -212,7 +212,7 @@ describe("rating", () => {
 
 		await runRating(setup.t);
 
-		const profile = await setup.t.query(api.people.users.getRecord, {
+		const profile = await setup.t.query(api.users.getRecord, {
 			username: "ana",
 		});
 		expect(profile).toMatchObject({ rating: 996, isProvisional: false });

@@ -1,4 +1,4 @@
-import { MIN_USERNAME_LENGTH, TEXT } from "./limits";
+import { MIN_USERNAME_LENGTH, TEXT } from "../shared/limits";
 
 export const RESERVED_USERNAMES = new Set([
 	"app",

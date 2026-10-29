@@ -3,7 +3,7 @@ import { api } from "../_generated/api";
 import { cardOn } from "../testing/cards.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { advancePast, createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 const INTERVAL = 10_000;
 

@@ -1,7 +1,7 @@
 import type { Id } from "../_generated/dataModel";
-import { onUserSignedIn } from "../model/users";
 import { STARTING_RATING } from "../shared/limits";
-import type { Client, TestConvex } from "./test.setup";
+import type { Client, TestConvex } from "../testing/test.setup";
+import { onUserSignedIn } from "./model";
 
 export type Person = { userId: Id<"users">; as: Client };
 

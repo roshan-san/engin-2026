@@ -1,17 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { buildUniqueUsername } from "../model/username";
-import { onUserSignedIn } from "../model/users";
 import { createTest, type TestConvex } from "../testing/test.setup";
-import { signUp, signUpNew } from "../testing/users.setup";
+import { onUserSignedIn } from "./model";
+import { buildUniqueUsername } from "./username";
+import { signUp, signUpNew } from "./users.setup";
 
 describe("users", () => {
 	it("a new account starts at 1000, provisional", async () => {
 		const t = createTest();
 		const fay = await signUpNew(t, "Fay");
 
-		const me = await fay.as.query(api.people.users.getMe, {});
+		const me = await fay.as.query(api.users.getMe, {});
 
 		expect(me).toMatchObject({
 			rating: 1000,
@@ -25,7 +25,7 @@ describe("users", () => {
 		const t = createTest();
 		await signUp(t, "Fay");
 
-		const profile = await t.query(api.people.users.getRecord, {
+		const profile = await t.query(api.users.getRecord, {
 			username: "fay",
 		});
 
@@ -39,7 +39,7 @@ describe("users", () => {
 		await signUp(t, "Fay");
 
 		await expect(
-			sam.as.mutation(api.people.users.updateProfile, { username: "fay" }),
+			sam.as.mutation(api.users.updateProfile, { username: "fay" }),
 		).rejects.toThrow("That username is taken");
 	});
 
@@ -51,11 +51,11 @@ describe("users", () => {
 				await ctx.db.patch(fay.userId, { investorVerifiedAt: Date.now() }),
 		);
 
-		const me = await fay.as.query(api.people.users.getMe, {});
+		const me = await fay.as.query(api.users.getMe, {});
 
 		expect(me?.isInvestorPro).toBe(true);
 		await expect(
-			fay.as.mutation(api.people.users.updateProfile, {
+			fay.as.mutation(api.users.updateProfile, {
 				// @ts-expect-error updateProfile takes no investorVerifiedAt
 				investorVerifiedAt: Date.now(),
 			}),
@@ -66,12 +66,12 @@ describe("users", () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");
 
-		await fay.as.mutation(api.people.users.updateProfile, {
+		await fay.as.mutation(api.users.updateProfile, {
 			bio: "  Builds things  ",
 			discipline: "designer",
 		});
 
-		const profile = await fay.as.query(api.people.users.getMe);
+		const profile = await fay.as.query(api.users.getMe);
 		expect(profile).toMatchObject({
 			bio: "Builds things",
 			discipline: "designer",
@@ -81,30 +81,30 @@ describe("users", () => {
 	it("a person clears their discipline", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");
-		await fay.as.mutation(api.people.users.updateProfile, {
+		await fay.as.mutation(api.users.updateProfile, {
 			discipline: "designer",
 		});
 
-		await fay.as.mutation(api.people.users.updateProfile, {
+		await fay.as.mutation(api.users.updateProfile, {
 			discipline: null,
 		});
 
-		const me = await fay.as.query(api.people.users.getMe, {});
+		const me = await fay.as.query(api.users.getMe, {});
 		expect(me?.discipline).toBeNull();
 	});
 
 	it("a blank bio clears what was saved", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");
-		await fay.as.mutation(api.people.users.updateProfile, {
+		await fay.as.mutation(api.users.updateProfile, {
 			bio: "Builds things",
 		});
 
-		await fay.as.mutation(api.people.users.updateProfile, {
+		await fay.as.mutation(api.users.updateProfile, {
 			bio: "",
 		});
 
-		const me = await fay.as.query(api.people.users.getMe, {});
+		const me = await fay.as.query(api.users.getMe, {});
 		expect(me).toMatchObject({ bio: null });
 	});
 
@@ -113,7 +113,7 @@ describe("users", () => {
 		const fay = await signUp(t, "Fay");
 
 		await expect(
-			fay.as.mutation(api.people.users.updateProfile, { username: "admin" }),
+			fay.as.mutation(api.users.updateProfile, { username: "admin" }),
 		).rejects.toThrow("This username is not available");
 	});
 
@@ -122,14 +122,14 @@ describe("users", () => {
 		const fay = await signUp(t, "Fay");
 
 		await expect(
-			fay.as.mutation(api.people.users.updateProfile, { username: "1fay" }),
+			fay.as.mutation(api.users.updateProfile, { username: "1fay" }),
 		).rejects.toThrow("Start with a letter.");
 	});
 
 	it("someone signed out sees no account", async () => {
 		const t = createTest();
 
-		expect(await t.query(api.people.users.getMe, {})).toBeNull();
+		expect(await t.query(api.users.getMe, {})).toBeNull();
 	});
 
 	describe("username on sign-in", () => {
@@ -153,7 +153,7 @@ describe("users", () => {
 
 			const priya = await signIn(t, "Priya Sharma");
 
-			const me = await priya.query(api.people.users.getMe, {});
+			const me = await priya.query(api.users.getMe, {});
 			expect(me?.username).toBe("priya_sharma");
 		});
 
@@ -163,7 +163,7 @@ describe("users", () => {
 
 			const second = await signIn(t, "Priya Sharma");
 
-			const me = await second.query(api.people.users.getMe, {});
+			const me = await second.query(api.users.getMe, {});
 			expect(me?.username).toBe("priya_sharma_2");
 		});
 
@@ -173,10 +173,10 @@ describe("users", () => {
 			const first = await signIn(t, "李雷");
 			const second = await signIn(t, "007");
 
-			expect((await first.query(api.people.users.getMe, {}))?.username).toBe(
+			expect((await first.query(api.users.getMe, {}))?.username).toBe(
 				"participant",
 			);
-			expect((await second.query(api.people.users.getMe, {}))?.username).toBe(
+			expect((await second.query(api.users.getMe, {}))?.username).toBe(
 				"participant_2",
 			);
 		});
@@ -197,7 +197,7 @@ describe("users", () => {
 
 			const sam = await signIn(t, "Sam");
 
-			const me = await sam.query(api.people.users.getMe, {});
+			const me = await sam.query(api.users.getMe, {});
 			expect(me?.username).toMatch(/^sam_\d{4}$/);
 		});
 
@@ -215,7 +215,7 @@ describe("users", () => {
 
 			const me = await t
 				.withIdentity({ subject: `${userId}|session` })
-				.query(api.people.users.getMe, {});
+				.query(api.users.getMe, {});
 			expect(me?.username).toBe("participant");
 		});
 
@@ -243,7 +243,7 @@ describe("users", () => {
 					}),
 			);
 
-			const me = await fay.as.query(api.people.users.getMe, {});
+			const me = await fay.as.query(api.users.getMe, {});
 			expect(me?.username).toBe("fay");
 		});
 	});

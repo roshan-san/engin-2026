@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { cycleNumber, shiftWeek, weekOf, weekStart } from "../shared/cycles";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest, DAY } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
+import { cycleNumber, shiftWeek, weekOf, weekStart } from "./rules";
 
 describe("cycles", () => {
 	it("weeks run Monday to Sunday in IST", () => {
@@ -39,18 +39,18 @@ describe("this week's goal", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 
-		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+		await setup.founder.as.mutation(api.cycles.setGoal, {
 			startupId: setup.startupId,
 			goal: "Get 10 paying users",
 		});
 
 		expect(
-			await sam.as.query(api.work.cycles.getCurrent, {
+			await sam.as.query(api.cycles.getCurrent, {
 				startupId: setup.startupId,
 			}),
 		).toMatchObject({ number: 1, goal: "Get 10 paying users" });
 		await expect(
-			sam.as.mutation(api.work.cycles.setGoal, {
+			sam.as.mutation(api.cycles.setGoal, {
 				startupId: setup.startupId,
 				goal: "Take over",
 			}),
@@ -60,7 +60,7 @@ describe("this week's goal", () => {
 	it("the Cycle runs Monday to Sunday and has no goal until one is set", async () => {
 		const setup = await setUpStartup(createTest());
 
-		const cycle = await setup.founder.as.query(api.work.cycles.getCurrent, {
+		const cycle = await setup.founder.as.query(api.cycles.getCurrent, {
 			startupId: setup.startupId,
 		});
 
@@ -74,26 +74,20 @@ describe("this week's goal", () => {
 		const setup = await setUpStartup(createTest());
 		const args = { startupId: setup.startupId };
 
-		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+		await setup.founder.as.mutation(api.cycles.setGoal, {
 			...args,
 			goal: "Ship pricing",
 		});
-		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+		await setup.founder.as.mutation(api.cycles.setGoal, {
 			...args,
 			goal: "  Ship onboarding  ",
 		});
-		const replaced = await setup.founder.as.query(
-			api.work.cycles.getCurrent,
-			args,
-		);
-		await setup.founder.as.mutation(api.work.cycles.setGoal, {
+		const replaced = await setup.founder.as.query(api.cycles.getCurrent, args);
+		await setup.founder.as.mutation(api.cycles.setGoal, {
 			...args,
 			goal: "   ",
 		});
-		const cleared = await setup.founder.as.query(
-			api.work.cycles.getCurrent,
-			args,
-		);
+		const cleared = await setup.founder.as.query(api.cycles.getCurrent, args);
 
 		expect(replaced.goal).toBe("Ship onboarding");
 		expect(cleared.goal).toBeNull();
@@ -103,7 +97,7 @@ describe("this week's goal", () => {
 		const setup = await setUpStartup(createTest());
 
 		await expect(
-			setup.founder.as.mutation(api.work.cycles.setGoal, {
+			setup.founder.as.mutation(api.cycles.setGoal, {
 				startupId: setup.startupId,
 				goal: "x".repeat(141),
 			}),
@@ -115,7 +109,7 @@ describe("this week's goal", () => {
 		const outsider = await signUp(setup.t, "Olly");
 
 		await expect(
-			outsider.as.query(api.work.cycles.getCurrent, {
+			outsider.as.query(api.cycles.getCurrent, {
 				startupId: setup.startupId,
 			}),
 		).rejects.toThrow("You're not on this startup");

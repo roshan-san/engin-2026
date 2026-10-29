@@ -1,7 +1,7 @@
 // The pure section needs no Convex server imports.
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { shiftWeek, weekOf } from "../shared/cycles";
+import { shiftWeek, weekOf } from "../cycles/rules";
 import { phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_USER_APPLICATIONS,

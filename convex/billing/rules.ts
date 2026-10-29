@@ -1,4 +1,4 @@
-import { IST_OFFSET_MS } from "../shared/cycles";
+import { IST_OFFSET_MS } from "../cycles/rules";
 import { MAX_OPEN_HACKATHONS } from "../shared/limits";
 
 /**

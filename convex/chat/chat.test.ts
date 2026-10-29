@@ -21,7 +21,7 @@ import {
 	setUpStartup,
 } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 async function teamThreadId(setup: Setup) {
 	const threads = await setup.founder.as.query(api.chat.threads.list, {

@@ -4,7 +4,7 @@ import {
 	normalizeUsername,
 	RESERVED_USERNAMES,
 	usernameProblem,
-} from "../shared/username";
+} from "./rules";
 
 export function requireUsername(value: string): string {
 	const problem = usernameProblem(value);

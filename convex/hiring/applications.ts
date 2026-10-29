@@ -18,14 +18,14 @@ import { finishIfDecided } from "../model/hackathonLifecycle";
 import { requireHackathonFounder } from "../model/hackathons";
 import { ensureHireInvite } from "../model/invites";
 import { getTeamRole } from "../model/teamAccess";
+import { TEXT } from "../shared/limits";
+import { decision } from "../shared/validators";
 import {
 	isProvisional,
 	loadProfileRecord,
 	toPublicProfile,
 	toPublicUser,
-} from "../model/users";
-import { TEXT } from "../shared/limits";
-import { decision } from "../shared/validators";
+} from "../users/model";
 
 /** Everyone who applied, for the Founder. Never includes email. */
 export const listForHackathon = query({

@@ -4,7 +4,7 @@ import { cardOn, SHIPPED } from "../testing/cards.setup";
 import { nextMonday } from "../testing/hackathons.setup";
 import type { Setup } from "../testing/startups.setup";
 import { advancePast, HOUR, type TestConvex } from "../testing/test.setup";
-import type { Person } from "../testing/users.setup";
+import type { Person } from "../users/users.setup";
 
 /** n Cards owned by `person`, submitted and verified by the Founder (Self-verified when `person` is the Founder). */
 export async function verifyCards(

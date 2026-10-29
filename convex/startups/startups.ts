@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
+import { shiftWeek, weekOf } from "../cycles/rules";
 import { requireUserId } from "../lib/auth";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import { loadHiringRecord } from "../model/hiringRecord";
@@ -15,7 +16,6 @@ import {
 	toPublicStartup,
 } from "../model/startups";
 import { getTeamRole, requireFounder } from "../model/teamAccess";
-import { shiftWeek, weekOf } from "../shared/cycles";
 import {
 	EXPLORE_SCAN,
 	MAX_EXPLORE_ROWS,

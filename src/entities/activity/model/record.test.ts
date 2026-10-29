@@ -1,4 +1,4 @@
-import { WEEK_MS, weekStart } from "@convex/shared/cycles";
+import { WEEK_MS, weekStart } from "@convex/cycles/rules";
 import { describe, expect, it } from "vitest";
 import { dayLabel, weekdayLabel } from "~/shared/lib/dates";
 import {

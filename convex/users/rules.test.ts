@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { usernameProblem } from "./username";
+import { usernameProblem } from "./rules";
 
 describe("usernameProblem", () => {
 	test("a name under three characters is too short", () => {

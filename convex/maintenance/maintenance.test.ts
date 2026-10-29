@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api, internal } from "../_generated/api";
 import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
 
 describe("maintenance", () => {
 	it("the site is open until maintenance is turned on", async () => {

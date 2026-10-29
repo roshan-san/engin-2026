@@ -1,8 +1,8 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { weekOf } from "../shared/cycles";
+import { weekOf } from "../cycles/rules";
 import { WEEK_COUNT_CAP } from "../shared/limits";
-import { isProvisional, type PublicUser, toPublicUser } from "./users";
+import { isProvisional, type PublicUser, toPublicUser } from "../users/model";
 
 export type TeamPerson = PublicUser & {
 	ratingChange: number;

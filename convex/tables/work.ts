@@ -29,13 +29,6 @@ export const workTables = {
 		.index("by_hackathon_and_owner", ["hackathonId", "ownerId"])
 		.index("by_hackathon_and_status", ["hackathonId", "status"]),
 
-	cycleGoals: defineTable({
-		startupId: v.id("startups"),
-		/** ISO week key, `YYYY-Www`. */
-		week: v.string(),
-		goal: v.string(),
-	}).index("by_startup_and_week", ["startupId", "week"]),
-
 	/** Append-only; written only through `appendActivity`. */
 	activity: defineTable({
 		startupId: v.id("startups"),

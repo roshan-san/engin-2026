@@ -3,8 +3,8 @@ import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import { requireTeam } from "./model/teamAccess";
-import { toPublicUser } from "./model/users";
 import { loadWorkingOn, parseHeartbeat, presence } from "./presence/model";
+import { toPublicUser } from "./users/model";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 import { discipline } from "../shared/validators";
 
-export const peopleTables = {
+export const usersTables = {
 	users: defineTable({
 		name: v.optional(v.string()),
 		image: v.optional(v.string()),
