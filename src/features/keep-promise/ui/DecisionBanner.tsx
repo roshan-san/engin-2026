@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "~/shared/ui/button";
 import { Spinner } from "~/shared/ui/spinner";
-import { decisionTitle } from "./decisionCopy";
-import { useKeepPromise } from "./useKeepPromise";
+import { useKeepPromise } from "../api/useKeepPromise";
+import { decisionTitle } from "../model/decisionCopy";
 
 /** The Founder's decision, their note, and the one-tap promise question. */
 export function DecisionBanner({
