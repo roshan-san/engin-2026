@@ -6,6 +6,11 @@ import { useMemo, useState } from "react";
 import type { ApplicantRow } from "~/entities/application";
 import { type BoardScope, BoardScopeContext } from "~/entities/card";
 import { ThreadPanel } from "~/features/chat";
+import {
+	DecideSheet,
+	decideState,
+	useDecide,
+} from "~/features/decide-participant";
 import { Board, CardBoard, OpenCardPanel } from "~/features/work";
 import { tierText } from "~/shared/lib/tierText";
 import { Badge } from "~/shared/ui/badge";
@@ -17,9 +22,6 @@ import { PersonName } from "~/shared/ui/PersonName";
 import { Segmented } from "~/shared/ui/Segmented";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { DecideSheet } from "./DecideSheet";
-import { decideState } from "./decideSteps";
-import { useDecide } from "./useDecide";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

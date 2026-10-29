@@ -21,8 +21,8 @@ import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Section } from "~/shared/ui/Section";
 import { Textarea } from "~/shared/ui/textarea";
-import { decideState } from "./decideSteps";
-import { useDecide } from "./useDecide";
+import { useDecide } from "../api/useDecide";
+import { decideState } from "../model/decideSteps";
 
 type Decision = "hired" | "not_this_time";
 
