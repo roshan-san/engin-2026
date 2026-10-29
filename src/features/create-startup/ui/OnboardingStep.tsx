@@ -4,7 +4,11 @@ import { CITIES, KINDS, STAGES } from "~/entities/startup";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
-import type { OnboardingAction, OnboardingState, Step } from "./onboarding";
+import type {
+	OnboardingAction,
+	OnboardingState,
+	Step,
+} from "../model/onboarding";
 
 export const STEP_LABELS: Record<Step, string> = {
 	name: "Name",
