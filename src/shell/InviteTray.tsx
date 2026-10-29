@@ -1,9 +1,9 @@
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import { inviteTitle, useMyInvites } from "~/entities/invite";
+import { useAnswerInvite } from "~/features/answer-invite";
 import { Button } from "~/shared/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "~/shared/ui/popover";
-import { useAnswerInvite } from "~/shell/useAnswerInvite";
 
 /** Your open Invites in the bar: Join or Decline. Nothing when there are none. */
 export function InviteTray() {
