@@ -7,7 +7,6 @@ import { CARD_TEXT } from "../cards/rules";
 import { weekOf, weekStart } from "../cycles/rules";
 import { limitText, requireLimitedText } from "../lib/text";
 import { loadFoundedStartups } from "../startups/model";
-import { STARTUP_TEXT } from "../startups/rules";
 import { requireFounder } from "../startups/team";
 import type { HiringRecord } from "./record";
 import {
@@ -66,7 +65,11 @@ export function requireValidDraft(input: DraftInput, now: number) {
 
 	return {
 		job: input.job,
-		problem: requireLimitedText(input.problem, "Problem", STARTUP_TEXT.problem),
+		problem: requireLimitedText(
+			input.problem,
+			"Problem",
+			HACKATHON_TEXT.problem,
+		),
 		weeks,
 		startsAt: input.startsAt,
 		...hackathonDates(input.startsAt, weeks),

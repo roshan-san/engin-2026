@@ -42,8 +42,8 @@ export const MAX_PARTICIPANTS = 10;
 export const MIN_HACKATHON_CARDS = 3;
 export const MAX_HACKATHON_CARDS = 5;
 export const MAX_LISTED_HACKATHONS = 50;
-/** How long after a Hackathon ends the Founder has to decide. */
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** How long after a Hackathon ends the Founder has to decide. */
 export const DECIDE_GRACE_MS = 7 * DAY_MS;
 export const hackathonStatus = v.union(
 	v.literal("draft"),
@@ -78,4 +78,4 @@ export const jobMode = v.union(
 export const hackathonWeeks = v.union(v.literal(1), v.literal(2));
 
 /** Longest allowed text per Hackathon field. */
-export const HACKATHON_TEXT = { participantsGet: 140 };
+export const HACKATHON_TEXT = { participantsGet: 140, problem: 2000 };

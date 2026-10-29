@@ -28,4 +28,4 @@ export const startupCity = v.union(
 );
 
 /** Longest allowed text per Startup field. */
-export const STARTUP_TEXT = { name: 60, oneLiner: 140, problem: 2000 };
+export const STARTUP_TEXT = { name: 60, oneLiner: 140 };

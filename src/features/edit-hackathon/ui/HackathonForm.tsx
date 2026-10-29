@@ -1,4 +1,4 @@
-import { STARTUP_TEXT } from "@convex/startups/rules";
+import { HACKATHON_TEXT } from "@convex/hackathons/rules";
 import { type FormEvent, useCallback, useRef, useState } from "react";
 import { monthDayLabel } from "~/shared/lib/dates";
 import { Button } from "~/shared/ui/button";
@@ -123,11 +123,11 @@ export function HackathonForm({
 							aria-label="The problem"
 							placeholder="What's broken, and what good looks like"
 							value={draft.problem}
-							maxLength={STARTUP_TEXT.problem}
+							maxLength={HACKATHON_TEXT.problem}
 							className="min-h-32"
 							onChange={(e) => set("problem", e.target.value)}
 						/>
-						<CharCount value={draft.problem} max={STARTUP_TEXT.problem} />
+						<CharCount value={draft.problem} max={HACKATHON_TEXT.problem} />
 					</div>
 				</Part>
 
