@@ -24,13 +24,13 @@ import {
 	useBoardCards,
 	useBoardScope,
 } from "~/entities/card";
+import { useCreateCard } from "~/features/create-card";
 import { cn } from "~/shared/lib/cn";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { BoardColumn, type DropState } from "./BoardColumn";
 import { boardAnnouncements } from "./boardAnnouncements";
 import { useCardBoard } from "./CardBoard";
 import { useBoardKeys } from "./useBoardKeys";
-import { useCreateCard } from "./useCreateCard";
 import { useMoveCard } from "./useMoveCard";
 import { useVerifyCard } from "./useVerifyCard";
 
