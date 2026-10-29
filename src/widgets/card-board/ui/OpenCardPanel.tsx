@@ -1,4 +1,4 @@
-import { useCardBoard } from "../board/CardBoard";
+import { useCardBoard } from "../model/CardBoard";
 import type { PanelProps } from "./CardHeader";
 import { CardPanel } from "./CardPanel";
 

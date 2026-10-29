@@ -30,10 +30,10 @@ import {
 import { PanelBody } from "~/shared/ui/PanelBody";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
+import { useCardFocus } from "../lib/useCardFocus";
 import { CardFacts } from "./CardFacts";
 import { CardHeader, type PanelProps } from "./CardHeader";
 import { ReviewBar } from "./ReviewBar";
-import { useCardFocus } from "./useCardFocus";
 
 /** The open Card: edit it, move it, and (for the Founder) Verify it. */
 export function CardPanel({

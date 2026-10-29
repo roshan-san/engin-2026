@@ -9,9 +9,7 @@ import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { OpenCardPanel } from "../cards/OpenCardPanel";
-import { Board } from "./Board";
-import { CardBoard } from "./CardBoard";
+import { Board, CardBoard, OpenCardPanel } from "~/widgets/card-board";
 
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 

@@ -29,10 +29,10 @@ import { useMoveCard } from "~/features/move-card";
 import { useVerifyCard } from "~/features/review-card";
 import { cn } from "~/shared/lib/cn";
 import { Skeleton } from "~/shared/ui/skeleton";
+import { useBoardKeys } from "../lib/useBoardKeys";
+import { boardAnnouncements } from "../model/boardAnnouncements";
+import { useCardBoard } from "../model/CardBoard";
 import { BoardColumn, type DropState } from "./BoardColumn";
-import { boardAnnouncements } from "./boardAnnouncements";
-import { useCardBoard } from "./CardBoard";
-import { useBoardKeys } from "./useBoardKeys";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((column) => column.id));
 

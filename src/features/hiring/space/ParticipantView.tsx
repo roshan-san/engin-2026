@@ -11,7 +11,6 @@ import {
 	decideState,
 	useDecide,
 } from "~/features/decide-participant";
-import { Board, CardBoard, OpenCardPanel } from "~/features/work";
 import { tierText } from "~/shared/lib/tierText";
 import { Badge } from "~/shared/ui/badge";
 import { Button } from "~/shared/ui/button";
@@ -22,6 +21,7 @@ import { PersonName } from "~/shared/ui/PersonName";
 import { Segmented } from "~/shared/ui/Segmented";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
+import { Board, CardBoard, OpenCardPanel } from "~/widgets/card-board";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
