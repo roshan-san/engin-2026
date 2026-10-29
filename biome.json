@@ -92,32 +92,18 @@
 										"group": [
 											"@convex/**",
 											"!@convex/_generated/**",
-											"!@convex/shared/**",
-											"!@convex/billing/rules",
-											"!@convex/cycles/rules",
-											"!@convex/users/rules",
-											"!@convex/rating/rules",
-											"!@convex/hackathons/rules",
-											"!@convex/applications/rules",
-											"!@convex/cards/rules",
-											"!@convex/messages/rules",
-											"!@convex/places/rules",
-											"!@convex/startups/rules",
+											"!@convex/*/rules",
+											"!@convex/lib/text",
+											"!@convex/lib/returnPath",
+											"!@convex/lib/explore",
 											"../**/convex/**",
 											"!../**/convex/_generated/**",
-											"!../**/convex/shared/**",
-											"!../**/convex/billing/rules",
-											"!../**/convex/cycles/rules",
-											"!../**/convex/users/rules",
-											"!../**/convex/rating/rules",
-											"!../**/convex/hackathons/rules",
-											"!../**/convex/applications/rules",
-											"!../**/convex/cards/rules",
-											"!../**/convex/messages/rules",
-											"!../**/convex/places/rules",
-											"!../**/convex/startups/rules"
+											"!../**/convex/*/rules",
+											"!../**/convex/lib/text",
+											"!../**/convex/lib/returnPath",
+											"!../**/convex/lib/explore"
 										],
-										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
+										"message": "The frontend imports only @convex/_generated, @convex/<module>/rules and pure @convex/lib files."
 									}
 								]
 							}
@@ -127,7 +113,12 @@
 			}
 		},
 		{
-			"includes": ["**/convex/shared/**/*"],
+			"includes": [
+				"**/convex/*/rules.ts",
+				"**/convex/lib/text.ts",
+				"**/convex/lib/returnPath.ts",
+				"**/convex/lib/explore.ts"
+			],
 			"linter": {
 				"rules": {
 					"style": {
@@ -141,14 +132,26 @@
 											"../**",
 											"!../_generated/api",
 											"!../_generated/dataModel",
-											"!../cycles/rules",
-											"!../hackathons/rules"
+											"!../*/rules",
+											"!../lib/text",
+											"!../lib/returnPath",
+											"!../lib/explore"
 										],
-										"message": "convex/shared/ is browser-safe: from the rest of convex/ it may import only _generated/api, _generated/dataModel, cycles/rules and hackathons/rules."
+										"message": "rules and pure lib files are imported by the frontend: no server code."
 									}
 								]
 							}
 						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/convex/**/*"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noImportCycles": "error"
 					}
 				}
 			}
