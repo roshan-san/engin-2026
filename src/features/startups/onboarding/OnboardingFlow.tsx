@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { XIcon } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { AppPage } from "~/components/AppPage";
-import { Kbd } from "~/components/Kbd";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
 import { cn } from "~/shared/lib/cn";
+import { AppPage } from "~/shared/ui/AppPage";
+import { Button } from "~/shared/ui/button";
+import { Kbd } from "~/shared/ui/Kbd";
+import { Spinner } from "~/shared/ui/spinner";
 import { OnboardingStep, STEP_LABELS } from "./OnboardingStep";
 import {
 	canAdvance,

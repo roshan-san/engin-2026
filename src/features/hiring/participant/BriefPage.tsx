@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
-import { AppPage } from "~/components/AppPage";
-import { Button } from "~/components/ui/button";
 import { roleLabel } from "~/shared/config/jobs";
+import { AppPage } from "~/shared/ui/AppPage";
+import { Button } from "~/shared/ui/button";
 import { ParticipantBrief } from "./ParticipantBrief";
 import { useParticipant } from "./ParticipantGate";
 

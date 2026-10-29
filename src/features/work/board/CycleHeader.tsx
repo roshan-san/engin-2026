@@ -1,10 +1,10 @@
 import { TEXT } from "@convex/shared/limits";
 import { useRef, useState } from "react";
-import { MentorNote } from "~/components/MentorNote";
-import { Input } from "~/components/ui/input";
-import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/startups";
 import { dateRange } from "~/shared/lib/dates";
+import { Input } from "~/shared/ui/input";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { Skeleton } from "~/shared/ui/skeleton";
 import { useCycle } from "./useCycle";
 import { useSetGoal } from "./useSetGoal";
 

@@ -1,12 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { SettingsSheet } from "~/features/people";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { PersonAvatar, SettingsSheet } from "~/features/people";
+} from "~/shared/ui/dropdown-menu";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { useMe } from "~/shell/useMe";
 
 /** Your avatar, with your Profile, Settings and Sign out. */

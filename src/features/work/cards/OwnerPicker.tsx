@@ -1,12 +1,13 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
+import { PersonName } from "~/shared/ui/PersonName";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "~/components/ui/select";
-import { PersonAvatar, PersonName } from "~/features/people";
+} from "~/shared/ui/select";
 import type { CardView } from "../board/types";
 import { useTeam } from "./useTeam";
 

@@ -1,11 +1,7 @@
 import { type FormEvent, useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "~/components/ui/popover";
+import { Button } from "~/shared/ui/button";
+import { Input } from "~/shared/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "~/shared/ui/popover";
 
 /** The page bar's Invite: the Founder invites by email from a small popover. */
 export function InviteButton({

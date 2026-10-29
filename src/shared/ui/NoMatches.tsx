@@ -1,5 +1,5 @@
-import { EmptyState } from "~/components/EmptyState";
-import { Button } from "~/components/ui/button";
+import { Button } from "./button";
+import { EmptyState } from "./EmptyState";
 
 /** Nothing matches the filters, with a way to clear them. */
 export function NoMatches({

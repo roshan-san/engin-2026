@@ -2,9 +2,6 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Page } from "~/components/Page";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
 import {
 	CheckoutNotice,
 	draftPublish,
@@ -17,6 +14,9 @@ import { useWorkspace } from "~/features/startups";
 import { roleLabel } from "~/shared/config/jobs";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";
+import { Button } from "~/shared/ui/button";
+import { Page } from "~/shared/ui/Page";
+import { Spinner } from "~/shared/ui/spinner";
 import {
 	draftCard,
 	fromParticipantsGet,

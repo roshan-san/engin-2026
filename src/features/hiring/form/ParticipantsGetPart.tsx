@@ -1,7 +1,7 @@
 import { TEXT } from "@convex/shared/limits";
-import { CharCount } from "~/components/CharCount";
-import { ChipPicker } from "~/components/ChipPicker";
-import { Input } from "~/components/ui/input";
+import { CharCount } from "~/shared/ui/CharCount";
+import { ChipPicker } from "~/shared/ui/ChipPicker";
+import { Input } from "~/shared/ui/input";
 import { type HackathonDraft, PARTICIPANTS_GET } from "./draft";
 import { Part } from "./FormPart";
 

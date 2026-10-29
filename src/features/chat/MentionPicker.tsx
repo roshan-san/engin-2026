@@ -1,5 +1,5 @@
 import { HashIcon } from "lucide-react";
-import { Command, CommandItem, CommandList } from "~/components/ui/command";
+import { Command, CommandItem, CommandList } from "~/shared/ui/command";
 
 export type MentionOption = { readonly _id: string; readonly title: string };
 

@@ -1,13 +1,18 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useRef, useState } from "react";
-import { ChipPicker } from "~/components/ChipPicker";
-import { DiscardChangesDialog } from "~/components/DiscardChangesDialog";
-import { MentorNote } from "~/components/MentorNote";
-import { PlaceLogo } from "~/components/PlaceLogo";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { useStartup } from "~/features/startups/workspace/useStartup";
+import {
+	useDiscardGuard,
+	useReportChanged,
+} from "~/shared/lib/useDiscardGuard";
+import { Button } from "~/shared/ui/button";
+import { ChipPicker } from "~/shared/ui/ChipPicker";
+import { DiscardChangesDialog } from "~/shared/ui/DiscardChangesDialog";
+import { Input } from "~/shared/ui/input";
+import { Label } from "~/shared/ui/label";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import {
 	Sheet,
 	SheetContent,
@@ -15,13 +20,8 @@ import {
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "~/components/ui/sheet";
-import { Spinner } from "~/components/ui/spinner";
-import { useStartup } from "~/features/startups/workspace/useStartup";
-import {
-	useDiscardGuard,
-	useReportChanged,
-} from "~/shared/lib/useDiscardGuard";
+} from "~/shared/ui/sheet";
+import { Spinner } from "~/shared/ui/spinner";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import {
 	type SettingsDraft,

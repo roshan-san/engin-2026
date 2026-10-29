@@ -1,7 +1,7 @@
-import { TILE } from "~/components/tile";
 import { planLines } from "~/features/billing";
 import { GoogleButton, POST_INTENT_PATH } from "~/features/people";
 import { cn } from "~/shared/lib/cn";
+import { TILE } from "~/shared/ui/tile";
 
 /** Free next to the three Pro plans, read from PLANS. Pro is hiring only. */
 export function Pricing() {

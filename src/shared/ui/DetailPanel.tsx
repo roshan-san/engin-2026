@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import type { PanelShows } from "~/components/detailPanelState";
+import type { PanelShows } from "./detailPanelState";
 import {
 	Sheet,
 	SheetContent,
 	SheetDescription,
 	SheetHeader,
 	SheetTitle,
-} from "~/components/ui/sheet";
+} from "./sheet";
 
 /** Everything that opens on the side: 380px on the right on desktop, a full-screen sheet on a phone. */
 export function DetailPanel({

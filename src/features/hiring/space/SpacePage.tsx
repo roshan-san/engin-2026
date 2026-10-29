@@ -1,13 +1,13 @@
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
-import { AppPage, BackLink } from "~/components/AppPage";
-import { GlobalNotFound } from "~/components/GlobalNotFound";
-import { GlobalSpinner } from "~/components/GlobalSpinner";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { useWorkspace } from "~/features/startups";
 import { roleLabel } from "~/shared/config/jobs";
+import { AppPage, BackLink } from "~/shared/ui/AppPage";
+import { Badge } from "~/shared/ui/badge";
+import { Button } from "~/shared/ui/button";
+import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
+import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import { STAGE, stageDate } from "../stage";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { DraftView } from "./DraftView";

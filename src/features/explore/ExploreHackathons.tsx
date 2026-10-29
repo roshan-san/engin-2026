@@ -1,13 +1,13 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { EmptyState } from "~/components/EmptyState";
-import { RowList } from "~/components/RowList";
 import { ROLES } from "~/shared/config/jobs";
+import { EmptyState } from "~/shared/ui/EmptyState";
+import { FilterChips } from "~/shared/ui/FilterChips";
+import { NoMatches } from "~/shared/ui/NoMatches";
+import { RowList } from "~/shared/ui/RowList";
+import { RowsSkeleton } from "~/shared/ui/RowsSkeleton";
 import { ExploreLayout } from "./ExploreLayout";
 import { hasFilters } from "./exploreSearch";
-import { FilterChips } from "./FilterChips";
 import { HackathonExploreRow } from "./HackathonExploreRow";
-import { NoMatches } from "./NoMatches";
-import { RowsSkeleton } from "./RowsSkeleton";
 import { useExploreHackathons } from "./useExploreHackathons";
 
 const route = getRouteApi("/_shell/explore/hackathons");

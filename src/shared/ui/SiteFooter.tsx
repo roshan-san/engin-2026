@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { EnginLogo } from "~/shell/EnginLogo";
+import { EnginLogo } from "./EnginLogo";
 
 /** The website pages' footer. */
 export function SiteFooter() {

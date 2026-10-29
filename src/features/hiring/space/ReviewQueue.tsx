@@ -1,14 +1,15 @@
 import type { Id } from "@convex/_generated/dataModel";
 import type { CardActor } from "@convex/shared/cardRules";
 import { useState } from "react";
-import { EmptyState } from "~/components/EmptyState";
-import { Kbd } from "~/components/Kbd";
-import { TILE } from "~/components/tile";
-import { Button } from "~/components/ui/button";
-import { Skeleton } from "~/components/ui/skeleton";
-import { PersonAvatar, PersonName } from "~/features/people";
 import { refusalFor, ShippedView } from "~/features/work";
 import { cn } from "~/shared/lib/cn";
+import { Button } from "~/shared/ui/button";
+import { EmptyState } from "~/shared/ui/EmptyState";
+import { Kbd } from "~/shared/ui/Kbd";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
+import { PersonName } from "~/shared/ui/PersonName";
+import { Skeleton } from "~/shared/ui/skeleton";
+import { TILE } from "~/shared/ui/tile";
 import { useListKeys } from "./useListKeys";
 import { useReviewQueue } from "./useReviewQueue";
 

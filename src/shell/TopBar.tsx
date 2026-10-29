@@ -1,7 +1,7 @@
 import { Link, useMatches } from "@tanstack/react-router";
 import { Compass } from "lucide-react";
+import { EnginLogo } from "~/shared/ui/EnginLogo";
 import { AccountMenu } from "~/shell/AccountMenu";
-import { EnginLogo } from "~/shell/EnginLogo";
 import { InviteTray } from "~/shell/InviteTray";
 import { MyRating } from "~/shell/MyRating";
 import { PlaceSwitcher } from "~/shell/PlaceSwitcher";

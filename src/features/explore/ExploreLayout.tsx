@@ -1,7 +1,7 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import type { ReactNode } from "react";
-import { AppPage, PageTitle } from "~/components/AppPage";
-import { SiteFooter } from "~/components/SiteFooter";
+import { AppPage, PageTitle } from "~/shared/ui/AppPage";
+import { SiteFooter } from "~/shared/ui/SiteFooter";
 
 /** Explore's frame: the count in the bar, the filters in a strip under it, rows in the column. Signed out, the site footer scrolls at the end of the rows. */
 export function ExploreLayout({

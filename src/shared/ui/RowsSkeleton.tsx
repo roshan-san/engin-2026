@@ -1,4 +1,4 @@
-import { Skeleton } from "~/components/ui/skeleton";
+import { Skeleton } from "./skeleton";
 
 /** Four placeholder rows while an Explore list loads; `rowClassName` sets their height. */
 export function RowsSkeleton({

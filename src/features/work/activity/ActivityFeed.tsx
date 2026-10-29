@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
 import { dateRange } from "~/shared/lib/dates";
+import { Badge } from "~/shared/ui/badge";
+import { Button } from "~/shared/ui/button";
+import { Spinner } from "~/shared/ui/spinner";
 import { ActivityEntry } from "./ActivityEntry";
 import { buildFeed, type CycleView, quietLabel } from "./record";
 

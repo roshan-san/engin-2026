@@ -1,8 +1,6 @@
 import { hackathonDates } from "@convex/shared/hackathonPhase";
 import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
-import { Section } from "~/components/Section";
-import { Badge } from "~/components/ui/badge";
 import { SignInCard } from "~/features/people";
 import {
 	type JobMode,
@@ -15,6 +13,8 @@ import {
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
 import { buildDaysLabel, lastDay } from "~/shared/lib/hackathonDates";
+import { Badge } from "~/shared/ui/badge";
+import { Section } from "~/shared/ui/Section";
 
 export type PostView = {
 	readonly startupName: string;

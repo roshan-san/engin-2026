@@ -2,13 +2,19 @@ import { TEXT } from "@convex/shared/limits";
 import { usernameProblem } from "@convex/shared/username";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
-import { ChipPicker } from "~/components/ChipPicker";
-import { DiscardChangesDialog } from "~/components/DiscardChangesDialog";
-import { MentorNote } from "~/components/MentorNote";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
+import { PlanSection } from "~/features/billing";
+import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
+import {
+	useDiscardGuard,
+	useReportChanged,
+} from "~/shared/lib/useDiscardGuard";
+import { Button } from "~/shared/ui/button";
+import { ChipPicker } from "~/shared/ui/ChipPicker";
+import { DiscardChangesDialog } from "~/shared/ui/DiscardChangesDialog";
+import { Input } from "~/shared/ui/input";
+import { Label } from "~/shared/ui/label";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { Separator } from "~/shared/ui/separator";
 import {
 	Sheet,
 	SheetContent,
@@ -16,15 +22,9 @@ import {
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "~/components/ui/sheet";
-import { Spinner } from "~/components/ui/spinner";
-import { Textarea } from "~/components/ui/textarea";
-import { PlanSection } from "~/features/billing";
-import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
-import {
-	useDiscardGuard,
-	useReportChanged,
-} from "~/shared/lib/useDiscardGuard";
+} from "~/shared/ui/sheet";
+import { Spinner } from "~/shared/ui/spinner";
+import { Textarea } from "~/shared/ui/textarea";
 import { useMe } from "~/shell/useMe";
 import {
 	type ProfileDraft,

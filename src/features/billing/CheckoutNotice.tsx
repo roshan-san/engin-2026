@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { TILE } from "~/components/tile";
 import { cn } from "~/shared/lib/cn";
+import { TILE } from "~/shared/ui/tile";
 
 /** How long to wait for the payment before saying it may not clear. */
 const STILL_WAITING_MS = 30_000;

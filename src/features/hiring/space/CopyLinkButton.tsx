@@ -1,6 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { LinkIcon } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Button } from "~/shared/ui/button";
 import { copyHackathonLink } from "./copyHackathonLink";
 
 /** Copies the public Hackathon page's link, to share with Applicants. */

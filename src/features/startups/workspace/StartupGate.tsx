@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { GlobalNotFound } from "~/components/GlobalNotFound";
-import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
+import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import { useMe } from "~/shell/useMe";
 import { useStartup } from "./useStartup";
 import { StartupContext } from "./Workspace";

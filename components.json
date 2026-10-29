@@ -12,9 +12,9 @@
 	},
 	"iconLibrary": "lucide",
 	"aliases": {
-		"components": "~/components",
+		"components": "~/shared/ui",
 		"utils": "~/shared/lib/cn",
-		"ui": "~/components/ui",
+		"ui": "~/shared/ui",
 		"lib": "~/shared/lib",
 		"hooks": "~/shared/lib"
 	}

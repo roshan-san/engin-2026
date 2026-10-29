@@ -1,8 +1,8 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+import { Button } from "~/shared/ui/button";
+import { Spinner } from "~/shared/ui/spinner";
 import { decisionTitle } from "./decisionCopy";
 import { useKeepPromise } from "./useKeepPromise";
 

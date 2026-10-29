@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Kbd } from "~/components/Kbd";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+import { Button } from "~/shared/ui/button";
+import { Kbd } from "~/shared/ui/Kbd";
+import { Spinner } from "~/shared/ui/spinner";
 import { useBoardScope } from "../board/BoardScope";
 import type { CardView } from "../board/types";
 import { useBoard } from "../board/useBoard";

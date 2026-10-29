@@ -1,10 +1,10 @@
 import { TEXT } from "@convex/shared/limits";
 import { PlusIcon } from "lucide-react";
 import { type Ref, useState } from "react";
-import { Kbd } from "~/components/Kbd";
-import { MentorNote } from "~/components/MentorNote";
-import { Textarea } from "~/components/ui/textarea";
 import { isSendKey } from "~/shared/lib/keys";
+import { Kbd } from "~/shared/ui/Kbd";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { Textarea } from "~/shared/ui/textarea";
 
 /** Adds a Card to To do: Enter creates and stays focused, Esc leaves. */
 export function NewCardInput({

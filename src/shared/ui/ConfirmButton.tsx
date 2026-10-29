@@ -9,8 +9,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
+} from "./alert-dialog";
+import { Button } from "./button";
 
 /** A quiet button that asks first, then runs a destructive action; the dialog closes only once it succeeds. */
 export function ConfirmButton({

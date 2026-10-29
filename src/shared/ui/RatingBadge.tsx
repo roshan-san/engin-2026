@@ -1,13 +1,13 @@
-import { Badge } from "~/components/ui/badge";
+import { cn } from "~/shared/lib/cn";
+import { ratingChangeLabel } from "~/shared/lib/rating";
+import { tierText } from "~/shared/lib/tierText";
+import { Badge } from "./badge";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "~/components/ui/tooltip";
-import { cn } from "~/shared/lib/cn";
-import { ratingChangeLabel } from "~/shared/lib/rating";
-import { tierText } from "~/shared/lib/tierText";
+} from "./tooltip";
 
 /** "1184 ▲ 12": the Rating in its Tier colour, its last move, and Provisional while it settles. */
 export function RatingBadge({

@@ -1,14 +1,14 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useState } from "react";
-import { CharCount } from "~/components/CharCount";
-import { Kbd } from "~/components/Kbd";
-import { MentorNote } from "~/components/MentorNote";
-import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
-import { Spinner } from "~/components/ui/spinner";
-import { Textarea } from "~/components/ui/textarea";
 import { isMac } from "~/shared/lib/platform";
+import { Button } from "~/shared/ui/button";
+import { CharCount } from "~/shared/ui/CharCount";
+import { Kbd } from "~/shared/ui/Kbd";
+import { Label } from "~/shared/ui/label";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { Spinner } from "~/shared/ui/spinner";
+import { Textarea } from "~/shared/ui/textarea";
 import { answerKey } from "./applyStatus";
 import { useApply } from "./useApply";
 

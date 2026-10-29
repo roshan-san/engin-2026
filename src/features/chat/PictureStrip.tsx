@@ -1,6 +1,6 @@
 import { XIcon } from "lucide-react";
-import { Spinner } from "~/components/ui/spinner";
 import type { Picture } from "~/shared/lib/usePictures";
+import { Spinner } from "~/shared/ui/spinner";
 
 /** Thumbnails of the images attached to a message, each with a remove button. */
 export function PictureStrip({

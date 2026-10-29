@@ -9,8 +9,9 @@ import {
 	SearchIcon,
 } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
-import { PlaceLogo } from "~/components/PlaceLogo";
-import { UnreadDot } from "~/components/UnreadDot";
+import { participantStatusText } from "~/features/hiring";
+import { roleLabel } from "~/shared/config/jobs";
+import { cn } from "~/shared/lib/cn";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -18,11 +19,10 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { Skeleton } from "~/components/ui/skeleton";
-import { participantStatusText } from "~/features/hiring";
-import { roleLabel } from "~/shared/config/jobs";
-import { cn } from "~/shared/lib/cn";
+} from "~/shared/ui/dropdown-menu";
+import { PlaceLogo } from "~/shared/ui/PlaceLogo";
+import { Skeleton } from "~/shared/ui/skeleton";
+import { UnreadDot } from "~/shared/ui/UnreadDot";
 import {
 	type CurrentPlace,
 	currentPlaceView,

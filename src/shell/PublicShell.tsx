@@ -1,5 +1,5 @@
 import { useMatches } from "@tanstack/react-router";
-import { SiteFooter } from "~/components/SiteFooter";
+import { SiteFooter } from "~/shared/ui/SiteFooter";
 import { PublicHeader } from "~/shell/PublicHeader";
 import { tabsFromRoute } from "~/shell/places";
 import { TabRow } from "~/shell/TabRow";

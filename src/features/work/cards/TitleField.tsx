@@ -1,6 +1,6 @@
 import { TEXT } from "@convex/shared/limits";
 import { useRef } from "react";
-import { Textarea } from "~/components/ui/textarea";
+import { Textarea } from "~/shared/ui/textarea";
 import type { CardView } from "../board/types";
 import { useDraft } from "./useDraft";
 

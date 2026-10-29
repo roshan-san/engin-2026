@@ -1,10 +1,11 @@
 import { ChevronLeftIcon, XIcon } from "lucide-react";
-import { PanelBody } from "~/components/PanelBody";
-import { PanelHeader } from "~/components/PanelHeader";
-import { Section } from "~/components/Section";
-import { Button } from "~/components/ui/button";
-import { PersonAvatar, PersonName } from "~/features/people";
 import { dayLabel } from "~/shared/lib/dates";
+import { Button } from "~/shared/ui/button";
+import { PanelBody } from "~/shared/ui/PanelBody";
+import { PanelHeader } from "~/shared/ui/PanelHeader";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
+import { PersonName } from "~/shared/ui/PersonName";
+import { Section } from "~/shared/ui/Section";
 import { EntryProof } from "./EntryProof";
 import type { CycleView, EntryView } from "./record";
 

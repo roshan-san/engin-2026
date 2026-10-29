@@ -1,7 +1,7 @@
 import { useLocation } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
+import { Button } from "~/shared/ui/button";
+import { Spinner } from "~/shared/ui/spinner";
 import { PAYMENT_ISSUE } from "./draftPublish";
 import { PlansDialog } from "./PlansDialog";
 import { planSummary } from "./planLines";

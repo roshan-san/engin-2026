@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { RowList } from "~/components/RowList";
-import { Skeleton } from "~/components/ui/skeleton";
 import { HackathonExploreRow, useExploreHackathons } from "~/features/explore";
+import { RowList } from "~/shared/ui/RowList";
+import { Skeleton } from "~/shared/ui/skeleton";
 
 const SKELETON_ROWS = ["a", "b", "c"] as const;
 

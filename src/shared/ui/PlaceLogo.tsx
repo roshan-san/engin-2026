@@ -1,7 +1,7 @@
-import { AVATAR_SIZE, type AvatarSize } from "~/components/avatarSize";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { cn } from "~/shared/lib/cn";
 import { initials } from "~/shared/lib/initials";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { AVATAR_SIZE, type AvatarSize } from "./avatarSize";
 
 const RADIUS: Record<AvatarSize, string> = {
 	16: "rounded-sm",

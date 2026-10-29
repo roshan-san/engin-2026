@@ -1,10 +1,11 @@
 import type { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
-import { PlaceLogo } from "~/components/PlaceLogo";
-import { Badge } from "~/components/ui/badge";
 import { CITIES, KINDS, STAGES } from "~/features/startups";
-import { RatingBadge, RhythmStrip } from "~/features/work";
+import { Badge } from "~/shared/ui/badge";
+import { PlaceLogo } from "~/shared/ui/PlaceLogo";
+import { RatingBadge } from "~/shared/ui/RatingBadge";
+import { RhythmStrip } from "~/shared/ui/RhythmStrip";
 
 export type StartupExploreRowData = FunctionReturnType<
 	typeof api.startups.startups.explore

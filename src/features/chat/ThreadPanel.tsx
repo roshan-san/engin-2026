@@ -1,9 +1,9 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { XIcon } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
-import { PanelHeader } from "~/components/PanelHeader";
-import { Button } from "~/components/ui/button";
-import { Skeleton } from "~/components/ui/skeleton";
+import { Button } from "~/shared/ui/button";
+import { PanelHeader } from "~/shared/ui/PanelHeader";
+import { Skeleton } from "~/shared/ui/skeleton";
 import { Composer } from "./Composer";
 import { MessageList } from "./MessageList";
 import { PinnedStrip } from "./PinnedStrip";

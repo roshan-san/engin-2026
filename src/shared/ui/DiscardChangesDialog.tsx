@@ -7,7 +7,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
+} from "./alert-dialog";
 
 /** Asked when a form is closed with unsaved edits. */
 export function DiscardChangesDialog({

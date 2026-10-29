@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { ArrowLeftIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { PageBar } from "~/components/PageBar";
+import { PageBar } from "./PageBar";
 
 export type AppPageBar = {
 	readonly back?: ReactNode;

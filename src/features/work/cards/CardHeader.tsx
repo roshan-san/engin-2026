@@ -1,8 +1,8 @@
 import { ChevronLeftIcon, XIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { PanelHeader } from "~/components/PanelHeader";
-import { UnreadDot } from "~/components/UnreadDot";
-import { Button } from "~/components/ui/button";
+import { Button } from "~/shared/ui/button";
+import { PanelHeader } from "~/shared/ui/PanelHeader";
+import { UnreadDot } from "~/shared/ui/UnreadDot";
 
 export type PanelProps = {
 	/** Where Back goes: "Threads", "Thread". */

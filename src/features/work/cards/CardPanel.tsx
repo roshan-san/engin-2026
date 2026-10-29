@@ -1,8 +1,6 @@
 import type { CardAction } from "@convex/shared/cardRules";
 import { MoreHorizontalIcon } from "lucide-react";
 import { useRef, useState } from "react";
-import { PanelBody } from "~/components/PanelBody";
-import { Section } from "~/components/Section";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -12,16 +10,18 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+} from "~/shared/ui/alert-dialog";
+import { Badge } from "~/shared/ui/badge";
+import { Button } from "~/shared/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { Skeleton } from "~/components/ui/skeleton";
+} from "~/shared/ui/dropdown-menu";
+import { PanelBody } from "~/shared/ui/PanelBody";
+import { Section } from "~/shared/ui/Section";
+import { Skeleton } from "~/shared/ui/skeleton";
 import { useBoardScope } from "../board/BoardScope";
 import type { CardView } from "../board/types";
 import { refusalFor } from "../cardRules";

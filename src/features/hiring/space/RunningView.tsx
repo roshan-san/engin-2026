@@ -2,19 +2,19 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
-import { EmptyState } from "~/components/EmptyState";
-import { UnreadDot } from "~/components/UnreadDot";
+import { useWorkspace } from "~/features/startups";
+import { cn } from "~/shared/lib/cn";
+import { tierText } from "~/shared/lib/tierText";
+import { EmptyState } from "~/shared/ui/EmptyState";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "~/components/ui/select";
-import { PersonAvatar } from "~/features/people";
-import { useWorkspace } from "~/features/startups";
-import { cn } from "~/shared/lib/cn";
-import { tierText } from "~/shared/lib/tierText";
+} from "~/shared/ui/select";
+import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { EveryonePanel } from "./EveryonePanel";
 import { ParticipantView } from "./ParticipantView";
 import { participantOptionLabel } from "./participantOptionLabel";

@@ -12,8 +12,8 @@ import {
 } from "@dnd-kit/core";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/shared/lib/cn";
+import { Skeleton } from "~/shared/ui/skeleton";
 import { refusalFor } from "../cardRules";
 import { BoardColumn, type DropState } from "./BoardColumn";
 import { useBoardScope } from "./BoardScope";

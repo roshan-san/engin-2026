@@ -7,7 +7,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
+} from "~/shared/ui/alert-dialog";
 
 /** The question Publish asks first; `onConfirm` runs once it's accepted. */
 export function PublishConfirmDialog({

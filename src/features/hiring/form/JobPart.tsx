@@ -1,5 +1,5 @@
-import { ChipPicker } from "~/components/ChipPicker";
 import { MODES, PAYS, ROLES } from "~/shared/config/jobs";
+import { ChipPicker } from "~/shared/ui/ChipPicker";
 import type { HackathonDraft } from "./draft";
 import { Field, Part } from "./FormPart";
 

@@ -3,15 +3,7 @@ import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { DetailPanel } from "~/components/DetailPanel";
-import { PanelHeader } from "~/components/PanelHeader";
-import { Segmented } from "~/components/Segmented";
-import { UnreadDot } from "~/components/UnreadDot";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { useDetailPanel } from "~/components/useDetailPanel";
 import { ThreadPanel } from "~/features/chat";
-import { PersonAvatar, PersonName } from "~/features/people";
 import {
 	Board,
 	type BoardScope,
@@ -20,6 +12,15 @@ import {
 	OpenCardPanel,
 } from "~/features/work";
 import { tierText } from "~/shared/lib/tierText";
+import { Badge } from "~/shared/ui/badge";
+import { Button } from "~/shared/ui/button";
+import { DetailPanel } from "~/shared/ui/DetailPanel";
+import { PanelHeader } from "~/shared/ui/PanelHeader";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
+import { PersonName } from "~/shared/ui/PersonName";
+import { Segmented } from "~/shared/ui/Segmented";
+import { UnreadDot } from "~/shared/ui/UnreadDot";
+import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";

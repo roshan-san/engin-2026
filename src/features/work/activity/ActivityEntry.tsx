@@ -8,16 +8,16 @@ import {
 	UserPlus,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { Badge } from "~/components/ui/badge";
+import { cn } from "~/shared/lib/cn";
+import { weekdayLabel } from "~/shared/lib/dates";
+import { tierText } from "~/shared/lib/tierText";
+import { Badge } from "~/shared/ui/badge";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
-} from "~/components/ui/collapsible";
-import { PersonAvatar } from "~/features/people";
-import { cn } from "~/shared/lib/cn";
-import { weekdayLabel } from "~/shared/lib/dates";
-import { tierText } from "~/shared/lib/tierText";
+} from "~/shared/ui/collapsible";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { EntryProof } from "./EntryProof";
 import { type EntryView, entrySummary } from "./record";
 

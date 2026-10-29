@@ -1,11 +1,11 @@
+import { cn } from "~/shared/lib/cn";
+import { type StripCell, stripLevel, stripTooltip } from "~/shared/lib/rating";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "~/components/ui/tooltip";
-import { cn } from "~/shared/lib/cn";
-import { type StripCell, stripLevel, stripTooltip } from "~/shared/lib/rating";
+} from "./tooltip";
 
 const SHADES = [
 	"bg-foreground/[.06]",

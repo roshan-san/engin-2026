@@ -1,9 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { AppPage, BackLink } from "~/components/AppPage";
-import { GlobalNotFound } from "~/components/GlobalNotFound";
-import { Page } from "~/components/Page";
 import { useWorkspace } from "~/features/startups";
+import { AppPage, BackLink } from "~/shared/ui/AppPage";
+import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
+import { Page } from "~/shared/ui/Page";
 import { emptyDraft } from "./draft";
 import { HackathonForm } from "./HackathonForm";
 import { useHackathonForm } from "./useHackathonForm";

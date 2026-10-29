@@ -8,7 +8,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
+} from "~/shared/ui/alert-dialog";
 
 /** Asks before the Founder leaves the form with unsaved changes. `shouldBlock` must be stable, so the blocker registers once. */
 export function LeaveGuardDialog({

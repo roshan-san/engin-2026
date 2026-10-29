@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { AppPage, PageTitle } from "~/components/AppPage";
-import { EmptyState } from "~/components/EmptyState";
-import { RowList } from "~/components/RowList";
-import { Section } from "~/components/Section";
-import { Button } from "~/components/ui/button";
-import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/startups";
+import { AppPage, PageTitle } from "~/shared/ui/AppPage";
+import { Button } from "~/shared/ui/button";
+import { EmptyState } from "~/shared/ui/EmptyState";
+import { RowList } from "~/shared/ui/RowList";
+import { Section } from "~/shared/ui/Section";
+import { Skeleton } from "~/shared/ui/skeleton";
 import { HackathonRow } from "./HackathonRow";
 import { groupHackathons, type HiringRow, hiringSummary } from "./hiringGroups";
 import { useHackathons } from "./useHackathons";

@@ -1,13 +1,13 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
+import { displayName } from "~/shared/lib/displayName";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
-} from "~/components/ui/tooltip";
-import { PersonAvatar } from "~/features/people";
-import { displayName } from "~/shared/lib/displayName";
+} from "~/shared/ui/tooltip";
 import { orderPresence, presenceLabel } from "./presence";
 import { useOnline } from "./useOnline";
 

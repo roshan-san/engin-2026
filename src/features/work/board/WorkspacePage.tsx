@@ -1,11 +1,11 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { AppPage } from "~/components/AppPage";
-import { DetailPanel } from "~/components/DetailPanel";
-import { UnreadDot } from "~/components/UnreadDot";
-import { Button } from "~/components/ui/button";
-import { useDetailPanel } from "~/components/useDetailPanel";
 import { TeamPanel, useHeartbeat, useTeamThread } from "~/features/chat";
 import { useWorkspace } from "~/features/startups";
+import { AppPage } from "~/shared/ui/AppPage";
+import { Button } from "~/shared/ui/button";
+import { DetailPanel } from "~/shared/ui/DetailPanel";
+import { UnreadDot } from "~/shared/ui/UnreadDot";
+import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { OpenCardPanel } from "../cards/OpenCardPanel";
 import { Board } from "./Board";
 import { CardBoard } from "./CardBoard";

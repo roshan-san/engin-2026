@@ -1,10 +1,10 @@
 import { MAX_HACKATHON_CARDS, TEXT } from "@convex/shared/limits";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
-import { CharCount } from "~/components/CharCount";
-import { MentorNote } from "~/components/MentorNote";
 import { ColumnIcon, NewCardInput, TILE_CLASS } from "~/features/work";
 import { cn } from "~/shared/lib/cn";
+import { CharCount } from "~/shared/ui/CharCount";
+import { MentorNote } from "~/shared/ui/MentorNote";
 import { draftCard, type HackathonDraft } from "./draft";
 
 type DraftCard = HackathonDraft["cards"][number];

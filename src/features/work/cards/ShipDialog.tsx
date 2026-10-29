@@ -6,9 +6,10 @@ import {
 import { XIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { MentorNote } from "~/components/MentorNote";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { isSendKey } from "~/shared/lib/keys";
+import { usePictures } from "~/shared/lib/usePictures";
+import { Badge } from "~/shared/ui/badge";
+import { Button } from "~/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -16,11 +17,10 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Spinner } from "~/components/ui/spinner";
-import { isSendKey } from "~/shared/lib/keys";
-import { usePictures } from "~/shared/lib/usePictures";
+} from "~/shared/ui/dialog";
+import { Input } from "~/shared/ui/input";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { Spinner } from "~/shared/ui/spinner";
 import { useBoardScope } from "../board/BoardScope";
 import type { CardView } from "../board/types";
 import { landsIn } from "../cardRules";

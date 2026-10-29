@@ -1,11 +1,11 @@
+import { PersonName } from "~/shared/ui/PersonName";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "~/components/ui/select";
-import { PersonName } from "~/features/people";
+} from "~/shared/ui/select";
 import { useBoardScope } from "../board/BoardScope";
 import { ColumnIcon } from "../board/ColumnIcon";
 import { COLUMNS, type Column, dropAction } from "../board/dropRules";

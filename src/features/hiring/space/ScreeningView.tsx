@@ -2,12 +2,10 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
-import { DetailPanel } from "~/components/DetailPanel";
-import { EmptyState } from "~/components/EmptyState";
-import { Kbd } from "~/components/Kbd";
-import { MentorNote } from "~/components/MentorNote";
-import { PanelHeader } from "~/components/PanelHeader";
-import { Segmented } from "~/components/Segmented";
+import { useWorkspace } from "~/features/startups";
+import { dayLabel } from "~/shared/lib/dates";
+import { displayName } from "~/shared/lib/displayName";
+import { lastDay } from "~/shared/lib/hackathonDates";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -17,14 +15,16 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
-import { Skeleton } from "~/components/ui/skeleton";
-import { useDetailPanel } from "~/components/useDetailPanel";
-import { useWorkspace } from "~/features/startups";
-import { dayLabel } from "~/shared/lib/dates";
-import { displayName } from "~/shared/lib/displayName";
-import { lastDay } from "~/shared/lib/hackathonDates";
+} from "~/shared/ui/alert-dialog";
+import { Button } from "~/shared/ui/button";
+import { DetailPanel } from "~/shared/ui/DetailPanel";
+import { EmptyState } from "~/shared/ui/EmptyState";
+import { Kbd } from "~/shared/ui/Kbd";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { PanelHeader } from "~/shared/ui/PanelHeader";
+import { Segmented } from "~/shared/ui/Segmented";
+import { Skeleton } from "~/shared/ui/skeleton";
+import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { HackathonPost } from "../public/HackathonPost";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { ApplicantList } from "./ApplicantList";

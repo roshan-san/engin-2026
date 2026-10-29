@@ -1,7 +1,7 @@
-import { PanelBody } from "~/components/PanelBody";
-import { PanelHeader } from "~/components/PanelHeader";
-import { Section } from "~/components/Section";
-import { Skeleton } from "~/components/ui/skeleton";
+import { PanelBody } from "~/shared/ui/PanelBody";
+import { PanelHeader } from "~/shared/ui/PanelHeader";
+import { Section } from "~/shared/ui/Section";
+import { Skeleton } from "~/shared/ui/skeleton";
 import { RecordSignals } from "./RecordSignals";
 import type { SignalsView } from "./record";
 

@@ -3,9 +3,9 @@ import {
 	Link,
 	useRouter,
 } from "@tanstack/react-router";
-import { EmptyState } from "~/components/EmptyState";
-import { Button } from "~/components/ui/button";
 import { errorMessage } from "~/shared/lib/errors";
+import { Button } from "./button";
+import { EmptyState } from "./EmptyState";
 
 export function GlobalError({ error, reset }: Readonly<ErrorComponentProps>) {
 	const router = useRouter();

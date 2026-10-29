@@ -1,11 +1,7 @@
 import { Mail } from "lucide-react";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "~/components/ui/popover";
+import { Button } from "~/shared/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "~/shared/ui/popover";
 import { inviteTitle, useInvites } from "~/shell/useInvites";
 
 /** Your open Invites in the bar: Join or Decline. Nothing when there are none. */

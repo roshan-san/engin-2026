@@ -1,12 +1,12 @@
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useCallback, useRef, useState } from "react";
-import { CharCount } from "~/components/CharCount";
-import { ChipPicker } from "~/components/ChipPicker";
-import { MentorNote } from "~/components/MentorNote";
-import { Button } from "~/components/ui/button";
-import { Spinner } from "~/components/ui/spinner";
-import { Textarea } from "~/components/ui/textarea";
 import { monthDayLabel } from "~/shared/lib/dates";
+import { Button } from "~/shared/ui/button";
+import { CharCount } from "~/shared/ui/CharCount";
+import { ChipPicker } from "~/shared/ui/ChipPicker";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { Spinner } from "~/shared/ui/spinner";
+import { Textarea } from "~/shared/ui/textarea";
 import { CardRows } from "./CardRows";
 import { type HackathonDraft, missingParts } from "./draft";
 import { Field, Part } from "./FormPart";

@@ -1,7 +1,7 @@
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { Outlet } from "@tanstack/react-router";
-import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { SignInCard } from "~/features/people";
+import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import { AppShell } from "~/shell/AppShell";
 import { PublicShell } from "~/shell/PublicShell";
 

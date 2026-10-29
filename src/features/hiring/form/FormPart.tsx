@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { MentorNote } from "~/components/MentorNote";
+import { MentorNote } from "~/shared/ui/MentorNote";
 
 /** One numbered part of the form: its label, then its mentor note, then the fields. */
 export function Part({

@@ -1,6 +1,7 @@
 import { DEFAULT_PLAN, type PlanKey } from "@convex/shared/plans";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
+import { cn } from "~/shared/lib/cn";
+import { Button } from "~/shared/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -8,9 +9,8 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "~/components/ui/dialog";
-import { Spinner } from "~/components/ui/spinner";
-import { cn } from "~/shared/lib/cn";
+} from "~/shared/ui/dialog";
+import { Spinner } from "~/shared/ui/spinner";
 import { planLines } from "./planLines";
 import { useCheckout } from "./useCheckout";
 

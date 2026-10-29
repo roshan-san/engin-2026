@@ -1,8 +1,5 @@
 export { ActivityFeed } from "./activity/ActivityFeed";
-export { RatingBadge } from "./activity/RatingBadge";
-export { RatingParts } from "./activity/RatingParts";
 export { RecordSignals } from "./activity/RecordSignals";
-export { RhythmStrip } from "./activity/RhythmStrip";
 export { useSignals } from "./activity/useSignals";
 export { Board } from "./board/Board";
 export {

@@ -7,13 +7,13 @@ import {
 	useRouter,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { GlobalSpinner } from "~/components/GlobalSpinner";
-import { TILE } from "~/components/tile";
 import { BoardMock } from "~/features/marketing/BoardMock";
 import { OpenNow } from "~/features/marketing/OpenNow";
 import { Pricing } from "~/features/marketing/Pricing";
 import { GoogleButton, POST_INTENT_PATH } from "~/features/people";
 import { cn } from "~/shared/lib/cn";
+import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
+import { TILE } from "~/shared/ui/tile";
 import { landingView, pickLanding, readLastPlace } from "~/shell/landing";
 import { PublicShell } from "~/shell/PublicShell";
 import { usePlaces } from "~/shell/usePlaces";

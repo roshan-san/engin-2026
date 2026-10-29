@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { EmptyState } from "~/components/EmptyState";
-import { Button } from "~/components/ui/button";
+import { Button } from "./button";
+import { EmptyState } from "./EmptyState";
 
 /** A page that isn't there. Pages pass their own `title`, `body` and `action` to say what's missing. */
 export function GlobalNotFound({

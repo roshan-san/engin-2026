@@ -2,8 +2,9 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
 import { CheckIcon, StarIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { MentorNote } from "~/components/MentorNote";
-import { Section } from "~/components/Section";
+import { cn } from "~/shared/lib/cn";
+import { dayLabel } from "~/shared/lib/dates";
+import { lastDay } from "~/shared/lib/hackathonDates";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -13,13 +14,12 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { cn } from "~/shared/lib/cn";
-import { dayLabel } from "~/shared/lib/dates";
-import { lastDay } from "~/shared/lib/hackathonDates";
+} from "~/shared/ui/alert-dialog";
+import { Button } from "~/shared/ui/button";
+import { Input } from "~/shared/ui/input";
+import { MentorNote } from "~/shared/ui/MentorNote";
+import { Section } from "~/shared/ui/Section";
+import { Textarea } from "~/shared/ui/textarea";
 import type { ApplicantRow } from "./applicantSort";
 import { decideState } from "./decideSteps";
 import { useDecide } from "./useDecide";

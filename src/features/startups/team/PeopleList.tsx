@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { ConfirmButton } from "~/components/ConfirmButton";
-import { Row, RowList } from "~/components/RowList";
-import { Section } from "~/components/Section";
-import { Skeleton } from "~/components/ui/skeleton";
-import { PersonAvatar, PersonName } from "~/features/people";
-import { RatingBadge } from "~/features/work";
 import { displayName } from "~/shared/lib/displayName";
+import { ConfirmButton } from "~/shared/ui/ConfirmButton";
+import { PersonAvatar } from "~/shared/ui/PersonAvatar";
+import { PersonName } from "~/shared/ui/PersonName";
+import { RatingBadge } from "~/shared/ui/RatingBadge";
+import { Row, RowList } from "~/shared/ui/RowList";
+import { Section } from "~/shared/ui/Section";
+import { Skeleton } from "~/shared/ui/skeleton";
 import type { TeamPeople, TeamPerson } from "./useTeamPeople";
 
 /** The Founder and Contributors: face, name, Rating and what they verified this Cycle. */

@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { GlobalSpinner } from "~/components/GlobalSpinner";
+import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import { maintenanceRedirect } from "./maintenanceRedirect";
 import { useMaintenance } from "./useMaintenance";
 

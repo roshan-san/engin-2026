@@ -1,9 +1,9 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { GlobalNotFound } from "~/components/GlobalNotFound";
-import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { routeTree } from "~/routeTree.gen";
+import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
+import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import "~/styles/globals.css";
