@@ -5,6 +5,14 @@ import { type FormEvent, useState } from "react";
 import { DISCIPLINE_OPTIONS, useMe } from "~/entities/person";
 import { PlanSection } from "~/features/billing";
 import {
+	type ProfileDraft,
+	type ProfileSource,
+	renamedProfileTarget,
+	toProfileArgs,
+	toProfileDraft,
+	useUpdateProfile,
+} from "~/features/edit-profile";
+import {
 	useDiscardGuard,
 	useReportChanged,
 } from "~/shared/lib/useDiscardGuard";
@@ -25,14 +33,6 @@ import {
 } from "~/shared/ui/sheet";
 import { Spinner } from "~/shared/ui/spinner";
 import { Textarea } from "~/shared/ui/textarea";
-import {
-	type ProfileDraft,
-	type ProfileSource,
-	renamedProfileTarget,
-	toProfileArgs,
-	toProfileDraft,
-} from "./profileDraft";
-import { useUpdateProfile } from "./useUpdateProfile";
 
 /** Your profile: username, discipline and bio. One Save sends only what changed. */
 export function SettingsSheet({
