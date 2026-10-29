@@ -4,6 +4,14 @@ import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { HackathonPost, STAGE, useHackathon } from "~/entities/hackathon";
 import { hiringLine } from "~/entities/startup";
+import {
+	APPLY_COPY,
+	ApplyForm,
+	applyBarAction,
+	applyPanelTitle,
+	applyState,
+	closedLabel,
+} from "~/features/apply-to-hackathon";
 import { GoogleButton, SignInCard } from "~/features/sign-in";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
@@ -22,14 +30,6 @@ import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { TILE, TILE_LINK } from "~/shared/ui/tile";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { ApplyForm } from "./ApplyForm";
-import {
-	APPLY_COPY,
-	applyBarAction,
-	applyPanelTitle,
-	applyState,
-	closedLabel,
-} from "./applyStatus";
 
 const route = getRouteApi("/_shell/hackathons/$id");
 

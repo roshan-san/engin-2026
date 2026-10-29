@@ -9,8 +9,8 @@ import { Label } from "~/shared/ui/label";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Spinner } from "~/shared/ui/spinner";
 import { Textarea } from "~/shared/ui/textarea";
-import { answerKey } from "./applyStatus";
-import { useApply } from "./useApply";
+import { useApply } from "../api/useApply";
+import { answerKey } from "../model/applyStatus";
 
 function readSaved(key: string): string {
 	try {
