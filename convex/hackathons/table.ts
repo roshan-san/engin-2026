@@ -7,7 +7,7 @@ import {
 	jobMode,
 	jobPay,
 	jobRole,
-} from "../shared/validators";
+} from "./rules";
 
 export const hackathonsTables = {
 	hackathons: defineTable({

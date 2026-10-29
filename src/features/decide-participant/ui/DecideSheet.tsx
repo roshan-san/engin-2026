@@ -1,5 +1,5 @@
 import type { Doc } from "@convex/_generated/dataModel";
-import { TEXT } from "@convex/shared/limits";
+import { APPLICATION_TEXT } from "@convex/applications/rules";
 import { CheckIcon, StarIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import type { ApplicantRow } from "~/entities/application";
@@ -103,7 +103,7 @@ export function DecideSheet({
 								aria-label="Walkthrough notes"
 								placeholder="What you learned on the call"
 								value={notes}
-								maxLength={TEXT.walkthroughNotes}
+								maxLength={APPLICATION_TEXT.walkthroughNotes}
 								className="min-h-20"
 								onChange={(e) => setNotes(e.target.value)}
 							/>
@@ -138,7 +138,7 @@ export function DecideSheet({
 								aria-label="Note for them"
 								placeholder="One line for them"
 								value={feedback}
-								maxLength={TEXT.feedback}
+								maxLength={APPLICATION_TEXT.feedback}
 								onChange={(e) => setFeedback(e.target.value)}
 							/>
 							<div className="flex flex-wrap items-center gap-2">

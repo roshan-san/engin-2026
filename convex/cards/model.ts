@@ -5,19 +5,23 @@ import { appendActivity } from "../activity/model";
 import { getHackathonRole } from "../applications/model";
 import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
-import { phaseOf } from "../hackathons/rules";
-import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import {
-	MAX_BOARD_CARDS,
 	MAX_HACKATHON_CARDS,
 	MAX_PARTICIPANTS,
-	MAX_SHIPPED_IMAGES,
-	MAX_SHIPPED_LINKS,
-	TEXT,
-} from "../shared/limits";
+	phaseOf,
+} from "../hackathons/rules";
+import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
-import { type CardAction, type CardActor, cardRefusal } from "./rules";
+import {
+	CARD_TEXT,
+	type CardAction,
+	type CardActor,
+	cardRefusal,
+	MAX_BOARD_CARDS,
+	MAX_SHIPPED_IMAGES,
+	MAX_SHIPPED_LINKS,
+} from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
 
@@ -121,11 +125,11 @@ export async function requireTeamOwner(
 }
 
 export function normalizeTitle(title: string): string {
-	return requireLimitedText(title, "Title", TEXT.cardTitle);
+	return requireLimitedText(title, "Title", CARD_TEXT.title);
 }
 
 export function normalizeNotes(notes: string): string {
-	return limitText(notes, "Notes", TEXT.notes) ?? "";
+	return limitText(notes, "Notes", CARD_TEXT.notes) ?? "";
 }
 
 /** Validates What shipped: a line, http(s) links and images, with at least one link or image. */
@@ -134,8 +138,10 @@ export function parseShipped(input: Shipped): Shipped {
 	if (!line) {
 		throw new ConvexError("Say what shipped");
 	}
-	if (line.length > TEXT.shippedLine) {
-		throw new ConvexError(`Say it in under ${TEXT.shippedLine} characters`);
+	if (line.length > CARD_TEXT.shippedLine) {
+		throw new ConvexError(
+			`Say it in under ${CARD_TEXT.shippedLine} characters`,
+		);
 	}
 	if (input.links.length > MAX_SHIPPED_LINKS) {
 		throw new ConvexError(`Add up to ${MAX_SHIPPED_LINKS} links`);

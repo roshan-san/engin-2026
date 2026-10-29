@@ -1,14 +1,10 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
+import { MAX_APPLICATIONS, MAX_USER_APPLICATIONS } from "../applications/rules";
 import { loadHackathonCardsInReview } from "../cards/model";
+import { MAX_BOARD_CARDS } from "../cards/rules";
 import { loadParticipants, loadRunningHackathons } from "../hackathons/model";
-import { phaseOf } from "../hackathons/rules";
-import {
-	MAX_APPLICATIONS,
-	MAX_BOARD_CARDS,
-	MAX_LISTED_HACKATHONS,
-	MAX_USER_APPLICATIONS,
-} from "../shared/limits";
+import { MAX_LISTED_HACKATHONS, phaseOf } from "../hackathons/rules";
 import { loadLogoUrl } from "../startups/model";
 import {
 	isThreadUnread,

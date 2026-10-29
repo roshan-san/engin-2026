@@ -38,3 +38,11 @@ export function cycleNumber(startupCreatedAt: number, at: number): number {
 export function shiftWeek(week: string, by: number): string {
 	return weekOf(weekStart(week) + by * WEEK_MS);
 }
+
+/** Activity Cycles per page; Show earlier asks for this many more. */
+export const CYCLES_PAGE = 8;
+export const MAX_LISTED_CYCLES = 104;
+export const MAX_CYCLE_ENTRIES = 100;
+
+/** Longest allowed text per Cycle field. */
+export const CYCLE_TEXT = { goal: 140 };

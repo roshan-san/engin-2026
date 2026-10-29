@@ -1,7 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { threadKind } from "../shared/validators";
+import { threadKind } from "./rules";
 
 export const threadsTables = {
 	threads: defineTable({

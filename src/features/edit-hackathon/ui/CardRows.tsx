@@ -1,4 +1,5 @@
-import { MAX_HACKATHON_CARDS, TEXT } from "@convex/shared/limits";
+import { CARD_TEXT } from "@convex/cards/rules";
+import { MAX_HACKATHON_CARDS } from "@convex/hackathons/rules";
 import { XIcon } from "lucide-react";
 import { useState } from "react";
 import { ColumnIcon, NewCardInput, TILE_CLASS } from "~/entities/card";
@@ -103,7 +104,7 @@ function DraftCardTile({
 					aria-label={`Card ${number} title`}
 					placeholder="Card title"
 					value={card.title}
-					maxLength={TEXT.cardTitle}
+					maxLength={CARD_TEXT.title}
 					className={cn(BARE_FIELD_CLASS, "text-sm break-words")}
 					onChange={(e) =>
 						onChange({ title: e.target.value.replace(/\s*\n\s*/g, " ") })
@@ -131,14 +132,14 @@ function DraftCardTile({
 						aria-label={`Card ${number} notes`}
 						placeholder="Notes for the Participant"
 						value={card.notes}
-						maxLength={TEXT.notes}
+						maxLength={CARD_TEXT.notes}
 						className={cn(BARE_FIELD_CLASS, "text-xs text-muted-foreground")}
 						onChange={(e) => onChange({ notes: e.target.value })}
 						onBlur={() => {
 							if (!card.notes.trim()) setHasNotes(false);
 						}}
 					/>
-					<CharCount value={card.notes} max={TEXT.notes} />
+					<CharCount value={card.notes} max={CARD_TEXT.notes} />
 				</>
 			) : (
 				<button

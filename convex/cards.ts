@@ -13,13 +13,12 @@ import {
 	requireTeamOwner,
 	toCardView,
 } from "./cards/model";
-import { submitLandsIn } from "./cards/rules";
+import { shipped, submitLandsIn } from "./cards/rules";
 import {
 	loadHackathonCards,
 	requireHackathonFounder,
 } from "./hackathons/model";
 import { requireUserId } from "./lib/auth";
-import { shipped } from "./shared/validators";
 import { requireTeam } from "./startups/team";
 
 export const listBoard = query({

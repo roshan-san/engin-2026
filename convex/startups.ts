@@ -5,19 +5,9 @@ import { mutation, query } from "./_generated/server";
 import { shiftWeek, weekOf } from "./cycles/rules";
 import { loadHiringRecord } from "./hackathons/record";
 import { requireUserId } from "./lib/auth";
+import { EXPLORE_SCAN, MAX_EXPLORE_ROWS } from "./lib/explore";
 import { assertUrl, limitText, requireLimitedText } from "./lib/text";
-import {
-	EXPLORE_SCAN,
-	MAX_EXPLORE_ROWS,
-	MAX_USER_STARTUPS,
-	STARTING_RATING,
-	TEXT,
-} from "./shared/limits";
-import {
-	startupCategory,
-	startupCity,
-	startupStage,
-} from "./shared/validators";
+import { STARTING_RATING } from "./rating/rules";
 import {
 	buildUniqueSlug,
 	getStartupBySlug,
@@ -27,6 +17,13 @@ import {
 	toExploreStartup,
 	toPublicStartup,
 } from "./startups/model";
+import {
+	MAX_USER_STARTUPS,
+	STARTUP_TEXT,
+	startupCategory,
+	startupCity,
+	startupStage,
+} from "./startups/rules";
 import { getTeamRole, requireFounder } from "./startups/team";
 
 export const getBySlug = query({
@@ -105,8 +102,12 @@ export const create = mutation({
 				`You can found up to ${MAX_USER_STARTUPS} Startups`,
 			);
 		}
-		const name = requireLimitedText(args.name, "Name", TEXT.startupName);
-		const oneLiner = limitText(args.oneLiner, "One-liner", TEXT.oneLiner);
+		const name = requireLimitedText(args.name, "Name", STARTUP_TEXT.name);
+		const oneLiner = limitText(
+			args.oneLiner,
+			"One-liner",
+			STARTUP_TEXT.oneLiner,
+		);
 		const slug = await buildUniqueSlug(ctx, name);
 
 		const startupId = await ctx.db.insert("startups", {
@@ -153,10 +154,14 @@ export const update = mutation({
 		const patch: StartupPatch = {};
 
 		if (args.name !== undefined) {
-			patch.name = requireLimitedText(args.name, "Name", TEXT.startupName);
+			patch.name = requireLimitedText(args.name, "Name", STARTUP_TEXT.name);
 		}
 		if (args.oneLiner !== undefined) {
-			patch.oneLiner = limitText(args.oneLiner, "One-liner", TEXT.oneLiner);
+			patch.oneLiner = limitText(
+				args.oneLiner,
+				"One-liner",
+				STARTUP_TEXT.oneLiner,
+			);
 		}
 		if (args.website !== undefined) {
 			patch.website = assertUrl(args.website, "Website");

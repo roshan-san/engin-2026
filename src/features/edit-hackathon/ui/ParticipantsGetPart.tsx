@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/shared/limits";
+import { HACKATHON_TEXT } from "@convex/hackathons/rules";
 import { CharCount } from "~/shared/ui/CharCount";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
 import { Input } from "~/shared/ui/input";
@@ -35,7 +35,7 @@ export function ParticipantsGetPart({
 						aria-label="What Participants get"
 						placeholder="One line"
 						value={value.custom}
-						maxLength={TEXT.participantsGet}
+						maxLength={HACKATHON_TEXT.participantsGet}
 						onChange={(e) =>
 							onChange({
 								...value,
@@ -43,7 +43,10 @@ export function ParticipantsGetPart({
 							})
 						}
 					/>
-					<CharCount value={value.custom} max={TEXT.participantsGet} />
+					<CharCount
+						value={value.custom}
+						max={HACKATHON_TEXT.participantsGet}
+					/>
 				</div>
 			) : null}
 		</Part>

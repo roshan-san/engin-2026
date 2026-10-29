@@ -1,6 +1,6 @@
 import type { api } from "@convex/_generated/api";
 import { WEEK_MS } from "@convex/cycles/rules";
-import { WEEK_COUNT_CAP } from "@convex/shared/limits";
+import { WEEK_COUNT_CAP } from "@convex/rating/rules";
 import type { FunctionReturnType } from "convex/server";
 import { dateRange } from "./dates";
 

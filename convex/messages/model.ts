@@ -3,21 +3,21 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { loadImageUrls } from "../files/model";
 import { limitText } from "../lib/text";
+import { loadPublicUser, type PublicUser } from "../users/model";
 import {
 	MAX_MESSAGE_IMAGES,
 	MAX_MESSAGE_MENTIONS,
 	MAX_MESSAGES,
-	TEXT,
-} from "../shared/limits";
-import { loadPublicUser, type PublicUser } from "../users/model";
-import { parseMentions } from "./rules";
+	MESSAGE_TEXT,
+	parseMentions,
+} from "./rules";
 
 /** A trimmed message that has text, images, or both. */
 export function parseMessage(
 	body: string,
 	images: Id<"_storage">[] | undefined,
 ): { body: string; images: Id<"_storage">[] } {
-	const text = limitText(body, "Message", TEXT.message) ?? "";
+	const text = limitText(body, "Message", MESSAGE_TEXT.body) ?? "";
 	const attached = images ?? [];
 	if (attached.length > MAX_MESSAGE_IMAGES) {
 		throw new ConvexError(`Add up to ${MAX_MESSAGE_IMAGES} images`);

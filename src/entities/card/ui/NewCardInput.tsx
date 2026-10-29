@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/shared/limits";
+import { CARD_TEXT } from "@convex/cards/rules";
 import { PlusIcon } from "lucide-react";
 import { type Ref, useState } from "react";
 import { isSendKey } from "~/shared/lib/keys";
@@ -38,7 +38,7 @@ export function NewCardInput({
 					aria-label="New Card"
 					placeholder={placeholder}
 					value={title}
-					maxLength={TEXT.cardTitle}
+					maxLength={CARD_TEXT.title}
 					autoComplete="off"
 					className="peer min-h-9 resize-none border-transparent bg-transparent py-2 pr-8 pl-8 hover:border-transparent hover:bg-accent/40 focus-visible:border-input focus-visible:bg-card"
 					onChange={(event) =>

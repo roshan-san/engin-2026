@@ -1,5 +1,5 @@
 import type { Id } from "../_generated/dataModel";
-import { STARTING_RATING } from "../shared/limits";
+import { STARTING_RATING } from "../rating/rules";
 import type { Client, TestConvex } from "../testing/test.setup";
 import { onUserSignedIn } from "./model";
 

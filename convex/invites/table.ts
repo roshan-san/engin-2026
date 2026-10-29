@@ -1,7 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { inviteStatus } from "../shared/validators";
+import { inviteStatus } from "./rules";
 
 export const invitesTables = {
 	invites: defineTable({

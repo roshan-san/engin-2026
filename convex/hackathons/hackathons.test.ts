@@ -9,7 +9,6 @@ import {
 	startHackathon,
 } from "../applications/applications.setup";
 import { givePro } from "../billing/billing.setup";
-import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import {
 	addContributor,
 	type Setup,
@@ -24,6 +23,7 @@ import {
 	publishedHackathon,
 } from "./hackathons.setup";
 import { finishIfDecided } from "./lifecycle";
+import { MAX_LISTED_HACKATHONS } from "./rules";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {

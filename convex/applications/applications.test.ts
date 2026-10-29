@@ -3,7 +3,6 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
-import { MAX_APPLICATIONS } from "../shared/limits";
 import {
 	addContributor,
 	type Setup,
@@ -18,6 +17,7 @@ import {
 	participants,
 	startHackathon,
 } from "./applications.setup";
+import { MAX_APPLICATIONS } from "./rules";
 
 async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
 	return await participant.as.query(api.cards.listParticipantBoard, {

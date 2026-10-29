@@ -10,3 +10,9 @@ const TIER_FLOORS = [1000, 1150, 1300, 1450] as const;
 export function tierOf(rating: number): Tier {
 	return (TIER_FLOORS.filter((floor) => rating >= floor).length + 1) as Tier;
 }
+
+/** Rows rated per scheduled run of the weekly Rating. */
+export const RATING_PAGE = 20;
+/** Verified Cards counted per week; more shows as "50+". */
+export const WEEK_COUNT_CAP = 50;
+export const STARTING_RATING = 1000;

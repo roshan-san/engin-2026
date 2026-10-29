@@ -2,8 +2,8 @@ import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { loadVerifiedThisCycle, toTeamPerson } from "./contributors/model";
+import { MAX_CONTRIBUTORS } from "./contributors/rules";
 import { requireUserId } from "./lib/auth";
-import { MAX_CONTRIBUTORS } from "./shared/limits";
 import { requireFounder, requireTeam } from "./startups/team";
 
 export const list = query({

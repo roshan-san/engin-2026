@@ -1,3 +1,4 @@
+import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import type { HackathonPhase } from "../hackathons/rules";
 
@@ -115,3 +116,23 @@ function hackathonRefusal(card: RuledCard, actor: CardActor): string | null {
 			return "This Card isn't yours";
 	}
 }
+
+export const MAX_BOARD_CARDS = 200;
+export const MAX_SHIPPED_LINKS = 5;
+export const MAX_SHIPPED_IMAGES = 5;
+export const cardStatus = v.union(
+	v.literal("todo"),
+	v.literal("in_progress"),
+	/** Submitted, waiting for the Founder to verify. */
+	v.literal("review"),
+	v.literal("done"),
+);
+/** What shipped: the line, proof links and images a Contributor submits. */
+export const shipped = v.object({
+	line: v.string(),
+	links: v.array(v.string()),
+	images: v.array(v.id("_storage")),
+});
+
+/** Longest allowed text per Card field. */
+export const CARD_TEXT = { title: 120, notes: 5000, shippedLine: 140 };

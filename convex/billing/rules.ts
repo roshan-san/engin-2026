@@ -1,5 +1,5 @@
+import { v } from "convex/values";
 import { IST_OFFSET_MS } from "../cycles/rules";
-import { MAX_OPEN_HACKATHONS } from "../shared/limits";
 
 /**
  * Pro plans. Pro is hiring only: it lets a Founder publish Hackathons.
@@ -104,3 +104,23 @@ export function dayLabel(at: number): string {
 	const day = new Date(at + IST_OFFSET_MS);
 	return `${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]} ${day.getUTCFullYear()}`;
 }
+
+/** Hackathons one Founder may have open, live or deciding at once, across all their Startups. */
+export const MAX_OPEN_HACKATHONS = 4;
+/** Subscriptions read per Founder; old cancelled ones pile up slowly. */
+export const MAX_USER_SUBSCRIPTIONS = 20;
+export const planKey = v.union(
+	v.literal("monthly"),
+	v.literal("six_months"),
+	v.literal("yearly"),
+);
+/** Dodo's subscription statuses. Only `active` unlocks Pro. */
+export const subscriptionStatus = v.union(
+	v.literal("pending"),
+	v.literal("active"),
+	v.literal("on_hold"),
+	v.literal("paused"),
+	v.literal("cancelled"),
+	v.literal("failed"),
+	v.literal("expired"),
+);

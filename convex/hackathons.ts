@@ -23,10 +23,14 @@ import {
 	loadHiringRecord,
 	tallyParticipants,
 } from "./hackathons/record";
-import { phaseOf } from "./hackathons/rules";
+import {
+	hackathonWeeks,
+	jobRole,
+	MAX_LISTED_HACKATHONS,
+	phaseOf,
+} from "./hackathons/rules";
 import { requireUserId } from "./lib/auth";
-import { MAX_EXPLORE_ROWS, MAX_LISTED_HACKATHONS } from "./shared/limits";
-import { hackathonWeeks, jobRole } from "./shared/validators";
+import { MAX_EXPLORE_ROWS } from "./lib/explore";
 import { loadLogoUrl, toPublicStartup } from "./startups/model";
 import { getTeamRole, requireFounder, requireTeam } from "./startups/team";
 

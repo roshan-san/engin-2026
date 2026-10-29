@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/shared/limits";
+import { CARD_TEXT } from "@convex/cards/rules";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import type { CardView } from "~/entities/card";
 import { relativeTime } from "~/shared/lib/dates";
@@ -80,7 +80,7 @@ export function NotesField({
 				aria-label="Notes"
 				placeholder="Add notes"
 				value={draft}
-				maxLength={TEXT.notes}
+				maxLength={CARD_TEXT.notes}
 				className="min-h-24"
 				onChange={(e) => {
 					setDraft(e.target.value);

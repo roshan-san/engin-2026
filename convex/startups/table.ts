@@ -1,11 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import {
-	startupCategory,
-	startupCity,
-	startupStage,
-} from "../shared/validators";
+import { startupCategory, startupCity, startupStage } from "./rules";
 
 export const startupsTables = {
 	startups: defineTable({

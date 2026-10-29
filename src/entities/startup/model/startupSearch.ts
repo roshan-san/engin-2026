@@ -2,7 +2,7 @@ import type {
 	startupCategory,
 	startupCity,
 	startupStage,
-} from "@convex/shared/validators";
+} from "@convex/startups/rules";
 import type { Infer } from "convex/values";
 import { pickChip } from "~/shared/lib/search";
 import { CITIES, KINDS, STAGES } from "../config/startupChips";

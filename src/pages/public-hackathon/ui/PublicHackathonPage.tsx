@@ -1,5 +1,4 @@
-import { phaseOf } from "@convex/hackathons/rules";
-import { MAX_PARTICIPANTS } from "@convex/shared/limits";
+import { MAX_PARTICIPANTS, phaseOf } from "@convex/hackathons/rules";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { HackathonPost, STAGE, useHackathon } from "~/entities/hackathon";

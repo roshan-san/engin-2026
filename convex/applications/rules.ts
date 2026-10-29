@@ -1,7 +1,9 @@
-import type { Infer } from "convex/values";
-import { type HackathonPhase, isUnderway } from "../hackathons/rules";
-import { MAX_PARTICIPANTS } from "../shared/limits";
-import type { applicationStatus, decision } from "../shared/validators";
+import { type Infer, v } from "convex/values";
+import {
+	type HackathonPhase,
+	isUnderway,
+	MAX_PARTICIPANTS,
+} from "../hackathons/rules";
 
 export type Decision = Infer<typeof decision>;
 
@@ -93,3 +95,19 @@ function decideRefusal(
 				: null;
 	}
 }
+
+export const MAX_APPLICATIONS = 500;
+export const MAX_USER_APPLICATIONS = 100;
+export const applicationStatus = v.union(
+	v.literal("applied"),
+	v.literal("declined"),
+	v.literal("participating"),
+);
+export const decision = v.union(v.literal("hired"), v.literal("not_this_time"));
+
+/** Longest allowed text per Application field. */
+export const APPLICATION_TEXT = {
+	answer: 1000,
+	feedback: 280,
+	walkthroughNotes: 2000,
+};

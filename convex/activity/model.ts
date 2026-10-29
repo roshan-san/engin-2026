@@ -4,12 +4,15 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { loadGoal } from "../cycles/model";
 import {
 	cycleNumber,
+	MAX_CYCLE_ENTRIES,
+	MAX_LISTED_CYCLES,
 	shiftWeek,
 	WEEK_MS,
 	weekOf,
 	weekStart,
 } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
+import type { jobRole } from "../hackathons/rules";
 import {
 	buildParts,
 	countedWeeks,
@@ -17,10 +20,9 @@ import {
 	RATING,
 	toPartsView,
 } from "../rating/model";
-import { MAX_CYCLE_ENTRIES, MAX_LISTED_CYCLES } from "../shared/limits";
-import type { activityKind, jobRole } from "../shared/validators";
 import { buildRhythmStrip } from "../startups/model";
 import { loadPublicUser, type PublicUser } from "../users/model";
+import type { activityKind } from "./rules";
 
 type ActivityKind = Infer<typeof activityKind>;
 type JobRole = Infer<typeof jobRole>;

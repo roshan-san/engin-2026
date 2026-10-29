@@ -10,18 +10,18 @@ import {
 import { cardOn } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
-	MAX_MESSAGE_IMAGES,
-	MAX_MESSAGE_MENTIONS,
-	TEXT,
-} from "../shared/limits";
-import {
 	addContributor,
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
-import { mentionToken } from "./rules";
+import {
+	MAX_MESSAGE_IMAGES,
+	MAX_MESSAGE_MENTIONS,
+	MESSAGE_TEXT,
+	mentionToken,
+} from "./rules";
 
 async function teamThreadId(setup: Setup) {
 	const threads = await setup.founder.as.query(api.threads.list, {
@@ -362,9 +362,9 @@ describe("chat", () => {
 		await expect(
 			setup.founder.as.mutation(api.messages.send, {
 				threadId,
-				body: "x".repeat(TEXT.message + 1),
+				body: "x".repeat(MESSAGE_TEXT.body + 1),
 			}),
-		).rejects.toThrow(`Message must be under ${TEXT.message} characters`);
+		).rejects.toThrow(`Message must be under ${MESSAGE_TEXT.body} characters`);
 		await expect(
 			setup.founder.as.mutation(api.messages.send, {
 				threadId,

@@ -13,10 +13,10 @@ import {
 	subscriptionEvent,
 	syncSubscription,
 } from "./billing/model";
+import { planKey } from "./billing/rules";
 import { loadPlanView } from "./hackathons/model";
 import { requireUserId } from "./lib/auth";
 import { isSafeReturnPath } from "./lib/returnPath";
-import { planKey } from "./shared/validators";
 
 /** Every Dodo subscription webhook lands here. */
 export const sync = internalMutation({

@@ -1,7 +1,5 @@
-import type { Infer } from "convex/values";
+import { type Infer, v } from "convex/values";
 import { WEEK_MS } from "../cycles/rules";
-import { DECIDE_GRACE_MS } from "../shared/limits";
-import type { hackathonStatus } from "../shared/validators";
 
 export type HackathonPhase = Infer<typeof hackathonStatus>;
 
@@ -39,3 +37,45 @@ export function hackathonDates(
 	const endsAt = startsAt + weeks * WEEK_MS;
 	return { endsAt, decideBy: endsAt + DECIDE_GRACE_MS };
 }
+
+export const MAX_PARTICIPANTS = 10;
+export const MIN_HACKATHON_CARDS = 3;
+export const MAX_HACKATHON_CARDS = 5;
+export const MAX_LISTED_HACKATHONS = 50;
+/** How long after a Hackathon ends the Founder has to decide. */
+const DAY_MS = 24 * 60 * 60 * 1000;
+export const DECIDE_GRACE_MS = 7 * DAY_MS;
+export const hackathonStatus = v.union(
+	v.literal("draft"),
+	v.literal("open"),
+	v.literal("live"),
+	v.literal("deciding"),
+	v.literal("done"),
+);
+export const jobRole = v.union(
+	v.literal("frontend"),
+	v.literal("backend"),
+	v.literal("fullstack"),
+	v.literal("designer"),
+	v.literal("marketing"),
+	v.literal("sales"),
+	v.literal("ops"),
+	v.literal("other"),
+);
+export const jobPay = v.union(
+	v.literal("3_6l"),
+	v.literal("6_9l"),
+	v.literal("9_15l"),
+	v.literal("equity"),
+	v.literal("unpaid"),
+);
+export const jobMode = v.union(
+	v.literal("remote"),
+	v.literal("onsite"),
+	v.literal("hybrid"),
+);
+/** How long a Hackathon runs, in weeks. */
+export const hackathonWeeks = v.union(v.literal(1), v.literal(2));
+
+/** Longest allowed text per Hackathon field. */
+export const HACKATHON_TEXT = { participantsGet: 140 };

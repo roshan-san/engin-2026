@@ -1,4 +1,4 @@
-import type { jobMode, jobPay, jobRole } from "@convex/shared/validators";
+import type { jobMode, jobPay, jobRole } from "@convex/hackathons/rules";
 import type { Infer } from "convex/values";
 
 type Chip<T extends string> = { readonly value: T; readonly label: string };

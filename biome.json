@@ -102,6 +102,7 @@
 											"!@convex/cards/rules",
 											"!@convex/messages/rules",
 											"!@convex/places/rules",
+											"!@convex/startups/rules",
 											"../**/convex/**",
 											"!../**/convex/_generated/**",
 											"!../**/convex/shared/**",
@@ -113,7 +114,8 @@
 											"!../**/convex/applications/rules",
 											"!../**/convex/cards/rules",
 											"!../**/convex/messages/rules",
-											"!../**/convex/places/rules"
+											"!../**/convex/places/rules",
+											"!../**/convex/startups/rules"
 										],
 										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
 									}

@@ -3,13 +3,13 @@ import { ConvexError } from "convex/values";
 import { components } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { MAX_BOARD_CARDS } from "../cards/rules";
 import { requireLimitedText } from "../lib/text";
 import {
-	MAX_BOARD_CARDS,
 	MAX_PRESENCE_INTERVAL_MS,
 	MIN_PRESENCE_INTERVAL_MS,
-	TEXT,
-} from "../shared/limits";
+	PRESENCE_TEXT,
+} from "./rules";
 
 export const presence = new Presence(components.presence);
 
@@ -18,7 +18,7 @@ export function parseHeartbeat(args: { sessionId: string; interval: number }) {
 	const sessionId = requireLimitedText(
 		args.sessionId,
 		"Session",
-		TEXT.sessionId,
+		PRESENCE_TEXT.sessionId,
 	);
 	if (
 		!Number.isFinite(args.interval) ||

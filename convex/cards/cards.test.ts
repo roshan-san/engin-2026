@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
-import { MAX_BOARD_CARDS } from "../shared/limits";
 import {
 	addContributor,
 	type Setup,
@@ -11,6 +10,7 @@ import {
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { cardOn, SHIPPED } from "./cards.setup";
+import { MAX_BOARD_CARDS } from "./rules";
 
 async function boardOf(setup: Setup, who = setup.founder) {
 	return await who.as.query(api.cards.listBoard, {

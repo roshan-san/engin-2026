@@ -34,3 +34,10 @@ export function splitBody(body: string): BodyPart[] {
 	}
 	return parts;
 }
+
+export const MAX_MESSAGES = 100;
+export const MAX_MESSAGE_IMAGES = 4;
+export const MAX_MESSAGE_MENTIONS = 10;
+
+/** Longest allowed text per Message field. */
+export const MESSAGE_TEXT = { body: 2000 };

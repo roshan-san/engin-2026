@@ -4,15 +4,13 @@ import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import { limitText } from "./lib/text";
-import { TEXT } from "./shared/limits";
-import { discipline } from "./shared/validators";
 import {
 	loadProfileRecord,
 	toOwnProfile,
 	toProfileAbout,
 	toPublicProfile,
 } from "./users/model";
-import { normalizeUsername } from "./users/rules";
+import { discipline, normalizeUsername, USER_TEXT } from "./users/rules";
 import { requireUsername } from "./users/username";
 
 export const getMe = query({
@@ -79,7 +77,7 @@ export const updateProfile = mutation({
 			patch.username = username;
 		}
 		if (args.bio !== undefined) {
-			patch.bio = limitText(args.bio, "Bio", TEXT.bio);
+			patch.bio = limitText(args.bio, "Bio", USER_TEXT.bio);
 		}
 		if (args.discipline !== undefined) {
 			patch.discipline = args.discipline ?? undefined;

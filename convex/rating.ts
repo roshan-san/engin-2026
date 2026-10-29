@@ -3,7 +3,7 @@ import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 import { WEEK_MS, weekOf } from "./cycles/rules";
 import { rateStartup, rateUser } from "./rating/model";
-import { RATING_PAGE } from "./shared/limits";
+import { RATING_PAGE } from "./rating/rules";
 
 const pageArgs = {
 	week: v.optional(v.string()),

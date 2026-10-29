@@ -1,7 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { planKey, subscriptionStatus } from "../shared/validators";
+import { planKey, subscriptionStatus } from "./rules";
 
 export const billingTables = {
 	/** A copy of a Dodo subscription, kept in sync by Dodo's webhooks. Dodo is the source of truth. */

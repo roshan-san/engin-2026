@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/shared/limits";
+import { CARD_TEXT } from "@convex/cards/rules";
 import { useRef } from "react";
 import type { CardView } from "~/entities/card";
 import { Textarea } from "~/shared/ui/textarea";
@@ -48,7 +48,7 @@ export function TitleField({
 			aria-label="Title"
 			rows={1}
 			value={draft}
-			maxLength={TEXT.cardTitle}
+			maxLength={CARD_TEXT.title}
 			className="-mx-2 min-h-0 w-[calc(100%+1rem)] resize-none border-transparent bg-transparent px-2 py-1 text-lg font-semibold hover:border-transparent hover:bg-accent/40 focus-visible:bg-background md:text-lg"
 			onChange={(e) => setDraft(e.target.value.replace(/\s*\n\s*/g, " "))}
 			onFocus={() => setIsFocused(true)}

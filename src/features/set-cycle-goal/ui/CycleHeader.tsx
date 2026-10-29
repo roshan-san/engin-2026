@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/shared/limits";
+import { CYCLE_TEXT } from "@convex/cycles/rules";
 import { useRef, useState } from "react";
 import { useCycle } from "~/entities/cycle";
 import { useWorkspace } from "~/entities/startup";
@@ -68,7 +68,7 @@ export function CycleHeader() {
 					aria-label="Cycle goal"
 					placeholder="Set this week's goal"
 					value={draft ?? goal}
-					maxLength={TEXT.goal}
+					maxLength={CYCLE_TEXT.goal}
 					autoComplete="off"
 					className="h-8 truncate border-transparent bg-transparent px-2 hover:border-transparent hover:bg-accent/50 focus-visible:border-input focus-visible:bg-background"
 					onFocus={() => {

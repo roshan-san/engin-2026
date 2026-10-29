@@ -2,21 +2,25 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { loadPlan, planViewFor } from "../billing/model";
-import { PLANS, type PlanView } from "../billing/rules";
+import { MAX_OPEN_HACKATHONS, PLANS, type PlanView } from "../billing/rules";
+import { CARD_TEXT } from "../cards/rules";
 import { weekOf, weekStart } from "../cycles/rules";
 import { limitText, requireLimitedText } from "../lib/text";
-import {
-	MAX_HACKATHON_CARDS,
-	MAX_OPEN_HACKATHONS,
-	MAX_PARTICIPANTS,
-	MIN_HACKATHON_CARDS,
-	TEXT,
-} from "../shared/limits";
-import { jobMode, jobPay, jobRole } from "../shared/validators";
 import { loadFoundedStartups } from "../startups/model";
+import { STARTUP_TEXT } from "../startups/rules";
 import { requireFounder } from "../startups/team";
 import type { HiringRecord } from "./record";
-import { hackathonDates, RUNNING } from "./rules";
+import {
+	HACKATHON_TEXT,
+	hackathonDates,
+	jobMode,
+	jobPay,
+	jobRole,
+	MAX_HACKATHON_CARDS,
+	MAX_PARTICIPANTS,
+	MIN_HACKATHON_CARDS,
+	RUNNING,
+} from "./rules";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {
@@ -62,18 +66,18 @@ export function requireValidDraft(input: DraftInput, now: number) {
 
 	return {
 		job: input.job,
-		problem: requireLimitedText(input.problem, "Problem", TEXT.problem),
+		problem: requireLimitedText(input.problem, "Problem", STARTUP_TEXT.problem),
 		weeks,
 		startsAt: input.startsAt,
 		...hackathonDates(input.startsAt, weeks),
 		participantsGet: limitText(
 			input.participantsGet,
 			"Participants get",
-			TEXT.participantsGet,
+			HACKATHON_TEXT.participantsGet,
 		),
 		cards: input.cards.map((card) => ({
-			title: requireLimitedText(card.title, "Card title", TEXT.cardTitle),
-			notes: limitText(card.notes, "Notes", TEXT.notes) ?? "",
+			title: requireLimitedText(card.title, "Card title", CARD_TEXT.title),
+			notes: limitText(card.notes, "Notes", CARD_TEXT.notes) ?? "",
 		})),
 	};
 }

@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { requireLimitedText } from "../lib/text";
-import { TEXT } from "../shared/limits";
+import { CYCLE_TEXT } from "./rules";
 
 async function loadGoalRow(
 	ctx: QueryCtx | MutationCtx,
@@ -39,7 +39,7 @@ export async function saveGoal(
 		}
 		return;
 	}
-	const text = requireLimitedText(goal, "Goal", TEXT.goal);
+	const text = requireLimitedText(goal, "Goal", CYCLE_TEXT.goal);
 	if (existing) {
 		await ctx.db.patch(existing._id, { goal: text });
 		return;

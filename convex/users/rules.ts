@@ -1,4 +1,4 @@
-import { MIN_USERNAME_LENGTH, TEXT } from "../shared/limits";
+import { v } from "convex/values";
 
 export const RESERVED_USERNAMES = new Set([
 	"app",
@@ -41,11 +41,26 @@ export function usernameProblem(value: string): string | null {
 	if (!/^[a-z]/.test(username)) {
 		return "Start with a letter.";
 	}
-	if (username.length > TEXT.username) {
-		return `Use at most ${TEXT.username} characters.`;
+	if (username.length > USER_TEXT.username) {
+		return `Use at most ${USER_TEXT.username} characters.`;
 	}
 	if (RESERVED_USERNAMES.has(username)) {
 		return "This username is not available";
 	}
 	return null;
 }
+
+export const MIN_USERNAME_LENGTH = 3;
+/** Verified Cards read for a profile; more shows as "500+". */
+export const MAX_PROFILE_ROWS = 500;
+export const discipline = v.union(
+	v.literal("engineer"),
+	v.literal("designer"),
+	v.literal("marketing"),
+	v.literal("sales"),
+	v.literal("ops"),
+	v.literal("other"),
+);
+
+/** Longest allowed text per profile field. */
+export const USER_TEXT = { bio: 280, username: 20 };

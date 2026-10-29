@@ -11,13 +11,12 @@ import {
 	requireOpen,
 	toFounderApplicationView,
 } from "./applications/model";
+import { APPLICATION_TEXT, decision } from "./applications/rules";
 import { finishIfDecided } from "./hackathons/lifecycle";
 import { loadParticipants, requireHackathonFounder } from "./hackathons/model";
 import { ensureHireInvite } from "./invites/model";
 import { requireUserId } from "./lib/auth";
 import { limitText, requireLimitedText } from "./lib/text";
-import { TEXT } from "./shared/limits";
-import { decision } from "./shared/validators";
 import { getTeamRole } from "./startups/team";
 import {
 	isProvisional,
@@ -102,7 +101,11 @@ export const apply = mutation({
 		if (await getApplication(ctx, hackathon._id, userId)) {
 			throw new ConvexError("You've already applied");
 		}
-		const answer = requireLimitedText(args.answer, "Answer", TEXT.answer);
+		const answer = requireLimitedText(
+			args.answer,
+			"Answer",
+			APPLICATION_TEXT.answer,
+		);
 
 		const applicationId = await ctx.db.insert("applications", {
 			hackathonId: hackathon._id,
@@ -182,7 +185,11 @@ export const markWalkthrough = mutation({
 			userId,
 		);
 		requireApplicationAllowed(application, hackathon, { kind: "walkthrough" });
-		const notes = limitText(args.notes, "Notes", TEXT.walkthroughNotes);
+		const notes = limitText(
+			args.notes,
+			"Notes",
+			APPLICATION_TEXT.walkthroughNotes,
+		);
 
 		await ctx.db.patch(application._id, {
 			walkthroughAt: Date.now(),
@@ -209,7 +216,11 @@ export const decide = mutation({
 			decision: args.decision,
 		});
 		const now = Date.now();
-		const feedback = limitText(args.feedback, "Feedback", TEXT.feedback);
+		const feedback = limitText(
+			args.feedback,
+			"Feedback",
+			APPLICATION_TEXT.feedback,
+		);
 
 		await ctx.db.patch(application._id, { decision: args.decision, feedback });
 		if (args.decision === "hired") {

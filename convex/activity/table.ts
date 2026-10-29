@@ -1,7 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { activityKind } from "../shared/validators";
+import { activityKind } from "./rules";
 
 export const activityTables = {
 	/** Append-only; written only through `appendActivity`. */

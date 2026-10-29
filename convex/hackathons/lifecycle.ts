@@ -3,8 +3,8 @@ import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
+import { MAX_APPLICATIONS } from "../applications/rules";
 import { publishBlockFor, publishBlockMessage } from "../billing/rules";
-import { MAX_APPLICATIONS } from "../shared/limits";
 import { loadParticipants, loadPlanView } from "./model";
 
 // Every write to a Hackathon's `status` lives here. Explicit return types: this file

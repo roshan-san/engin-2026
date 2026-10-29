@@ -1,9 +1,13 @@
 import { type ObjectType, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_USER_SUBSCRIPTIONS } from "../shared/limits";
-import { subscriptionStatus } from "../shared/validators";
-import { PLANS, type PlanKey, type PlanView } from "./rules";
+import {
+	MAX_USER_SUBSCRIPTIONS,
+	PLANS,
+	type PlanKey,
+	type PlanView,
+	subscriptionStatus,
+} from "./rules";
 
 async function loadSubscriptions(
 	ctx: QueryCtx,

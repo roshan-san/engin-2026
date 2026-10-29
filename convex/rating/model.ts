@@ -1,13 +1,10 @@
 // The pure section needs no Convex server imports.
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { MAX_USER_APPLICATIONS } from "../applications/rules";
 import { shiftWeek, weekOf } from "../cycles/rules";
 import { phaseOf } from "../hackathons/rules";
-import {
-	MAX_USER_APPLICATIONS,
-	STARTING_RATING,
-	WEEK_COUNT_CAP,
-} from "../shared/limits";
+import { STARTING_RATING, WEEK_COUNT_CAP } from "./rules";
 
 export const RATING = {
 	weeks: 12,

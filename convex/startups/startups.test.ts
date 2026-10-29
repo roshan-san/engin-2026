@@ -6,9 +6,9 @@ import {
 	publishedHackathon,
 } from "../hackathons/hackathons.setup";
 import { runRating, toNextWeek, verifyCards } from "../rating/rating.setup";
-import { MAX_USER_STARTUPS } from "../shared/limits";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
+import { MAX_USER_STARTUPS } from "./rules";
 import { addContributor, setUpStartup } from "./startups.setup";
 
 const acme = {

@@ -6,8 +6,8 @@ import {
 	startHackathon,
 } from "../applications/applications.setup";
 import { cardOn, SHIPPED } from "../cards/cards.setup";
+import { MAX_LISTED_CYCLES } from "../cycles/rules";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
-import { MAX_LISTED_CYCLES } from "../shared/limits";
 import {
 	addContributor,
 	type Setup,

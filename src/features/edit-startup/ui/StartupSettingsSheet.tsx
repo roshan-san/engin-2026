@@ -1,5 +1,5 @@
 import type { Doc } from "@convex/_generated/dataModel";
-import { TEXT } from "@convex/shared/limits";
+import { STARTUP_TEXT } from "@convex/startups/rules";
 import { type FormEvent, useRef, useState } from "react";
 import { CITIES, KINDS, STAGES, useStartup } from "~/entities/startup";
 import {
@@ -148,7 +148,7 @@ function StartupSettings({
 				<Input
 					id="startup-name"
 					value={draft.name}
-					maxLength={TEXT.startupName}
+					maxLength={STARTUP_TEXT.name}
 					onChange={(event) => set("name", event.target.value)}
 				/>
 			</div>
@@ -158,7 +158,7 @@ function StartupSettings({
 				<Input
 					id="startup-one-liner"
 					value={draft.oneLiner}
-					maxLength={TEXT.oneLiner}
+					maxLength={STARTUP_TEXT.oneLiner}
 					onChange={(event) => set("oneLiner", event.target.value)}
 				/>
 				<MentorNote>Who it's for. What changes for them.</MentorNote>

@@ -10,7 +10,8 @@ import {
 	recentOutcomes,
 	toPartsView,
 } from "../rating/model";
-import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
+import { STARTING_RATING } from "../rating/rules";
+import { MAX_PROFILE_ROWS } from "./rules";
 import { buildUniqueUsername } from "./username";
 
 export type PublicUser = {

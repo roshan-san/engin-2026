@@ -7,8 +7,8 @@ import {
 	normalizeEmail,
 	requireOpenInviteFor,
 } from "./invites/model";
+import { MAX_INVITES } from "./invites/rules";
 import { requireUserId } from "./lib/auth";
-import { MAX_INVITES } from "./shared/limits";
 import { getTeamRole, requireFounder } from "./startups/team";
 
 /** The Founder's pending, unexpired Invites for the Startup. */

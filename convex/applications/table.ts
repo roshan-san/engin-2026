@@ -1,7 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { applicationStatus, decision } from "../shared/validators";
+import { applicationStatus, decision } from "./rules";
 
 export const applicationsTables = {
 	applications: defineTable({
