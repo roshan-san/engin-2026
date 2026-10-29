@@ -12,7 +12,7 @@ import { FilterChips } from "~/shared/ui/FilterChips";
 import { NoMatches } from "~/shared/ui/NoMatches";
 import { RowList } from "~/shared/ui/RowList";
 import { RowsSkeleton } from "~/shared/ui/RowsSkeleton";
-import { ExploreLayout } from "./ExploreLayout";
+import { ExploreLayout } from "~/widgets/explore-layout";
 
 const route = getRouteApi("/_shell/explore/startups");
 
