@@ -1,4 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { useApplicant } from "~/entities/application";
 import { hackathonLine, workLine } from "~/entities/person";
 import { Button } from "~/shared/ui/button";
 import { Kbd } from "~/shared/ui/Kbd";
@@ -10,7 +11,6 @@ import { RatingParts } from "~/shared/ui/RatingParts";
 import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { useApplicant } from "./useApplicants";
 
 /** One Applicant: their answer, their Rating and its parts, and what they've done. */
 export function ApplicantDetail({

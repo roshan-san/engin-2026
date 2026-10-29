@@ -1,31 +1,19 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Navigate, Outlet } from "@tanstack/react-router";
-import { createContext, useContext, useMemo } from "react";
+import { useMemo } from "react";
+import {
+	type Hackathon,
+	ParticipantContext,
+	participantStatus,
+} from "~/entities/application";
 import { useHackathon } from "~/entities/hackathon";
 import { useMe } from "~/entities/person";
 import { type BoardScope, BoardScopeContext } from "~/features/work";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
-import { type ParticipantStatus, participantStatus } from "./participantStatus";
 
 const route = getRouteApi("/_shell/_authed/h/$id");
-
-export type Hackathon = NonNullable<ReturnType<typeof useHackathon>>;
-type Participant = {
-	page: Hackathon;
-	userId: Id<"users">;
-	status: ParticipantStatus;
-};
-
-const ParticipantContext = createContext<Participant | null>(null);
-
-/** The Participant's Hackathon and their place in it; only inside `ParticipantGate`. */
-export function useParticipant(): Participant {
-	const participant = useContext(ParticipantContext);
-	if (!participant) throw new Error("useParticipant outside ParticipantGate");
-	return participant;
-}
 
 /** Loads the Hackathon for its Board and Brief; anyone not participating goes to the public post. */
 export function ParticipantGate() {

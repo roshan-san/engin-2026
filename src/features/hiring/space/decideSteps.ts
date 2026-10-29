@@ -3,7 +3,7 @@ import type {
 	Decision,
 } from "@convex/shared/applicationRules";
 import type { HackathonPhase } from "@convex/shared/hackathonPhase";
-import { refusalFor, type ViewedApplication } from "./applicationRules";
+import { refusalFor, type ViewedApplication } from "~/entities/application";
 
 export type DecideState = {
 	readonly canShortlist: boolean;

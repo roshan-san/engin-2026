@@ -1,8 +1,8 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowRight, Compass, Plus } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
+import { participantStatusText } from "~/entities/application";
 import { useMe } from "~/entities/person";
-import { participantStatusText } from "~/features/hiring";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";

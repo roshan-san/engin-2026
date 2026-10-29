@@ -3,6 +3,7 @@ import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { ApplicantRow } from "~/entities/application";
 import { ThreadPanel } from "~/features/chat";
 import {
 	Board,
@@ -21,7 +22,6 @@ import { PersonName } from "~/shared/ui/PersonName";
 import { Segmented } from "~/shared/ui/Segmented";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";
 import { useDecide } from "./useDecide";

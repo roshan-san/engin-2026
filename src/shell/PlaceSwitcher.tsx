@@ -9,7 +9,7 @@ import {
 	SearchIcon,
 } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
-import { participantStatusText } from "~/features/hiring";
+import { participantStatusText } from "~/entities/application";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import {

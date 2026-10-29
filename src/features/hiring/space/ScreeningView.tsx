@@ -2,6 +2,12 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+	ApplicantList,
+	refusalFor,
+	sortApplicants,
+	useApplicants,
+} from "~/entities/application";
 import { HackathonPost } from "~/entities/hackathon";
 import { useWorkspace } from "~/entities/startup";
 import { dayLabel } from "~/shared/lib/dates";
@@ -27,13 +33,10 @@ import { Segmented } from "~/shared/ui/Segmented";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { ApplicantDetail } from "./ApplicantDetail";
-import { ApplicantList } from "./ApplicantList";
-import { sortApplicants } from "./applicantSort";
-import { refusalFor } from "./applicationRules";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { EveryonePanel } from "./EveryonePanel";
-import { useApplicants, useScreening } from "./useApplicants";
 import { useListKeys } from "./useListKeys";
+import { useScreening } from "./useScreening";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

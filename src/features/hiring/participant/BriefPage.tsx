@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
+import { useParticipant } from "~/entities/application";
 import { roleLabel } from "~/shared/config/jobs";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { ParticipantBrief } from "./ParticipantBrief";
-import { useParticipant } from "./ParticipantGate";
 
 /** The Participant's Brief tab: the problem and how it ends, full width. */
 export function BriefPage() {

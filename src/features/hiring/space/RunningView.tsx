@@ -2,6 +2,7 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
+import { useApplicants } from "~/entities/application";
 import { useWorkspace } from "~/entities/startup";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
@@ -24,7 +25,6 @@ import {
 	type SidebarParticipant,
 	sidebarItems,
 } from "./sidebarItems";
-import { useApplicants } from "./useApplicants";
 import { useHackathonThreads } from "./useHackathonThreads";
 import { useReviewQueue } from "./useReviewQueue";
 

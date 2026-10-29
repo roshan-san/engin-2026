@@ -1,6 +1,7 @@
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
+import { useApplicants } from "~/entities/application";
 import { STAGE, stageDate, useSpace } from "~/entities/hackathon";
 import { useWorkspace } from "~/entities/startup";
 import { roleLabel } from "~/shared/config/jobs";
@@ -13,7 +14,6 @@ import { CopyLinkButton } from "./CopyLinkButton";
 import { DraftView } from "./DraftView";
 import { RunningView } from "./RunningView";
 import { ScreeningView } from "./ScreeningView";
-import { useApplicants } from "./useApplicants";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

@@ -2,7 +2,7 @@ import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { PersonName } from "~/shared/ui/PersonName";
-import type { ApplicantRow } from "./applicantSort";
+import type { ApplicantRow } from "../model/applicantSort";
 
 const STATUS_LABEL = {
 	applied: null,
