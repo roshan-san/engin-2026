@@ -93,9 +93,11 @@
 											"@convex/**",
 											"!@convex/_generated/**",
 											"!@convex/shared/**",
+											"!@convex/billing/rules",
 											"../**/convex/**",
 											"!../**/convex/_generated/**",
-											"!../**/convex/shared/**"
+											"!../**/convex/shared/**",
+											"!../**/convex/billing/rules"
 										],
 										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
 									}

@@ -1,7 +1,7 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema } from "convex/server";
+import { billingTables } from "./billing/table";
 import { maintenanceTables } from "./maintenance/table";
-import { billingTables } from "./tables/billing";
 import { chatTables } from "./tables/chat";
 import { hiringTables } from "./tables/hiring";
 import { peopleTables } from "./tables/people";

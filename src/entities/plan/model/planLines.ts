@@ -4,7 +4,7 @@ import {
 	PLANS,
 	type PlanKey,
 	type PlanView,
-} from "@convex/shared/plans";
+} from "@convex/billing/rules";
 
 export type PlanLine = {
 	key: PlanKey;

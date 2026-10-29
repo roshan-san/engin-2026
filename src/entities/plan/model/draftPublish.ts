@@ -2,7 +2,7 @@ import {
 	type PlanView,
 	publishBlockFor,
 	publishBlockMessage,
-} from "@convex/shared/plans";
+} from "@convex/billing/rules";
 
 export const PAYMENT_ISSUE =
 	"Your last payment didn't go through. Update your card in Manage billing to publish.";

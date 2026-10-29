@@ -1,4 +1,4 @@
-import { PLANS } from "@convex/shared/plans";
+import { PLANS } from "@convex/billing/rules";
 import { describe, expect, it } from "vitest";
 import { planLines, planSummary } from "./planLines";
 

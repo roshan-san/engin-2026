@@ -9,9 +9,11 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as billing_checkout from "../billing/checkout.js";
-import type * as billing_portal from "../billing/portal.js";
-import type * as billing_subscriptions from "../billing/subscriptions.js";
+import type * as billing from "../billing.js";
+import type * as billing_dodo from "../billing/dodo.js";
+import type * as billing_model from "../billing/model.js";
+import type * as billing_rules from "../billing/rules.js";
+import type * as billing_table from "../billing/table.js";
 import type * as chat_messages from "../chat/messages.js";
 import type * as chat_threads from "../chat/threads.js";
 import type * as crons from "../crons.js";
@@ -28,10 +30,8 @@ import type * as maintenance_model from "../maintenance/model.js";
 import type * as maintenance_table from "../maintenance/table.js";
 import type * as model_activity from "../model/activity.js";
 import type * as model_applications from "../model/applications.js";
-import type * as model_billing from "../model/billing.js";
 import type * as model_cards from "../model/cards.js";
 import type * as model_contributors from "../model/contributors.js";
-import type * as model_dodo from "../model/dodo.js";
 import type * as model_goals from "../model/goals.js";
 import type * as model_hackathonLifecycle from "../model/hackathonLifecycle.js";
 import type * as model_hackathons from "../model/hackathons.js";
@@ -58,14 +58,11 @@ import type * as shared_hackathonPhase from "../shared/hackathonPhase.js";
 import type * as shared_limits from "../shared/limits.js";
 import type * as shared_mentions from "../shared/mentions.js";
 import type * as shared_places from "../shared/places.js";
-import type * as shared_plans from "../shared/plans.js";
-import type * as shared_tiers from "../shared/tiers.js";
 import type * as shared_username from "../shared/username.js";
 import type * as shared_validators from "../shared/validators.js";
 import type * as startups_contributors from "../startups/contributors.js";
 import type * as startups_invites from "../startups/invites.js";
 import type * as startups_startups from "../startups/startups.js";
-import type * as tables_billing from "../tables/billing.js";
 import type * as tables_chat from "../tables/chat.js";
 import type * as tables_hiring from "../tables/hiring.js";
 import type * as tables_people from "../tables/people.js";
@@ -83,9 +80,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  "billing/checkout": typeof billing_checkout;
-  "billing/portal": typeof billing_portal;
-  "billing/subscriptions": typeof billing_subscriptions;
+  billing: typeof billing;
+  "billing/dodo": typeof billing_dodo;
+  "billing/model": typeof billing_model;
+  "billing/rules": typeof billing_rules;
+  "billing/table": typeof billing_table;
   "chat/messages": typeof chat_messages;
   "chat/threads": typeof chat_threads;
   crons: typeof crons;
@@ -102,10 +101,8 @@ declare const fullApi: ApiFromModules<{
   "maintenance/table": typeof maintenance_table;
   "model/activity": typeof model_activity;
   "model/applications": typeof model_applications;
-  "model/billing": typeof model_billing;
   "model/cards": typeof model_cards;
   "model/contributors": typeof model_contributors;
-  "model/dodo": typeof model_dodo;
   "model/goals": typeof model_goals;
   "model/hackathonLifecycle": typeof model_hackathonLifecycle;
   "model/hackathons": typeof model_hackathons;
@@ -132,14 +129,11 @@ declare const fullApi: ApiFromModules<{
   "shared/limits": typeof shared_limits;
   "shared/mentions": typeof shared_mentions;
   "shared/places": typeof shared_places;
-  "shared/plans": typeof shared_plans;
-  "shared/tiers": typeof shared_tiers;
   "shared/username": typeof shared_username;
   "shared/validators": typeof shared_validators;
   "startups/contributors": typeof startups_contributors;
   "startups/invites": typeof startups_invites;
   "startups/startups": typeof startups_startups;
-  "tables/billing": typeof tables_billing;
   "tables/chat": typeof tables_chat;
   "tables/hiring": typeof tables_hiring;
   "tables/people": typeof tables_people;

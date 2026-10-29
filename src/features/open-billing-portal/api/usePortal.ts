@@ -8,7 +8,7 @@ import { attempt } from "~/shared/lib/errors";
  * and turns off only when opening fails; failures are toasted.
  */
 export function usePortal() {
-	const open = useAction(api.billing.portal.open);
+	const open = useAction(api.billing.openPortal);
 	const [isOpening, setIsOpening] = useState(false);
 
 	async function openPortal() {

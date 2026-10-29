@@ -1,11 +1,9 @@
 import { type ObjectType, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { MAX_OPEN_HACKATHONS, MAX_USER_SUBSCRIPTIONS } from "../shared/limits";
-import { PLANS, type PlanKey, type PlanView } from "../shared/plans";
+import { MAX_USER_SUBSCRIPTIONS } from "../shared/limits";
 import { subscriptionStatus } from "../shared/validators";
-import { loadRunningHackathons } from "./hackathons";
-import { loadFoundedStartups } from "./startups";
+import { PLANS, type PlanKey, type PlanView } from "./rules";
 
 async function loadSubscriptions(
 	ctx: QueryCtx,
@@ -18,7 +16,7 @@ async function loadSubscriptions(
 }
 
 /** The Founder's plan: their active subscription that runs longest, or null. */
-async function loadPlan(
+export async function loadPlan(
 	ctx: QueryCtx,
 	userId: Id<"users">,
 ): Promise<Doc<"subscriptions"> | null> {
@@ -53,65 +51,21 @@ export async function hasPaymentIssue(
 	);
 }
 
-/** Hackathons published since `since` across the Startups, counting up to `limit`. */
-async function countPublishedSince(
-	ctx: QueryCtx,
-	startupIds: Id<"startups">[],
-	since: number,
-	limit: number,
-): Promise<number> {
-	let count = 0;
-	for (const startupId of startupIds) {
-		const published = await ctx.db
-			.query("hackathons")
-			.withIndex("by_startup_and_publishedAt", (q) =>
-				q.eq("startupId", startupId).gte("publishedAt", since),
-			)
-			.take(limit - count);
-		count += published.length;
-		if (count >= limit) break;
-	}
-	return count;
-}
+/** Usage counted against a plan's allowance. */
+export type PlanUsage = { published: number; running: number };
 
-/** Hackathons open, live or deciding across the Startups, counting up to the cap. */
-async function countRunning(
-	ctx: QueryCtx,
-	startupIds: Id<"startups">[],
-): Promise<number> {
-	const running = await Promise.all(
-		startupIds.map((startupId) =>
-			loadRunningHackathons(ctx, startupId, MAX_OPEN_HACKATHONS),
-		),
-	);
-	return Math.min(running.flat().length, MAX_OPEN_HACKATHONS);
-}
-
-/** The Founder's plan with what's left of it, or null without Pro. */
-export async function loadPlanView(
-	ctx: QueryCtx,
-	userId: Id<"users">,
-): Promise<PlanView | null> {
-	const plan = await loadPlan(ctx, userId);
-	if (!plan) {
-		return null;
-	}
+/** The plan with what is left of it, given the Hackathons published this period and running now. */
+export function planViewFor(
+	plan: NonNullable<Awaited<ReturnType<typeof loadPlan>>>,
+	usage: PlanUsage,
+): PlanView {
 	const allowance = PLANS[plan.plan].hackathonsPerPeriod;
-	const startupIds = (await loadFoundedStartups(ctx, userId)).map(
-		(startup) => startup._id,
-	);
-	const published = await countPublishedSince(
-		ctx,
-		startupIds,
-		plan.periodStart,
-		allowance,
-	);
 	return {
 		plan: plan.plan,
 		periodEnd: plan.periodEnd,
 		allowance,
-		hackathonsLeft: allowance - published,
-		running: await countRunning(ctx, startupIds),
+		hackathonsLeft: allowance - usage.published,
+		running: usage.running,
 	};
 }
 

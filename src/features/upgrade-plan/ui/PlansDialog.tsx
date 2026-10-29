@@ -1,4 +1,4 @@
-import { DEFAULT_PLAN, type PlanKey } from "@convex/shared/plans";
+import { DEFAULT_PLAN, type PlanKey } from "@convex/billing/rules";
 import { useState } from "react";
 import { planLines } from "~/entities/plan";
 import { cn } from "~/shared/lib/cn";

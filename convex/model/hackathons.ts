@@ -1,16 +1,20 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { loadPlan, planViewFor } from "../billing/model";
+import { PLANS, type PlanView } from "../billing/rules";
 import { limitText, requireLimitedText } from "../lib/text";
 import { weekOf, weekStart } from "../shared/cycles";
 import { hackathonDates, RUNNING } from "../shared/hackathonPhase";
 import {
 	MAX_HACKATHON_CARDS,
+	MAX_OPEN_HACKATHONS,
 	MIN_HACKATHON_CARDS,
 	TEXT,
 } from "../shared/limits";
 import { jobMode, jobPay, jobRole } from "../shared/validators";
 import type { HiringRecord } from "./hiringRecord";
+import { loadFoundedStartups } from "./startups";
 import { requireFounder } from "./teamAccess";
 
 /** What a Founder fills in to draft a Hackathon. */
@@ -225,4 +229,62 @@ export function toExploreHackathon(
 		},
 		hiringRecord,
 	};
+}
+
+/** Hackathons published since `since` across the Startups, counting up to `limit`. */
+async function countPublishedSince(
+	ctx: QueryCtx,
+	startupIds: Id<"startups">[],
+	since: number,
+	limit: number,
+): Promise<number> {
+	let count = 0;
+	for (const startupId of startupIds) {
+		const published = await ctx.db
+			.query("hackathons")
+			.withIndex("by_startup_and_publishedAt", (q) =>
+				q.eq("startupId", startupId).gte("publishedAt", since),
+			)
+			.take(limit - count);
+		count += published.length;
+		if (count >= limit) break;
+	}
+	return count;
+}
+
+/** Hackathons open, live or deciding across the Startups, counting up to the cap. */
+async function countRunning(
+	ctx: QueryCtx,
+	startupIds: Id<"startups">[],
+): Promise<number> {
+	const running = await Promise.all(
+		startupIds.map((startupId) =>
+			loadRunningHackathons(ctx, startupId, MAX_OPEN_HACKATHONS),
+		),
+	);
+	return Math.min(running.flat().length, MAX_OPEN_HACKATHONS);
+}
+
+/** The Founder's plan with what's left of it, or null without Pro. */
+export async function loadPlanView(
+	ctx: QueryCtx,
+	userId: Id<"users">,
+): Promise<PlanView | null> {
+	const plan = await loadPlan(ctx, userId);
+	if (!plan) {
+		return null;
+	}
+	const startupIds = (await loadFoundedStartups(ctx, userId)).map(
+		(startup) => startup._id,
+	);
+	const published = await countPublishedSince(
+		ctx,
+		startupIds,
+		plan.periodStart,
+		PLANS[plan.plan].hackathonsPerPeriod,
+	);
+	return planViewFor(plan, {
+		published,
+		running: await countRunning(ctx, startupIds),
+	});
 }

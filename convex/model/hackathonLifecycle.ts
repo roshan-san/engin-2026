@@ -2,11 +2,11 @@ import { ConvexError } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import { publishBlockFor, publishBlockMessage } from "../billing/rules";
 import { MAX_APPLICATIONS } from "../shared/limits";
-import { publishBlockFor, publishBlockMessage } from "../shared/plans";
 import { appendActivity } from "./activity";
 import { loadParticipants } from "./applications";
-import { loadPlanView } from "./billing";
+import { loadPlanView } from "./hackathons";
 
 // Every write to a Hackathon's `status` lives here. Explicit return types: this file
 // schedules `internal.hiring.hackathons`, whose handlers call back into it, so inference would loop.

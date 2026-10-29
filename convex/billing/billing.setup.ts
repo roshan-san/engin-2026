@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
-import { PLANS, type PlanKey } from "../shared/plans";
-import { DAY, type TestConvex } from "./test.setup";
-import type { Person } from "./users.setup";
+import { DAY, type TestConvex } from "../testing/test.setup";
+import type { Person } from "../testing/users.setup";
+import { PLANS, type PlanKey } from "./rules";
 
 /** A Dodo subscription copied in, as if its webhook had landed. */
 export async function givePro(

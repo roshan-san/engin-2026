@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { givePro } from "../billing/billing.setup";
 import { finishIfDecided } from "../model/hackathonLifecycle";
 import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import {
@@ -10,7 +11,6 @@ import {
 	participants,
 	startHackathon,
 } from "../testing/applications.setup";
-import { givePro } from "../testing/billing.setup";
 import {
 	draftHackathon,
 	hackathonInput,

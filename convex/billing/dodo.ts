@@ -11,7 +11,7 @@ const dodo: DodoPayments = new DodoPayments(components.dodopayments, {
 			return null;
 		}
 		const dodoCustomerId: string | null = await ctx.runQuery(
-			internal.billing.subscriptions.customerIdFor,
+			internal.billing.customerIdFor,
 			{ userId },
 		);
 		return dodoCustomerId ? { dodoCustomerId } : null;

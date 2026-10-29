@@ -1,8 +1,8 @@
 import type { FunctionArgs } from "convex/server";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { givePro } from "../billing/billing.setup";
 import { WEEK_MS, weekOf, weekStart } from "../shared/cycles";
-import { givePro } from "./billing.setup";
 import type { Setup } from "./startups.setup";
 
 /** The Monday 00:00 IST that starts next week. */

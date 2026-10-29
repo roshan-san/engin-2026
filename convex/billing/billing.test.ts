@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { planForProduct } from "../model/billing";
-import { givePro } from "../testing/billing.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
 import { setUpStartup } from "../testing/startups.setup";
 import { createTest, DAY, type TestConvex } from "../testing/test.setup";
+import { givePro } from "./billing.setup";
+import { planForProduct } from "./model";
 
 beforeEach(() => {
 	vi.stubEnv("DODO_PRODUCT_MONTHLY", "pdt_monthly");
@@ -54,10 +54,7 @@ describe("sync", () => {
 	it("the first event copies the subscription in", async () => {
 		const { t, founder } = await setUpStartup(createTest());
 
-		await t.mutation(
-			internal.billing.subscriptions.sync,
-			event(founder.userId),
-		);
+		await t.mutation(internal.billing.sync, event(founder.userId));
 
 		expect(await subscriptionsOf(t, founder.userId)).toMatchObject([
 			{
@@ -71,13 +68,10 @@ describe("sync", () => {
 
 	it("a newer event updates the same row", async () => {
 		const { t, founder } = await setUpStartup(createTest());
-		await t.mutation(
-			internal.billing.subscriptions.sync,
-			event(founder.userId),
-		);
+		await t.mutation(internal.billing.sync, event(founder.userId));
 
 		await t.mutation(
-			internal.billing.subscriptions.sync,
+			internal.billing.sync,
 			event(founder.userId, {
 				status: "on_hold",
 				eventAt: Date.now() + 1000,
@@ -92,7 +86,7 @@ describe("sync", () => {
 	it("an older event arriving late changes nothing", async () => {
 		const { t, founder } = await setUpStartup(createTest());
 		await t.mutation(
-			internal.billing.subscriptions.sync,
+			internal.billing.sync,
 			event(founder.userId, {
 				status: "cancelled",
 				eventAt: Date.now() + 1000,
@@ -100,7 +94,7 @@ describe("sync", () => {
 		);
 
 		await t.mutation(
-			internal.billing.subscriptions.sync,
+			internal.billing.sync,
 			event(founder.userId, { status: "active", eventAt: Date.now() }),
 		);
 
@@ -111,13 +105,10 @@ describe("sync", () => {
 
 	it("a plan change switches the plan", async () => {
 		const { t, founder } = await setUpStartup(createTest());
-		await t.mutation(
-			internal.billing.subscriptions.sync,
-			event(founder.userId),
-		);
+		await t.mutation(internal.billing.sync, event(founder.userId));
 
 		await t.mutation(
-			internal.billing.subscriptions.sync,
+			internal.billing.sync,
 			event(founder.userId, {
 				productId: "pdt_yearly",
 				eventAt: Date.now() + 1000,
@@ -131,18 +122,18 @@ describe("sync", () => {
 		const { t, founder } = await setUpStartup(createTest());
 
 		await t.mutation(
-			internal.billing.subscriptions.sync,
+			internal.billing.sync,
 			event(founder.userId, { productId: "pdt_other" }),
 		);
 		await t.mutation(
-			internal.billing.subscriptions.sync,
+			internal.billing.sync,
 			event(founder.userId, {
 				userId: undefined,
 				dodoSubscriptionId: "sub_2",
 			}),
 		);
 		await t.mutation(
-			internal.billing.subscriptions.sync,
+			internal.billing.sync,
 			event("not-an-id", { dodoSubscriptionId: "sub_3" }),
 		);
 
@@ -157,9 +148,7 @@ describe("mine", () => {
 	it("no plan reads as null", async () => {
 		const { founder } = await setUpStartup(createTest());
 
-		expect(
-			await founder.as.query(api.billing.subscriptions.mine, {}),
-		).toBeNull();
+		expect(await founder.as.query(api.billing.mine, {})).toBeNull();
 	});
 
 	it("a plan says what's left of it", async () => {
@@ -167,10 +156,7 @@ describe("mine", () => {
 		await givePro(setup.t, setup.founder, "monthly");
 		await publishedHackathon(setup);
 
-		const mine = await setup.founder.as.query(
-			api.billing.subscriptions.mine,
-			{},
-		);
+		const mine = await setup.founder.as.query(api.billing.mine, {});
 
 		expect(mine).toMatchObject({
 			plan: "monthly",
@@ -186,10 +172,9 @@ describe("customerIdFor", () => {
 		const { t, founder } = await setUpStartup(createTest());
 		await givePro(t, founder);
 
-		const customerId = await t.query(
-			internal.billing.subscriptions.customerIdFor,
-			{ userId: founder.userId },
-		);
+		const customerId = await t.query(internal.billing.customerIdFor, {
+			userId: founder.userId,
+		});
 
 		expect(customerId).toBe(`cus_${founder.userId}`);
 	});
@@ -201,16 +186,13 @@ describe("paymentIssue", () => {
 			const { t, founder } = await setUpStartup(createTest());
 			await givePro(t, founder, "monthly", { status });
 
-			expect(
-				await founder.as.query(api.billing.subscriptions.paymentIssue, {}),
-			).toBe(true);
+			expect(await founder.as.query(api.billing.paymentIssue, {})).toBe(true);
 		}
 	});
 
 	it("no plan, an ended plan or an active plan is not", async () => {
 		const { t, founder } = await setUpStartup(createTest());
-		const asks = () =>
-			founder.as.query(api.billing.subscriptions.paymentIssue, {});
+		const asks = () => founder.as.query(api.billing.paymentIssue, {});
 
 		expect(await asks()).toBe(false);
 		await givePro(t, founder, "monthly", { status: "cancelled" });
