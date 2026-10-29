@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { TeamPeople, TeamPerson } from "~/entities/contributor";
 import { displayName } from "~/shared/lib/displayName";
 import { ConfirmButton } from "~/shared/ui/ConfirmButton";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
@@ -7,7 +8,6 @@ import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
-import type { TeamPeople, TeamPerson } from "../api/useTeamPeople";
 
 /** The Founder and Contributors: face, name, Rating and what they verified this Cycle. */
 export function PeopleList({
