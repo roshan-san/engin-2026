@@ -1,5 +1,5 @@
-import { useGoogleSignIn } from "~/features/people/auth/useGoogleSignIn";
 import { Button } from "~/shared/ui/button";
+import { useGoogleSignIn } from "../api/useGoogleSignIn";
 
 type GoogleButtonProps = {
 	readonly label?: string;

@@ -9,8 +9,8 @@ import {
 	useProfile,
 	workLine,
 } from "~/entities/person";
-import { SignInCard } from "~/features/people/auth/SignInCard";
 import { SettingsSheet } from "~/features/people/settings/SettingsSheet";
+import { SignInCard } from "~/features/sign-in";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
 import { AppPage } from "~/shared/ui/AppPage";

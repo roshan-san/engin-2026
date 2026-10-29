@@ -1,6 +1,6 @@
 import { POST_INTENT_PATH } from "~/entities/place";
 import { planLines } from "~/entities/plan";
-import { GoogleButton } from "~/features/people";
+import { GoogleButton } from "~/features/sign-in";
 import { cn } from "~/shared/lib/cn";
 import { TILE } from "~/shared/ui/tile";
 

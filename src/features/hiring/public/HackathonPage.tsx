@@ -4,7 +4,7 @@ import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { HackathonPost, STAGE, useHackathon } from "~/entities/hackathon";
 import { hiringLine } from "~/entities/startup";
-import { GoogleButton, SignInCard } from "~/features/people";
+import { GoogleButton, SignInCard } from "~/features/sign-in";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
