@@ -11,7 +11,7 @@ import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { PersonName } from "~/shared/ui/PersonName";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { TILE } from "~/shared/ui/tile";
-import { useListKeys } from "./useListKeys";
+import { useListKeys } from "../lib/useListKeys";
 
 /** Every Card waiting for you, across all Participants. J/K move, V verifies, Enter opens. */
 export function ReviewQueue({

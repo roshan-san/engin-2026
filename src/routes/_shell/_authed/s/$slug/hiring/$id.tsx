@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { SpacePage } from "~/features/hiring/space/SpacePage";
+import { HackathonSpacePage } from "~/pages/hackathon-space";
 
 export const Route = createFileRoute("/_shell/_authed/s/$slug/hiring/$id")({
 	validateSearch: z.object({
@@ -9,5 +9,5 @@ export const Route = createFileRoute("/_shell/_authed/s/$slug/hiring/$id")({
 		/** Dodo checkout sends the Founder back with this. */
 		checkout: z.literal("done").optional(),
 	}),
-	component: SpacePage,
+	component: HackathonSpacePage,
 });

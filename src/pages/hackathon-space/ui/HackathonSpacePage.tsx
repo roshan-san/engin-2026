@@ -18,7 +18,7 @@ import { ScreeningView } from "./ScreeningView";
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
 /** The Founder's Hackathon space; what it shows follows the Hackathon's status. */
-export function SpacePage() {
+export function HackathonSpacePage() {
 	const { id } = route.useParams();
 	const { startup } = useWorkspace();
 	const space = useSpace(id);

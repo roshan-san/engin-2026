@@ -18,15 +18,15 @@ import {
 	SelectValue,
 } from "~/shared/ui/select";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
-import { EveryonePanel } from "./EveryonePanel";
-import { ParticipantView } from "./ParticipantView";
-import { participantOptionLabel } from "./participantOptionLabel";
-import { ReviewQueue } from "./ReviewQueue";
+import { participantOptionLabel } from "../model/participantOptionLabel";
 import {
 	resolveView,
 	type SidebarParticipant,
 	sidebarItems,
-} from "./sidebarItems";
+} from "../model/sidebarItems";
+import { EveryonePanel } from "./EveryonePanel";
+import { ParticipantView } from "./ParticipantView";
+import { ReviewQueue } from "./ReviewQueue";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

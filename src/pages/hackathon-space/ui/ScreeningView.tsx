@@ -34,9 +34,9 @@ import { PanelHeader } from "~/shared/ui/PanelHeader";
 import { Segmented } from "~/shared/ui/Segmented";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
+import { useListKeys } from "../lib/useListKeys";
 import { ApplicantDetail } from "./ApplicantDetail";
 import { EveryonePanel } from "./EveryonePanel";
-import { useListKeys } from "./useListKeys";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
