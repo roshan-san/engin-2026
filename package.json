@@ -14,7 +14,6 @@
     "check": "biome check --write . && pnpm check-types",
     "ui": "pnpm dlx shadcn@latest add",
     "test": "vitest run",
-    "data:clear": "node scripts/clear-dev-data.mjs",
     "maintenance:on": "convex run --prod site/maintenance:set \"{\\\"on\\\":true}\"",
     "maintenance:off": "convex run --prod site/maintenance:set \"{\\\"on\\\":false}\"",
     "maintenance:status": "convex run --prod site/maintenance:status"
