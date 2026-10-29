@@ -9,7 +9,6 @@ import {
 	useProfile,
 	workLine,
 } from "~/entities/person";
-import { SettingsSheet } from "~/features/people/settings/SettingsSheet";
 import { SignInCard } from "~/features/sign-in";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
@@ -25,6 +24,7 @@ import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RatingParts } from "~/shared/ui/RatingParts";
 import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
+import { SettingsSheet } from "~/widgets/account";
 
 const route = getRouteApi("/_shell/u/$username");
 

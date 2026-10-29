@@ -3,7 +3,6 @@ import { usernameProblem } from "@convex/shared/username";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { DISCIPLINE_OPTIONS, useMe } from "~/entities/person";
-import { PlanSection } from "~/features/billing";
 import {
 	type ProfileDraft,
 	type ProfileSource,
@@ -33,6 +32,7 @@ import {
 } from "~/shared/ui/sheet";
 import { Spinner } from "~/shared/ui/spinner";
 import { Textarea } from "~/shared/ui/textarea";
+import { PlanSection } from "./PlanSection";
 
 /** Your profile: username, discipline and bio. One Save sends only what changed. */
 export function SettingsSheet({

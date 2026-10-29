@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMe } from "~/entities/person";
-import { SettingsSheet } from "~/features/people";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,6 +8,7 @@ import {
 	DropdownMenuTrigger,
 } from "~/shared/ui/dropdown-menu";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
+import { SettingsSheet } from "./SettingsSheet";
 
 /** Your avatar, with your Profile, Settings and Sign out. */
 export function AccountMenu() {
