@@ -10,6 +10,7 @@ import {
 } from "~/entities/application";
 import { HackathonPost } from "~/entities/hackathon";
 import { useWorkspace } from "~/entities/startup";
+import { useScreening } from "~/features/screen-applicant";
 import { dayLabel } from "~/shared/lib/dates";
 import { displayName } from "~/shared/lib/displayName";
 import { lastDay } from "~/shared/lib/hackathonDates";
@@ -36,7 +37,6 @@ import { ApplicantDetail } from "./ApplicantDetail";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { EveryonePanel } from "./EveryonePanel";
 import { useListKeys } from "./useListKeys";
-import { useScreening } from "./useScreening";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
