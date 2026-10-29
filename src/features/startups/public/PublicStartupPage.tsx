@@ -1,6 +1,7 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { ActivityFeed, usePublicActivity } from "~/entities/activity";
+import { RecordSignals, useSignals } from "~/entities/rating";
 import {
 	CITIES,
 	hiringLine,
@@ -8,7 +9,6 @@ import {
 	STAGES,
 	usePublicStartup,
 } from "~/entities/startup";
-import { RecordSignals, useSignals } from "~/features/work";
 import { jobLine } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel, monthYearLabel } from "~/shared/lib/dates";

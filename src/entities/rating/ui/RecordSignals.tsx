@@ -2,7 +2,7 @@ import { cn } from "~/shared/lib/cn";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RatingParts } from "~/shared/ui/RatingParts";
 import { RhythmStrip, StripLegend } from "~/shared/ui/RhythmStrip";
-import type { SignalsView } from "./useSignals";
+import type { SignalsView } from "../api/useSignals";
 
 const LABEL = "text-xs leading-5 font-semibold text-muted-foreground";
 

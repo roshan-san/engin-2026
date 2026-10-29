@@ -8,6 +8,7 @@ import {
 	findEntry,
 	useActivity,
 } from "~/entities/activity";
+import { RecordPanel, RecordSignals, useSignals } from "~/entities/rating";
 import { useWorkspace } from "~/entities/startup";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
@@ -16,9 +17,6 @@ import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { RecordPanel } from "./RecordPanel";
-import { RecordSignals } from "./RecordSignals";
-import { useSignals } from "./useSignals";
 
 const activityRoute = getRouteApi("/_shell/_authed/s/$slug/activity");
 
