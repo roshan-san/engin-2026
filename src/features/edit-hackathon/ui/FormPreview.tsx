@@ -1,5 +1,5 @@
 import { HackathonPost } from "~/entities/hackathon";
-import { type HackathonDraft, toParticipantsGet } from "./draft";
+import { type HackathonDraft, toParticipantsGet } from "../model/draft";
 
 /** The live preview beside the form: the post as Applicants will see it. */
 export function FormPreview({

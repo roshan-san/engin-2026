@@ -7,16 +7,16 @@ import { ChipPicker } from "~/shared/ui/ChipPicker";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Spinner } from "~/shared/ui/spinner";
 import { Textarea } from "~/shared/ui/textarea";
+import { type HackathonDraft, missingParts } from "../model/draft";
+import { shouldBlockLeave } from "../model/leaveGuard";
+import { startOptions } from "../model/startOptions";
 import { CardRows } from "./CardRows";
-import { type HackathonDraft, missingParts } from "./draft";
 import { Field, Part } from "./FormPart";
 import { FormPreview } from "./FormPreview";
 import { JobPart } from "./JobPart";
 import { LeaveGuardDialog } from "./LeaveGuardDialog";
-import { shouldBlockLeave } from "./leaveGuard";
 import { ParticipantsGetPart } from "./ParticipantsGetPart";
 import { PublishConfirmDialog } from "./PublishConfirmDialog";
-import { startOptions } from "./startOptions";
 
 const WEEKS = [
 	{ value: "1", label: "1 week" },

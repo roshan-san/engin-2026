@@ -2,7 +2,7 @@ import { TEXT } from "@convex/shared/limits";
 import { CharCount } from "~/shared/ui/CharCount";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
 import { Input } from "~/shared/ui/input";
-import { type HackathonDraft, PARTICIPANTS_GET } from "./draft";
+import { type HackathonDraft, PARTICIPANTS_GET } from "../model/draft";
 import { Part } from "./FormPart";
 
 const PARTICIPANTS_GET_CHIPS = [...PARTICIPANTS_GET, "Custom"].map((value) => ({

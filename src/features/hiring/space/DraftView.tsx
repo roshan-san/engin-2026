@@ -5,19 +5,19 @@ import { toast } from "sonner";
 import { draftPublish, usePaymentIssue, usePlan } from "~/entities/plan";
 import { useWorkspace } from "~/entities/startup";
 import { CheckoutNotice, PlansDialog, usePortal } from "~/features/billing";
+import {
+	draftCard,
+	fromParticipantsGet,
+	type HackathonDraft,
+	HackathonForm,
+	useHackathonForm,
+} from "~/features/edit-hackathon";
 import { roleLabel } from "~/shared/config/jobs";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";
 import { Button } from "~/shared/ui/button";
 import { Page } from "~/shared/ui/Page";
 import { Spinner } from "~/shared/ui/spinner";
-import {
-	draftCard,
-	fromParticipantsGet,
-	type HackathonDraft,
-} from "../form/draft";
-import { HackathonForm } from "../form/HackathonForm";
-import { useHackathonForm } from "../form/useHackathonForm";
 import { copyHackathonLink } from "./copyHackathonLink";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");

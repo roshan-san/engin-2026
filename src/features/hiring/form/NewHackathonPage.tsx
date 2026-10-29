@@ -1,12 +1,14 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useWorkspace } from "~/entities/startup";
+import {
+	emptyDraft,
+	HackathonForm,
+	useHackathonForm,
+} from "~/features/edit-hackathon";
 import { AppPage, BackLink } from "~/shared/ui/AppPage";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { Page } from "~/shared/ui/Page";
-import { emptyDraft } from "./draft";
-import { HackathonForm } from "./HackathonForm";
-import { useHackathonForm } from "./useHackathonForm";
 
 /** Posting a Hackathon: saved as a draft, published from its space. Framed like the space it becomes. */
 export function NewHackathonPage() {

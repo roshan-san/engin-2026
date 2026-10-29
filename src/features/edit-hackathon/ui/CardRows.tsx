@@ -5,7 +5,7 @@ import { ColumnIcon, NewCardInput, TILE_CLASS } from "~/entities/card";
 import { cn } from "~/shared/lib/cn";
 import { CharCount } from "~/shared/ui/CharCount";
 import { MentorNote } from "~/shared/ui/MentorNote";
-import { draftCard, type HackathonDraft } from "./draft";
+import { draftCard, type HackathonDraft } from "../model/draft";
 
 type DraftCard = HackathonDraft["cards"][number];
 

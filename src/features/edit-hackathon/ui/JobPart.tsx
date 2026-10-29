@@ -1,6 +1,6 @@
 import { MODES, PAYS, ROLES } from "~/shared/config/jobs";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
-import type { HackathonDraft } from "./draft";
+import type { HackathonDraft } from "../model/draft";
 import { Field, Part } from "./FormPart";
 
 /** The job: role, pay and where, as chips. */

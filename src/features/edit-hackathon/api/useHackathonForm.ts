@@ -3,7 +3,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { attempt, errorMessage } from "~/shared/lib/errors";
-import { type HackathonDraft, toDraftArgs } from "./draft";
+import { type HackathonDraft, toDraftArgs } from "../model/draft";
 
 /** Saving and publishing Hackathon drafts. Failures are toasted and resolve to `null` or `false`. */
 export function useHackathonForm() {
