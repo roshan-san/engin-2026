@@ -79,3 +79,5 @@ export const hackathonWeeks = v.union(v.literal(1), v.literal(2));
 
 /** Longest allowed text per Hackathon field. */
 export const HACKATHON_TEXT = { participantsGet: 140, problem: 2000 };
+
+export const MAX_APPLICATIONS = 500;

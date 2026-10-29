@@ -96,7 +96,6 @@ function decideRefusal(
 	}
 }
 
-export const MAX_APPLICATIONS = 500;
 export const MAX_USER_APPLICATIONS = 100;
 export const applicationStatus = v.union(
 	v.literal("applied"),

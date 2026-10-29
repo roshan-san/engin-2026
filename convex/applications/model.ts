@@ -6,12 +6,8 @@ import {
 	loadParticipants,
 	requireHackathonFounder,
 } from "../hackathons/model";
-import { phaseOf } from "../hackathons/rules";
-import {
-	type ApplicationAction,
-	applicationRefusal,
-	MAX_APPLICATIONS,
-} from "./rules";
+import { MAX_APPLICATIONS, phaseOf } from "../hackathons/rules";
+import { type ApplicationAction, applicationRefusal } from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
 

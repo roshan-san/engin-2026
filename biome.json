@@ -132,6 +132,8 @@
 									{
 										"group": [
 											"convex/server",
+											"./**",
+											"@convex-dev/**",
 											"../**",
 											"!../_generated/api",
 											"!../_generated/dataModel",
