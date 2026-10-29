@@ -16,7 +16,7 @@ import { ThreadPanel } from "~/widgets/chat-panel";
 const route = getRouteApi("/_shell/_authed/h/$id/");
 
 /** A Participant's own Board on a Hackathon, beside Everyone and the Founder. */
-export function ParticipantPage() {
+export function ParticipantBoardPage() {
 	const { page, userId, status } = useParticipant();
 	const { card: cardId, panel = "everyone" } = route.useSearch();
 	const navigate = route.useNavigate();
