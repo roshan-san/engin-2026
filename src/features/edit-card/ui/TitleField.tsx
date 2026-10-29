@@ -2,7 +2,7 @@ import { TEXT } from "@convex/shared/limits";
 import { useRef } from "react";
 import type { CardView } from "~/entities/card";
 import { Textarea } from "~/shared/ui/textarea";
-import { useDraft } from "./useDraft";
+import { useDraft } from "../lib/useDraft";
 
 /** The title, edited in place; saves on blur or Enter, Esc undoes. Wraps, but stays one line. */
 export function TitleField({

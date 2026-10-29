@@ -8,6 +8,7 @@ import {
 	useBoardScope,
 	useCard,
 } from "~/entities/card";
+import { NotesField, TitleField, useCardActions } from "~/features/edit-card";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -31,10 +32,7 @@ import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { CardFacts } from "./CardFacts";
 import { CardHeader, type PanelProps } from "./CardHeader";
-import { NotesField } from "./NotesField";
 import { ReviewBar } from "./ReviewBar";
-import { TitleField } from "./TitleField";
-import { useCardActions } from "./useCardActions";
 import { useCardFocus } from "./useCardFocus";
 
 /** The open Card: edit it, move it, and (for the Founder) Verify it. */

@@ -7,6 +7,11 @@ import {
 	refusalFor,
 	useBoardScope,
 } from "~/entities/card";
+import {
+	GHOST_TRIGGER,
+	OwnerPicker,
+	type useCardActions,
+} from "~/features/edit-card";
 import { useMoveCard } from "~/features/move-card";
 import { PersonName } from "~/shared/ui/PersonName";
 import {
@@ -16,8 +21,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/shared/ui/select";
-import { GHOST_TRIGGER, OwnerPicker } from "./OwnerPicker";
-import type { useCardActions } from "./useCardActions";
 
 /** The Card's Column and Owner, each changed in place. */
 export function CardFacts({

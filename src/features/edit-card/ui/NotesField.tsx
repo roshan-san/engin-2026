@@ -5,7 +5,7 @@ import { relativeTime } from "~/shared/lib/dates";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { PersonName } from "~/shared/ui/PersonName";
 import { Textarea } from "~/shared/ui/textarea";
-import { useDraft } from "./useDraft";
+import { useDraft } from "../lib/useDraft";
 
 const IDLE_MS = 1000;
 
