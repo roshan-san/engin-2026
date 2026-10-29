@@ -26,13 +26,13 @@ import {
 } from "~/entities/card";
 import { useCreateCard } from "~/features/create-card";
 import { useMoveCard } from "~/features/move-card";
+import { useVerifyCard } from "~/features/review-card";
 import { cn } from "~/shared/lib/cn";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { BoardColumn, type DropState } from "./BoardColumn";
 import { boardAnnouncements } from "./boardAnnouncements";
 import { useCardBoard } from "./CardBoard";
 import { useBoardKeys } from "./useBoardKeys";
-import { useVerifyCard } from "./useVerifyCard";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((column) => column.id));
 

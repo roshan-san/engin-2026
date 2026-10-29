@@ -2,6 +2,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import type { CardActor } from "@convex/shared/cardRules";
 import { useState } from "react";
 import { refusalFor, ShippedView, useReviewQueue } from "~/entities/card";
+import { useVerifyQueued } from "~/features/review-card";
 import { cn } from "~/shared/lib/cn";
 import { Button } from "~/shared/ui/button";
 import { EmptyState } from "~/shared/ui/EmptyState";
@@ -11,7 +12,6 @@ import { PersonName } from "~/shared/ui/PersonName";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { TILE } from "~/shared/ui/tile";
 import { useListKeys } from "./useListKeys";
-import { useVerifyQueued } from "./useVerifyQueued";
 
 /** Every Card waiting for you, across all Participants. J/K move, V verifies, Enter opens. */
 export function ReviewQueue({

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { type CardView, useBoardScope } from "~/entities/card";
 import { useMoveCard } from "~/features/move-card";
+import { useVerifyCard } from "~/features/review-card";
 import { Button } from "~/shared/ui/button";
 import { Kbd } from "~/shared/ui/Kbd";
 import { Spinner } from "~/shared/ui/spinner";
-import { useVerifyCard } from "../board/useVerifyCard";
 
 /** The Founder's bar under a Card in Review: send it back, or Verify it. */
 export function ReviewBar({
