@@ -12,7 +12,6 @@ import { maintenanceTables } from "./maintenance/table";
 import { messagesTables } from "./messages/table";
 import { startupsTables } from "./startups/table";
 import { threadsTables } from "./threads/table";
-
 import { usersTables } from "./users/table";
 
 /**
