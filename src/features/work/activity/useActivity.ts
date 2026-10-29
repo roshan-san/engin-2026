@@ -3,7 +3,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { CYCLES_PAGE } from "@convex/shared/limits";
 import { useQuery } from "convex/react";
 import { useState } from "react";
-import { useKept } from "~/lib/useKept";
+import { useKept } from "~/shared/lib/useKept";
 
 /** The team's Cycles, newest first. Show earlier asks for one more page. */
 export function useActivity(startupId: Id<"startups">) {

@@ -18,7 +18,10 @@ import {
 } from "~/components/ui/sheet";
 import { Spinner } from "~/components/ui/spinner";
 import { useStartup } from "~/features/startups/workspace/useStartup";
-import { useDiscardGuard, useReportChanged } from "~/lib/useDiscardGuard";
+import {
+	useDiscardGuard,
+	useReportChanged,
+} from "~/shared/lib/useDiscardGuard";
 import { CITIES, KINDS, STAGES } from "../startupChips";
 import {
 	type SettingsDraft,

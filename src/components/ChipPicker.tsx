@@ -1,5 +1,5 @@
 import { RadioGroup, ToggleGroup } from "radix-ui";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 /** A pill button's look, on or off. */
 export function chipClassName(isOn: boolean): string {

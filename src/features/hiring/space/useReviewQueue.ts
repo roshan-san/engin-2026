@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 /** Every Participant Card waiting in Review, oldest submission first, and Verify. */
 export function useReviewQueue(hackathonId: Id<"hackathons">) {

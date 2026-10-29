@@ -1,6 +1,6 @@
 import { RadioGroup } from "radix-ui";
 import type { ReactNode } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 /** A small row of mutually exclusive choices: panel switches and sort toggles. Arrow keys pick. */
 export function Segmented<T extends string>({

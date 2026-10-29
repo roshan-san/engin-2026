@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { EmptyState } from "~/components/EmptyState";
 import { Button } from "~/components/ui/button";
-import { errorMessage } from "~/lib/errors";
+import { errorMessage } from "~/shared/lib/errors";
 
 export function GlobalError({ error, reset }: Readonly<ErrorComponentProps>) {
 	const router = useRouter();

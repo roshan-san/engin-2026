@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import { CYCLES_PAGE } from "@convex/shared/limits";
 import { useQuery } from "convex/react";
 import { useState } from "react";
-import { useKept } from "~/lib/useKept";
+import { useKept } from "~/shared/lib/useKept";
 
 /** The public Cycles, masked unless you're Investor Pro. Show earlier asks for one more page. */
 export function usePublicActivity(slug: string | undefined) {

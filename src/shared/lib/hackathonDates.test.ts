@@ -1,6 +1,6 @@
 import { hackathonDates } from "@convex/shared/hackathonPhase";
 import { describe, expect, it } from "vitest";
-import { dayLabel } from "~/lib/dates";
+import { dayLabel } from "./dates";
 import { buildDaysLabel, lastDay } from "./hackathonDates";
 
 /** A moment in IST, as a timestamp. */

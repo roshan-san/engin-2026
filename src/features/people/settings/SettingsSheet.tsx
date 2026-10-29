@@ -21,7 +21,10 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { PlanSection } from "~/features/billing";
 import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
-import { useDiscardGuard, useReportChanged } from "~/lib/useDiscardGuard";
+import {
+	useDiscardGuard,
+	useReportChanged,
+} from "~/shared/lib/useDiscardGuard";
 import { useMe } from "~/shell/useMe";
 import {
 	type ProfileDraft,

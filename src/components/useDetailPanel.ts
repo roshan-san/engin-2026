@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { panelAfter, panelShows } from "~/components/detailPanelState";
-import { useIsMobile } from "~/lib/use-mobile";
+import { useIsMobile } from "~/shared/lib/useIsMobile";
 
 /** The detail panel's state for a page whose open item lives in the URL. */
 export function useDetailPanel(hasItem: boolean, clearItem: () => void) {

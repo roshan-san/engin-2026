@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useState } from "react";
 import { toast } from "sonner";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 type Invite = FunctionReturnType<typeof api.startups.invites.listMine>[number];
 

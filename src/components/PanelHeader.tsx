@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 /** The bar on top of a workspace pane. Every pane's bar is the same height, so they line up. */
 export function PanelHeader({

@@ -4,8 +4,8 @@ import type { FunctionReturnType } from "convex/server";
 import { PlaceLogo } from "~/components/PlaceLogo";
 import { hiringLine } from "~/features/startups";
 import { RatingBadge } from "~/features/work";
-import { dayLabel } from "~/lib/dates";
 import { jobLine } from "~/shared/config/jobs";
+import { dayLabel } from "~/shared/lib/dates";
 
 export type HackathonExploreRowData = FunctionReturnType<
 	typeof api.hiring.hackathons.explore

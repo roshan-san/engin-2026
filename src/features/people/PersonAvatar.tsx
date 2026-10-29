@@ -1,7 +1,7 @@
 import { AVATAR_SIZE, type AvatarSize } from "~/components/avatarSize";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { initials } from "~/lib/initials";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
+import { initials } from "~/shared/lib/initials";
 
 type Face = {
 	readonly name: string | null;

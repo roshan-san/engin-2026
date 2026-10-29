@@ -15,9 +15,9 @@ import {
 	CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 import { PersonAvatar } from "~/features/people";
-import { weekdayLabel } from "~/lib/dates";
-import { tierText } from "~/lib/tierText";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
+import { weekdayLabel } from "~/shared/lib/dates";
+import { tierText } from "~/shared/lib/tierText";
 import { EntryProof } from "./EntryProof";
 import { type EntryView, entrySummary } from "./record";
 

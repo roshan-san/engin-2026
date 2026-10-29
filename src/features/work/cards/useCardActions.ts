@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 /** Editing and deleting a Card. Each resolves `false` when it failed (the error is toasted). */
 export function useCardActions() {

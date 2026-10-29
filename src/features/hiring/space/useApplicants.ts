@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 /** Everyone who applied, Participants first, for the Founder. */
 export function useApplicants(hackathonId: Id<"hackathons">) {

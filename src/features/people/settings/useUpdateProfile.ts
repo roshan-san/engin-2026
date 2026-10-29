@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import { useMutation } from "convex/react";
 import type { FunctionArgs } from "convex/server";
 import { toast } from "sonner";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 /** Saving your profile. Failures are toasted and resolve to `false`. */
 export function useUpdateProfile() {

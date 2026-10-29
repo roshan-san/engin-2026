@@ -1,9 +1,9 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useUpload } from "~/lib/useUpload";
 import { errorMessage } from "./errors";
 import { pickImages } from "./images";
-import { useUpload } from "./useUpload";
 
 export type Picture = {
 	readonly key: string;

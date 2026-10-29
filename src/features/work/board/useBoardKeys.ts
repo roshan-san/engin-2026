@@ -1,5 +1,5 @@
 import { type RefObject, useEffect } from "react";
-import { shouldIgnoreShortcut } from "~/lib/keys";
+import { shouldIgnoreShortcut } from "~/shared/lib/keys";
 
 const NEXT = new Set(["j", "ArrowDown"]);
 const PREVIOUS = new Set(["k", "ArrowUp"]);

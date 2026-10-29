@@ -1,6 +1,6 @@
 import type { discipline } from "@convex/shared/validators";
 import type { Infer } from "convex/values";
-import { changedFields } from "~/lib/changedFields";
+import { changedFields } from "~/shared/lib/changedFields";
 
 type Discipline = Infer<typeof discipline>;
 

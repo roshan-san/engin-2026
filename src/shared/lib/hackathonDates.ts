@@ -1,4 +1,4 @@
-import { dayLabel } from "~/lib/dates";
+import { dayLabel } from "./dates";
 
 /** Hackathons end at a Monday 00:00 IST; the last day is the Sunday before. */
 export function lastDay(endsAt: number): number {

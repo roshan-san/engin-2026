@@ -1,5 +1,5 @@
 import type { Doc } from "@convex/_generated/dataModel";
-import { changedFields } from "~/lib/changedFields";
+import { changedFields } from "~/shared/lib/changedFields";
 
 type SettingsStartup = Pick<
 	Doc<"startups">,

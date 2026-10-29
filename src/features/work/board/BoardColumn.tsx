@@ -1,7 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { ReactNode } from "react";
 import { EmptyState } from "~/components/EmptyState";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { useBoardScope } from "./BoardScope";
 import { CardTile } from "./CardTile";
 import { ColumnIcon } from "./ColumnIcon";

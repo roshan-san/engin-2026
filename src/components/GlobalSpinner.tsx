@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 /** `fill` takes the room left in a shell's page instead of a whole screen. */
 export function GlobalSpinner({ fill = false }: { readonly fill?: boolean }) {

@@ -4,7 +4,7 @@ import type { OptimisticLocalStore } from "convex/browser";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 import { toast } from "sonner";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 import { type BoardScope, boardQuery } from "./BoardScope";
 import type { CardView } from "./types";
 import { verifiedLocally } from "./verifiedLocally";

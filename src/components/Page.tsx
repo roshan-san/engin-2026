@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 const WIDTH = {
 	wide: "max-w-[1200px]",

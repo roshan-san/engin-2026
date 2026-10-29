@@ -13,7 +13,7 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "~/components/ui/skeleton";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { refusalFor } from "../cardRules";
 import { BoardColumn, type DropState } from "./BoardColumn";
 import { useBoardScope } from "./BoardScope";

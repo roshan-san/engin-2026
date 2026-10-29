@@ -1,6 +1,6 @@
 import { PersonAvatar, PersonName } from "~/features/people";
-import { tierText } from "~/lib/tierText";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
+import { tierText } from "~/shared/lib/tierText";
 import type { ApplicantRow } from "./applicantSort";
 
 const STATUS_LABEL = {

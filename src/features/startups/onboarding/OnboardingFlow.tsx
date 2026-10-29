@@ -5,7 +5,7 @@ import { AppPage } from "~/components/AppPage";
 import { Kbd } from "~/components/Kbd";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { OnboardingStep, STEP_LABELS } from "./OnboardingStep";
 import {
 	canAdvance,

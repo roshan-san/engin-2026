@@ -1,7 +1,7 @@
 import { useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { TILE } from "~/components/tile";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { GoogleButton } from "./GoogleButton";
 
 /** Stands in for what only signed-in people see: one line saying what's behind it, and Sign in back to this page. */

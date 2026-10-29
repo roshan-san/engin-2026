@@ -13,8 +13,8 @@ import {
 } from "~/components/ui/select";
 import { PersonAvatar } from "~/features/people";
 import { useWorkspace } from "~/features/startups";
-import { tierText } from "~/lib/tierText";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
+import { tierText } from "~/shared/lib/tierText";
 import { EveryonePanel } from "./EveryonePanel";
 import { ParticipantView } from "./ParticipantView";
 import { participantOptionLabel } from "./participantOptionLabel";

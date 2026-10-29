@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { PersonAvatar, PersonName } from "~/features/people";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { type EntryView, linkLabel } from "./record";
 
 type ProofCard = NonNullable<EntryView["card"]>;

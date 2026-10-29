@@ -4,8 +4,6 @@ import type { ReactNode } from "react";
 import { Section } from "~/components/Section";
 import { Badge } from "~/components/ui/badge";
 import { SignInCard } from "~/features/people";
-import { dayLabel } from "~/lib/dates";
-import { cn } from "~/lib/utils";
 import {
 	type JobMode,
 	type JobPay,
@@ -14,7 +12,9 @@ import {
 	PAYS,
 	ROLES,
 } from "~/shared/config/jobs";
-import { buildDaysLabel, lastDay } from "../hackathonDates";
+import { cn } from "~/shared/lib/cn";
+import { dayLabel } from "~/shared/lib/dates";
+import { buildDaysLabel, lastDay } from "~/shared/lib/hackathonDates";
 
 export type PostView = {
 	readonly startupName: string;

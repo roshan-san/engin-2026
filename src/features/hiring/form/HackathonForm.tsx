@@ -6,7 +6,7 @@ import { MentorNote } from "~/components/MentorNote";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { monthDayLabel } from "~/lib/dates";
+import { monthDayLabel } from "~/shared/lib/dates";
 import { CardRows } from "./CardRows";
 import { type HackathonDraft, missingParts } from "./draft";
 import { Field, Part } from "./FormPart";

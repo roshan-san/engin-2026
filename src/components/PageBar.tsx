@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 /** The bar on top of every app page, 48px like the panel headers: back link, title, status badge; actions on the right. */
 export function PageBar({

@@ -3,7 +3,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 /**
  * The Founder's pending Invites for the Startup, sending and revoking them.

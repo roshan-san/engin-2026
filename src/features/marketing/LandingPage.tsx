@@ -13,7 +13,7 @@ import { BoardMock } from "~/features/marketing/BoardMock";
 import { OpenNow } from "~/features/marketing/OpenNow";
 import { Pricing } from "~/features/marketing/Pricing";
 import { GoogleButton, POST_INTENT_PATH } from "~/features/people";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { landingView, pickLanding, readLastPlace } from "~/shell/landing";
 import { PublicShell } from "~/shell/PublicShell";
 import { usePlaces } from "~/shell/usePlaces";

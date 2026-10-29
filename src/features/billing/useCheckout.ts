@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { PlanKey } from "@convex/shared/plans";
 import { useAction } from "convex/react";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 /** Sends the browser to Dodo checkout. Failures are toasted and resolve to `false`. */
 export function useCheckout() {

@@ -19,7 +19,7 @@ import {
 	CardBoard,
 	OpenCardPanel,
 } from "~/features/work";
-import { tierText } from "~/lib/tierText";
+import { tierText } from "~/shared/lib/tierText";
 import type { ApplicantRow } from "./applicantSort";
 import { DecideSheet } from "./DecideSheet";
 import { decideState } from "./decideSteps";

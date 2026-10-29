@@ -4,7 +4,7 @@ import { PanelHeader } from "~/components/PanelHeader";
 import { Section } from "~/components/Section";
 import { Button } from "~/components/ui/button";
 import { PersonAvatar, PersonName } from "~/features/people";
-import { dayLabel } from "~/lib/dates";
+import { dayLabel } from "~/shared/lib/dates";
 import { EntryProof } from "./EntryProof";
 import type { CycleView, EntryView } from "./record";
 

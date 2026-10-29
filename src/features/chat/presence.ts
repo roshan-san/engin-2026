@@ -1,4 +1,4 @@
-import { displayName } from "~/lib/displayName";
+import { displayName } from "~/shared/lib/displayName";
 
 type Person = { _id: string; name: string | null; username: string | null };
 

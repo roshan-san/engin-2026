@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { useMemo } from "react";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 import { useBoardScope } from "../board/BoardScope";
 import { patchBoardCards } from "../board/useBoard";
 import { landsIn } from "../cardRules";

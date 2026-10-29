@@ -21,8 +21,8 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Skeleton } from "~/components/ui/skeleton";
 import { participantStatusText } from "~/features/hiring";
-import { cn } from "~/lib/utils";
 import { roleLabel } from "~/shared/config/jobs";
+import { cn } from "~/shared/lib/cn";
 import {
 	type CurrentPlace,
 	currentPlaceView,

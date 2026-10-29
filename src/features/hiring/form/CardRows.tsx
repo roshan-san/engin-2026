@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CharCount } from "~/components/CharCount";
 import { MentorNote } from "~/components/MentorNote";
 import { ColumnIcon, NewCardInput, TILE_CLASS } from "~/features/work";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { draftCard, type HackathonDraft } from "./draft";
 
 type DraftCard = HackathonDraft["cards"][number];

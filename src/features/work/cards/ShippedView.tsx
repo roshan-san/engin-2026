@@ -1,5 +1,5 @@
 import { PersonName } from "~/features/people";
-import { relativeTime } from "~/lib/dates";
+import { relativeTime } from "~/shared/lib/dates";
 import type { CardView } from "../board/types";
 
 /** What shipped: the line, its links and images, and who verified it. */

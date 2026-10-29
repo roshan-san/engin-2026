@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { PersonAvatar, PersonName } from "~/features/people";
 import { refusalFor, ShippedView } from "~/features/work";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { useListKeys } from "./useListKeys";
 import { useReviewQueue } from "./useReviewQueue";
 

@@ -1,6 +1,6 @@
-import { displayName } from "~/lib/displayName";
-import { tierText } from "~/lib/tierText";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
+import { displayName } from "~/shared/lib/displayName";
+import { tierText } from "~/shared/lib/tierText";
 
 /** A person's name in their Rating's Tier colour; "Someone" when there's nobody. */
 export function PersonName({

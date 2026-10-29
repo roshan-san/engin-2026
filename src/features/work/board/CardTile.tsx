@@ -1,7 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { Badge } from "~/components/ui/badge";
 import { PersonAvatar } from "~/features/people";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { useBoardScope } from "./BoardScope";
 import type { CardView } from "./types";
 

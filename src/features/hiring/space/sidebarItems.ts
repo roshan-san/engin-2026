@@ -1,7 +1,7 @@
 import type { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { FunctionReturnType } from "convex/server";
-import { displayName } from "~/lib/displayName";
+import { displayName } from "~/shared/lib/displayName";
 import type { ApplicantRow } from "./applicantSort";
 
 type ThreadRow = FunctionReturnType<typeof api.chat.threads.list>[number];

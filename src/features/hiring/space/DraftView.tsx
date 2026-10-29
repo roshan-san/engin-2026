@@ -14,8 +14,9 @@ import {
 	usePortal,
 } from "~/features/billing";
 import { useWorkspace } from "~/features/startups";
-import { dayLabel } from "~/lib/dates";
 import { roleLabel } from "~/shared/config/jobs";
+import { dayLabel } from "~/shared/lib/dates";
+import { lastDay } from "~/shared/lib/hackathonDates";
 import {
 	draftCard,
 	fromParticipantsGet,
@@ -23,7 +24,6 @@ import {
 } from "../form/draft";
 import { HackathonForm } from "../form/HackathonForm";
 import { useHackathonForm } from "../form/useHackathonForm";
-import { lastDay } from "../hackathonDates";
 import { copyHackathonLink } from "./copyHackathonLink";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");

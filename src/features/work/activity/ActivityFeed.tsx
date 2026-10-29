@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import { dateRange } from "~/lib/dates";
+import { dateRange } from "~/shared/lib/dates";
 import { ActivityEntry } from "./ActivityEntry";
 import { buildFeed, type CycleView, quietLabel } from "./record";
 

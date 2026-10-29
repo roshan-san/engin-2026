@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { attempt } from "~/lib/errors";
+import { attempt } from "~/shared/lib/errors";
 
 /** ★ Shortlist, Walkthrough done, then Hired or Not this time. Failures are toasted and resolve `false`. */
 export function useDecide(applicationId: Id<"applications">) {

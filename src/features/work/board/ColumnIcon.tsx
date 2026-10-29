@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import type { Column } from "./dropRules";
 
 /** How far along each column is, drawn as a filled slice of the circle. */

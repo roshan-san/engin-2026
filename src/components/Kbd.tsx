@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 /** A keyboard shortcut hint. Hidden on small screens and on touch, which have no keyboard to press it on. */
 export function Kbd({

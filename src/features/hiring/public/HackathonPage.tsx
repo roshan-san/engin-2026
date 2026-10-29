@@ -17,10 +17,10 @@ import { useDetailPanel } from "~/components/useDetailPanel";
 import { GoogleButton } from "~/features/people";
 import { hiringLine } from "~/features/startups";
 import { RatingBadge } from "~/features/work";
-import { dayLabel } from "~/lib/dates";
-import { cn } from "~/lib/utils";
 import { roleLabel } from "~/shared/config/jobs";
-import { lastDay } from "../hackathonDates";
+import { cn } from "~/shared/lib/cn";
+import { dayLabel } from "~/shared/lib/dates";
+import { lastDay } from "~/shared/lib/hackathonDates";
 import { STAGE } from "../stage";
 import { ApplyForm } from "./ApplyForm";
 import {

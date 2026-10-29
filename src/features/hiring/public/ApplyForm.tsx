@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { isMac } from "~/lib/platform";
+import { isMac } from "~/shared/lib/platform";
 import { answerKey } from "./applyStatus";
 import { useApply } from "./useApply";
 

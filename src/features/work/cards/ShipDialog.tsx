@@ -19,8 +19,8 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { isSendKey } from "~/lib/keys";
-import { usePictures } from "~/lib/usePictures";
+import { isSendKey } from "~/shared/lib/keys";
+import { usePictures } from "~/shared/lib/usePictures";
 import { useBoardScope } from "../board/BoardScope";
 import type { CardView } from "../board/types";
 import { landsIn } from "../cardRules";

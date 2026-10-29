@@ -10,7 +10,7 @@ import {
 	DialogTitle,
 } from "~/components/ui/dialog";
 import { Spinner } from "~/components/ui/spinner";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { planLines } from "./planLines";
 import { useCheckout } from "./useCheckout";
 

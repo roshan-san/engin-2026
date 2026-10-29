@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 import { RatingBadge } from "./RatingBadge";
 import { RatingParts } from "./RatingParts";
 import { RhythmStrip, StripLegend } from "./RhythmStrip";

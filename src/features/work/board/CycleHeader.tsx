@@ -4,7 +4,7 @@ import { MentorNote } from "~/components/MentorNote";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWorkspace } from "~/features/startups";
-import { dateRange } from "~/lib/dates";
+import { dateRange } from "~/shared/lib/dates";
 import { useCycle } from "./useCycle";
 import { useSetGoal } from "./useSetGoal";
 

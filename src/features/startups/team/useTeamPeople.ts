@@ -3,8 +3,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
-import { displayName } from "~/lib/displayName";
-import { attempt } from "~/lib/errors";
+import { displayName } from "~/shared/lib/displayName";
+import { attempt } from "~/shared/lib/errors";
 
 export type TeamPeople = FunctionReturnType<
 	typeof api.startups.contributors.list

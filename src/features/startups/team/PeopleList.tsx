@@ -5,7 +5,7 @@ import { Section } from "~/components/Section";
 import { Skeleton } from "~/components/ui/skeleton";
 import { PersonAvatar, PersonName } from "~/features/people";
 import { RatingBadge } from "~/features/work";
-import { displayName } from "~/lib/displayName";
+import { displayName } from "~/shared/lib/displayName";
 import type { TeamPeople, TeamPerson } from "./useTeamPeople";
 
 /** The Founder and Contributors: face, name, Rating and what they verified this Cycle. */

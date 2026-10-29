@@ -1,5 +1,5 @@
 import { chipClassName } from "~/components/ChipPicker";
-import { cn } from "~/lib/utils";
+import { cn } from "~/shared/lib/cn";
 
 type FilterChipsProps<T extends string | number> = {
 	readonly label: string;

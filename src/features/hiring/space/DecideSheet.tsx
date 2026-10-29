@@ -17,9 +17,9 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { dayLabel } from "~/lib/dates";
-import { cn } from "~/lib/utils";
-import { lastDay } from "../hackathonDates";
+import { cn } from "~/shared/lib/cn";
+import { dayLabel } from "~/shared/lib/dates";
+import { lastDay } from "~/shared/lib/hackathonDates";
 import type { ApplicantRow } from "./applicantSort";
 import { decideState } from "./decideSteps";
 import { useDecide } from "./useDecide";

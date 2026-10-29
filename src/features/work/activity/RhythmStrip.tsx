@@ -4,8 +4,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { cn } from "~/lib/utils";
-import { type StripCell, stripLevel, stripTooltip } from "./record";
+import { cn } from "~/shared/lib/cn";
+import { type StripCell, stripLevel, stripTooltip } from "~/shared/lib/rating";
 
 const SHADES = [
 	"bg-foreground/[.06]",

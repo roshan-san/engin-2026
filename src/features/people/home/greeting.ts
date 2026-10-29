@@ -1,4 +1,4 @@
-import { hourOfDay } from "~/lib/dates";
+import { hourOfDay } from "~/shared/lib/dates";
 
 /** "Good evening, Roshan", by the hour in India. Never a pronoun. */
 export function greeting(now: number, name: string | null): string {

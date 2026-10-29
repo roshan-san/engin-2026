@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { shouldIgnoreShortcut } from "~/lib/keys";
+import { shouldIgnoreShortcut } from "~/shared/lib/keys";
 
 /**
  * Keys for a list worked from the keyboard: J/K move, and each extra key
