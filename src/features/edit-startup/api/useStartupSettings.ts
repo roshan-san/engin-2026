@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { usePublicStartup } from "~/entities/startup";
 import { useUpload } from "~/shared/api/useUpload";
 import { attempt } from "~/shared/lib/errors";
-import type { SettingsDraft } from "./settingsDraft";
+import type { SettingsDraft } from "../model/settingsDraft";
 
 /** Saving the Startup's settings and its logo. Failures are toasted and resolve to `false`. */
 export function useStartupSettings(startupId: Id<"startups">, slug: string) {

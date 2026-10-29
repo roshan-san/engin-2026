@@ -22,12 +22,12 @@ import {
 	SheetTitle,
 } from "~/shared/ui/sheet";
 import { Spinner } from "~/shared/ui/spinner";
+import { useStartupSettings } from "../api/useStartupSettings";
 import {
 	type SettingsDraft,
 	toSettingsDraft,
 	toUpdateArgs,
-} from "./settingsDraft";
-import { useStartupSettings } from "./useStartupSettings";
+} from "../model/settingsDraft";
 
 /** The Founder's Startup settings, in a side sheet over whichever tab is open. */
 export function StartupSettingsSheet({
