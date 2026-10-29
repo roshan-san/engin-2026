@@ -51,6 +51,7 @@ import type * as presence from "../presence.js";
 import type * as presence_model from "../presence/model.js";
 import type * as rating from "../rating.js";
 import type * as rating_model from "../rating/model.js";
+import type * as rating_rules from "../rating/rules.js";
 import type * as shared_applicationRules from "../shared/applicationRules.js";
 import type * as shared_cardRules from "../shared/cardRules.js";
 import type * as shared_cycles from "../shared/cycles.js";
@@ -122,6 +123,7 @@ declare const fullApi: ApiFromModules<{
   "presence/model": typeof presence_model;
   rating: typeof rating;
   "rating/model": typeof rating_model;
+  "rating/rules": typeof rating_rules;
   "shared/applicationRules": typeof shared_applicationRules;
   "shared/cardRules": typeof shared_cardRules;
   "shared/cycles": typeof shared_cycles;

@@ -1,4 +1,4 @@
-import { type Tier, tierOf } from "@convex/billing/rules";
+import { type Tier, tierOf } from "@convex/rating/rules";
 
 // Written out in full so Tailwind finds the class names.
 const TIER_TEXT: Record<Tier, string> = {
