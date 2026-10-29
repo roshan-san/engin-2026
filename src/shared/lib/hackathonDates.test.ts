@@ -1,4 +1,4 @@
-import { hackathonDates } from "@convex/shared/hackathonPhase";
+import { hackathonDates } from "@convex/hackathons/rules";
 import { describe, expect, it } from "vitest";
 import { dayLabel } from "./dates";
 import { buildDaysLabel, lastDay } from "./hackathonDates";

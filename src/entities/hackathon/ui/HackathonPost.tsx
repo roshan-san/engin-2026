@@ -1,5 +1,4 @@
-import { hackathonDates } from "@convex/shared/hackathonPhase";
-import { MAX_PARTICIPANTS } from "@convex/shared/limits";
+import { hackathonDates, MAX_PARTICIPANTS } from "@convex/hackathons/rules";
 import type { ReactNode } from "react";
 import {
 	type JobMode,

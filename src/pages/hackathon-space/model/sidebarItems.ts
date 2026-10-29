@@ -4,10 +4,8 @@ import type { FunctionReturnType } from "convex/server";
 import type { ApplicantRow } from "~/entities/application";
 import { displayName } from "~/shared/lib/displayName";
 
-type ThreadRow = FunctionReturnType<typeof api.chat.threads.list>[number];
-type QueueRow = FunctionReturnType<
-	typeof api.work.cards.listReviewQueue
->[number];
+type ThreadRow = FunctionReturnType<typeof api.threads.list>[number];
+type QueueRow = FunctionReturnType<typeof api.cards.listReviewQueue>[number];
 
 export type SidebarInput = {
 	readonly participants: ApplicantRow[];

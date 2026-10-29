@@ -9,7 +9,7 @@ import type { StartupSearch } from "../model/startupSearch";
  * they may be out of date.
  */
 export function useExploreStartups(search: StartupSearch) {
-	const live = useQuery(api.startups.startups.explore, search);
+	const live = useQuery(api.startups.explore, search);
 	const startups = useKept(live, "explore-startups");
 	return { startups, isLoading: live === undefined };
 }

@@ -1,4 +1,4 @@
-import type { PlanView } from "@convex/shared/plans";
+import type { PlanView } from "@convex/billing/rules";
 import { describe, expect, it } from "vitest";
 import { draftPublish, PAYMENT_ISSUE } from "./draftPublish";
 

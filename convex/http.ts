@@ -21,7 +21,7 @@ async function syncFromDodo(
 ) {
 	const subscription = payload.data;
 	const userId = subscription.metadata?.userId;
-	await ctx.runMutation(internal.billing.subscriptions.sync, {
+	await ctx.runMutation(internal.billing.sync, {
 		dodoSubscriptionId: subscription.subscription_id,
 		dodoCustomerId: subscription.customer.customer_id,
 		productId: subscription.product_id,

@@ -1,5 +1,5 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
-import { phaseOf } from "@convex/shared/hackathonPhase";
+import { phaseOf } from "@convex/hackathons/rules";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";

@@ -1,5 +1,4 @@
-import { TEXT } from "@convex/shared/limits";
-import { usernameProblem } from "@convex/shared/username";
+import { USER_TEXT, usernameProblem } from "@convex/users/rules";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { DISCIPLINE_OPTIONS, useMe } from "~/entities/person";
@@ -140,7 +139,7 @@ function SettingsForm({
 					<Input
 						id="profile-username"
 						value={draft.username}
-						maxLength={TEXT.username}
+						maxLength={USER_TEXT.username}
 						autoCapitalize="none"
 						autoComplete="off"
 						spellCheck={false}
@@ -191,7 +190,7 @@ function SettingsForm({
 					id="profile-bio"
 					rows={4}
 					value={draft.bio}
-					maxLength={TEXT.bio}
+					maxLength={USER_TEXT.bio}
 					onChange={(event) => set("bio", event.target.value)}
 				/>
 			</div>

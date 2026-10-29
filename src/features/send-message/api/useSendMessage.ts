@@ -5,7 +5,7 @@ import { attempt } from "~/shared/lib/errors";
 
 /** Sends to the thread. Resolves `false` when it wasn't sent (the error is toasted). */
 export function useSendMessage(threadId: Id<"threads"> | undefined) {
-	const sendMessage = useMutation(api.chat.messages.send);
+	const sendMessage = useMutation(api.messages.send);
 
 	return async function send(body: string, images: Id<"_storage">[]) {
 		if (!threadId) return false;

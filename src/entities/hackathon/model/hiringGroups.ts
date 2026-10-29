@@ -1,10 +1,8 @@
 import type { api } from "@convex/_generated/api";
-import { isRunning } from "@convex/shared/hackathonPhase";
+import { isRunning } from "@convex/hackathons/rules";
 import type { FunctionReturnType } from "convex/server";
 
-export type HiringRow = FunctionReturnType<
-	typeof api.hiring.hackathons.list
->[number];
+export type HiringRow = FunctionReturnType<typeof api.hackathons.list>[number];
 
 /** The Hiring tab's groups. Contributors never see drafts. */
 export function groupHackathons(rows: HiringRow[], isFounder: boolean) {

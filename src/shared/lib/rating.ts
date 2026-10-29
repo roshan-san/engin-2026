@@ -1,12 +1,12 @@
 import type { api } from "@convex/_generated/api";
-import { WEEK_MS } from "@convex/shared/cycles";
-import { WEEK_COUNT_CAP } from "@convex/shared/limits";
+import { WEEK_MS } from "@convex/cycles/rules";
+import { WEEK_COUNT_CAP } from "@convex/rating/rules";
 import type { FunctionReturnType } from "convex/server";
 import { dateRange } from "./dates";
 
 /** One week of the 12-week strip under a Rating. */
 export type StripCell = NonNullable<
-	FunctionReturnType<typeof api.work.activity.getSignals>
+	FunctionReturnType<typeof api.activity.getSignals>
 >["strip"][number];
 
 /** "▲ 12" up, "▼ 8" down, nothing when flat. Never red. */

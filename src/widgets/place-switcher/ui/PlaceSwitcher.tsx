@@ -1,4 +1,4 @@
-import type { WaitingReason } from "@convex/shared/places";
+import type { WaitingReason } from "@convex/places/rules";
 import { Link, type LinkProps } from "@tanstack/react-router";
 import {
 	CheckIcon,

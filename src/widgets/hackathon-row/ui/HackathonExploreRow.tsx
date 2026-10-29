@@ -8,7 +8,7 @@ import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 
 export type HackathonExploreRowData = FunctionReturnType<
-	typeof api.hiring.hackathons.explore
+	typeof api.hackathons.explore
 >[number];
 
 /** One Hackathon: the job, who's hiring, what Participants get, and when. */

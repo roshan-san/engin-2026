@@ -12,7 +12,7 @@ import { attempt } from "~/shared/lib/errors";
 
 /** Founder only, from Review: verifies a Card on the Board at once and toasts it. Resolves `false` when it failed (the error is toasted). */
 export function useVerifyCard(scope: BoardScope) {
-	const verifyCard = useMutation(api.work.cards.verify);
+	const verifyCard = useMutation(api.cards.verify);
 	const verifyOptimistically = useMemo(
 		() =>
 			verifyCard.withOptimisticUpdate((store, args) => {

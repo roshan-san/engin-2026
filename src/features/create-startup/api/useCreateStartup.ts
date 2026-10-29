@@ -5,7 +5,7 @@ import { errorMessage } from "~/shared/lib/errors";
 
 /** Creates a Startup; resolves to its slug, or `null` after toasting the error. */
 export function useCreateStartup() {
-	const create = useMutation(api.startups.startups.create);
+	const create = useMutation(api.startups.create);
 
 	return async (args: Parameters<typeof create>[0]) => {
 		try {

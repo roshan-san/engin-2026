@@ -1,4 +1,4 @@
-import type { CardAction, CardActor } from "@convex/shared/cardRules";
+import type { CardAction, CardActor } from "@convex/cards/rules";
 import { refusalFor } from "./cardRules";
 import type { CardView } from "./types";
 

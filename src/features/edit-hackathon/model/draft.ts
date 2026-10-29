@@ -1,4 +1,4 @@
-import { MIN_HACKATHON_CARDS } from "@convex/shared/limits";
+import { MIN_HACKATHON_CARDS } from "@convex/hackathons/rules";
 import type { Job, JobMode, JobPay, JobRole } from "~/shared/config/jobs";
 import { startOptions } from "./startOptions";
 

@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { TEXT } from "@convex/shared/limits";
+import { APPLICATION_TEXT } from "@convex/applications/rules";
 import { type FormEvent, useState } from "react";
 import { isMac } from "~/shared/lib/platform";
 import { Button } from "~/shared/ui/button";
@@ -64,7 +64,7 @@ export function ApplyForm({
 			<Textarea
 				id="apply-answer"
 				value={answer}
-				maxLength={TEXT.answer}
+				maxLength={APPLICATION_TEXT.answer}
 				className="min-h-32"
 				onChange={(e) => {
 					setAnswer(e.target.value);
@@ -77,7 +77,7 @@ export function ApplyForm({
 					}
 				}}
 			/>
-			<CharCount value={answer} max={TEXT.answer} />
+			<CharCount value={answer} max={APPLICATION_TEXT.answer} />
 			<MentorNote>
 				{answer.trim().length === 0
 					? "Write your answer to send"

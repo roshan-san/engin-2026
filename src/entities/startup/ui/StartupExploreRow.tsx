@@ -8,7 +8,7 @@ import { RhythmStrip } from "~/shared/ui/RhythmStrip";
 import { CITIES, KINDS, STAGES } from "../config/startupChips";
 
 export type StartupExploreRowData = FunctionReturnType<
-	typeof api.startups.startups.explore
+	typeof api.startups.explore
 >[number];
 
 function labelOf(

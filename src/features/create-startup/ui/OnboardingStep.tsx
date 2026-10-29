@@ -1,4 +1,4 @@
-import { TEXT } from "@convex/shared/limits";
+import { STARTUP_TEXT } from "@convex/startups/rules";
 import { type ReactNode, useEffect, useRef } from "react";
 import { CITIES, KINDS, STAGES } from "~/entities/startup";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
@@ -57,7 +57,7 @@ function renderControl(
 				<TextStep
 					label="Startup name"
 					value={state.name}
-					maxLength={TEXT.startupName}
+					maxLength={STARTUP_TEXT.name}
 					onChange={(value) => dispatch({ type: "type", field: "name", value })}
 				/>
 			);
@@ -104,7 +104,7 @@ function renderControl(
 					<TextStep
 						label="One line"
 						value={state.oneLiner}
-						maxLength={TEXT.oneLiner}
+						maxLength={STARTUP_TEXT.oneLiner}
 						onChange={(value) =>
 							dispatch({ type: "type", field: "oneLiner", value })
 						}

@@ -120,7 +120,7 @@
 
 	--glow: #0b5c99;
 
-	/* Rating Tiers (convex/shared/tiers.ts): grey, green, blue, violet, amber. Text colours. */
+	/* Rating Tiers (convex/rating/rules.ts): grey, green, blue, violet, amber. Text colours. */
 	--tier-1: #a1a1aa;
 	--tier-2: #3fb87a;
 	--tier-3: #60a5fa;

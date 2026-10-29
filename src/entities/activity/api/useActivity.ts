@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { CYCLES_PAGE } from "@convex/shared/limits";
+import { CYCLES_PAGE } from "@convex/cycles/rules";
 import { useQuery } from "convex/react";
 import { useState } from "react";
 import { useKept } from "~/shared/lib/useKept";
@@ -8,7 +8,7 @@ import { useKept } from "~/shared/lib/useKept";
 /** The team's Cycles, newest first. Show earlier asks for one more page. */
 export function useActivity(startupId: Id<"startups">) {
 	const [count, setCount] = useState(CYCLES_PAGE);
-	const live = useQuery(api.work.activity.list, { startupId, count });
+	const live = useQuery(api.activity.list, { startupId, count });
 	const data = useKept(live, startupId);
 
 	return {

@@ -2,7 +2,7 @@ import {
 	startupCategory,
 	startupCity,
 	startupStage,
-} from "@convex/shared/validators";
+} from "@convex/startups/rules";
 import { describe, expect, test } from "vitest";
 import { CITIES, KINDS, STAGES } from "./startupChips";
 

@@ -2,7 +2,7 @@ import type { api } from "@convex/_generated/api";
 import type { FunctionReturnType } from "convex/server";
 
 export type ApplicantRow = FunctionReturnType<
-	typeof api.hiring.applications.listForHackathon
+	typeof api.applications.listForHackathon
 >[number];
 
 const GROUP = { participating: 0, applied: 1, declined: 2, left: 2 } as const;

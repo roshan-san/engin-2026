@@ -1,4 +1,4 @@
-import type { discipline } from "@convex/shared/validators";
+import type { discipline } from "@convex/users/rules";
 import type { Infer } from "convex/values";
 import { type JobRole, roleLabel } from "~/shared/config/jobs";
 

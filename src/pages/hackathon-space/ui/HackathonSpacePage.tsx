@@ -1,4 +1,4 @@
-import { phaseOf } from "@convex/shared/hackathonPhase";
+import { phaseOf } from "@convex/hackathons/rules";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 import { useApplicants } from "~/entities/application";

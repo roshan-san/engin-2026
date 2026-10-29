@@ -5,7 +5,7 @@ import { attempt } from "~/shared/lib/errors";
 
 /** The Participant's one tap: did the Founder do what they promised? Resolves to whether it saved. */
 export function useKeepPromise(applicationId: Id<"applications">) {
-	const keepPromise = useMutation(api.hiring.applications.keepPromise);
+	const keepPromise = useMutation(api.applications.keepPromise);
 
 	return async (kept: boolean): Promise<boolean> => {
 		return attempt(() => keepPromise({ applicationId, kept }));

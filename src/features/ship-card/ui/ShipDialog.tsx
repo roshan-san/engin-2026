@@ -1,8 +1,8 @@
 import {
+	CARD_TEXT,
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
-	TEXT,
-} from "@convex/shared/limits";
+} from "@convex/cards/rules";
 import { XIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -126,7 +126,7 @@ export function ShipDialog({
 					<Input
 						aria-label="What shipped"
 						value={line}
-						maxLength={TEXT.shippedLine}
+						maxLength={CARD_TEXT.shippedLine}
 						autoFocus
 						onChange={(e) => setLine(e.target.value)}
 					/>

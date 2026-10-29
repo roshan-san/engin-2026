@@ -9,7 +9,7 @@ import type { SettingsDraft } from "../model/settingsDraft";
 
 /** Saving the Startup's settings and its logo. Failures are toasted and resolve to `false`. */
 export function useStartupSettings(startupId: Id<"startups">, slug: string) {
-	const updateStartup = useMutation(api.startups.startups.update);
+	const updateStartup = useMutation(api.startups.update);
 	const { upload } = useUpload();
 	// The stored logo is a file id; the public page has its URL.
 	const logoUrl = usePublicStartup(slug)?.logo ?? null;

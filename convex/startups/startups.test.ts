@@ -1,15 +1,15 @@
 import type { FunctionArgs } from "convex/server";
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { MAX_USER_STARTUPS } from "../shared/limits";
 import {
 	draftHackathon,
 	publishedHackathon,
-} from "../testing/hackathons.setup";
-import { runRating, toNextWeek, verifyCards } from "../testing/rating.setup";
-import { addContributor, setUpStartup } from "../testing/startups.setup";
+} from "../hackathons/hackathons.setup";
+import { runRating, toNextWeek, verifyCards } from "../rating/rating.setup";
 import { createTest } from "../testing/test.setup";
-import { signUp } from "../testing/users.setup";
+import { signUp } from "../users/users.setup";
+import { MAX_USER_STARTUPS } from "./rules";
+import { addContributor, setUpStartup } from "./startups.setup";
 
 const acme = {
 	name: "Acme",
@@ -24,7 +24,7 @@ describe("startups", () => {
 
 		const { founder } = await setUpStartup(t);
 
-		const workspace = await founder.as.query(api.startups.startups.getBySlug, {
+		const workspace = await founder.as.query(api.startups.getBySlug, {
 			slug: "acme",
 		});
 		expect(workspace?.role).toBe("founder");
@@ -40,8 +40,8 @@ describe("startups", () => {
 		const fay = await signUp(t, "Fay");
 		const sam = await signUp(t, "Sam");
 
-		const first = await fay.as.mutation(api.startups.startups.create, acme);
-		const second = await sam.as.mutation(api.startups.startups.create, acme);
+		const first = await fay.as.mutation(api.startups.create, acme);
+		const second = await sam.as.mutation(api.startups.create, acme);
 
 		expect(first.slug).toBe("acme");
 		expect(second.slug).toBe("acme-2");
@@ -69,10 +69,10 @@ describe("startups", () => {
 		await setUpStartup(t);
 		const outsider = await signUp(t, "Olu");
 
-		const workspace = await outsider.as.query(api.startups.startups.getBySlug, {
+		const workspace = await outsider.as.query(api.startups.getBySlug, {
 			slug: "acme",
 		});
-		const page = await outsider.as.query(api.startups.startups.getPublic, {
+		const page = await outsider.as.query(api.startups.getPublic, {
 			slug: "acme",
 		});
 
@@ -86,7 +86,7 @@ describe("startups", () => {
 		const hackathonId = await publishedHackathon(setup);
 		await draftHackathon(setup);
 
-		const page = await setup.t.query(api.startups.startups.getPublic, {
+		const page = await setup.t.query(api.startups.getPublic, {
 			slug: setup.slug,
 		});
 
@@ -101,7 +101,7 @@ describe("startups", () => {
 		const ben = await addContributor(setup, "Ben");
 
 		await expect(
-			ben.as.mutation(api.startups.startups.update, {
+			ben.as.mutation(api.startups.update, {
 				startupId: setup.startupId,
 				name: "Acme 2",
 			}),
@@ -113,7 +113,7 @@ describe("startups", () => {
 		const setup = await setUpStartup(t);
 		const ben = await addContributor(setup, "Ben");
 
-		const workspace = await ben.as.query(api.startups.startups.getBySlug, {
+		const workspace = await ben.as.query(api.startups.getBySlug, {
 			slug: setup.slug,
 		});
 
@@ -124,7 +124,7 @@ describe("startups", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 
-		await setup.founder.as.mutation(api.startups.startups.update, {
+		await setup.founder.as.mutation(api.startups.update, {
 			startupId: setup.startupId,
 			name: "Acme Labs",
 			oneLiner: "Rockets for everyone",
@@ -132,7 +132,7 @@ describe("startups", () => {
 			stage: "launched",
 		});
 
-		const page = await t.query(api.startups.startups.getPublic, {
+		const page = await t.query(api.startups.getPublic, {
 			slug: setup.slug,
 		});
 		expect(page).toMatchObject({
@@ -149,7 +149,7 @@ describe("startups", () => {
 		const setup = await setUpStartup(t);
 
 		await expect(
-			setup.founder.as.mutation(api.startups.startups.update, {
+			setup.founder.as.mutation(api.startups.update, {
 				startupId: setup.startupId,
 				website: "acme dot com",
 			}),
@@ -161,16 +161,16 @@ describe("startups", () => {
 		const fay = await signUp(t, "Fay");
 
 		await expect(
-			fay.as.mutation(api.startups.startups.create, { ...acme, name: "  " }),
+			fay.as.mutation(api.startups.create, { ...acme, name: "  " }),
 		).rejects.toThrow("Name is required");
 	});
 
 	it("signed-out people can't create a startup", async () => {
 		const t = createTest();
 
-		await expect(
-			t.mutation(api.startups.startups.create, acme),
-		).rejects.toThrow("Not authenticated");
+		await expect(t.mutation(api.startups.create, acme)).rejects.toThrow(
+			"Not authenticated",
+		);
 	});
 
 	it("a person founds at most 50 Startups", async () => {
@@ -194,9 +194,9 @@ describe("startups", () => {
 			}
 		});
 
-		await expect(
-			fay.as.mutation(api.startups.startups.create, acme),
-		).rejects.toThrow("You can found up to 50 Startups");
+		await expect(fay.as.mutation(api.startups.create, acme)).rejects.toThrow(
+			"You can found up to 50 Startups",
+		);
 	});
 
 	it("a new Startup starts with an empty rhythm", async () => {
@@ -212,12 +212,12 @@ describe("startups", () => {
 describe("explore", () => {
 	async function secondStartup(
 		t: ReturnType<typeof createTest>,
-		overrides: Partial<FunctionArgs<typeof api.startups.startups.create>> & {
+		overrides: Partial<FunctionArgs<typeof api.startups.create>> & {
 			name: string;
 		},
 	) {
 		const owner = await signUp(t, `${overrides.name} Owner`);
-		return await owner.as.mutation(api.startups.startups.create, {
+		return await owner.as.mutation(api.startups.create, {
 			...acme,
 			...overrides,
 		});
@@ -227,7 +227,7 @@ describe("explore", () => {
 		const t = createTest();
 		await setUpStartup(t);
 
-		const rows = await t.query(api.startups.startups.explore, {});
+		const rows = await t.query(api.startups.explore, {});
 
 		expect(rows).toMatchObject([
 			{
@@ -256,7 +256,7 @@ describe("explore", () => {
 			await ctx.db.patch(middle.startupId, { rating: 1100 });
 		});
 
-		const rows = await t.query(api.startups.startups.explore, {});
+		const rows = await t.query(api.startups.explore, {});
 
 		expect(rows.map((row) => row.name)).toEqual(["High", "Middle", "Low"]);
 	});
@@ -271,16 +271,16 @@ describe("explore", () => {
 			city: "pune",
 		});
 
-		const byStage = await t.query(api.startups.startups.explore, {
+		const byStage = await t.query(api.startups.explore, {
 			stage: "launched",
 		});
-		const byCategory = await t.query(api.startups.startups.explore, {
+		const byCategory = await t.query(api.startups.explore, {
 			category: "saas",
 		});
-		const byCity = await t.query(api.startups.startups.explore, {
+		const byCity = await t.query(api.startups.explore, {
 			city: "pune",
 		});
-		const byAll = await t.query(api.startups.startups.explore, {
+		const byAll = await t.query(api.startups.explore, {
 			stage: "launched",
 			city: "bengaluru",
 		});
@@ -293,9 +293,9 @@ describe("explore", () => {
 
 	it("a Startup with an open Hackathon is hiring", async () => {
 		const setup = await setUpStartup(createTest());
-		const before = await setup.t.query(api.startups.startups.explore, {});
+		const before = await setup.t.query(api.startups.explore, {});
 		await publishedHackathon(setup);
-		const after = await setup.t.query(api.startups.startups.explore, {});
+		const after = await setup.t.query(api.startups.explore, {});
 
 		expect(before[0].isHiring).toBe(false);
 		expect(after[0].isHiring).toBe(true);
@@ -305,7 +305,7 @@ describe("explore", () => {
 		const t = createTest();
 		await setUpStartup(t);
 
-		const [row] = await t.query(api.startups.startups.explore, {});
+		const [row] = await t.query(api.startups.explore, {});
 
 		expect(row.strip).toHaveLength(12);
 		expect(row.strip.every((cell) => cell.count === null)).toBe(true);
@@ -318,7 +318,7 @@ describe("explore", () => {
 		await toNextWeek(setup.t);
 		await runRating(setup.t);
 
-		const [row] = await setup.t.query(api.startups.startups.explore, {});
+		const [row] = await setup.t.query(api.startups.explore, {});
 
 		expect(row.strip).toHaveLength(12);
 		expect(row.strip.map((cell) => cell.count)).toEqual([

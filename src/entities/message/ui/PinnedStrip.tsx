@@ -1,4 +1,4 @@
-import { splitBody } from "@convex/shared/mentions";
+import { splitBody } from "@convex/messages/rules";
 import { PinIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/shared/ui/button";

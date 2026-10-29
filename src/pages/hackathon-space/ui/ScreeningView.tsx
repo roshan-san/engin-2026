@@ -1,5 +1,5 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
-import { MAX_PARTICIPANTS } from "@convex/shared/limits";
+import { MAX_PARTICIPANTS } from "@convex/hackathons/rules";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import {

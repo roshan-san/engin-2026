@@ -1,6 +1,9 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { MAX_MESSAGE_IMAGES, TEXT } from "@convex/shared/limits";
-import { mentionToken } from "@convex/shared/mentions";
+import {
+	MAX_MESSAGE_IMAGES,
+	MESSAGE_TEXT,
+	mentionToken,
+} from "@convex/messages/rules";
 import { ImageIcon, SendIcon } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { cn } from "~/shared/lib/cn";
@@ -104,7 +107,7 @@ export function Composer({
 
 		// Put it back, ahead of anything typed or added since.
 		setText((current) =>
-			current ? `${sentText} ${current}`.slice(0, TEXT.message) : sentText,
+			current ? `${sentText} ${current}`.slice(0, MESSAGE_TEXT.body) : sentText,
 		);
 		restore(sentPictures);
 	}
@@ -172,7 +175,7 @@ export function Composer({
 					aria-controls={isPickerOpen ? "mention-picker" : undefined}
 					placeholder={placeholder}
 					rows={1}
-					maxLength={TEXT.message}
+					maxLength={MESSAGE_TEXT.body}
 					value={text}
 					className="max-h-36 min-h-10 resize-none border-0 bg-transparent px-3 pt-2.5 pb-1 focus-visible:ring-0"
 					onChange={(e) => {

@@ -9,7 +9,7 @@ import type { HackathonSearch } from "../model/hackathonSearch";
  * they may be out of date.
  */
 export function useExploreHackathons(search: HackathonSearch) {
-	const live = useQuery(api.hiring.hackathons.explore, search);
+	const live = useQuery(api.hackathons.explore, search);
 	const hackathons = useKept(live, "explore-hackathons");
 	return { hackathons, isLoading: live === undefined };
 }

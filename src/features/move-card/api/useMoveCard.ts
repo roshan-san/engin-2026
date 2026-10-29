@@ -7,7 +7,7 @@ import { attempt } from "~/shared/lib/errors";
 
 /** Moves a Card between To do and In progress, on the Board at once. Resolves `false` when it failed (the error is toasted). */
 export function useMoveCard(scope: BoardScope) {
-	const moveCard = useMutation(api.work.cards.move);
+	const moveCard = useMutation(api.cards.move);
 	const moveOptimistically = useMemo(
 		() =>
 			moveCard.withOptimisticUpdate((store, args) => {

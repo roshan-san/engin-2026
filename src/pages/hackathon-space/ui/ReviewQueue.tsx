@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import type { CardActor } from "@convex/shared/cardRules";
+import type { CardActor } from "@convex/cards/rules";
 import { useState } from "react";
 import { refusalFor, ShippedView, useReviewQueue } from "~/entities/card";
 import { useVerifyQueued } from "~/features/review-card";

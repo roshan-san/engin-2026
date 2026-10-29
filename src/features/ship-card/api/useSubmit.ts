@@ -14,7 +14,7 @@ export type Shipped = {
 /** Submitting a Card with What shipped: to Review, or Done when the Founder owns it. */
 export function useSubmit() {
 	const scope = useBoardScope();
-	const submitCard = useMutation(api.work.cards.submit);
+	const submitCard = useMutation(api.cards.submit);
 	const submitOptimistically = useMemo(
 		() =>
 			submitCard.withOptimisticUpdate((store, args) => {

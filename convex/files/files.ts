@@ -1,11 +1,2 @@
-import { mutation } from "../_generated/server";
-import { requireUserId } from "../model/auth";
-
-export const generateUploadUrl = mutation({
-	args: {},
-	handler: async (ctx) => {
-		await requireUserId(ctx);
-
-		return await ctx.storage.generateUploadUrl();
-	},
-});
+// Shim for the old path: see "Backend structure" in CLAUDE.md
+export { generateUploadUrl } from "../files";

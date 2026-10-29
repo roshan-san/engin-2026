@@ -7,9 +7,9 @@ import { type HackathonDraft, toDraftArgs } from "../model/draft";
 
 /** Saving and publishing Hackathon drafts. Failures are toasted and resolve to `null` or `false`. */
 export function useHackathonForm() {
-	const createHackathon = useMutation(api.hiring.hackathons.create);
-	const updateHackathon = useMutation(api.hiring.hackathons.update);
-	const publishHackathon = useMutation(api.hiring.hackathons.publish);
+	const createHackathon = useMutation(api.hackathons.create);
+	const updateHackathon = useMutation(api.hackathons.update);
+	const publishHackathon = useMutation(api.hackathons.publish);
 
 	async function create(startupId: Id<"startups">, draft: HackathonDraft) {
 		try {

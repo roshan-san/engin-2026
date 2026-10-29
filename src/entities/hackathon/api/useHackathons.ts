@@ -4,5 +4,5 @@ import { useQuery } from "convex/react";
 
 /** The Startup's Hackathons for the Hiring tab, newest first. */
 export function useHackathons(startupId: Id<"startups">) {
-	return useQuery(api.hiring.hackathons.list, { startupId });
+	return useQuery(api.hackathons.list, { startupId });
 }

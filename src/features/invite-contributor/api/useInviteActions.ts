@@ -6,8 +6,8 @@ import { attempt } from "~/shared/lib/errors";
 
 /** The Founder sends and revokes Invites to the Startup. Both resolve `true` once done; failures are toasted. */
 export function useInviteActions(startupId: Id<"startups">) {
-	const createInvite = useMutation(api.startups.invites.create);
-	const revokeInvite = useMutation(api.startups.invites.revoke);
+	const createInvite = useMutation(api.invites.create);
+	const revokeInvite = useMutation(api.invites.revoke);
 
 	async function send(email: string) {
 		return attempt(async () => {

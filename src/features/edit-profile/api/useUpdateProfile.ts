@@ -6,11 +6,9 @@ import { attempt } from "~/shared/lib/errors";
 
 /** Saving your profile. Failures are toasted and resolve to `false`. */
 export function useUpdateProfile() {
-	const updateProfile = useMutation(api.people.users.updateProfile);
+	const updateProfile = useMutation(api.users.updateProfile);
 
-	async function save(
-		changes: FunctionArgs<typeof api.people.users.updateProfile>,
-	) {
+	async function save(changes: FunctionArgs<typeof api.users.updateProfile>) {
 		return attempt(async () => {
 			await updateProfile(changes);
 			toast.success("Saved");

@@ -1,4 +1,4 @@
-import { WEEK_MS, weekOf, weekStart } from "@convex/shared/cycles";
+import { WEEK_MS, weekOf, weekStart } from "@convex/cycles/rules";
 
 export type StartOption = {
 	readonly label: "Next Monday" | "Monday after";

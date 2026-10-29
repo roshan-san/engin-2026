@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import type { HackathonPhase } from "@convex/shared/hackathonPhase";
+import type { HackathonPhase } from "@convex/hackathons/rules";
 import { createContext, useContext } from "react";
 
 /**

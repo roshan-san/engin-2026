@@ -6,7 +6,7 @@ import { useMaintenance } from "./useMaintenance";
 
 /**
  * Sends everyone to /maintenance while maintenance is on, and home when it goes
- * off. It's live: flipping `site/maintenance:set` in Convex moves every open tab.
+ * off. It's live: flipping `maintenance:set` in Convex moves every open tab.
  */
 export function MaintenanceGate({
 	children,

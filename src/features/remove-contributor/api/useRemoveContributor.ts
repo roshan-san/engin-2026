@@ -8,7 +8,7 @@ import { attempt } from "~/shared/lib/errors";
 
 /** The Founder removes a Contributor. Resolves `true` once removed; failures are toasted. */
 export function useRemoveContributor(startupId: Id<"startups">) {
-	const removeContributor = useMutation(api.startups.contributors.remove);
+	const removeContributor = useMutation(api.contributors.remove);
 
 	return async function remove(person: TeamPerson) {
 		return attempt(async () => {
