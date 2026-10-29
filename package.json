@@ -14,9 +14,9 @@
     "check": "biome check --write . && pnpm check-types",
     "ui": "pnpm dlx shadcn@latest add",
     "test": "vitest run",
-    "maintenance:on": "convex run --prod site/maintenance:set \"{\\\"on\\\":true}\"",
-    "maintenance:off": "convex run --prod site/maintenance:set \"{\\\"on\\\":false}\"",
-    "maintenance:status": "convex run --prod site/maintenance:status"
+    "maintenance:on": "convex run --prod maintenance:set \"{\\\"on\\\":true}\"",
+    "maintenance:off": "convex run --prod maintenance:set \"{\\\"on\\\":false}\"",
+    "maintenance:status": "convex run --prod maintenance:status"
   },
   "dependencies": {
     "@auth/core": "0.41.3",
