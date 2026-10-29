@@ -2,11 +2,11 @@ import type { Id } from "@convex/_generated/dataModel";
 import { XIcon } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
 import { MessageList, PinnedStrip, useMessages } from "~/entities/message";
+import { usePinMessage } from "~/features/pin-message";
 import { Composer, useSendMessage } from "~/features/send-message";
 import { Button } from "~/shared/ui/button";
 import { PanelHeader } from "~/shared/ui/PanelHeader";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { usePinMessage } from "./usePinMessage";
 
 /** One thread: its pinned messages, the messages and the composer. Mounted only while it shows. */
 export function ThreadPanel({
