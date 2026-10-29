@@ -1,11 +1,11 @@
 import { TEXT } from "@convex/shared/limits";
 import { useRef, useState } from "react";
+import { useCycle } from "~/entities/cycle";
 import { useWorkspace } from "~/entities/startup";
 import { dateRange } from "~/shared/lib/dates";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { useCycle } from "./useCycle";
 import { useSetGoal } from "./useSetGoal";
 
 /** "Cycle 3 · Oct 12 – 18", then the week's goal; the Founder edits it in place. */
