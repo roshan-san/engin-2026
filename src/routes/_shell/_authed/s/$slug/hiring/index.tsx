@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { HiringPage } from "~/features/hiring/list/HiringPage";
+import { HiringPage } from "~/pages/hiring";
 
 export const Route = createFileRoute("/_shell/_authed/s/$slug/hiring/")({
 	component: HiringPage,
