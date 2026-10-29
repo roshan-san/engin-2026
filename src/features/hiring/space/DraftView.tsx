@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { draftPublish, usePaymentIssue, usePlan } from "~/entities/plan";
 import { useWorkspace } from "~/entities/startup";
+import { copyHackathonLink } from "~/features/copy-hackathon-link";
 import {
 	draftCard,
 	fromParticipantsGet,
@@ -19,7 +20,6 @@ import { lastDay } from "~/shared/lib/hackathonDates";
 import { Button } from "~/shared/ui/button";
 import { Page } from "~/shared/ui/Page";
 import { Spinner } from "~/shared/ui/spinner";
-import { copyHackathonLink } from "./copyHackathonLink";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

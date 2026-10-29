@@ -10,6 +10,7 @@ import {
 } from "~/entities/application";
 import { HackathonPost } from "~/entities/hackathon";
 import { useWorkspace } from "~/entities/startup";
+import { CopyLinkButton } from "~/features/copy-hackathon-link";
 import { useScreening } from "~/features/screen-applicant";
 import { dayLabel } from "~/shared/lib/dates";
 import { displayName } from "~/shared/lib/displayName";
@@ -34,7 +35,6 @@ import { Segmented } from "~/shared/ui/Segmented";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { ApplicantDetail } from "./ApplicantDetail";
-import { CopyLinkButton } from "./CopyLinkButton";
 import { EveryonePanel } from "./EveryonePanel";
 import { useListKeys } from "./useListKeys";
 
