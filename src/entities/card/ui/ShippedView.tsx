@@ -1,6 +1,6 @@
 import { relativeTime } from "~/shared/lib/dates";
 import { PersonName } from "~/shared/ui/PersonName";
-import type { CardView } from "../board/types";
+import type { CardView } from "../model/types";
 
 /** What shipped: the line, its links and images, and who verified it. */
 export function ShippedView({ card }: { readonly card: CardView }) {

@@ -4,14 +4,9 @@ import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ApplicantRow } from "~/entities/application";
+import { type BoardScope, BoardScopeContext } from "~/entities/card";
 import { ThreadPanel } from "~/features/chat";
-import {
-	Board,
-	type BoardScope,
-	BoardScopeContext,
-	CardBoard,
-	OpenCardPanel,
-} from "~/features/work";
+import { Board, CardBoard, OpenCardPanel } from "~/features/work";
 import { tierText } from "~/shared/lib/tierText";
 import { Badge } from "~/shared/ui/badge";
 import { Button } from "~/shared/ui/button";

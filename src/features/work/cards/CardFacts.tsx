@@ -1,3 +1,12 @@
+import {
+	type CardView,
+	COLUMNS,
+	type Column,
+	ColumnIcon,
+	dropAction,
+	refusalFor,
+	useBoardScope,
+} from "~/entities/card";
 import { PersonName } from "~/shared/ui/PersonName";
 import {
 	Select,
@@ -6,12 +15,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/shared/ui/select";
-import { useBoardScope } from "../board/BoardScope";
-import { ColumnIcon } from "../board/ColumnIcon";
-import { COLUMNS, type Column, dropAction } from "../board/dropRules";
-import type { CardView } from "../board/types";
-import { useBoard } from "../board/useBoard";
-import { refusalFor } from "../cardRules";
+import { useMoveCard } from "../board/useMoveCard";
 import { GHOST_TRIGGER, OwnerPicker } from "./OwnerPicker";
 import type { useCardActions } from "./useCardActions";
 
@@ -27,7 +31,7 @@ export function CardFacts({
 	readonly onSave: ReturnType<typeof useCardActions>["update"];
 }) {
 	const scope = useBoardScope();
-	const { move } = useBoard(scope);
+	const move = useMoveCard(scope);
 
 	const columns = COLUMNS.filter(
 		(column) =>

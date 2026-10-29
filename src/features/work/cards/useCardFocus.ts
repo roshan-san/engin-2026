@@ -1,5 +1,5 @@
 import { type RefObject, useEffect, useRef } from "react";
-import type { CardView } from "../board/types";
+import type { CardView } from "~/entities/card";
 
 /**
  * Keyboard focus around the open Card. Opened from a keyboard-focused tile

@@ -2,6 +2,13 @@ import type { CardAction } from "@convex/shared/cardRules";
 import { MoreHorizontalIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import {
+	type CardView,
+	refusalFor,
+	ShippedView,
+	useBoardScope,
+	useCard,
+} from "~/entities/card";
+import {
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
@@ -22,16 +29,11 @@ import {
 import { PanelBody } from "~/shared/ui/PanelBody";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { useBoardScope } from "../board/BoardScope";
-import type { CardView } from "../board/types";
-import { refusalFor } from "../cardRules";
 import { CardFacts } from "./CardFacts";
 import { CardHeader, type PanelProps } from "./CardHeader";
 import { NotesField } from "./NotesField";
 import { ReviewBar } from "./ReviewBar";
-import { ShippedView } from "./ShippedView";
 import { TitleField } from "./TitleField";
-import { useCard } from "./useCard";
 import { useCardActions } from "./useCardActions";
 import { useCardFocus } from "./useCardFocus";
 

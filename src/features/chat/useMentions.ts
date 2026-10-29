@@ -1,8 +1,8 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { parseMentions } from "@convex/shared/mentions";
 import { useState } from "react";
+import { useMentionCards } from "~/entities/card";
 import { findTrigger } from "./mentionTrigger";
-import { useMentionCards } from "./useMentionCards";
 
 /** The most Cards the picker lists at once. */
 const MAX_OPTIONS = 8;

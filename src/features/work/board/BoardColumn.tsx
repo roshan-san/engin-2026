@@ -1,12 +1,14 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { ReactNode } from "react";
+import {
+	CardTile,
+	type CardView,
+	type Column,
+	ColumnIcon,
+	useBoardScope,
+} from "~/entities/card";
 import { cn } from "~/shared/lib/cn";
 import { EmptyState } from "~/shared/ui/EmptyState";
-import { useBoardScope } from "./BoardScope";
-import { CardTile } from "./CardTile";
-import { ColumnIcon } from "./ColumnIcon";
-import type { Column } from "./dropRules";
-import type { CardView } from "./types";
 
 /**
  * While a Card is dragged, what this column would do with it: `"accept"` it,

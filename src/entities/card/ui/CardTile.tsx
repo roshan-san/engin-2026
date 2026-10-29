@@ -2,8 +2,8 @@ import { useDraggable } from "@dnd-kit/core";
 import { cn } from "~/shared/lib/cn";
 import { Badge } from "~/shared/ui/badge";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
-import { useBoardScope } from "./BoardScope";
-import type { CardView } from "./types";
+import { useBoardScope } from "../model/BoardScope";
+import type { CardView } from "../model/types";
 
 /** A tile's frame, shared by the Board and the dragged copy. */
 export const TILE_CLASS =

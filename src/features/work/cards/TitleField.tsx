@@ -1,7 +1,7 @@
 import { TEXT } from "@convex/shared/limits";
 import { useRef } from "react";
+import type { CardView } from "~/entities/card";
 import { Textarea } from "~/shared/ui/textarea";
-import type { CardView } from "../board/types";
 import { useDraft } from "./useDraft";
 
 /** The title, edited in place; saves on blur or Enter, Esc undoes. Wraps, but stays one line. */

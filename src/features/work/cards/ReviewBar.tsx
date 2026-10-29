@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { type CardView, useBoardScope } from "~/entities/card";
 import { Button } from "~/shared/ui/button";
 import { Kbd } from "~/shared/ui/Kbd";
 import { Spinner } from "~/shared/ui/spinner";
-import { useBoardScope } from "../board/BoardScope";
-import type { CardView } from "../board/types";
-import { useBoard } from "../board/useBoard";
+import { useMoveCard } from "../board/useMoveCard";
+import { useVerifyCard } from "../board/useVerifyCard";
 
 /** The Founder's bar under a Card in Review: send it back, or Verify it. */
 export function ReviewBar({
@@ -17,7 +17,9 @@ export function ReviewBar({
 	/** Called once the Card has moved back to In progress. */
 	readonly onSentBack: () => void;
 }) {
-	const { move, verify } = useBoard(useBoardScope());
+	const scope = useBoardScope();
+	const move = useMoveCard(scope);
+	const verify = useVerifyCard(scope);
 	const [isVerifying, setIsVerifying] = useState(false);
 	const [isSendingBack, setIsSendingBack] = useState(false);
 

@@ -1,4 +1,4 @@
-import { useBoardCards, useBoardScope } from "~/features/work";
+import { useBoardCards, useBoardScope } from "~/entities/card";
 import { dayLabel } from "~/shared/lib/dates";
 import { buildDaysLabel, lastDay } from "~/shared/lib/hackathonDates";
 import { Section } from "~/shared/ui/Section";

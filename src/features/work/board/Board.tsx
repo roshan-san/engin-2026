@@ -12,18 +12,27 @@ import {
 } from "@dnd-kit/core";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+	CardFace,
+	COLUMNS,
+	type Column,
+	dropAction,
+	dropRefusal,
+	NewCardInput,
+	refusalFor,
+	TILE_CLASS,
+	useBoardCards,
+	useBoardScope,
+} from "~/entities/card";
 import { cn } from "~/shared/lib/cn";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { refusalFor } from "../cardRules";
 import { BoardColumn, type DropState } from "./BoardColumn";
-import { useBoardScope } from "./BoardScope";
 import { boardAnnouncements } from "./boardAnnouncements";
 import { useCardBoard } from "./CardBoard";
-import { CardFace, TILE_CLASS } from "./CardTile";
-import { COLUMNS, type Column, dropAction, dropRefusal } from "./dropRules";
-import { NewCardInput } from "./NewCardInput";
-import { useBoard } from "./useBoard";
 import { useBoardKeys } from "./useBoardKeys";
+import { useCreateCard } from "./useCreateCard";
+import { useMoveCard } from "./useMoveCard";
+import { useVerifyCard } from "./useVerifyCard";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((column) => column.id));
 
@@ -41,7 +50,10 @@ const collisionDetection: CollisionDetection = (args) => {
 export function Board() {
 	const { openCardId, open: onOpen, close: onClose, ship } = useCardBoard();
 	const scope = useBoardScope();
-	const { cards, create, move, verify } = useBoard(scope);
+	const cards = useBoardCards(scope);
+	const create = useCreateCard(scope);
+	const move = useMoveCard(scope);
+	const verify = useVerifyCard(scope);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const newCardRef = useRef<HTMLTextAreaElement>(null);

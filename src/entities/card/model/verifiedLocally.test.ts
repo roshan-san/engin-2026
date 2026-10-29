@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import type { CardActor } from "@convex/shared/cardRules";
 import { describe, expect, it } from "vitest";
-import { refusalFor } from "../cardRules";
+import { refusalFor } from "./cardRules";
 import type { CardView } from "./types";
 import { verifiedLocally } from "./verifiedLocally";
 

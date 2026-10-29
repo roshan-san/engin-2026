@@ -1,5 +1,5 @@
 import { cn } from "~/shared/lib/cn";
-import type { Column } from "./dropRules";
+import type { Column } from "../model/dropRules";
 
 /** How far along each column is, drawn as a filled slice of the circle. */
 const PROGRESS: Record<Exclude<Column, "done">, number> = {

@@ -1,5 +1,5 @@
 import type { CardAction, CardActor } from "@convex/shared/cardRules";
-import { refusalFor } from "../cardRules";
+import { refusalFor } from "./cardRules";
 import type { CardView } from "./types";
 
 export type Column = "todo" | "in_progress" | "review" | "done";

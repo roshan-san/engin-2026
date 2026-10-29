@@ -4,7 +4,7 @@ import {
 	cardRefusal,
 	submitLandsIn,
 } from "@convex/shared/cardRules";
-import type { CardView } from "./board/types";
+import type { CardView } from "./types";
 
 /** `cardRefusal` for a Card as the browser sees it: `null` when `actor` may do `action`. */
 export function refusalFor(

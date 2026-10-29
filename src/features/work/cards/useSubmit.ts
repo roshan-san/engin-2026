@@ -2,10 +2,8 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { useMemo } from "react";
+import { landsIn, patchBoardCards, useBoardScope } from "~/entities/card";
 import { attempt } from "~/shared/lib/errors";
-import { useBoardScope } from "../board/BoardScope";
-import { patchBoardCards } from "../board/useBoard";
-import { landsIn } from "../cardRules";
 
 export type Shipped = {
 	line: string;

@@ -6,6 +6,7 @@ import {
 import { XIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { type CardView, landsIn, useBoardScope } from "~/entities/card";
 import { isSendKey } from "~/shared/lib/keys";
 import { usePictures } from "~/shared/lib/usePictures";
 import { Badge } from "~/shared/ui/badge";
@@ -21,9 +22,6 @@ import {
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Spinner } from "~/shared/ui/spinner";
-import { useBoardScope } from "../board/BoardScope";
-import type { CardView } from "../board/types";
-import { landsIn } from "../cardRules";
 import { parseLink, shipMissing } from "./shipReady";
 import { useSubmit } from "./useSubmit";
 

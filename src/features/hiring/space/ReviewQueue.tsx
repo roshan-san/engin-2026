@@ -1,7 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
 import type { CardActor } from "@convex/shared/cardRules";
 import { useState } from "react";
-import { refusalFor, ShippedView } from "~/features/work";
+import { refusalFor, ShippedView, useReviewQueue } from "~/entities/card";
 import { cn } from "~/shared/lib/cn";
 import { Button } from "~/shared/ui/button";
 import { EmptyState } from "~/shared/ui/EmptyState";
@@ -11,7 +11,7 @@ import { PersonName } from "~/shared/ui/PersonName";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { TILE } from "~/shared/ui/tile";
 import { useListKeys } from "./useListKeys";
-import { useReviewQueue } from "./useReviewQueue";
+import { useVerifyQueued } from "./useVerifyQueued";
 
 /** Every Card waiting for you, across all Participants. J/K move, V verifies, Enter opens. */
 export function ReviewQueue({
@@ -25,7 +25,8 @@ export function ReviewQueue({
 	/** Opens the Card in its Participant's Board. */
 	readonly onOpen: (participantId: Id<"users">, cardId: Id<"cards">) => void;
 }) {
-	const { queue, verify } = useReviewQueue(hackathonId);
+	const queue = useReviewQueue(hackathonId);
+	const verify = useVerifyQueued(hackathonId);
 	const [active, setActive] = useState<string>();
 	const ids = queue?.map((card) => card._id) ?? [];
 	const activeId = ids.find((id) => id === active) ?? ids[0];

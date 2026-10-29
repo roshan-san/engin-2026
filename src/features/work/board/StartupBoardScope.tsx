@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import { BoardScopeContext } from "~/entities/card";
 import { useWorkspace } from "~/entities/startup";
-import { BoardScopeContext } from "./BoardScope";
 
 /** Makes the Startup's own Board the one being worked on. Inside `StartupGate`. */
 export function StartupBoardScope({

@@ -7,9 +7,9 @@ import {
 	ParticipantContext,
 	participantStatus,
 } from "~/entities/application";
+import { type BoardScope, BoardScopeContext } from "~/entities/card";
 import { useHackathon } from "~/entities/hackathon";
 import { useMe } from "~/entities/person";
-import { type BoardScope, BoardScopeContext } from "~/features/work";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 

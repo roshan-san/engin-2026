@@ -3,6 +3,7 @@ import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useApplicants } from "~/entities/application";
+import { useReviewQueue } from "~/entities/card";
 import { useWorkspace } from "~/entities/startup";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
@@ -26,7 +27,6 @@ import {
 	sidebarItems,
 } from "./sidebarItems";
 import { useHackathonThreads } from "./useHackathonThreads";
-import { useReviewQueue } from "./useReviewQueue";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
@@ -41,7 +41,7 @@ export function RunningView({
 }) {
 	const { userId } = useWorkspace();
 	const applicants = useApplicants(hackathon._id);
-	const { queue } = useReviewQueue(hackathon._id);
+	const queue = useReviewQueue(hackathon._id);
 	const threads = useHackathonThreads(hackathon._id);
 	const view = route.useSearch({ select: (search) => search.view });
 	const navigate = route.useNavigate();
