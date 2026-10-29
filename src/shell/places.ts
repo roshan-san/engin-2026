@@ -1,7 +1,7 @@
 import type { api } from "@convex/_generated/api";
 import type { WaitingReason } from "@convex/shared/places";
 import type { FunctionReturnType } from "convex/server";
-import { roleLabel } from "~/features/hiring";
+import { roleLabel } from "~/shared/config/jobs";
 
 export type Places = FunctionReturnType<typeof api.people.places.list>;
 

@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 import { AppPage } from "~/components/AppPage";
 import { Button } from "~/components/ui/button";
-import { roleLabel } from "../jobChips";
+import { roleLabel } from "~/shared/config/jobs";
 import { ParticipantBrief } from "./ParticipantBrief";
 import { useParticipant } from "./ParticipantGate";
 

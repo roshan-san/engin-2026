@@ -1,5 +1,5 @@
 import { MIN_HACKATHON_CARDS } from "@convex/shared/limits";
-import type { Job, JobMode, JobPay, JobRole } from "../jobChips";
+import type { Job, JobMode, JobPay, JobRole } from "~/shared/config/jobs";
 import { startOptions } from "./startOptions";
 
 export const PARTICIPANTS_GET = [

@@ -1,7 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { EmptyState } from "~/components/EmptyState";
 import { RowList } from "~/components/RowList";
-import { ROLES } from "~/features/hiring";
+import { ROLES } from "~/shared/config/jobs";
 import { ExploreLayout } from "./ExploreLayout";
 import { hasFilters } from "./exploreSearch";
 import { FilterChips } from "./FilterChips";

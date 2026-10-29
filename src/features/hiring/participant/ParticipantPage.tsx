@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button";
 import { useDetailPanel } from "~/components/useDetailPanel";
 import { ThreadPanel } from "~/features/chat";
 import { Board, CardBoard, OpenCardPanel } from "~/features/work";
-import { roleLabel } from "../jobChips";
+import { roleLabel } from "~/shared/config/jobs";
 import { useHackathonThreads } from "../space/useSpace";
 import { DecisionBanner } from "./DecisionBanner";
 import { useParticipant } from "./ParticipantGate";

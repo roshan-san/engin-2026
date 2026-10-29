@@ -6,7 +6,6 @@ import { Badge } from "~/components/ui/badge";
 import { SignInCard } from "~/features/people";
 import { dayLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";
-import { buildDaysLabel, lastDay } from "../hackathonDates";
 import {
 	type JobMode,
 	type JobPay,
@@ -14,7 +13,8 @@ import {
 	MODES,
 	PAYS,
 	ROLES,
-} from "../jobChips";
+} from "~/shared/config/jobs";
+import { buildDaysLabel, lastDay } from "../hackathonDates";
 
 export type PostView = {
 	readonly startupName: string;

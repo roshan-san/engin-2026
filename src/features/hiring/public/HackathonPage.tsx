@@ -19,8 +19,8 @@ import { hiringLine } from "~/features/startups";
 import { RatingBadge } from "~/features/work";
 import { dayLabel } from "~/lib/dates";
 import { cn } from "~/lib/utils";
+import { roleLabel } from "~/shared/config/jobs";
 import { lastDay } from "../hackathonDates";
-import { roleLabel } from "../jobChips";
 import { STAGE } from "../stage";
 import { ApplyForm } from "./ApplyForm";
 import {

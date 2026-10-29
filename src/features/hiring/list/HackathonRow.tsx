@@ -2,7 +2,7 @@ import { phaseOf } from "@convex/shared/hackathonPhase";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
-import { roleLabel, termsLine } from "../jobChips";
+import { roleLabel, termsLine } from "~/shared/config/jobs";
 import { STAGE, stageDate } from "../stage";
 import {
 	type HiringRow,

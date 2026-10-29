@@ -4,8 +4,8 @@ import type {
 	startupStage,
 } from "@convex/shared/validators";
 import type { Infer } from "convex/values";
-import { type JobRole, ROLES } from "~/features/hiring";
 import { CITIES, KINDS, STAGES } from "~/features/startups";
+import { type JobRole, ROLES } from "~/shared/config/jobs";
 
 type Stage = Infer<typeof startupStage>;
 type Category = Infer<typeof startupCategory>;

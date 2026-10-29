@@ -7,7 +7,7 @@ import { GlobalSpinner } from "~/components/GlobalSpinner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useWorkspace } from "~/features/startups";
-import { roleLabel } from "../jobChips";
+import { roleLabel } from "~/shared/config/jobs";
 import { STAGE, stageDate } from "../stage";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { DraftView } from "./DraftView";

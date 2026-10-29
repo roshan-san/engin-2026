@@ -20,8 +20,9 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Skeleton } from "~/components/ui/skeleton";
-import { participantStatusText, roleLabel } from "~/features/hiring";
+import { participantStatusText } from "~/features/hiring";
 import { cn } from "~/lib/utils";
+import { roleLabel } from "~/shared/config/jobs";
 import {
 	type CurrentPlace,
 	currentPlaceView,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { jobLine } from "./jobChips";
+import { jobLine } from "./jobs";
 
 describe("jobLine", () => {
 	it("reads role, pay and mode", () => {
