@@ -10,6 +10,15 @@ import {
 } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { participantStatusText } from "~/entities/application";
+import {
+	type CurrentPlace,
+	currentPlaceView,
+	filterPlaces,
+	isSamePlace,
+	othersWaiting,
+	placeHint,
+	usePlaces,
+} from "~/entities/place";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import {
@@ -23,15 +32,6 @@ import {
 import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
-import {
-	type CurrentPlace,
-	currentPlaceView,
-	filterPlaces,
-	isSamePlace,
-	othersWaiting,
-	placeHint,
-} from "~/shell/places";
-import { usePlaces } from "~/shell/usePlaces";
 
 /** Above this many places the menu gets a search box. */
 const SEARCH_FROM = 6;

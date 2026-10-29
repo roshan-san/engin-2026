@@ -1,6 +1,7 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { ActivityFeed, usePublicActivity } from "~/entities/activity";
+import { usePlaces } from "~/entities/place";
 import { RecordSignals, useSignals } from "~/entities/rating";
 import {
 	CITIES,
@@ -22,7 +23,6 @@ import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { TILE, TILE_LINK } from "~/shared/ui/tile";
-import { usePlaces } from "~/shell/usePlaces";
 
 const route = getRouteApi("/_shell/startups/$slug");
 

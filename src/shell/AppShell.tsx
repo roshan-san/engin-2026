@@ -1,5 +1,5 @@
+import { useRememberPlace } from "~/entities/place";
 import { TopBar } from "~/shell/TopBar";
-import { useRememberPlace } from "~/shell/useRememberPlace";
 
 /** Signed-in frame: the top bar over the page, which fills the rest and scrolls inside it. */
 export function AppShell({ children }: { readonly children: React.ReactNode }) {

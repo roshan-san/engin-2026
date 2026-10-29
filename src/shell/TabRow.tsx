@@ -2,13 +2,13 @@ import { Link, useMatches } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { participantStatusText } from "~/entities/application";
 import { useHackathon } from "~/entities/hackathon";
-import { StartupSettingsSheet } from "~/features/startups";
 import {
 	canSeeSettings,
 	tabsForSignedOut,
 	tabsFromRoute,
-} from "~/shell/places";
-import { usePlaces } from "~/shell/usePlaces";
+	usePlaces,
+} from "~/entities/place";
+import { StartupSettingsSheet } from "~/features/startups";
 
 const TAB_CLASS =
 	"relative flex shrink-0 items-center px-2 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:text-foreground focus-ring aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground";

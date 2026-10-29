@@ -1,6 +1,6 @@
 import { useMatches } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { rememberedFrom, writeLastPlace } from "~/shell/landing";
+import { rememberedFrom, writeLastPlace } from "./landing";
 
 /** Remembers the last Startup or Hackathon Board you were in, for the next landing. */
 export function useRememberPlace() {

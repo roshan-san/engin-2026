@@ -3,6 +3,13 @@ import { ArrowRight, Compass, Plus } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
 import { participantStatusText } from "~/entities/application";
 import { useMe } from "~/entities/person";
+import {
+	homeIntent,
+	isWaiting,
+	type Places,
+	reasonLine,
+	usePlaces,
+} from "~/entities/place";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
@@ -14,11 +21,8 @@ import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { TILE_LINK } from "~/shared/ui/tile";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
-import { isWaiting, type Places, reasonLine } from "~/shell/places";
-import { usePlaces } from "~/shell/usePlaces";
 import { greeting } from "./greeting";
 import { HomeInvites } from "./HomeInvites";
-import { homeIntent } from "./homeIntent";
 import { homeSections } from "./homeSections";
 
 const CARD = `${TILE_LINK} flex flex-col gap-3`;

@@ -1,7 +1,7 @@
 import { useMatches } from "@tanstack/react-router";
+import { tabsFromRoute } from "~/entities/place";
 import { SiteFooter } from "~/shared/ui/SiteFooter";
 import { PublicHeader } from "~/shell/PublicHeader";
-import { tabsFromRoute } from "~/shell/places";
 import { TabRow } from "~/shell/TabRow";
 
 /** Signed-out frame: the public header and Explore's tab row over the page, which fills the rest and scrolls inside it. */
