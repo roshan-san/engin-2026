@@ -8,8 +8,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "~/shared/ui/tooltip";
-import { orderPresence, presenceLabel } from "./presence";
-import { useOnline } from "./useOnline";
+import { useOnline } from "../api/useOnline";
+import { orderPresence, presenceLabel } from "../model/presence";
 
 /** Overlapping avatars of who is online, you first. Hover for what they're on. */
 export function PresenceList({

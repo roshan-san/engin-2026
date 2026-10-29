@@ -1,6 +1,6 @@
 import { useTeamThread } from "~/entities/message";
+import { PresenceList } from "~/entities/presence";
 import { useWorkspace } from "~/entities/startup";
-import { PresenceList } from "./PresenceList";
 import { ThreadPanel } from "./ThreadPanel";
 
 /** The Startup's Team thread, with who's online. */
