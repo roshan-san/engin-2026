@@ -31,8 +31,8 @@ import { cn } from "~/shared/lib/cn";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useBoardKeys } from "../lib/useBoardKeys";
 import { boardAnnouncements } from "../model/boardAnnouncements";
-import { useCardBoard } from "../model/CardBoard";
 import { BoardColumn, type DropState } from "./BoardColumn";
+import { useCardBoard } from "./CardBoard";
 
 const COLUMN_IDS = new Set<string>(COLUMNS.map((column) => column.id));
 
