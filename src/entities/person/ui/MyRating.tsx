@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
-import { useMe } from "~/shell/useMe";
+import { useMe } from "../api/useMe";
 
 /** Your Rating in its Tier colour, linking to your Profile. */
 export function MyRating() {

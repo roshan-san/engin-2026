@@ -2,6 +2,13 @@ import type { api } from "@convex/_generated/api";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { useRef, useState } from "react";
+import {
+	disciplineLabel,
+	hackathonLine,
+	useMe,
+	useProfile,
+	workLine,
+} from "~/entities/person";
 import { SignInCard } from "~/features/people/auth/SignInCard";
 import { SettingsSheet } from "~/features/people/settings/SettingsSheet";
 import { cn } from "~/shared/lib/cn";
@@ -18,9 +25,6 @@ import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RatingParts } from "~/shared/ui/RatingParts";
 import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
-import { useMe } from "~/shell/useMe";
-import { disciplineLabel, hackathonLine, workLine } from "./profileText";
-import { useProfile } from "./useProfile";
 
 const route = getRouteApi("/_shell/u/$username");
 

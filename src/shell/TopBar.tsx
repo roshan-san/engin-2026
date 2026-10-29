@@ -1,9 +1,9 @@
 import { Link, useMatches } from "@tanstack/react-router";
 import { Compass } from "lucide-react";
+import { MyRating } from "~/entities/person";
 import { EnginLogo } from "~/shared/ui/EnginLogo";
 import { AccountMenu } from "~/shell/AccountMenu";
 import { InviteTray } from "~/shell/InviteTray";
-import { MyRating } from "~/shell/MyRating";
 import { PlaceSwitcher } from "~/shell/PlaceSwitcher";
 import { placeFromRoute } from "~/shell/places";
 import { TabRow } from "~/shell/TabRow";

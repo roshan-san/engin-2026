@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { hackathonLine, workLine } from "~/features/people";
+import { hackathonLine, workLine } from "~/entities/person";
 import { Button } from "~/shared/ui/button";
 import { Kbd } from "~/shared/ui/Kbd";
 import { PanelBody } from "~/shared/ui/PanelBody";

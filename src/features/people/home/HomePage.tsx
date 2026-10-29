@@ -1,6 +1,7 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowRight, Compass, Plus } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
+import { useMe } from "~/entities/person";
 import { participantStatusText } from "~/features/hiring";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
@@ -14,7 +15,6 @@ import { Section } from "~/shared/ui/Section";
 import { TILE_LINK } from "~/shared/ui/tile";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { isWaiting, type Places, reasonLine } from "~/shell/places";
-import { useMe } from "~/shell/useMe";
 import { usePlaces } from "~/shell/usePlaces";
 import { greeting } from "./greeting";
 import { HomeInvites } from "./HomeInvites";

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
+import { useMe } from "~/entities/person";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
-import { useMe } from "~/shell/useMe";
 import { useStartup } from "./useStartup";
 import { StartupContext } from "./Workspace";
 

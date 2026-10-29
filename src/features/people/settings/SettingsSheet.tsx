@@ -2,8 +2,8 @@ import { TEXT } from "@convex/shared/limits";
 import { usernameProblem } from "@convex/shared/username";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
+import { DISCIPLINE_OPTIONS, useMe } from "~/entities/person";
 import { PlanSection } from "~/features/billing";
-import { DISCIPLINE_OPTIONS } from "~/features/people/profile/profileText";
 import {
 	useDiscardGuard,
 	useReportChanged,
@@ -25,7 +25,6 @@ import {
 } from "~/shared/ui/sheet";
 import { Spinner } from "~/shared/ui/spinner";
 import { Textarea } from "~/shared/ui/textarea";
-import { useMe } from "~/shell/useMe";
 import {
 	type ProfileDraft,
 	type ProfileSource,
