@@ -10,9 +10,9 @@ import { usePictures } from "~/shared/lib/usePictures";
 import { Button } from "~/shared/ui/button";
 import { Spinner } from "~/shared/ui/spinner";
 import { Textarea } from "~/shared/ui/textarea";
+import { useMentions } from "../lib/useMentions";
 import { MentionPicker } from "./MentionPicker";
 import { PictureStrip } from "./PictureStrip";
-import { useMentions } from "./useMentions";
 
 /** Write a message: text, pasted or dropped images, and in Team `#` to mention a Card. */
 export function Composer({
