@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { draftPublish, usePaymentIssue, usePlan } from "~/entities/plan";
 import { useWorkspace } from "~/entities/startup";
-import { CheckoutNotice, PlansDialog, usePortal } from "~/features/billing";
+import { usePortal } from "~/features/billing";
 import {
 	draftCard,
 	fromParticipantsGet,
@@ -12,6 +12,7 @@ import {
 	HackathonForm,
 	useHackathonForm,
 } from "~/features/edit-hackathon";
+import { CheckoutNotice, PlansDialog } from "~/features/upgrade-plan";
 import { roleLabel } from "~/shared/config/jobs";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";

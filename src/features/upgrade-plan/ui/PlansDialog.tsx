@@ -12,7 +12,7 @@ import {
 	DialogTitle,
 } from "~/shared/ui/dialog";
 import { Spinner } from "~/shared/ui/spinner";
-import { useCheckout } from "./useCheckout";
+import { useCheckout } from "../api/useCheckout";
 
 /** The Pro plans, 6 months selected; Continue goes to Dodo checkout and back to `returnPath`. */
 export function PlansDialog({
