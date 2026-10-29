@@ -24,7 +24,7 @@ describe("invites", () => {
 			inviteId: invites[0].inviteId,
 		});
 
-		const places = await sam.as.query(api.people.places.list, {});
+		const places = await sam.as.query(api.places.list, {});
 		expect(places.startups).toMatchObject([
 			{ name: "Acme", role: "contributor" },
 		]);

@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import type { WaitingReason } from "@convex/shared/places";
+import type { WaitingReason } from "@convex/places/rules";
 import { describe, expect, it } from "vitest";
 import {
 	canSeeSettings,

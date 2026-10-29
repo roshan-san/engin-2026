@@ -19,7 +19,7 @@ import { createTest } from "../testing/test.setup";
 import { type Person, signUp } from "../users/users.setup";
 
 async function placesOf(person: Person) {
-	return await person.as.query(api.people.places.list, {});
+	return await person.as.query(api.places.list, {});
 }
 
 async function threadOf(
@@ -424,7 +424,7 @@ describe("waiting", () => {
 it("places need sign-in", async () => {
 	const t = createTest();
 
-	await expect(t.query(api.people.places.list, {})).rejects.toThrow(
+	await expect(t.query(api.places.list, {})).rejects.toThrow(
 		"Not authenticated",
 	);
 });

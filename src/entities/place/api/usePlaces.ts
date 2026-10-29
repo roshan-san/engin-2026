@@ -7,5 +7,5 @@ import type { Places } from "../model/places";
  * loading. Pass `enabled = false` when signed out: the query needs sign-in.
  */
 export function usePlaces(enabled = true): Places | undefined {
-	return useQuery(api.people.places.list, enabled ? {} : "skip");
+	return useQuery(api.places.list, enabled ? {} : "skip");
 }

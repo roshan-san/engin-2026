@@ -1,5 +1,5 @@
 import type { Infer } from "convex/values";
-import type { jobRole } from "./validators";
+import type { jobRole } from "../shared/validators";
 
 type JobRole = Infer<typeof jobRole>;
 

@@ -9,7 +9,6 @@ import {
 	MAX_LISTED_HACKATHONS,
 	MAX_USER_APPLICATIONS,
 } from "../shared/limits";
-import type { WaitingReason } from "../shared/places";
 import { loadLogoUrl } from "../startups/model";
 import {
 	isThreadUnread,
@@ -17,6 +16,7 @@ import {
 	loadTeamThreads,
 	loadThreadRead,
 } from "../threads/model";
+import type { WaitingReason } from "./rules";
 
 /** A decision is in, and the Participant hasn't said whether the promise was kept. */
 export function isPromisePending(application: Doc<"applications">): boolean {
