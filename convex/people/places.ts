@@ -1,5 +1,5 @@
 import { query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
 import { loadHackathonPlaces, startupReasons } from "../model/places";
 import { loadFoundedStartups, loadLogoUrl } from "../model/startups";
 import { MAX_USER_STARTUPS } from "../shared/limits";

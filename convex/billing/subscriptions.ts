@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
 import {
 	hasPaymentIssue,
 	loadPlanView,

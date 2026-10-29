@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
+import { limitText } from "../lib/text";
 import {
 	MAX_MESSAGE_IMAGES,
 	MAX_MESSAGE_MENTIONS,
@@ -9,7 +10,6 @@ import {
 } from "../shared/limits";
 import { parseMentions } from "../shared/mentions";
 import { loadImageUrls } from "./files";
-import { limitText } from "./text";
 import { loadPublicUser, type PublicUser } from "./users";
 
 /** A trimmed message that has text, images, or both. */

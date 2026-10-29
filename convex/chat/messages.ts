@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
 import {
 	buildMessageViews,
 	loadLatestMessages,

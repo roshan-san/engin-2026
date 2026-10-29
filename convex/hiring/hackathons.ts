@@ -2,12 +2,12 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
 import {
 	getApplication,
 	loadParticipants,
 	toMyApplicationView,
 } from "../model/applications";
-import { requireUserId } from "../model/auth";
 import { loadHackathonCardsInReview } from "../model/cards";
 import * as lifecycle from "../model/hackathonLifecycle";
 import {

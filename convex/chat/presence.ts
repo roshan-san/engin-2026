@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
 import { loadWorkingOn, parseHeartbeat, presence } from "../model/presence";
 import { requireTeam } from "../model/teamAccess";
 import { toPublicUser } from "../model/users";

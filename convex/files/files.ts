@@ -1,5 +1,5 @@
 import { mutation } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
 
 export const generateUploadUrl = mutation({
 	args: {},

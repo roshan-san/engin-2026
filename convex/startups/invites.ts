@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
 import { appendActivity } from "../model/activity";
-import { requireUserId } from "../model/auth";
 import {
 	createInvite,
 	loadOpenInvitesTo,

@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { requireLimitedText } from "../lib/text";
 import { TEXT } from "../shared/limits";
-import { requireLimitedText } from "./text";
 
 async function loadGoalRow(
 	ctx: QueryCtx | MutationCtx,

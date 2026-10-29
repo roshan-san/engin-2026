@@ -2,8 +2,8 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
-import { limitText } from "../model/text";
+import { requireUserId } from "../lib/auth";
+import { limitText } from "../lib/text";
 import { requireUsername } from "../model/username";
 import {
 	loadProfileRecord,

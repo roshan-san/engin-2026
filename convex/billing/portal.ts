@@ -1,7 +1,7 @@
 import { ConvexError } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
 import { customerPortal } from "../model/dodo";
 
 /** Dodo's customer portal: cancel, switch plan, change card, invoices. */

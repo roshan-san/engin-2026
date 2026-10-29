@@ -1,10 +1,10 @@
 import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
+import { isSafeReturnPath } from "../lib/returnPath";
 import { productIdFor } from "../model/billing";
 import { checkout } from "../model/dodo";
-import { isSafeReturnPath } from "../shared/returnPath";
 import { planKey } from "../shared/validators";
 
 /** A Dodo checkout for a plan. Dodo sends the Founder back to `returnPath` on engin. */

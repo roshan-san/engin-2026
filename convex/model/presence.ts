@@ -3,13 +3,13 @@ import { ConvexError } from "convex/values";
 import { components } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { requireLimitedText } from "../lib/text";
 import {
 	MAX_BOARD_CARDS,
 	MAX_PRESENCE_INTERVAL_MS,
 	MIN_PRESENCE_INTERVAL_MS,
 	TEXT,
 } from "../shared/limits";
-import { requireLimitedText } from "./text";
 
 export const presence = new Presence(components.presence);
 

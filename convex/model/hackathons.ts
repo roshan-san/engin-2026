@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { limitText, requireLimitedText } from "../lib/text";
 import { weekOf, weekStart } from "../shared/cycles";
 import { hackathonDates, RUNNING } from "../shared/hackathonPhase";
 import {
@@ -11,7 +12,6 @@ import {
 import { jobMode, jobPay, jobRole } from "../shared/validators";
 import type { HiringRecord } from "./hiringRecord";
 import { requireFounder } from "./teamAccess";
-import { limitText, requireLimitedText } from "./text";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {

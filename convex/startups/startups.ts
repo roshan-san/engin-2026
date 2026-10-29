@@ -2,7 +2,8 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
-import { requireUserId } from "../model/auth";
+import { requireUserId } from "../lib/auth";
+import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import { loadHiringRecord } from "../model/hiringRecord";
 import {
 	buildUniqueSlug,
@@ -14,7 +15,6 @@ import {
 	toPublicStartup,
 } from "../model/startups";
 import { getTeamRole, requireFounder } from "../model/teamAccess";
-import { assertUrl, limitText, requireLimitedText } from "../model/text";
 import { shiftWeek, weekOf } from "../shared/cycles";
 import {
 	EXPLORE_SCAN,

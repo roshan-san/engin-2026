@@ -1,8 +1,8 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { requireUserId } from "../lib/auth";
 import { loadCycles, loadSignals } from "../model/activity";
-import { requireUserId } from "../model/auth";
 import { getStartupBySlug } from "../model/startups";
 import { requireTeam } from "../model/teamAccess";
 import { isInvestorPro } from "../model/users";
