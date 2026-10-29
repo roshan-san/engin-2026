@@ -14,7 +14,7 @@ import { TeamPanel } from "~/widgets/chat-panel";
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 
 /** The Startup's workspace: the Cycle header and the Board, beside the side panel. */
-export function WorkspacePage() {
+export function StartupBoardPage() {
 	const { card: cardId } = boardRoute.useSearch();
 	const navigate = boardRoute.useNavigate();
 	const { startup } = useWorkspace();
