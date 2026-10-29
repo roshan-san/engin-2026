@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BriefPage } from "~/features/hiring/participant/BriefPage";
+import { ParticipantBriefPage } from "~/pages/participant-brief";
 
 export const Route = createFileRoute("/_shell/_authed/h/$id/brief")({
-	component: BriefPage,
+	component: ParticipantBriefPage,
 });

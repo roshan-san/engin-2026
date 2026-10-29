@@ -7,7 +7,7 @@ import { Button } from "~/shared/ui/button";
 import { ParticipantBrief } from "./ParticipantBrief";
 
 /** The Participant's Brief tab: the problem and how it ends, full width. */
-export function BriefPage() {
+export function ParticipantBriefPage() {
 	const { page } = useParticipant();
 
 	return (
