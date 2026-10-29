@@ -5,7 +5,6 @@ import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ApplicantRow } from "~/entities/application";
 import { type BoardScope, BoardScopeContext } from "~/entities/card";
-import { ThreadPanel } from "~/features/chat";
 import {
 	DecideSheet,
 	decideState,
@@ -22,6 +21,7 @@ import { Segmented } from "~/shared/ui/Segmented";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { Board, CardBoard, OpenCardPanel } from "~/widgets/card-board";
+import { ThreadPanel } from "~/widgets/chat-panel";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

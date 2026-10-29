@@ -1,7 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
-import { TeamPanel } from "~/features/chat";
 import { CycleHeader } from "~/features/set-cycle-goal";
 import { useHeartbeat } from "~/features/stay-online";
 import { AppPage } from "~/shared/ui/AppPage";
@@ -10,6 +9,7 @@ import { DetailPanel } from "~/shared/ui/DetailPanel";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { Board, CardBoard, OpenCardPanel } from "~/widgets/card-board";
+import { TeamPanel } from "~/widgets/chat-panel";
 
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 
