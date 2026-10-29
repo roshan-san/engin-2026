@@ -21,6 +21,10 @@ import type * as billing_dodo from "../billing/dodo.js";
 import type * as billing_model from "../billing/model.js";
 import type * as billing_rules from "../billing/rules.js";
 import type * as billing_table from "../billing/table.js";
+import type * as cards from "../cards.js";
+import type * as cards_model from "../cards/model.js";
+import type * as cards_rules from "../cards/rules.js";
+import type * as cards_table from "../cards/table.js";
 import type * as chat_messages from "../chat/messages.js";
 import type * as chat_threads from "../chat/threads.js";
 import type * as contributors from "../contributors.js";
@@ -49,7 +53,6 @@ import type * as lib_text from "../lib/text.js";
 import type * as maintenance from "../maintenance.js";
 import type * as maintenance_model from "../maintenance/model.js";
 import type * as maintenance_table from "../maintenance/table.js";
-import type * as model_cards from "../model/cards.js";
 import type * as model_messages from "../model/messages.js";
 import type * as model_places from "../model/places.js";
 import type * as model_threadAccess from "../model/threadAccess.js";
@@ -60,7 +63,6 @@ import type * as presence_model from "../presence/model.js";
 import type * as rating from "../rating.js";
 import type * as rating_model from "../rating/model.js";
 import type * as rating_rules from "../rating/rules.js";
-import type * as shared_cardRules from "../shared/cardRules.js";
 import type * as shared_limits from "../shared/limits.js";
 import type * as shared_mentions from "../shared/mentions.js";
 import type * as shared_places from "../shared/places.js";
@@ -70,13 +72,11 @@ import type * as startups_model from "../startups/model.js";
 import type * as startups_table from "../startups/table.js";
 import type * as startups_team from "../startups/team.js";
 import type * as tables_chat from "../tables/chat.js";
-import type * as tables_work from "../tables/work.js";
 import type * as users from "../users.js";
 import type * as users_model from "../users/model.js";
 import type * as users_rules from "../users/rules.js";
 import type * as users_table from "../users/table.js";
 import type * as users_username from "../users/username.js";
-import type * as work_cards from "../work/cards.js";
 
 import type {
   ApiFromModules,
@@ -98,6 +98,10 @@ declare const fullApi: ApiFromModules<{
   "billing/model": typeof billing_model;
   "billing/rules": typeof billing_rules;
   "billing/table": typeof billing_table;
+  cards: typeof cards;
+  "cards/model": typeof cards_model;
+  "cards/rules": typeof cards_rules;
+  "cards/table": typeof cards_table;
   "chat/messages": typeof chat_messages;
   "chat/threads": typeof chat_threads;
   contributors: typeof contributors;
@@ -126,7 +130,6 @@ declare const fullApi: ApiFromModules<{
   maintenance: typeof maintenance;
   "maintenance/model": typeof maintenance_model;
   "maintenance/table": typeof maintenance_table;
-  "model/cards": typeof model_cards;
   "model/messages": typeof model_messages;
   "model/places": typeof model_places;
   "model/threadAccess": typeof model_threadAccess;
@@ -137,7 +140,6 @@ declare const fullApi: ApiFromModules<{
   rating: typeof rating;
   "rating/model": typeof rating_model;
   "rating/rules": typeof rating_rules;
-  "shared/cardRules": typeof shared_cardRules;
   "shared/limits": typeof shared_limits;
   "shared/mentions": typeof shared_mentions;
   "shared/places": typeof shared_places;
@@ -147,13 +149,11 @@ declare const fullApi: ApiFromModules<{
   "startups/table": typeof startups_table;
   "startups/team": typeof startups_team;
   "tables/chat": typeof tables_chat;
-  "tables/work": typeof tables_work;
   users: typeof users;
   "users/model": typeof users_model;
   "users/rules": typeof users_rules;
   "users/table": typeof users_table;
   "users/username": typeof users_username;
-  "work/cards": typeof work_cards;
 }>;
 
 /**

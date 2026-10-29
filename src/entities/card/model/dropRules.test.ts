@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import type { CardActor } from "@convex/shared/cardRules";
+import type { CardActor } from "@convex/cards/rules";
 import { describe, expect, it } from "vitest";
 import { dropAction, dropRefusal } from "./dropRules";
 import type { CardView } from "./types";

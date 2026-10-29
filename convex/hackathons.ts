@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getApplication, toMyApplicationView } from "./applications/model";
+import { loadHackathonCardsInReview } from "./cards/model";
 import * as lifecycle from "./hackathons/lifecycle";
 import {
 	copyTemplateCardsTo,
@@ -24,7 +25,6 @@ import {
 } from "./hackathons/record";
 import { phaseOf } from "./hackathons/rules";
 import { requireUserId } from "./lib/auth";
-import { loadHackathonCardsInReview } from "./model/cards";
 import { MAX_EXPLORE_ROWS, MAX_LISTED_HACKATHONS } from "./shared/limits";
 import { hackathonWeeks, jobRole } from "./shared/validators";
 import { loadLogoUrl, toPublicStartup } from "./startups/model";

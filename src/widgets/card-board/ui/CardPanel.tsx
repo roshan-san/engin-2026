@@ -1,4 +1,4 @@
-import type { CardAction } from "@convex/shared/cardRules";
+import type { CardAction } from "@convex/cards/rules";
 import { MoreHorizontalIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import {

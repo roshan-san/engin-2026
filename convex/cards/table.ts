@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 import { cardStatus, shipped } from "../shared/validators";
 
-export const workTables = {
+export const cardsTables = {
 	cards: defineTable({
 		startupId: v.id("startups"),
 		/** Set on a Hackathon Card, which lives on a Participant's board. */

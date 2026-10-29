@@ -8,12 +8,12 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import { cardOn, SHIPPED } from "../testing/cards.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
+import { cardOn, SHIPPED } from "./cards.setup";
 
 async function boardOf(setup: Setup, who = setup.founder) {
-	return await who.as.query(api.work.cards.listBoard, {
+	return await who.as.query(api.cards.listBoard, {
 		startupId: setup.startupId,
 	});
 }
@@ -42,7 +42,7 @@ describe("board", () => {
 		const sam = await addContributor(setup, "Sam");
 		const outsider = await signUp(setup.t, "Olly");
 
-		await setup.founder.as.mutation(api.work.cards.create, {
+		await setup.founder.as.mutation(api.cards.create, {
 			startupId: setup.startupId,
 			title: "Fix pricing page",
 			ownerId: sam.userId,
@@ -52,7 +52,7 @@ describe("board", () => {
 			{ owner: { _id: sam.userId } },
 		]);
 		await expect(
-			setup.founder.as.mutation(api.work.cards.create, {
+			setup.founder.as.mutation(api.cards.create, {
 				startupId: setup.startupId,
 				title: "Other",
 				ownerId: outsider.userId,
@@ -65,7 +65,7 @@ describe("board", () => {
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
 
-		await setup.founder.as.mutation(api.work.cards.move, {
+		await setup.founder.as.mutation(api.cards.move, {
 			cardId,
 			to: "in_progress",
 		});
@@ -80,7 +80,7 @@ describe("board", () => {
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
 
-		await setup.founder.as.mutation(api.work.cards.update, {
+		await setup.founder.as.mutation(api.cards.update, {
 			cardId,
 			notes: "Use the new template",
 			title: "Write onboarding emails",
@@ -101,10 +101,10 @@ describe("board", () => {
 		const lee = await addContributor(setup, "Lee");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
 
-		await expect(
-			lee.as.mutation(api.work.cards.remove, { cardId }),
-		).rejects.toThrow("Only the owner or the Founder can delete this Card");
-		await setup.founder.as.mutation(api.work.cards.remove, { cardId });
+		await expect(lee.as.mutation(api.cards.remove, { cardId })).rejects.toThrow(
+			"Only the owner or the Founder can delete this Card",
+		);
+		await setup.founder.as.mutation(api.cards.remove, { cardId });
 
 		expect(await boardOf(setup)).toEqual([]);
 	});
@@ -143,7 +143,7 @@ describe("board", () => {
 			}
 		});
 
-		await setup.founder.as.mutation(api.work.cards.submit, {
+		await setup.founder.as.mutation(api.cards.submit, {
 			cardId,
 			shipped: SHIPPED,
 		});
@@ -170,7 +170,7 @@ describe("board", () => {
 			"You're not on this startup",
 		);
 		await expect(
-			outsider.as.mutation(api.work.cards.update, { cardId, notes: "hi" }),
+			outsider.as.mutation(api.cards.update, { cardId, notes: "hi" }),
 		).rejects.toThrow("You're not on this startup");
 	});
 });
@@ -181,11 +181,11 @@ describe("submit and verify", () => {
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
 
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 		expect(await boardOf(setup)).toMatchObject([
 			{ status: "review", shipped: SHIPPED, selfVerified: false },
 		]);
-		await setup.founder.as.mutation(api.work.cards.verify, { cardId });
+		await setup.founder.as.mutation(api.cards.verify, { cardId });
 
 		expect(await boardOf(setup)).toMatchObject([
 			{ status: "done", selfVerified: false },
@@ -209,7 +209,7 @@ describe("submit and verify", () => {
 		const setup = await setUpStartup(createTest());
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
 
-		await setup.founder.as.mutation(api.work.cards.submit, {
+		await setup.founder.as.mutation(api.cards.submit, {
 			cardId,
 			shipped: SHIPPED,
 		});
@@ -236,19 +236,19 @@ describe("submit and verify", () => {
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
 
 		await expect(
-			setup.founder.as.mutation(api.work.cards.submit, {
+			setup.founder.as.mutation(api.cards.submit, {
 				cardId,
 				shipped: { line: "Sent welcome emails", links: [], images: [] },
 			}),
 		).rejects.toThrow("Add a link or an image");
 		await expect(
-			setup.founder.as.mutation(api.work.cards.submit, {
+			setup.founder.as.mutation(api.cards.submit, {
 				cardId,
 				shipped: { ...SHIPPED, line: "  " },
 			}),
 		).rejects.toThrow("Say what shipped");
 		await expect(
-			setup.founder.as.mutation(api.work.cards.submit, {
+			setup.founder.as.mutation(api.cards.submit, {
 				cardId,
 				shipped: { ...SHIPPED, links: ["not a url"] },
 			}),
@@ -262,7 +262,7 @@ describe("submit and verify", () => {
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
 
 		await expect(
-			lee.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED }),
+			lee.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED }),
 		).rejects.toThrow("Only the Card's owner can submit it");
 	});
 
@@ -270,11 +270,11 @@ describe("submit and verify", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 
-		await expect(
-			sam.as.mutation(api.work.cards.verify, { cardId }),
-		).rejects.toThrow("Only the Founder can verify a Card");
+		await expect(sam.as.mutation(api.cards.verify, { cardId })).rejects.toThrow(
+			"Only the Founder can verify a Card",
+		);
 	});
 
 	it("only a Card in Review can be verified", async () => {
@@ -282,7 +282,7 @@ describe("submit and verify", () => {
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
 
 		await expect(
-			setup.founder.as.mutation(api.work.cards.verify, { cardId }),
+			setup.founder.as.mutation(api.cards.verify, { cardId }),
 		).rejects.toThrow("This Card isn't in Review");
 	});
 });
@@ -292,14 +292,14 @@ describe("send back", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 
 		await expect(
-			sam.as.mutation(api.work.cards.move, { cardId, to: "in_progress" }),
+			sam.as.mutation(api.cards.move, { cardId, to: "in_progress" }),
 		).rejects.toThrow("Only the Founder can send a Card back");
 		await expect(
 			// @ts-expect-error Done is not a place to move to
-			sam.as.mutation(api.work.cards.move, { cardId, to: "done" }),
+			sam.as.mutation(api.cards.move, { cardId, to: "done" }),
 		).rejects.toThrow();
 	});
 
@@ -307,13 +307,13 @@ describe("send back", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 
-		await setup.founder.as.mutation(api.work.cards.update, {
+		await setup.founder.as.mutation(api.cards.update, {
 			cardId,
 			notes: "Add the unsubscribe link",
 		});
-		await setup.founder.as.mutation(api.work.cards.move, {
+		await setup.founder.as.mutation(api.cards.move, {
 			cardId,
 			to: "in_progress",
 		});
@@ -325,7 +325,7 @@ describe("send back", () => {
 				notesEditedBy: { _id: setup.founder.userId },
 			},
 		]);
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 		expect(await boardOf(setup, sam)).toMatchObject([
 			{ status: "review", changesAsked: false },
 		]);
@@ -337,16 +337,16 @@ describe("locks", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
-		await setup.founder.as.mutation(api.work.cards.verify, { cardId });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
+		await setup.founder.as.mutation(api.cards.verify, { cardId });
 
 		await expect(
-			sam.as.mutation(api.work.cards.submit, {
+			sam.as.mutation(api.cards.submit, {
 				cardId,
 				shipped: { ...SHIPPED, line: "Changed my mind" },
 			}),
 		).rejects.toThrow("This Card is verified");
-		await sam.as.mutation(api.work.cards.update, {
+		await sam.as.mutation(api.cards.update, {
 			cardId,
 			notes: "Follow-up: A/B test the subject",
 		});
@@ -363,23 +363,23 @@ describe("locks", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
-		await setup.founder.as.mutation(api.work.cards.verify, { cardId });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
+		await setup.founder.as.mutation(api.cards.verify, { cardId });
 
 		await expect(
-			sam.as.mutation(api.work.cards.update, { cardId, title: "New title" }),
+			sam.as.mutation(api.cards.update, { cardId, title: "New title" }),
 		).rejects.toThrow("This Card is verified");
 		await expect(
-			setup.founder.as.mutation(api.work.cards.update, {
+			setup.founder.as.mutation(api.cards.update, {
 				cardId,
 				ownerId: setup.founder.userId,
 			}),
 		).rejects.toThrow("This Card is verified");
 		await expect(
-			setup.founder.as.mutation(api.work.cards.move, { cardId, to: "todo" }),
+			setup.founder.as.mutation(api.cards.move, { cardId, to: "todo" }),
 		).rejects.toThrow("This Card is verified");
 		await expect(
-			setup.founder.as.mutation(api.work.cards.remove, { cardId }),
+			setup.founder.as.mutation(api.cards.remove, { cardId }),
 		).rejects.toThrow("This Card is verified");
 	});
 
@@ -388,13 +388,13 @@ describe("locks", () => {
 		const sam = await addContributor(setup, "Sam");
 		const lee = await addContributor(setup, "Lee");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 
-		const toFounder = setup.founder.as.mutation(api.work.cards.update, {
+		const toFounder = setup.founder.as.mutation(api.cards.update, {
 			cardId,
 			ownerId: setup.founder.userId,
 		});
-		const toLee = lee.as.mutation(api.work.cards.update, {
+		const toLee = lee.as.mutation(api.cards.update, {
 			cardId,
 			ownerId: lee.userId,
 		});
@@ -414,10 +414,10 @@ describe("locks", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED });
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 
 		await expect(
-			sam.as.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED }),
+			sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED }),
 		).rejects.toThrow("This Card is already in Review");
 	});
 
@@ -445,7 +445,7 @@ describe("locks", () => {
 			});
 		});
 
-		const update = sam.as.mutation(api.work.cards.update, {
+		const update = sam.as.mutation(api.cards.update, {
 			cardId: hackathonCard,
 			notes: "hi",
 		});
@@ -464,11 +464,11 @@ describe("locks", () => {
 		const founder = setup.founder.as;
 
 		const attempts = [
-			founder.mutation(api.work.cards.update, { cardId, title: "Changed" }),
-			founder.mutation(api.work.cards.update, { cardId, notes: "Changed" }),
-			founder.mutation(api.work.cards.move, { cardId, to: "in_progress" }),
-			founder.mutation(api.work.cards.submit, { cardId, shipped: SHIPPED }),
-			founder.mutation(api.work.cards.remove, { cardId }),
+			founder.mutation(api.cards.update, { cardId, title: "Changed" }),
+			founder.mutation(api.cards.update, { cardId, notes: "Changed" }),
+			founder.mutation(api.cards.move, { cardId, to: "in_progress" }),
+			founder.mutation(api.cards.submit, { cardId, shipped: SHIPPED }),
+			founder.mutation(api.cards.remove, { cardId }),
 		];
 
 		for (const attempt of attempts) {
@@ -492,12 +492,12 @@ describe("card view", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const cardId = await cardOn(setup, sam, "Write welcome emails");
-		await sam.as.mutation(api.work.cards.submit, {
+		await sam.as.mutation(api.cards.submit, {
 			cardId,
 			shipped: SHIPPED,
 		});
 
-		await setup.founder.as.mutation(api.work.cards.verify, { cardId });
+		await setup.founder.as.mutation(api.cards.verify, { cardId });
 
 		const [card] = await boardOf(setup);
 		expect(card).toMatchObject({
@@ -517,7 +517,7 @@ describe("card view", () => {
 			async (ctx) => await ctx.storage.store(new Blob(["x"])),
 		);
 
-		await sam.as.mutation(api.work.cards.submit, {
+		await sam.as.mutation(api.cards.submit, {
 			cardId,
 			shipped: { line: "Sent welcome emails", links: [], images: [imageId] },
 		});
@@ -540,7 +540,7 @@ describe("card view", () => {
 		const setup = await setUpStartup(createTest());
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
 
-		const card = await setup.founder.as.query(api.work.cards.get, {
+		const card = await setup.founder.as.query(api.cards.get, {
 			startupId: setup.startupId,
 			cardId,
 		});
@@ -562,12 +562,12 @@ describe("card view", () => {
 				city: "bengaluru",
 			},
 		);
-		const betaCard = await setup.founder.as.mutation(api.work.cards.create, {
+		const betaCard = await setup.founder.as.mutation(api.cards.create, {
 			startupId: betaId,
 			title: "Beta work",
 		});
 
-		const card = await setup.founder.as.query(api.work.cards.get, {
+		const card = await setup.founder.as.query(api.cards.get, {
 			startupId: setup.startupId,
 			cardId: betaCard,
 		});
@@ -578,9 +578,9 @@ describe("card view", () => {
 	it("a removed Card opens as nothing", async () => {
 		const setup = await setUpStartup(createTest());
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
-		await setup.founder.as.mutation(api.work.cards.remove, { cardId });
+		await setup.founder.as.mutation(api.cards.remove, { cardId });
 
-		const card = await setup.founder.as.query(api.work.cards.get, {
+		const card = await setup.founder.as.query(api.cards.get, {
 			startupId: setup.startupId,
 			cardId,
 		});
@@ -605,11 +605,11 @@ describe("card view", () => {
 				}),
 		);
 
-		const garbage = await setup.founder.as.query(api.work.cards.get, {
+		const garbage = await setup.founder.as.query(api.cards.get, {
 			startupId: setup.startupId,
 			cardId: "not-a-card",
 		});
-		const otherTable = await setup.founder.as.query(api.work.cards.get, {
+		const otherTable = await setup.founder.as.query(api.cards.get, {
 			startupId: setup.startupId,
 			cardId: hackathonId,
 		});
@@ -623,7 +623,7 @@ describe("card view", () => {
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
 		const outsider = await signUp(setup.t, "Olly");
 
-		const open = outsider.as.query(api.work.cards.get, {
+		const open = outsider.as.query(api.cards.get, {
 			startupId: setup.startupId,
 			cardId,
 		});
@@ -654,7 +654,7 @@ describe("card view", () => {
 			});
 		});
 
-		const card = await setup.founder.as.query(api.work.cards.get, {
+		const card = await setup.founder.as.query(api.cards.get, {
 			startupId: setup.startupId,
 			cardId: hackathonCard,
 		});

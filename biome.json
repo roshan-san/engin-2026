@@ -99,6 +99,7 @@
 											"!@convex/rating/rules",
 											"!@convex/hackathons/rules",
 											"!@convex/applications/rules",
+											"!@convex/cards/rules",
 											"../**/convex/**",
 											"!../**/convex/_generated/**",
 											"!../**/convex/shared/**",
@@ -107,7 +108,8 @@
 											"!../**/convex/users/rules",
 											"!../**/convex/rating/rules",
 											"!../**/convex/hackathons/rules",
-											"!../**/convex/applications/rules"
+											"!../**/convex/applications/rules",
+											"!../**/convex/cards/rules"
 										],
 										"message": "src/ may import only @convex/_generated/* and @convex/shared/* from the backend."
 									}

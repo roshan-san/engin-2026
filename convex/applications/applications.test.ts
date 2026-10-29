@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { MAX_APPLICATIONS } from "../shared/limits";
 import {
@@ -8,7 +9,6 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import { SHIPPED } from "../testing/cards.setup";
 import { createTest } from "../testing/test.setup";
 import {
 	type Applicant,
@@ -20,7 +20,7 @@ import {
 } from "./applications.setup";
 
 async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
-	return await participant.as.query(api.work.cards.listParticipantBoard, {
+	return await participant.as.query(api.cards.listParticipantBoard, {
 		hackathonId,
 		participantId: participant.userId,
 	});
@@ -355,19 +355,19 @@ describe("live", () => {
 	it("a Participant works only their own Cards", async () => {
 		const { hackathonId, ana, ben, benCard } = await twoParticipants();
 
-		const read = ana.as.query(api.work.cards.listParticipantBoard, {
+		const read = ana.as.query(api.cards.listParticipantBoard, {
 			hackathonId,
 			participantId: ben.userId,
 		});
-		const submit = ana.as.mutation(api.work.cards.submit, {
+		const submit = ana.as.mutation(api.cards.submit, {
 			cardId: benCard._id,
 			shipped: SHIPPED,
 		});
-		const move = ana.as.mutation(api.work.cards.move, {
+		const move = ana.as.mutation(api.cards.move, {
 			cardId: benCard._id,
 			to: "in_progress",
 		});
-		const update = ana.as.mutation(api.work.cards.update, {
+		const update = ana.as.mutation(api.cards.update, {
 			cardId: benCard._id,
 			notes: "Mine now",
 		});
@@ -382,11 +382,11 @@ describe("live", () => {
 		const { setup, hackathonId, ana, anaCard } = await twoParticipants();
 		const sam = await addContributor(setup, "Sam");
 
-		const read = sam.as.query(api.work.cards.listParticipantBoard, {
+		const read = sam.as.query(api.cards.listParticipantBoard, {
 			hackathonId,
 			participantId: ana.userId,
 		});
-		const move = sam.as.mutation(api.work.cards.move, {
+		const move = sam.as.mutation(api.cards.move, {
 			cardId: anaCard._id,
 			to: "in_progress",
 		});
@@ -398,15 +398,15 @@ describe("live", () => {
 	it("a Participant moves and submits their own Card but can't remove it", async () => {
 		const { ana, anaCard } = await twoParticipants();
 
-		await ana.as.mutation(api.work.cards.move, {
+		await ana.as.mutation(api.cards.move, {
 			cardId: anaCard._id,
 			to: "in_progress",
 		});
-		await ana.as.mutation(api.work.cards.submit, {
+		await ana.as.mutation(api.cards.submit, {
 			cardId: anaCard._id,
 			shipped: SHIPPED,
 		});
-		const remove = ana.as.mutation(api.work.cards.remove, {
+		const remove = ana.as.mutation(api.cards.remove, {
 			cardId: anaCard._id,
 		});
 
@@ -418,7 +418,7 @@ describe("live", () => {
 	it("a Participant can't hand their Card to someone else", async () => {
 		const { ana, ben, anaCard } = await twoParticipants();
 
-		const update = ana.as.mutation(api.work.cards.update, {
+		const update = ana.as.mutation(api.cards.update, {
 			cardId: anaCard._id,
 			ownerId: ben.userId,
 		});
@@ -431,7 +431,7 @@ describe("live", () => {
 	it("the Founder can't delete a Participant's Card", async () => {
 		const { setup, anaCard } = await twoParticipants();
 
-		const remove = setup.founder.as.mutation(api.work.cards.remove, {
+		const remove = setup.founder.as.mutation(api.cards.remove, {
 			cardId: anaCard._id,
 		});
 
@@ -447,7 +447,7 @@ describe("live", () => {
 		const cal = await applicant(setup, hackathonId, "Cal");
 		await startHackathon(setup, hackathonId);
 
-		const read = cal.as.query(api.work.cards.listParticipantBoard, {
+		const read = cal.as.query(api.cards.listParticipantBoard, {
 			hackathonId,
 			participantId: cal.userId,
 		});
@@ -459,7 +459,7 @@ describe("live", () => {
 		const { setup, hackathonId, ana, anaCard } = await twoParticipants();
 
 		await endHackathon(setup, hackathonId);
-		const move = ana.as.mutation(api.work.cards.move, {
+		const move = ana.as.mutation(api.cards.move, {
 			cardId: anaCard._id,
 			to: "in_progress",
 		});
@@ -475,7 +475,7 @@ describe("live", () => {
 		if (!hackathon) throw new Error("Hackathon not found");
 
 		vi.setSystemTime(hackathon.endsAt);
-		const move = ana.as.mutation(api.work.cards.move, {
+		const move = ana.as.mutation(api.cards.move, {
 			cardId: anaCard._id,
 			to: "in_progress",
 		});
@@ -490,23 +490,23 @@ describe("live", () => {
 	it("a Participant's work goes through the Founder's review queue", async () => {
 		const { setup, hackathonId, ana, ben, anaCard, benCard } =
 			await twoParticipants();
-		await ben.as.mutation(api.work.cards.submit, {
+		await ben.as.mutation(api.cards.submit, {
 			cardId: benCard._id,
 			shipped: SHIPPED,
 		});
 		vi.advanceTimersByTime(60_000);
-		await ana.as.mutation(api.work.cards.submit, {
+		await ana.as.mutation(api.cards.submit, {
 			cardId: anaCard._id,
 			shipped: SHIPPED,
 		});
 
-		const queue = await setup.founder.as.query(api.work.cards.listReviewQueue, {
+		const queue = await setup.founder.as.query(api.cards.listReviewQueue, {
 			hackathonId,
 		});
-		await setup.founder.as.mutation(api.work.cards.verify, {
+		await setup.founder.as.mutation(api.cards.verify, {
 			cardId: benCard._id,
 		});
-		const after = await setup.founder.as.query(api.work.cards.listReviewQueue, {
+		const after = await setup.founder.as.query(api.cards.listReviewQueue, {
 			hackathonId,
 		});
 
@@ -518,7 +518,7 @@ describe("live", () => {
 	it("only the Founder sees the review queue", async () => {
 		const { hackathonId, ana } = await twoParticipants();
 
-		const queue = ana.as.query(api.work.cards.listReviewQueue, {
+		const queue = ana.as.query(api.cards.listReviewQueue, {
 			hackathonId,
 		});
 
@@ -527,11 +527,11 @@ describe("live", () => {
 
 	it("the Founder sees how far each Participant has got", async () => {
 		const { setup, hackathonId, ana, anaCard } = await twoParticipants();
-		await ana.as.mutation(api.work.cards.submit, {
+		await ana.as.mutation(api.cards.submit, {
 			cardId: anaCard._id,
 			shipped: SHIPPED,
 		});
-		await setup.founder.as.mutation(api.work.cards.verify, {
+		await setup.founder.as.mutation(api.cards.verify, {
 			cardId: anaCard._id,
 		});
 
@@ -549,10 +549,10 @@ describe("live", () => {
 	it("the Founder sees any Participant's Cards", async () => {
 		const { setup, hackathonId, ben } = await twoParticipants();
 
-		const cards = await setup.founder.as.query(
-			api.work.cards.listParticipantBoard,
-			{ hackathonId, participantId: ben.userId },
-		);
+		const cards = await setup.founder.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: ben.userId,
+		});
 
 		expect(cards).toHaveLength(3);
 	});
@@ -585,13 +585,13 @@ describe("deciding", () => {
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		const [card] = await boardOf(hackathonId, ana);
-		await ana.as.mutation(api.work.cards.submit, {
+		await ana.as.mutation(api.cards.submit, {
 			cardId: card._id,
 			shipped: SHIPPED,
 		});
 		await closeHackathon(setup, hackathonId);
 
-		const verify = setup.founder.as.mutation(api.work.cards.verify, {
+		const verify = setup.founder.as.mutation(api.cards.verify, {
 			cardId: card._id,
 		});
 

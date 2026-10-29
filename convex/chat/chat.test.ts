@@ -7,6 +7,7 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
+import { cardOn } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
 	MAX_MESSAGE_IMAGES,
@@ -19,7 +20,6 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import { cardOn } from "../testing/cards.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
@@ -411,7 +411,7 @@ describe("card mentions", () => {
 		const body = `look at ${mentionToken(cardId)}`;
 		await setup.founder.as.mutation(api.chat.messages.send, { threadId, body });
 
-		await setup.founder.as.mutation(api.work.cards.remove, { cardId });
+		await setup.founder.as.mutation(api.cards.remove, { cardId });
 
 		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
 			threadId,
@@ -432,7 +432,7 @@ describe("card mentions", () => {
 				city: "bengaluru",
 			},
 		);
-		const betaCard = await setup.founder.as.mutation(api.work.cards.create, {
+		const betaCard = await setup.founder.as.mutation(api.cards.create, {
 			startupId: betaId,
 			title: "Beta work",
 		});

@@ -3,7 +3,7 @@ import {
 	type CardActor,
 	cardRefusal,
 	submitLandsIn,
-} from "@convex/shared/cardRules";
+} from "@convex/cards/rules";
 import type { CardView } from "./types";
 
 /** `cardRefusal` for a Card as the browser sees it: `null` when `actor` may do `action`. */

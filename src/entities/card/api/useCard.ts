@@ -17,7 +17,7 @@ export function useCard(
 	const cards = useBoardCards(scope);
 	const onBoard = cards?.find((card) => card._id === cardId);
 	const fetched = useQuery(
-		api.work.cards.get,
+		api.cards.get,
 		scope.kind === "startup" && cards && !onBoard
 			? { startupId: scope.startupId, cardId }
 			: "skip",

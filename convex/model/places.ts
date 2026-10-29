@@ -1,5 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
+import { loadHackathonCardsInReview } from "../cards/model";
 import { loadParticipants, loadRunningHackathons } from "../hackathons/model";
 import { phaseOf } from "../hackathons/rules";
 import {
@@ -10,7 +11,6 @@ import {
 } from "../shared/limits";
 import type { WaitingReason } from "../shared/places";
 import { loadLogoUrl } from "../startups/model";
-import { loadHackathonCardsInReview } from "./cards";
 import {
 	isThreadUnread,
 	loadHackathonThreads,

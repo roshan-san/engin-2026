@@ -7,7 +7,7 @@ import {
 	cardRefusal,
 	type RuledCard,
 	submitLandsIn,
-} from "./cardRules";
+} from "./rules";
 
 const fay = "user-fay" as Id<"users">;
 const lee = "user-lee" as Id<"users">;

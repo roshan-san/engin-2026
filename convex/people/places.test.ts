@@ -9,12 +9,12 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
+import { SHIPPED } from "../cards/cards.setup";
 import {
 	draftHackathon,
 	publishedHackathon,
 } from "../hackathons/hackathons.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
-import { SHIPPED } from "../testing/cards.setup";
 import { createTest } from "../testing/test.setup";
 import { type Person, signUp } from "../users/users.setup";
 
@@ -41,7 +41,7 @@ async function say(person: Person, threadId: Id<"threads">) {
 
 /** The Hackathon's Participant Cards as the Participant sees them. */
 async function boardOf(hackathonId: Id<"hackathons">, participant: Person) {
-	return await participant.as.query(api.work.cards.listParticipantBoard, {
+	return await participant.as.query(api.cards.listParticipantBoard, {
 		hackathonId,
 		participantId: participant.userId,
 	});
@@ -210,18 +210,18 @@ describe("waiting", () => {
 	it("a Board Card in Review lights it for the Founder only", async () => {
 		const setup = await setUpStartup(createTest());
 		const cal = await addContributor(setup, "Cal");
-		const card = await cal.as.mutation(api.work.cards.create, {
+		const card = await cal.as.mutation(api.cards.create, {
 			startupId: setup.startupId,
 			title: "Welcome emails",
 		});
-		await cal.as.mutation(api.work.cards.submit, {
+		await cal.as.mutation(api.cards.submit, {
 			cardId: card,
 			shipped: SHIPPED,
 		});
 
 		const founderLit = await placesOf(setup.founder);
 		const contributor = await placesOf(cal);
-		await setup.founder.as.mutation(api.work.cards.verify, { cardId: card });
+		await setup.founder.as.mutation(api.cards.verify, { cardId: card });
 		const founderClear = await placesOf(setup.founder);
 
 		expect(founderLit.startups[0].waiting).not.toEqual([]);
@@ -251,14 +251,14 @@ describe("waiting", () => {
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 		const [card] = await boardOf(hackathonId, ana);
-		await ana.as.mutation(api.work.cards.submit, {
+		await ana.as.mutation(api.cards.submit, {
 			cardId: card._id,
 			shipped: SHIPPED,
 		});
 
 		const lit = await placesOf(setup.founder);
 		const contributor = await placesOf(cal);
-		await setup.founder.as.mutation(api.work.cards.verify, {
+		await setup.founder.as.mutation(api.cards.verify, {
 			cardId: card._id,
 		});
 		const clear = await placesOf(setup.founder);
@@ -385,11 +385,11 @@ describe("waiting", () => {
 	it("a Card in Review reads as Cards to verify", async () => {
 		const setup = await setUpStartup(createTest());
 		const cal = await addContributor(setup, "Cal");
-		const card = await cal.as.mutation(api.work.cards.create, {
+		const card = await cal.as.mutation(api.cards.create, {
 			startupId: setup.startupId,
 			title: "Welcome emails",
 		});
-		await cal.as.mutation(api.work.cards.submit, {
+		await cal.as.mutation(api.cards.submit, {
 			cardId: card,
 			shipped: SHIPPED,
 		});

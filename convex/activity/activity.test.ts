@@ -5,6 +5,7 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
+import { cardOn, SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { MAX_LISTED_CYCLES } from "../shared/limits";
 import {
@@ -12,18 +13,17 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import { cardOn, SHIPPED } from "../testing/cards.setup";
 import { advancePast, createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
 async function verifiedCard(setup: Setup, title: string) {
 	const sam = await addContributor(setup, `Sam ${title}`);
 	const cardId = await cardOn(setup, sam, title);
-	await sam.as.mutation(api.work.cards.submit, {
+	await sam.as.mutation(api.cards.submit, {
 		cardId,
 		shipped: { ...SHIPPED, line: title },
 	});
-	await setup.founder.as.mutation(api.work.cards.verify, { cardId });
+	await setup.founder.as.mutation(api.cards.verify, { cardId });
 	return { ...sam, cardId };
 }
 

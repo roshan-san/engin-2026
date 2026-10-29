@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { cardOn } from "../cards/cards.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
-import { cardOn } from "../testing/cards.setup";
 import { advancePast, createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
@@ -92,7 +92,7 @@ describe("presence", () => {
 		const newer = await cardOn(setup, sam, "Onboarding emails");
 		await cardOn(setup, lee, "Write docs");
 		for (const cardId of [older, newer]) {
-			await sam.as.mutation(api.work.cards.move, {
+			await sam.as.mutation(api.cards.move, {
 				cardId,
 				to: "in_progress",
 			});

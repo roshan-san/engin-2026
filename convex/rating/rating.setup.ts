@@ -1,8 +1,8 @@
 import { vi } from "vitest";
 import { api, internal } from "../_generated/api";
+import { cardOn, SHIPPED } from "../cards/cards.setup";
 import { nextMonday } from "../hackathons/hackathons.setup";
 import type { Setup } from "../startups/startups.setup";
-import { cardOn, SHIPPED } from "../testing/cards.setup";
 import { advancePast, HOUR, type TestConvex } from "../testing/test.setup";
 import type { Person } from "../users/users.setup";
 
@@ -14,12 +14,12 @@ export async function verifyCards(
 ): Promise<void> {
 	for (let i = 0; i < n; i++) {
 		const cardId = await cardOn(setup, person, `Card ${i + 1}`);
-		await person.as.mutation(api.work.cards.submit, {
+		await person.as.mutation(api.cards.submit, {
 			cardId,
 			shipped: { ...SHIPPED, line: `Shipped ${i + 1}` },
 		});
 		if (person.userId !== setup.founder.userId) {
-			await setup.founder.as.mutation(api.work.cards.verify, { cardId });
+			await setup.founder.as.mutation(api.cards.verify, { cardId });
 		}
 	}
 }

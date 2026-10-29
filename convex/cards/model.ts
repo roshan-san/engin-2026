@@ -8,11 +8,6 @@ import { loadImageUrls } from "../files/model";
 import { phaseOf } from "../hackathons/rules";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import {
-	type CardAction,
-	type CardActor,
-	cardRefusal,
-} from "../shared/cardRules";
-import {
 	MAX_BOARD_CARDS,
 	MAX_HACKATHON_CARDS,
 	MAX_PARTICIPANTS,
@@ -22,6 +17,7 @@ import {
 } from "../shared/limits";
 import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
+import { type CardAction, type CardActor, cardRefusal } from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
 

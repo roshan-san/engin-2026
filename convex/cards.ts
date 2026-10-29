@@ -1,10 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "../_generated/server";
-import {
-	loadHackathonCards,
-	requireHackathonFounder,
-} from "../hackathons/model";
-import { requireUserId } from "../lib/auth";
+import { mutation, query } from "./_generated/server";
 import {
 	loadBoardCards,
 	loadHackathonCardsInReview,
@@ -17,10 +12,15 @@ import {
 	requireParticipantBoardAccess,
 	requireTeamOwner,
 	toCardView,
-} from "../model/cards";
-import { submitLandsIn } from "../shared/cardRules";
-import { shipped } from "../shared/validators";
-import { requireTeam } from "../startups/team";
+} from "./cards/model";
+import { submitLandsIn } from "./cards/rules";
+import {
+	loadHackathonCards,
+	requireHackathonFounder,
+} from "./hackathons/model";
+import { requireUserId } from "./lib/auth";
+import { shipped } from "./shared/validators";
+import { requireTeam } from "./startups/team";
 
 export const listBoard = query({
 	args: { startupId: v.id("startups") },

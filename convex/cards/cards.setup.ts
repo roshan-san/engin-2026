@@ -16,7 +16,7 @@ export async function cardOn(
 	as: Person,
 	title: string,
 ): Promise<Id<"cards">> {
-	return await as.as.mutation(api.work.cards.create, {
+	return await as.as.mutation(api.cards.create, {
 		startupId: setup.startupId,
 		title,
 	});
