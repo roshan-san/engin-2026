@@ -21,9 +21,9 @@ import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { TILE_LINK } from "~/shared/ui/tile";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
-import { greeting } from "./greeting";
+import { greeting } from "../model/greeting";
+import { homeSections } from "../model/homeSections";
 import { HomeInvites } from "./HomeInvites";
-import { homeSections } from "./homeSections";
 
 const CARD = `${TILE_LINK} flex flex-col gap-3`;
 
