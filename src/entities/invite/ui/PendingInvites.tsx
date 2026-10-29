@@ -3,7 +3,7 @@ import { Badge } from "~/shared/ui/badge";
 import { ConfirmButton } from "~/shared/ui/ConfirmButton";
 import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
-import type { StartupInvite } from "./useStartupInvites";
+import type { StartupInvite } from "../api/useStartupInvites";
 
 /** The Founder's pending Invites, each with Revoke. Nothing shows while there are none. */
 export function PendingInvites({

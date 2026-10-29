@@ -1,18 +1,19 @@
+import { PendingInvites, useStartupInvites } from "~/entities/invite";
 import { useWorkspace } from "~/entities/startup";
 import { AppPage, PageTitle } from "~/shared/ui/AppPage";
 import { EmptyState } from "~/shared/ui/EmptyState";
 import { InviteButton } from "./InviteButton";
-import { PendingInvites } from "./PendingInvites";
 import { PeopleList } from "./PeopleList";
 import { teamSummary } from "./teamSummary";
-import { useStartupInvites } from "./useStartupInvites";
+import { useInviteActions } from "./useInviteActions";
 import { useTeamPeople } from "./useTeamPeople";
 
 /** The Team tab: people and pending Invites. */
 export function TeamPage() {
 	const { startup, isFounder } = useWorkspace();
 	const { people, remove } = useTeamPeople(startup._id);
-	const { invites, send, revoke } = useStartupInvites(startup._id, isFounder);
+	const invites = useStartupInvites(startup._id, isFounder);
+	const { send, revoke } = useInviteActions(startup._id);
 
 	return (
 		<AppPage
