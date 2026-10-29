@@ -18,7 +18,7 @@ import { Kbd } from "~/shared/ui/Kbd";
 import { Spinner } from "~/shared/ui/spinner";
 
 /** Founder onboarding: one question per screen, then the new Startup's Board. */
-export function OnboardingFlow() {
+export function OnboardingPage() {
 	const navigate = useNavigate();
 	const createStartup = useCreateStartup();
 	const [state, dispatch] = useReducer(onboardingReducer, INITIAL_STATE);
