@@ -1,12 +1,14 @@
 import { useLocation } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+	PAYMENT_ISSUE,
+	planSummary,
+	usePaymentIssue,
+	usePlan,
+} from "~/entities/plan";
 import { Button } from "~/shared/ui/button";
 import { Spinner } from "~/shared/ui/spinner";
-import { PAYMENT_ISSUE } from "./draftPublish";
 import { PlansDialog } from "./PlansDialog";
-import { planSummary } from "./planLines";
-import { usePaymentIssue } from "./usePaymentIssue";
-import { usePlan } from "./usePlan";
 import { usePortal } from "./usePortal";
 
 /** Your plan in Settings: what's left and Manage billing, or the plans when you have none. */

@@ -1,5 +1,5 @@
 import { POST_INTENT_PATH } from "~/entities/place";
-import { planLines } from "~/features/billing";
+import { planLines } from "~/entities/plan";
 import { GoogleButton } from "~/features/people";
 import { cn } from "~/shared/lib/cn";
 import { TILE } from "~/shared/ui/tile";

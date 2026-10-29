@@ -2,15 +2,9 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { draftPublish, usePaymentIssue, usePlan } from "~/entities/plan";
 import { useWorkspace } from "~/entities/startup";
-import {
-	CheckoutNotice,
-	draftPublish,
-	PlansDialog,
-	usePaymentIssue,
-	usePlan,
-	usePortal,
-} from "~/features/billing";
+import { CheckoutNotice, PlansDialog, usePortal } from "~/features/billing";
 import { roleLabel } from "~/shared/config/jobs";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";

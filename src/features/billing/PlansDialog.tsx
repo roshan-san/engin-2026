@@ -1,5 +1,6 @@
 import { DEFAULT_PLAN, type PlanKey } from "@convex/shared/plans";
 import { useState } from "react";
+import { planLines } from "~/entities/plan";
 import { cn } from "~/shared/lib/cn";
 import { Button } from "~/shared/ui/button";
 import {
@@ -11,7 +12,6 @@ import {
 	DialogTitle,
 } from "~/shared/ui/dialog";
 import { Spinner } from "~/shared/ui/spinner";
-import { planLines } from "./planLines";
 import { useCheckout } from "./useCheckout";
 
 /** The Pro plans, 6 months selected; Continue goes to Dodo checkout and back to `returnPath`. */
