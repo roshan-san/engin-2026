@@ -7,7 +7,7 @@ import { AppPage, PageTitle } from "~/shared/ui/AppPage";
 import { EmptyState } from "~/shared/ui/EmptyState";
 
 /** The Team tab: people and pending Invites. */
-export function TeamPage() {
+export function StartupTeamPage() {
 	const { startup, isFounder } = useWorkspace();
 	const people = useTeamPeople(startup._id);
 	const remove = useRemoveContributor(startup._id);
