@@ -22,8 +22,8 @@ import {
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Spinner } from "~/shared/ui/spinner";
-import { parseLink, shipMissing } from "./shipReady";
-import { useSubmit } from "./useSubmit";
+import { useSubmit } from "../api/useSubmit";
+import { parseLink, shipMissing } from "../model/shipReady";
 
 /** What shipped: a line plus proof. The Card moves only once this is submitted. */
 export function ShipDialog({

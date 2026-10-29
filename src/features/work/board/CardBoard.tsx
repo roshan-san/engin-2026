@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useRef, useState } from "react";
 import type { CardView } from "~/entities/card";
-import { ShipDialog } from "../cards/ShipDialog";
+import { ShipDialog } from "~/features/ship-card";
 
 type CardBoardValue = {
 	/** The Card open in the side panel, marked on the Board. */
