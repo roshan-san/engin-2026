@@ -1,5 +1,12 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
+import {
+	CITIES,
+	hiringLine,
+	KINDS,
+	STAGES,
+	usePublicStartup,
+} from "~/entities/startup";
 import { ActivityFeed, RecordSignals, useSignals } from "~/features/work";
 import { jobLine } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
@@ -15,10 +22,7 @@ import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { TILE, TILE_LINK } from "~/shared/ui/tile";
 import { usePlaces } from "~/shell/usePlaces";
-import { CITIES, KINDS, STAGES } from "../startupChips";
-import { hiringLine } from "./hiringLine";
 import { usePublicActivity } from "./usePublicActivity";
-import { usePublicStartup } from "./usePublicStartup";
 
 const route = getRouteApi("/_shell/startups/$slug");
 

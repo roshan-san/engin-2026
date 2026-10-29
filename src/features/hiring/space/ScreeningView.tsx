@@ -2,7 +2,7 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { dayLabel } from "~/shared/lib/dates";
 import { displayName } from "~/shared/lib/displayName";
 import { lastDay } from "~/shared/lib/hackathonDates";

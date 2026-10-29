@@ -1,7 +1,7 @@
 import type { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
-import { hiringLine } from "~/features/startups";
+import { hiringLine } from "~/entities/startup";
 import { jobLine } from "~/shared/config/jobs";
 import { dayLabel } from "~/shared/lib/dates";
 import { PlaceLogo } from "~/shared/ui/PlaceLogo";

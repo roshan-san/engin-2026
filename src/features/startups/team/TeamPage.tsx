@@ -1,4 +1,4 @@
-import { useWorkspace } from "~/features/startups/workspace/Workspace";
+import { useWorkspace } from "~/entities/startup";
 import { AppPage, PageTitle } from "~/shared/ui/AppPage";
 import { EmptyState } from "~/shared/ui/EmptyState";
 import { InviteButton } from "./InviteButton";

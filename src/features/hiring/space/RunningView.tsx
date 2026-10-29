@@ -2,7 +2,7 @@ import type { Doc, Id } from "@convex/_generated/dataModel";
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
 import { EmptyState } from "~/shared/ui/EmptyState";

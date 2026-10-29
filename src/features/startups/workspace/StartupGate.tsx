@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 import { useMe } from "~/entities/person";
+import { StartupContext, useStartup } from "~/entities/startup";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
-import { useStartup } from "./useStartup";
-import { StartupContext } from "./Workspace";
 
 /** Loads the Startup at `slug` and gives its page the workspace; 404s for non-team. */
 export function StartupGate({

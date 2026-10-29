@@ -1,7 +1,7 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { TEXT } from "@convex/shared/limits";
 import { type FormEvent, useRef, useState } from "react";
-import { useStartup } from "~/features/startups/workspace/useStartup";
+import { CITIES, KINDS, STAGES, useStartup } from "~/entities/startup";
 import {
 	useDiscardGuard,
 	useReportChanged,
@@ -22,7 +22,6 @@ import {
 	SheetTitle,
 } from "~/shared/ui/sheet";
 import { Spinner } from "~/shared/ui/spinner";
-import { CITIES, KINDS, STAGES } from "../startupChips";
 import {
 	type SettingsDraft,
 	toSettingsDraft,

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { BoardScopeContext } from "./BoardScope";
 
 /** Makes the Startup's own Board the one being worked on. Inside `StartupGate`. */

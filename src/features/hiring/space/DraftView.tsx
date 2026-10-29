@@ -2,6 +2,7 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useWorkspace } from "~/entities/startup";
 import {
 	CheckoutNotice,
 	draftPublish,
@@ -10,7 +11,6 @@ import {
 	usePlan,
 	usePortal,
 } from "~/features/billing";
-import { useWorkspace } from "~/features/startups";
 import { roleLabel } from "~/shared/config/jobs";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";

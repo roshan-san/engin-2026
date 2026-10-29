@@ -1,6 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
+import { useWorkspace } from "~/entities/startup";
 import { TeamPanel, useHeartbeat, useTeamThread } from "~/features/chat";
-import { useWorkspace } from "~/features/startups";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";

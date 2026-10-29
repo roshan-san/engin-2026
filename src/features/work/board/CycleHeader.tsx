@@ -1,6 +1,6 @@
 import { TEXT } from "@convex/shared/limits";
 import { useRef, useState } from "react";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { dateRange } from "~/shared/lib/dates";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";

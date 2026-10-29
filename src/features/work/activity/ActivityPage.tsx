@@ -2,7 +2,7 @@ import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
 import { AppPage, PageTitle } from "~/shared/ui/AppPage";

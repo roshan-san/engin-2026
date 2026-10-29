@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
-import { usePublicStartup } from "~/features/startups/public/usePublicStartup";
+import { usePublicStartup } from "~/entities/startup";
 import { useUpload } from "~/shared/api/useUpload";
 import { attempt } from "~/shared/lib/errors";
 import type { SettingsDraft } from "./settingsDraft";

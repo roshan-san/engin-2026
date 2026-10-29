@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useKept } from "~/shared/lib/useKept";
-import type { HackathonSearch } from "./exploreSearch";
+import type { HackathonSearch } from "./hackathonSearch";
 
 /**
  * Open and live Hackathons that match the filters. `hackathons` keeps the previous

@@ -1,14 +1,18 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { CITIES, KINDS, STAGES } from "~/features/startups";
+import {
+	CITIES,
+	KINDS,
+	STAGES,
+	StartupExploreRow,
+	useExploreStartups,
+} from "~/entities/startup";
+import { hasFilters } from "~/shared/lib/search";
 import { EmptyState } from "~/shared/ui/EmptyState";
 import { FilterChips } from "~/shared/ui/FilterChips";
 import { NoMatches } from "~/shared/ui/NoMatches";
 import { RowList } from "~/shared/ui/RowList";
 import { RowsSkeleton } from "~/shared/ui/RowsSkeleton";
 import { ExploreLayout } from "./ExploreLayout";
-import { hasFilters } from "./exploreSearch";
-import { StartupExploreRow } from "./StartupExploreRow";
-import { useExploreStartups } from "./useExploreStartups";
 
 const route = getRouteApi("/_shell/explore/startups");
 

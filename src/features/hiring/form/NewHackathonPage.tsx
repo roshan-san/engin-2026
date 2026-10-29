@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { AppPage, BackLink } from "~/shared/ui/AppPage";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { Page } from "~/shared/ui/Page";

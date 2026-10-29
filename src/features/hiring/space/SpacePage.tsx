@@ -1,7 +1,7 @@
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { roleLabel } from "~/shared/config/jobs";
 import { AppPage, BackLink } from "~/shared/ui/AppPage";
 import { Badge } from "~/shared/ui/badge";

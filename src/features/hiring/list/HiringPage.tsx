@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useWorkspace } from "~/features/startups";
+import { useWorkspace } from "~/entities/startup";
 import { AppPage, PageTitle } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { EmptyState } from "~/shared/ui/EmptyState";
