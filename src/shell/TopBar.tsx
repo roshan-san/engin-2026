@@ -3,8 +3,8 @@ import { Compass } from "lucide-react";
 import { MyRating } from "~/entities/person";
 import { placeFromRoute } from "~/entities/place";
 import { EnginLogo } from "~/shared/ui/EnginLogo";
-import { InviteTray } from "~/shell/InviteTray";
 import { AccountMenu } from "~/widgets/account";
+import { InviteTray } from "~/widgets/invite-tray";
 import { PlaceSwitcher } from "~/widgets/place-switcher";
 import { TabRow } from "~/widgets/tab-row";
 
