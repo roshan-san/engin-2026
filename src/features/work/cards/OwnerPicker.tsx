@@ -1,5 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import type { CardView } from "~/entities/card";
+import { useTeam } from "~/entities/contributor";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { PersonName } from "~/shared/ui/PersonName";
 import {
@@ -9,7 +10,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/shared/ui/select";
-import { useTeam } from "./useTeam";
 
 type Person = NonNullable<CardView["owner"]>;
 
