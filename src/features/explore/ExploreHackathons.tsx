@@ -7,8 +7,8 @@ import { FilterChips } from "~/shared/ui/FilterChips";
 import { NoMatches } from "~/shared/ui/NoMatches";
 import { RowList } from "~/shared/ui/RowList";
 import { RowsSkeleton } from "~/shared/ui/RowsSkeleton";
+import { HackathonExploreRow } from "~/widgets/hackathon-row";
 import { ExploreLayout } from "./ExploreLayout";
-import { HackathonExploreRow } from "./HackathonExploreRow";
 
 const route = getRouteApi("/_shell/explore/hackathons");
 
