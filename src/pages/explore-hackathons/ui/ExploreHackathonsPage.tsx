@@ -20,7 +20,7 @@ const LENGTHS = [
 const PAID = [{ value: "paid", label: "Paid" }] as const;
 
 /** Open and live Hackathons anyone can browse, filtered by the URL. */
-export function ExploreHackathons() {
+export function ExploreHackathonsPage() {
 	const search = route.useSearch();
 	const navigate = route.useNavigate();
 	const { hackathons, isLoading } = useExploreHackathons(search);
