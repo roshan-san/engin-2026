@@ -17,7 +17,7 @@ import { ExploreLayout } from "~/widgets/explore-layout";
 const route = getRouteApi("/_shell/explore/startups");
 
 /** Startups anyone can browse, best Rating first, filtered by the URL. */
-export function ExploreStartups() {
+export function ExploreStartupsPage() {
 	const search = route.useSearch();
 	const navigate = route.useNavigate();
 	const { startups, isLoading } = useExploreStartups(search);
