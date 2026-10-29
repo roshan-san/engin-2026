@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { appendActivity } from "./activity/model";
 import {
 	createInvite,
 	loadOpenInvitesTo,
@@ -7,7 +8,6 @@ import {
 	requireOpenInviteFor,
 } from "./invites/model";
 import { requireUserId } from "./lib/auth";
-import { appendActivity } from "./model/activity";
 import { MAX_INVITES } from "./shared/limits";
 import { getTeamRole, requireFounder } from "./startups/team";
 

@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { appendActivity } from "../activity/model";
 import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
@@ -20,7 +21,6 @@ import {
 } from "../shared/limits";
 import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
-import { appendActivity } from "./activity";
 import { getHackathonRole } from "./applications";
 
 type Ctx = QueryCtx | MutationCtx;

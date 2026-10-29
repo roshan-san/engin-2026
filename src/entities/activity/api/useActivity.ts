@@ -8,7 +8,7 @@ import { useKept } from "~/shared/lib/useKept";
 /** The team's Cycles, newest first. Show earlier asks for one more page. */
 export function useActivity(startupId: Id<"startups">) {
 	const [count, setCount] = useState(CYCLES_PAGE);
-	const live = useQuery(api.work.activity.list, { startupId, count });
+	const live = useQuery(api.activity.list, { startupId, count });
 	const data = useKept(live, startupId);
 
 	return {

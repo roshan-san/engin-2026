@@ -1,9 +1,9 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { appendActivity } from "../activity/model";
 import { ensureHireInvite } from "../invites/model";
 import { requireUserId } from "../lib/auth";
 import { limitText, requireLimitedText } from "../lib/text";
-import { appendActivity } from "../model/activity";
 import {
 	ensurePrivateThread,
 	getApplication,

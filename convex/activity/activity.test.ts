@@ -28,7 +28,7 @@ async function verifiedCard(setup: Setup, title: string) {
 }
 
 async function list(setup: Setup, count?: number) {
-	return await setup.founder.as.query(api.work.activity.list, {
+	return await setup.founder.as.query(api.activity.list, {
 		startupId: setup.startupId,
 		count,
 	});
@@ -186,7 +186,7 @@ describe("activity", () => {
 		const outsider = await signUp(setup.t, "Olly");
 
 		await expect(
-			outsider.as.query(api.work.activity.list, {
+			outsider.as.query(api.activity.list, {
 				startupId: setup.startupId,
 			}),
 		).rejects.toThrow("You're not on this startup");

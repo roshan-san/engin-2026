@@ -36,7 +36,7 @@ describe("visibility", () => {
 	it("the public sees counts and milestones only", async () => {
 		const setup = await busyStartup();
 
-		const page = await setup.t.query(api.work.activity.listPublic, {
+		const page = await setup.t.query(api.activity.listPublic, {
 			slug: setup.slug,
 		});
 
@@ -57,10 +57,10 @@ describe("visibility", () => {
 	it("the team sees the masked page too", async () => {
 		const setup = await busyStartup();
 
-		const signedOut = await setup.t.query(api.work.activity.listPublic, {
+		const signedOut = await setup.t.query(api.activity.listPublic, {
 			slug: setup.slug,
 		});
-		const founder = await setup.founder.as.query(api.work.activity.listPublic, {
+		const founder = await setup.founder.as.query(api.activity.listPublic, {
 			slug: setup.slug,
 		});
 
@@ -75,7 +75,7 @@ describe("visibility", () => {
 				await ctx.db.patch(ivy.userId, { investorVerifiedAt: Date.now() }),
 		);
 
-		const page = await ivy.as.query(api.work.activity.listPublic, {
+		const page = await ivy.as.query(api.activity.listPublic, {
 			slug: setup.slug,
 		});
 
@@ -93,7 +93,7 @@ describe("visibility", () => {
 		const setup = await setUpStartup(createTest());
 		await verifyCards(setup, setup.founder, 2);
 
-		const signals = await setup.t.query(api.work.activity.getSignals, {
+		const signals = await setup.t.query(api.activity.getSignals, {
 			slug: setup.slug,
 		});
 
@@ -111,7 +111,7 @@ describe("visibility", () => {
 		const setup = await setUpStartup(createTest());
 		await verifyCards(setup, setup.founder, 3);
 
-		const signals = await setup.t.query(api.work.activity.getSignals, {
+		const signals = await setup.t.query(api.activity.getSignals, {
 			slug: setup.slug,
 		});
 
@@ -125,8 +125,8 @@ describe("visibility", () => {
 		const t = createTest();
 		const args = { slug: "nope" };
 
-		expect(await t.query(api.work.activity.getSignals, args)).toBeNull();
-		expect(await t.query(api.work.activity.listPublic, args)).toBeNull();
+		expect(await t.query(api.activity.getSignals, args)).toBeNull();
+		expect(await t.query(api.activity.listPublic, args)).toBeNull();
 		expect(await t.query(api.startups.getPublic, args)).toBeNull();
 	});
 });

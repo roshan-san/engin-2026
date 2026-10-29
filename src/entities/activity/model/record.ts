@@ -4,7 +4,7 @@ import { roleLabel } from "~/shared/config/jobs";
 import { dateRange } from "~/shared/lib/dates";
 import { displayName } from "~/shared/lib/displayName";
 
-export type ActivityView = FunctionReturnType<typeof api.work.activity.list>;
+export type ActivityView = FunctionReturnType<typeof api.activity.list>;
 export type CycleView = ActivityView["cycles"][number];
 export type EntryView = CycleView["entries"][number];
 

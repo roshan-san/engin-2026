@@ -2,9 +2,9 @@ import { ConvexError } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import { appendActivity } from "../activity/model";
 import { publishBlockFor, publishBlockMessage } from "../billing/rules";
 import { MAX_APPLICATIONS } from "../shared/limits";
-import { appendActivity } from "./activity";
 import { loadParticipants } from "./applications";
 import { loadPlanView } from "./hackathons";
 

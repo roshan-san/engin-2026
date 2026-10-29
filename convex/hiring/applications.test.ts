@@ -27,7 +27,7 @@ async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
 }
 
 async function activityKinds(setup: Setup) {
-	const { cycles } = await setup.founder.as.query(api.work.activity.list, {
+	const { cycles } = await setup.founder.as.query(api.activity.list, {
 		startupId: setup.startupId,
 	});
 	return cycles.flatMap((cycle) => cycle.entries.map((entry) => entry.kind));

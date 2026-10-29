@@ -8,7 +8,7 @@ import { useKept } from "~/shared/lib/useKept";
 export function usePublicActivity(slug: string | undefined) {
 	const [count, setCount] = useState(CYCLES_PAGE);
 	const live = useQuery(
-		api.work.activity.listPublic,
+		api.activity.listPublic,
 		slug ? { slug, count } : "skip",
 	);
 	const data = useKept(live, slug);

@@ -6,7 +6,7 @@ import { dateRange } from "./dates";
 
 /** One week of the 12-week strip under a Rating. */
 export type StripCell = NonNullable<
-	FunctionReturnType<typeof api.work.activity.getSignals>
+	FunctionReturnType<typeof api.activity.getSignals>
 >["strip"][number];
 
 /** "▲ 12" up, "▼ 8" down, nothing when flat. Never red. */

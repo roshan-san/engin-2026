@@ -1,9 +1,9 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { cycleHeader } from "./activity/model";
 import { loadGoal, saveGoal } from "./cycles/model";
 import { weekOf } from "./cycles/rules";
 import { requireUserId } from "./lib/auth";
-import { cycleHeader } from "./model/activity";
 import { requireFounder, requireTeam } from "./startups/team";
 
 export const getCurrent = query({

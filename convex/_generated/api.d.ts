@@ -8,6 +8,9 @@
  * @module
  */
 
+import type * as activity from "../activity.js";
+import type * as activity_model from "../activity/model.js";
+import type * as activity_table from "../activity/table.js";
 import type * as auth from "../auth.js";
 import type * as billing from "../billing.js";
 import type * as billing_dodo from "../billing/dodo.js";
@@ -38,7 +41,6 @@ import type * as lib_text from "../lib/text.js";
 import type * as maintenance from "../maintenance.js";
 import type * as maintenance_model from "../maintenance/model.js";
 import type * as maintenance_table from "../maintenance/table.js";
-import type * as model_activity from "../model/activity.js";
 import type * as model_applications from "../model/applications.js";
 import type * as model_cards from "../model/cards.js";
 import type * as model_hackathonLifecycle from "../model/hackathonLifecycle.js";
@@ -73,7 +75,6 @@ import type * as users_model from "../users/model.js";
 import type * as users_rules from "../users/rules.js";
 import type * as users_table from "../users/table.js";
 import type * as users_username from "../users/username.js";
-import type * as work_activity from "../work/activity.js";
 import type * as work_cards from "../work/cards.js";
 
 import type {
@@ -83,6 +84,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  activity: typeof activity;
+  "activity/model": typeof activity_model;
+  "activity/table": typeof activity_table;
   auth: typeof auth;
   billing: typeof billing;
   "billing/dodo": typeof billing_dodo;
@@ -113,7 +117,6 @@ declare const fullApi: ApiFromModules<{
   maintenance: typeof maintenance;
   "maintenance/model": typeof maintenance_model;
   "maintenance/table": typeof maintenance_table;
-  "model/activity": typeof model_activity;
   "model/applications": typeof model_applications;
   "model/cards": typeof model_cards;
   "model/hackathonLifecycle": typeof model_hackathonLifecycle;
@@ -148,7 +151,6 @@ declare const fullApi: ApiFromModules<{
   "users/rules": typeof users_rules;
   "users/table": typeof users_table;
   "users/username": typeof users_username;
-  "work/activity": typeof work_activity;
   "work/cards": typeof work_cards;
 }>;
 
