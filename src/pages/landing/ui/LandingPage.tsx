@@ -6,7 +6,7 @@ import {
 	useNavigate,
 	useRouter,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { type ComponentType, type ReactNode, useEffect } from "react";
 import {
 	landingView,
 	POST_INTENT_PATH,
@@ -14,14 +14,13 @@ import {
 	readLastPlace,
 	usePlaces,
 } from "~/entities/place";
-import { BoardMock } from "~/features/marketing/BoardMock";
-import { OpenNow } from "~/features/marketing/OpenNow";
-import { Pricing } from "~/features/marketing/Pricing";
 import { GoogleButton } from "~/features/sign-in";
 import { cn } from "~/shared/lib/cn";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import { TILE } from "~/shared/ui/tile";
-import { PublicShell } from "~/shell/PublicShell";
+import { BoardMock } from "./BoardMock";
+import { OpenNow } from "./OpenNow";
+import { Pricing } from "./Pricing";
 
 const STEPS = [
 	{
@@ -88,7 +87,12 @@ function SigningOut() {
 	return <GlobalSpinner />;
 }
 
-export function LandingPage() {
+/** The landing page. Only the signed-out page sits in `Shell`; waiting and redirecting show bare. */
+export function LandingPage({
+	Shell,
+}: {
+	readonly Shell: ComponentType<{ readonly children: ReactNode }>;
+}) {
 	const auth = useConvexAuth();
 	const signingOut = useLocation({
 		select: (location) => location.state.signingOut === true,
@@ -108,7 +112,7 @@ export function LandingPage() {
 	}
 
 	return (
-		<PublicShell>
+		<Shell>
 			<div className="mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 py-12 md:gap-28 md:px-6 md:py-20">
 				<section className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
 					<div className="flex flex-col gap-5">
@@ -192,6 +196,6 @@ export function LandingPage() {
 					/>
 				</section>
 			</div>
-		</PublicShell>
+		</Shell>
 	);
 }
