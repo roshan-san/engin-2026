@@ -9,8 +9,8 @@ import {
 	MAX_MESSAGES,
 	TEXT,
 } from "../shared/limits";
-import { parseMentions } from "../shared/mentions";
 import { loadPublicUser, type PublicUser } from "../users/model";
+import { parseMentions } from "./rules";
 
 /** A trimmed message that has text, images, or both. */
 export function parseMessage(

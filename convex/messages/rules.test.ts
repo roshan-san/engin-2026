@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mentionToken, parseMentions, splitBody } from "./mentions";
+import { mentionToken, parseMentions, splitBody } from "./rules";
 
 describe("mentions", () => {
 	it("a mention is #card: and the Card id", () => {

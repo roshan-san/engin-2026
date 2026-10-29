@@ -4,16 +4,13 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 
 export type MessageView = FunctionReturnType<
-	typeof api.chat.messages.list
+	typeof api.messages.list
 >["messages"][number];
 
 /** A thread's latest messages (oldest first) and its pinned ones, and marking it read. */
 export function useMessages(threadId: Id<"threads"> | undefined) {
-	const result = useQuery(
-		api.chat.messages.list,
-		threadId ? { threadId } : "skip",
-	);
-	const markThreadRead = useMutation(api.chat.threads.markRead);
+	const result = useQuery(api.messages.list, threadId ? { threadId } : "skip");
+	const markThreadRead = useMutation(api.threads.markRead);
 
 	function markRead() {
 		if (!threadId) return;

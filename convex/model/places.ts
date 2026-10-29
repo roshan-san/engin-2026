@@ -16,7 +16,7 @@ import {
 	loadHackathonThreads,
 	loadTeamThreads,
 	loadThreadRead,
-} from "./threads";
+} from "../threads/model";
 
 /** A decision is in, and the Participant hasn't said whether the promise was kept. */
 export function isPromisePending(application: Doc<"applications">): boolean {

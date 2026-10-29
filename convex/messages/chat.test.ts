@@ -14,7 +14,6 @@ import {
 	MAX_MESSAGE_MENTIONS,
 	TEXT,
 } from "../shared/limits";
-import { mentionToken } from "../shared/mentions";
 import {
 	addContributor,
 	type Setup,
@@ -22,16 +21,17 @@ import {
 } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
+import { mentionToken } from "./rules";
 
 async function teamThreadId(setup: Setup) {
-	const threads = await setup.founder.as.query(api.chat.threads.list, {
+	const threads = await setup.founder.as.query(api.threads.list, {
 		startupId: setup.startupId,
 	});
 	return threads[0]._id;
 }
 
 async function hackathonThreads(setup: Setup, hackathonId: Id<"hackathons">) {
-	return await setup.founder.as.query(api.chat.threads.list, { hackathonId });
+	return await setup.founder.as.query(api.threads.list, { hackathonId });
 }
 
 async function everyoneThreadId(setup: Setup, hackathonId: Id<"hackathons">) {
@@ -46,26 +46,26 @@ describe("chat", () => {
 		const casey = await addContributor(setup, "Casey");
 		const threadId = await teamThreadId(setup);
 
-		await casey.as.mutation(api.chat.messages.send, {
+		await casey.as.mutation(api.messages.send, {
 			threadId,
 			body: "  Shipped the fix  ",
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages.map((message) => message.body)).toEqual([
 			"Shipped the fix",
 		]);
 		expect(messages[0].author._id).toBe(casey.userId);
-		const before = await setup.founder.as.query(api.chat.threads.list, {
+		const before = await setup.founder.as.query(api.threads.list, {
 			startupId: setup.startupId,
 		});
 		expect(before[0].unread).toBe(true);
 
-		await setup.founder.as.mutation(api.chat.threads.markRead, { threadId });
+		await setup.founder.as.mutation(api.threads.markRead, { threadId });
 
-		const after = await setup.founder.as.query(api.chat.threads.list, {
+		const after = await setup.founder.as.query(api.threads.list, {
 			startupId: setup.startupId,
 		});
 		expect(after[0].unread).toBe(false);
@@ -76,12 +76,12 @@ describe("chat", () => {
 		const setup = await setUpStartup(t);
 		const threadId = await teamThreadId(setup);
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: "Morning",
 		});
 
-		const threads = await setup.founder.as.query(api.chat.threads.list, {
+		const threads = await setup.founder.as.query(api.threads.list, {
 			startupId: setup.startupId,
 		});
 		expect(threads[0].unread).toBe(false);
@@ -95,13 +95,13 @@ describe("chat", () => {
 		const threadId = await teamThreadId(setup);
 
 		await expect(
-			outsider.as.query(api.chat.messages.list, { threadId }),
+			outsider.as.query(api.messages.list, { threadId }),
 		).rejects.toThrow("You can't open this thread");
 		await expect(
-			outsider.as.mutation(api.chat.messages.send, { threadId, body: "hi" }),
+			outsider.as.mutation(api.messages.send, { threadId, body: "hi" }),
 		).rejects.toThrow("You can't open this thread");
 		await expect(
-			outsider.as.query(api.chat.threads.list, { startupId: setup.startupId }),
+			outsider.as.query(api.threads.list, { startupId: setup.startupId }),
 		).resolves.toEqual([]);
 	});
 
@@ -111,7 +111,7 @@ describe("chat", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const [ada, ben] = await participants(setup, hackathonId, ["Ada", "Ben"]);
 
-		const adaThreads = await ada.as.query(api.chat.threads.list, {
+		const adaThreads = await ada.as.query(api.threads.list, {
 			hackathonId,
 		});
 
@@ -133,7 +133,7 @@ describe("chat", () => {
 			throw new Error("Ben's thread is missing");
 		}
 		await expect(
-			ada.as.query(api.chat.messages.list, { threadId: bensThread._id }),
+			ada.as.query(api.messages.list, { threadId: bensThread._id }),
 		).rejects.toThrow("You can't open this thread");
 	});
 
@@ -145,10 +145,10 @@ describe("chat", () => {
 		const everyoneId = await everyoneThreadId(setup, hackathonId);
 
 		await expect(
-			walkIn.as.query(api.chat.messages.list, { threadId: everyoneId }),
+			walkIn.as.query(api.messages.list, { threadId: everyoneId }),
 		).rejects.toThrow("You can't open this thread");
 		await expect(
-			walkIn.as.query(api.chat.threads.list, { hackathonId }),
+			walkIn.as.query(api.threads.list, { hackathonId }),
 		).resolves.toEqual([]);
 	});
 
@@ -157,15 +157,15 @@ describe("chat", () => {
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
 		const [ada] = await participants(setup, hackathonId, ["Ada"]);
-		const threads = await ada.as.query(api.chat.threads.list, { hackathonId });
+		const threads = await ada.as.query(api.threads.list, { hackathonId });
 		const privateId = threads[1]._id;
 
-		await ada.as.mutation(api.chat.messages.send, {
+		await ada.as.mutation(api.messages.send, {
 			threadId: privateId,
 			body: "Question about the Card",
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId: privateId,
 		});
 		expect(messages.map((message) => message.body)).toEqual([
@@ -179,20 +179,20 @@ describe("chat", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const [ada] = await participants(setup, hackathonId, ["Ada"]);
 		const everyoneId = await everyoneThreadId(setup, hackathonId);
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId: everyoneId,
 			body: "Demo is on Friday",
 		});
-		const { messages } = await ada.as.query(api.chat.messages.list, {
+		const { messages } = await ada.as.query(api.messages.list, {
 			threadId: everyoneId,
 		});
 
-		await setup.founder.as.mutation(api.chat.messages.pin, {
+		await setup.founder.as.mutation(api.messages.pin, {
 			messageId: messages[0]._id,
 			pinned: true,
 		});
 
-		const view = await ada.as.query(api.chat.messages.list, {
+		const view = await ada.as.query(api.messages.list, {
 			threadId: everyoneId,
 		});
 		expect(view.pinned.map((message) => message.body)).toEqual([
@@ -200,18 +200,18 @@ describe("chat", () => {
 		]);
 		expect(view.messages[0].pinned).toBe(true);
 		await expect(
-			ada.as.mutation(api.chat.messages.pin, {
+			ada.as.mutation(api.messages.pin, {
 				messageId: messages[0]._id,
 				pinned: false,
 			}),
 		).rejects.toThrow("Only the Founder can do this");
 
-		await setup.founder.as.mutation(api.chat.messages.pin, {
+		await setup.founder.as.mutation(api.messages.pin, {
 			messageId: messages[0]._id,
 			pinned: false,
 		});
 
-		const unpinned = await ada.as.query(api.chat.messages.list, {
+		const unpinned = await ada.as.query(api.messages.list, {
 			threadId: everyoneId,
 		});
 		expect(unpinned.pinned).toEqual([]);
@@ -221,16 +221,16 @@ describe("chat", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const threadId = await teamThreadId(setup);
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: "Standup at 10",
 		});
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 
 		await expect(
-			setup.founder.as.mutation(api.chat.messages.pin, {
+			setup.founder.as.mutation(api.messages.pin, {
 				messageId: messages[0]._id,
 				pinned: true,
 			}),
@@ -242,22 +242,21 @@ describe("chat", () => {
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
 		const [ada] = await participants(setup, hackathonId, ["Ada"]);
-		const [everyone, privateThread] = await ada.as.query(
-			api.chat.threads.list,
-			{ hackathonId },
-		);
+		const [everyone, privateThread] = await ada.as.query(api.threads.list, {
+			hackathonId,
+		});
 		await startHackathon(setup, hackathonId);
 		await endHackathon(setup, hackathonId);
 		await closeHackathon(setup, hackathonId);
 
 		await expect(
-			ada.as.mutation(api.chat.messages.send, {
+			ada.as.mutation(api.messages.send, {
 				threadId: everyone._id,
 				body: "hi",
 			}),
 		).rejects.toThrow("This Hackathon has ended.");
 		await expect(
-			setup.founder.as.mutation(api.chat.messages.send, {
+			setup.founder.as.mutation(api.messages.send, {
 				threadId: privateThread._id,
 				body: "hi",
 			}),
@@ -269,17 +268,17 @@ describe("chat", () => {
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
 		const [ada] = await participants(setup, hackathonId, ["Ada"]);
-		const threads = await ada.as.query(api.chat.threads.list, { hackathonId });
+		const threads = await ada.as.query(api.threads.list, { hackathonId });
 		const privateId = threads[1]._id;
 		await startHackathon(setup, hackathonId);
 		await endHackathon(setup, hackathonId);
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId: privateId,
 			body: "Call at 5?",
 		});
 
-		const { messages } = await ada.as.query(api.chat.messages.list, {
+		const { messages } = await ada.as.query(api.messages.list, {
 			threadId: privateId,
 		});
 		expect(messages.map((message) => message.body)).toEqual(["Call at 5?"]);
@@ -292,14 +291,14 @@ describe("chat", () => {
 		await participants(setup, hackathonId, ["Ada"]);
 		const everyoneId = await everyoneThreadId(setup, hackathonId);
 		await startHackathon(setup, hackathonId);
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId: everyoneId,
 			body: "Demo is on Friday",
 		});
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId: everyoneId,
 		});
-		await setup.founder.as.mutation(api.chat.messages.pin, {
+		await setup.founder.as.mutation(api.messages.pin, {
 			messageId: messages[0]._id,
 			pinned: true,
 		});
@@ -307,7 +306,7 @@ describe("chat", () => {
 		await closeHackathon(setup, hackathonId);
 
 		await expect(
-			setup.founder.as.mutation(api.chat.messages.pin, {
+			setup.founder.as.mutation(api.messages.pin, {
 				messageId: messages[0]._id,
 				pinned: false,
 			}),
@@ -320,7 +319,7 @@ describe("chat", () => {
 		const threadId = await teamThreadId(setup);
 
 		await expect(
-			setup.founder.as.mutation(api.chat.messages.send, {
+			setup.founder.as.mutation(api.messages.send, {
 				threadId,
 				body: "  ",
 			}),
@@ -335,13 +334,13 @@ describe("chat", () => {
 			async (ctx) => await ctx.storage.store(new Blob(["png"])),
 		);
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: "",
 			images: [image],
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].body).toBe("");
@@ -361,13 +360,13 @@ describe("chat", () => {
 		});
 
 		await expect(
-			setup.founder.as.mutation(api.chat.messages.send, {
+			setup.founder.as.mutation(api.messages.send, {
 				threadId,
 				body: "x".repeat(TEXT.message + 1),
 			}),
 		).rejects.toThrow(`Message must be under ${TEXT.message} characters`);
 		await expect(
-			setup.founder.as.mutation(api.chat.messages.send, {
+			setup.founder.as.mutation(api.messages.send, {
 				threadId,
 				body: "Look",
 				images,
@@ -379,9 +378,9 @@ describe("chat", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 
-		await expect(
-			setup.founder.as.query(api.chat.threads.list, {}),
-		).rejects.toThrow("Pick a startup or a Hackathon");
+		await expect(setup.founder.as.query(api.threads.list, {})).rejects.toThrow(
+			"Pick a startup or a Hackathon",
+		);
 	});
 });
 
@@ -391,12 +390,12 @@ describe("card mentions", () => {
 		const threadId = await teamThreadId(setup);
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: `look at ${mentionToken(cardId)}`,
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].mentions).toEqual([
@@ -409,11 +408,11 @@ describe("card mentions", () => {
 		const threadId = await teamThreadId(setup);
 		const cardId = await cardOn(setup, setup.founder, "Write welcome emails");
 		const body = `look at ${mentionToken(cardId)}`;
-		await setup.founder.as.mutation(api.chat.messages.send, { threadId, body });
+		await setup.founder.as.mutation(api.messages.send, { threadId, body });
 
 		await setup.founder.as.mutation(api.cards.remove, { cardId });
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].mentions).toEqual([]);
@@ -437,12 +436,12 @@ describe("card mentions", () => {
 			title: "Beta work",
 		});
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: `look at ${mentionToken(betaCard)}`,
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].mentions).toEqual([]);
@@ -472,12 +471,12 @@ describe("card mentions", () => {
 			});
 		});
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: `look at ${mentionToken(hackathonCard)}`,
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].mentions).toEqual([]);
@@ -490,12 +489,12 @@ describe("card mentions", () => {
 		const threadId = await everyoneThreadId(setup, hackathonId);
 		const cardId = await cardOn(setup, setup.founder, "Secret roadmap");
 
-		await ana.as.mutation(api.chat.messages.send, {
+		await ana.as.mutation(api.messages.send, {
 			threadId,
 			body: `what is ${mentionToken(cardId)}`,
 		});
 
-		const { messages } = await ana.as.query(api.chat.messages.list, {
+		const { messages } = await ana.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].mentions).toEqual([]);
@@ -505,12 +504,12 @@ describe("card mentions", () => {
 		const setup = await setUpStartup(createTest());
 		const threadId = await teamThreadId(setup);
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: "look at #card:notacardid",
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].mentions).toEqual([]);
@@ -524,12 +523,12 @@ describe("card mentions", () => {
 			cardIds.push(await cardOn(setup, setup.founder, `Card ${i}`));
 		}
 
-		await setup.founder.as.mutation(api.chat.messages.send, {
+		await setup.founder.as.mutation(api.messages.send, {
 			threadId,
 			body: cardIds.map(mentionToken).join(" "),
 		});
 
-		const { messages } = await setup.founder.as.query(api.chat.messages.list, {
+		const { messages } = await setup.founder.as.query(api.messages.list, {
 			threadId,
 		});
 		expect(messages[0].mentions.map((mention) => mention.cardId)).toEqual(

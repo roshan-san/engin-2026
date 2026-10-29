@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_THREADS } from "../shared/limits";
 import { loadPublicUser } from "../users/model";
-import { getThreadAccess } from "./threadAccess";
+import { getThreadAccess } from "./access";
 
 export async function loadThreadRead(
 	ctx: QueryCtx | MutationCtx,

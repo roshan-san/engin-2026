@@ -4,5 +4,5 @@ import { useQuery } from "convex/react";
 
 /** Everyone, then the private threads the viewer can open. */
 export function useHackathonThreads(hackathonId: Id<"hackathons">) {
-	return useQuery(api.chat.threads.list, { hackathonId });
+	return useQuery(api.threads.list, { hackathonId });
 }

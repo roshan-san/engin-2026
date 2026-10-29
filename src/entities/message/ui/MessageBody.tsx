@@ -1,4 +1,4 @@
-import { splitBody } from "@convex/shared/mentions";
+import { splitBody } from "@convex/messages/rules";
 import { Link } from "@tanstack/react-router";
 import type { MessageView } from "../api/useMessages";
 

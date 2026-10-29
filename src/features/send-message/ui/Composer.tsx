@@ -1,6 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
+import { mentionToken } from "@convex/messages/rules";
 import { MAX_MESSAGE_IMAGES, TEXT } from "@convex/shared/limits";
-import { mentionToken } from "@convex/shared/mentions";
 import { ImageIcon, SendIcon } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { cn } from "~/shared/lib/cn";

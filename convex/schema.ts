@@ -9,8 +9,9 @@ import { cyclesTables } from "./cycles/table";
 import { hackathonsTables } from "./hackathons/table";
 import { invitesTables } from "./invites/table";
 import { maintenanceTables } from "./maintenance/table";
+import { messagesTables } from "./messages/table";
 import { startupsTables } from "./startups/table";
-import { chatTables } from "./tables/chat";
+import { threadsTables } from "./threads/table";
 
 import { usersTables } from "./users/table";
 
@@ -32,7 +33,8 @@ export default defineSchema({
 	...cyclesTables,
 	...hackathonsTables,
 	...applicationsTables,
-	...chatTables,
+	...threadsTables,
+	...messagesTables,
 	...billingTables,
 	...maintenanceTables,
 });

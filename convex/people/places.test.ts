@@ -27,7 +27,7 @@ async function threadOf(
 	where: { startupId: Id<"startups"> } | { hackathonId: Id<"hackathons"> },
 	kind: "team" | "everyone" | "private",
 ) {
-	const threads = await person.as.query(api.chat.threads.list, where);
+	const threads = await person.as.query(api.threads.list, where);
 	const thread = threads.find((candidate) => candidate.kind === kind);
 	if (!thread) {
 		throw new Error(`No ${kind} thread`);
@@ -36,7 +36,7 @@ async function threadOf(
 }
 
 async function say(person: Person, threadId: Id<"threads">) {
-	await person.as.mutation(api.chat.messages.send, { threadId, body: "Hello" });
+	await person.as.mutation(api.messages.send, { threadId, body: "Hello" });
 }
 
 /** The Hackathon's Participant Cards as the Participant sees them. */
@@ -185,7 +185,7 @@ describe("waiting", () => {
 
 		await say(cal, threadId);
 		const lit = await placesOf(setup.founder);
-		await setup.founder.as.mutation(api.chat.threads.markRead, { threadId });
+		await setup.founder.as.mutation(api.threads.markRead, { threadId });
 		const read = await placesOf(setup.founder);
 
 		expect(lit.startups[0].waiting).not.toEqual([]);
@@ -277,7 +277,7 @@ describe("waiting", () => {
 
 		await say(ana, threadId);
 		const lit = await placesOf(setup.founder);
-		await setup.founder.as.mutation(api.chat.threads.markRead, { threadId });
+		await setup.founder.as.mutation(api.threads.markRead, { threadId });
 		const read = await placesOf(setup.founder);
 
 		expect(lit.startups[0].waiting).not.toEqual([]);
@@ -340,7 +340,7 @@ describe("waiting", () => {
 
 		await say(setup.founder, threadId);
 		const lit = await placesOf(ana);
-		await ana.as.mutation(api.chat.threads.markRead, { threadId });
+		await ana.as.mutation(api.threads.markRead, { threadId });
 		const read = await placesOf(ana);
 
 		expect(lit.hackathons[0].waiting).not.toEqual([]);

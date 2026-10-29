@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { parseMentions } from "@convex/shared/mentions";
+import { parseMentions } from "@convex/messages/rules";
 import { useState } from "react";
 import { useMentionCards } from "~/entities/card";
 import { findTrigger } from "../model/mentionTrigger";
