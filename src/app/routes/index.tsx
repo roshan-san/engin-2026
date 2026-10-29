@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PublicShell } from "~/app/layouts/PublicShell";
 import { LandingPage } from "~/pages/landing";
-import { PublicShell } from "~/shell/PublicShell";
 
 export const Route = createFileRoute("/")({
 	component: () => <LandingPage Shell={PublicShell} />,

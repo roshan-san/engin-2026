@@ -1,12 +1,12 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { routeTree } from "~/routeTree.gen";
+import { routeTree } from "~/app/routeTree.gen";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
-import "~/styles/globals.css";
+import "~/app/styles/globals.css";
 
 const router = createRouter({
 	routeTree,

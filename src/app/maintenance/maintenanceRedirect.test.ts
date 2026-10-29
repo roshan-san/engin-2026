@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { Route as MaintenanceRoute } from "~/app/routes/maintenance";
 import { MaintenancePage } from "~/pages/maintenance";
-import { Route as MaintenanceRoute } from "~/routes/maintenance";
 import { maintenanceRedirect } from "./maintenanceRedirect";
 
 describe("maintenance redirect", () => {

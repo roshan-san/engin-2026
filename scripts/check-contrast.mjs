@@ -1,4 +1,4 @@
-// Prints WCAG contrast ratios for the text tokens in src/styles/globals.css.
+// Prints WCAG contrast ratios for the text tokens in src/app/styles/globals.css.
 // Plain node, no deps. Exits 1 if any pair is below 4.5:1.
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const MIN_RATIO = 4.5;
 const css = readFileSync(
-	join(dirname(fileURLToPath(import.meta.url)), "../src/styles/globals.css"),
+	join(dirname(fileURLToPath(import.meta.url)), "../src/app/styles/globals.css"),
 	"utf8",
 );
 
