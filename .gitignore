@@ -23,13 +23,12 @@ dist
 docs/
 CONTEXT.md
 .scratch/
+convex/_generated/ai/
 .tanstack
 .agents/
 .cursorrules
 .env.local
-scripts/.jwt_private_key.txt
 .env.prod
-scripts/.jwks.txt
 .playwright-cli/
 
 .env*

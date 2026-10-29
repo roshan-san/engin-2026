@@ -1,0 +1,201 @@
+import { useAuthActions, useConvexAuth } from "@convex-dev/auth/react";
+import {
+	Link,
+	Navigate,
+	useLocation,
+	useNavigate,
+	useRouter,
+} from "@tanstack/react-router";
+import { type ComponentType, type ReactNode, useEffect } from "react";
+import {
+	landingView,
+	POST_INTENT_PATH,
+	pickLanding,
+	readLastPlace,
+	usePlaces,
+} from "~/entities/place";
+import { GoogleButton } from "~/features/sign-in";
+import { cn } from "~/shared/lib/cn";
+import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
+import { TILE } from "~/shared/ui/tile";
+import { BoardMock } from "./BoardMock";
+import { OpenNow } from "./OpenNow";
+import { Pricing } from "./Pricing";
+
+const STEPS = [
+	{
+		title: "Post your real problem",
+		body: "One or two weeks, a handful of Participants, and the stipend shown upfront.",
+	},
+	{
+		title: "Participants ship on their own Boards",
+		body: "Each works through the same Cards. You see what shipped, Card by Card.",
+	},
+	{
+		title: "Walkthrough, then a Decision",
+		body: "Talk through the work with your shortlist. Every Participant hears back.",
+	},
+] as const;
+
+const AUDIENCES = [
+	{
+		title: "For Founders",
+		lines: [
+			"Stop guessing from CVs: watch real work on your real problem.",
+			"Hire in one click; the Participant joins your team.",
+			"Then run your team's week in Cycles on the same Board.",
+		],
+	},
+	{
+		title: "For Participants",
+		lines: [
+			"Work on a real startup problem, not a puzzle.",
+			"The stipend is shown upfront, and you always get a Decision.",
+			"Verified work builds a Rating that follows you.",
+		],
+	},
+] as const;
+
+/** Sends a signed-in visitor to the place they were last in, else their first. */
+function LandingRedirect() {
+	const places = usePlaces();
+
+	if (!places) {
+		return <GlobalSpinner />;
+	}
+
+	return <Navigate to={pickLanding(places, readLastPlace())} replace />;
+}
+
+/**
+ * Signs you out once Sign out's trip here wasn't stopped by unsaved work, then
+ * drops the marker so coming Back to this entry later doesn't sign you out again.
+ */
+function SigningOut() {
+	const { signOut } = useAuthActions();
+	const navigate = useNavigate();
+	const router = useRouter();
+
+	useEffect(() => {
+		void signOut().then(() => {
+			if (router.state.location.state.signingOut) {
+				void navigate({ to: "/", replace: true });
+			}
+		});
+	}, [signOut, navigate, router]);
+
+	return <GlobalSpinner />;
+}
+
+/** The landing page. Only the signed-out page sits in `Shell`; waiting and redirecting show bare. */
+export function LandingPage({
+	Shell,
+}: {
+	readonly Shell: ComponentType<{ readonly children: ReactNode }>;
+}) {
+	const auth = useConvexAuth();
+	const signingOut = useLocation({
+		select: (location) => location.state.signingOut === true,
+	});
+	const view = landingView(auth, signingOut);
+
+	if (view === "wait") {
+		return <GlobalSpinner />;
+	}
+
+	if (view === "signOut") {
+		return <SigningOut />;
+	}
+
+	if (view === "redirect") {
+		return <LandingRedirect />;
+	}
+
+	return (
+		<Shell>
+			<div className="mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 py-12 md:gap-28 md:px-6 md:py-20">
+				<section className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+					<div className="flex flex-col gap-5">
+						<p className="text-sm font-medium text-muted-foreground">
+							Hiring Hackathons for early-stage startups
+						</p>
+						<h1 className="text-3xl font-semibold text-balance md:text-5xl">
+							Watch them ship before you hire.
+						</h1>
+						<p className="text-lg text-muted-foreground text-pretty">
+							Run a small, private Hackathon on your real problem. A handful of
+							Participants work on their own Boards. You check what ships, then
+							decide. Stipend shown upfront.
+						</p>
+						<div className="flex flex-wrap items-center gap-3">
+							<GoogleButton
+								label="Post a hackathon"
+								variant="default"
+								size="lg"
+								returnTo={POST_INTENT_PATH}
+							/>
+							<Link
+								to="/explore/hackathons"
+								className="rounded-sm text-sm font-medium underline-offset-4 hover:underline focus-ring"
+							>
+								Find a hackathon →
+							</Link>
+						</div>
+					</div>
+					<BoardMock />
+				</section>
+
+				<section className="flex flex-col gap-6">
+					<h2 className="text-2xl font-semibold">How it works</h2>
+					<ol className="grid gap-3 md:grid-cols-3">
+						{STEPS.map((step, index) => (
+							<li key={step.title} className={cn(TILE, "flex flex-col gap-2")}>
+								<span className="text-sm font-semibold tabular-nums text-muted-foreground">
+									{index + 1}
+								</span>
+								<p className="font-medium">{step.title}</p>
+								<p className="text-sm text-muted-foreground">{step.body}</p>
+							</li>
+						))}
+					</ol>
+				</section>
+
+				<section className="grid gap-3 md:grid-cols-2">
+					{AUDIENCES.map((audience) => (
+						<div
+							key={audience.title}
+							className={cn(TILE, "flex flex-col gap-3 p-6")}
+						>
+							<h2 className="text-lg font-semibold">{audience.title}</h2>
+							<ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+								{audience.lines.map((line) => (
+									<li key={line}>{line}</li>
+								))}
+							</ul>
+						</div>
+					))}
+				</section>
+
+				<OpenNow />
+				<Pricing />
+
+				<section
+					className={cn(
+						TILE,
+						"flex flex-col items-center gap-4 px-6 py-12 text-center",
+					)}
+				>
+					<h2 className="text-2xl font-semibold text-balance">
+						See if they can actually do the work.
+					</h2>
+					<GoogleButton
+						label="Post a hackathon"
+						variant="default"
+						size="lg"
+						returnTo={POST_INTENT_PATH}
+					/>
+				</section>
+			</div>
+		</Shell>
+	);
+}

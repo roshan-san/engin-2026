@@ -13,7 +13,12 @@ export default defineConfig({
 	},
 	plugins: [
 		tailwindcss(),
-		tanstackRouter({ target: "react", autoCodeSplitting: true }),
+		tanstackRouter({
+			target: "react",
+			routesDirectory: "./src/app/routes",
+			generatedRouteTree: "./src/app/routeTree.gen.ts",
+			autoCodeSplitting: true,
+		}),
 		viteReact(),
 	],
 });

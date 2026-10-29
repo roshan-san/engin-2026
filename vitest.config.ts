@@ -10,7 +10,7 @@ export default defineConfig({
 	},
 	test: {
 		environment: "edge-runtime",
-		// Route tests load lib/convex.ts, whose client needs an address. A fixed one
+		// Anything that loads shared/api/convex.ts, whose client needs an address. A fixed one
 		// keeps tests off your dev backend and passing without .env.local (CI).
 		env: { VITE_CONVEX_URL: "https://tests.convex.cloud" },
 		include: ["convex/**/*.test.ts", "src/**/*.test.ts"],

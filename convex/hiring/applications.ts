@@ -7,11 +7,9 @@ import {
 	loadApplicationsForFounder,
 	loadParticipantProgress,
 	loadParticipants,
+	requireApplicationAllowed,
 	requireApplicationFounder,
-	requireDecidable,
 	requireOpen,
-	requireParticipating,
-	requireUnderway,
 	toFounderApplicationView,
 } from "../model/applications";
 import { requireUserId } from "../model/auth";
@@ -26,7 +24,7 @@ import {
 	toPublicProfile,
 	toPublicUser,
 } from "../model/users";
-import { MAX_PARTICIPANTS, TEXT } from "../shared/limits";
+import { TEXT } from "../shared/limits";
 import { decision } from "../shared/validators";
 
 /** Everyone who applied, for the Founder. Never includes email. */
@@ -131,14 +129,11 @@ export const accept = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireOpen(hackathon);
-		if (application.status === "participating") {
-			return;
-		}
 		const participants = await loadParticipants(ctx, hackathon._id);
-		if (participants.length >= MAX_PARTICIPANTS) {
-			throw new ConvexError(`${MAX_PARTICIPANTS} Participants is the limit`);
-		}
+		requireApplicationAllowed(application, hackathon, {
+			kind: "accept",
+			participants: participants.length,
+		});
 
 		await ctx.db.patch(application._id, { status: "participating" });
 		await ensurePrivateThread(ctx, hackathon, application.userId);
@@ -154,7 +149,7 @@ export const decline = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireOpen(hackathon);
+		requireApplicationAllowed(application, hackathon, { kind: "decline" });
 
 		await ctx.db.patch(application._id, { status: "declined" });
 	},
@@ -169,8 +164,10 @@ export const shortlist = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireUnderway(hackathon);
-		requireParticipating(application);
+		requireApplicationAllowed(application, hackathon, {
+			kind: "shortlist",
+			on: args.shortlisted,
+		});
 
 		await ctx.db.patch(application._id, { shortlisted: args.shortlisted });
 	},
@@ -185,11 +182,7 @@ export const markWalkthrough = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireUnderway(hackathon);
-		requireParticipating(application);
-		if (!application.shortlisted) {
-			throw new ConvexError("Shortlist them first");
-		}
+		requireApplicationAllowed(application, hackathon, { kind: "walkthrough" });
 		const notes = limitText(args.notes, "Notes", TEXT.walkthroughNotes);
 
 		await ctx.db.patch(application._id, {
@@ -212,19 +205,12 @@ export const decide = mutation({
 			args.applicationId,
 			userId,
 		);
-		requireParticipating(application);
-		if (application.decision) {
-			throw new ConvexError("Already decided");
-		}
-		if (hackathon.status === "done") {
-			throw new ConvexError("This Hackathon has ended");
-		}
+		requireApplicationAllowed(application, hackathon, {
+			kind: "decide",
+			decision: args.decision,
+		});
 		const now = Date.now();
-		requireDecidable(hackathon, now);
 		const feedback = limitText(args.feedback, "Feedback", TEXT.feedback);
-		if (args.decision === "hired" && application.walkthroughAt === undefined) {
-			throw new ConvexError("Do the Walkthrough first");
-		}
 
 		await ctx.db.patch(application._id, { decision: args.decision, feedback });
 		if (args.decision === "hired") {
