@@ -2,6 +2,12 @@ import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import {
+	ActivityFeed,
+	EntryPanel,
+	findEntry,
+	useActivity,
+} from "~/entities/activity";
 import { useWorkspace } from "~/entities/startup";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
@@ -10,12 +16,8 @@ import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { ActivityFeed } from "./ActivityFeed";
-import { EntryPanel } from "./EntryPanel";
 import { RecordPanel } from "./RecordPanel";
 import { RecordSignals } from "./RecordSignals";
-import { findEntry } from "./record";
-import { useActivity } from "./useActivity";
 import { useSignals } from "./useSignals";
 
 const activityRoute = getRouteApi("/_shell/_authed/s/$slug/activity");

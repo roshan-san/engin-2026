@@ -6,8 +6,8 @@ import { PanelHeader } from "~/shared/ui/PanelHeader";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { PersonName } from "~/shared/ui/PersonName";
 import { Section } from "~/shared/ui/Section";
+import type { CycleView, EntryView } from "../model/record";
 import { EntryProof } from "./EntryProof";
-import type { CycleView, EntryView } from "./record";
 
 /** One verified Card's What shipped and proof, in the side panel. */
 export function EntryPanel({

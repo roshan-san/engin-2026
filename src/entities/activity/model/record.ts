@@ -7,9 +7,6 @@ import { displayName } from "~/shared/lib/displayName";
 export type ActivityView = FunctionReturnType<typeof api.work.activity.list>;
 export type CycleView = ActivityView["cycles"][number];
 export type EntryView = CycleView["entries"][number];
-export type SignalsView = NonNullable<
-	FunctionReturnType<typeof api.work.activity.getSignals>
->;
 
 /** Who an entry is about and what happened; the actor reads in bold before `text`. */
 export function entrySummary(entry: EntryView): {

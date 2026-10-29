@@ -3,8 +3,8 @@ import { dateRange } from "~/shared/lib/dates";
 import { Badge } from "~/shared/ui/badge";
 import { Button } from "~/shared/ui/button";
 import { Spinner } from "~/shared/ui/spinner";
+import { buildFeed, type CycleView, quietLabel } from "../model/record";
 import { ActivityEntry } from "./ActivityEntry";
-import { buildFeed, type CycleView, quietLabel } from "./record";
 
 /** Cycles newest first. `masked` shows only the count and milestones. */
 export function ActivityFeed({

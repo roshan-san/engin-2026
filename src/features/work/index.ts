@@ -1,4 +1,3 @@
-export { ActivityFeed } from "./activity/ActivityFeed";
 export { RecordSignals } from "./activity/RecordSignals";
 export { useSignals } from "./activity/useSignals";
 export { Board } from "./board/Board";

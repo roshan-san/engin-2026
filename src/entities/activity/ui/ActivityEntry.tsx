@@ -18,8 +18,8 @@ import {
 	CollapsibleTrigger,
 } from "~/shared/ui/collapsible";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
+import { type EntryView, entrySummary } from "../model/record";
 import { EntryProof } from "./EntryProof";
-import { type EntryView, entrySummary } from "./record";
 
 const ROW = "flex w-full items-center gap-3 px-2 py-2 text-left text-sm";
 const INTERACTIVE = "rounded-md transition-colors hover:bg-accent focus-ring";
