@@ -7,6 +7,7 @@ import {
 	refusalFor,
 	useBoardScope,
 } from "~/entities/card";
+import { useMoveCard } from "~/features/move-card";
 import { PersonName } from "~/shared/ui/PersonName";
 import {
 	Select,
@@ -15,7 +16,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/shared/ui/select";
-import { useMoveCard } from "../board/useMoveCard";
 import { GHOST_TRIGGER, OwnerPicker } from "./OwnerPicker";
 import type { useCardActions } from "./useCardActions";
 
