@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import {
+	draftHackathon,
+	publishedHackathon,
+} from "../hackathons/hackathons.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
 import {
 	applicant,
@@ -11,10 +15,6 @@ import {
 	startHackathon,
 } from "../testing/applications.setup";
 import { SHIPPED } from "../testing/cards.setup";
-import {
-	draftHackathon,
-	publishedHackathon,
-} from "../testing/hackathons.setup";
 import { createTest } from "../testing/test.setup";
 import { type Person, signUp } from "../users/users.setup";
 

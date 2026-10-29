@@ -1,37 +1,34 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
-import type { Doc, Id } from "../_generated/dataModel";
-import { internalMutation, mutation, query } from "../_generated/server";
-import { requireUserId } from "../lib/auth";
-import {
-	getApplication,
-	loadParticipants,
-	toMyApplicationView,
-} from "../model/applications";
-import { loadHackathonCardsInReview } from "../model/cards";
-import * as lifecycle from "../model/hackathonLifecycle";
+import type { Doc, Id } from "./_generated/dataModel";
+import { internalMutation, mutation, query } from "./_generated/server";
+import * as lifecycle from "./hackathons/lifecycle";
 import {
 	copyTemplateCardsTo,
 	draftArgs,
 	insertTemplateCards,
 	loadHackathonCards,
+	loadParticipants,
 	matchesExplore,
 	replaceTemplateCards,
 	requireHackathonFounder,
 	requireValidDraft,
 	sortExplore,
 	toExploreHackathon,
-} from "../model/hackathons";
+} from "./hackathons/model";
 import {
 	type HiringRecord,
 	loadHiringRecord,
 	tallyParticipants,
-} from "../model/hiringRecord";
-import { phaseOf } from "../shared/hackathonPhase";
-import { MAX_EXPLORE_ROWS, MAX_LISTED_HACKATHONS } from "../shared/limits";
-import { hackathonWeeks, jobRole } from "../shared/validators";
-import { loadLogoUrl, toPublicStartup } from "../startups/model";
-import { getTeamRole, requireFounder, requireTeam } from "../startups/team";
+} from "./hackathons/record";
+import { phaseOf } from "./hackathons/rules";
+import { requireUserId } from "./lib/auth";
+import { getApplication, toMyApplicationView } from "./model/applications";
+import { loadHackathonCardsInReview } from "./model/cards";
+import { MAX_EXPLORE_ROWS, MAX_LISTED_HACKATHONS } from "./shared/limits";
+import { hackathonWeeks, jobRole } from "./shared/validators";
+import { loadLogoUrl, toPublicStartup } from "./startups/model";
+import { getTeamRole, requireFounder, requireTeam } from "./startups/team";
 
 export const list = query({
 	args: { startupId: v.id("startups") },

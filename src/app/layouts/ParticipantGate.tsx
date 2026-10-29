@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { phaseOf } from "@convex/shared/hackathonPhase";
+import { phaseOf } from "@convex/hackathons/rules";
 import { getRouteApi, Navigate, Outlet } from "@tanstack/react-router";
 import { useMemo } from "react";
 import {

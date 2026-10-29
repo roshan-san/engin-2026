@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { MAX_LISTED_HACKATHONS } from "../shared/limits";
-import { loadParticipants } from "./applications";
+import { loadParticipants } from "./model";
 
 export type HiringRecord = {
 	finished: number;

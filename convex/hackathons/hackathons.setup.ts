@@ -11,7 +11,7 @@ export function nextMonday(): number {
 }
 
 type HackathonInput = Omit<
-	FunctionArgs<typeof api.hiring.hackathons.create>,
+	FunctionArgs<typeof api.hackathons.create>,
 	"startupId"
 >;
 
@@ -38,7 +38,7 @@ export async function draftHackathon(
 	setup: Setup,
 	overrides: Partial<HackathonInput> = {},
 ): Promise<Id<"hackathons">> {
-	return await setup.founder.as.mutation(api.hiring.hackathons.create, {
+	return await setup.founder.as.mutation(api.hackathons.create, {
 		startupId: setup.startupId,
 		...hackathonInput(overrides),
 	});
@@ -60,7 +60,7 @@ export async function publishedHackathon(
 	if (!subscription) {
 		await givePro(setup.t, setup.founder);
 	}
-	await setup.founder.as.mutation(api.hiring.hackathons.publish, {
+	await setup.founder.as.mutation(api.hackathons.publish, {
 		hackathonId,
 	});
 	return hackathonId;

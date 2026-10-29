@@ -1,4 +1,4 @@
-import { phaseOf } from "@convex/shared/hackathonPhase";
+import { phaseOf } from "@convex/hackathons/rules";
 import { Link } from "@tanstack/react-router";
 import { roleLabel, termsLine } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";

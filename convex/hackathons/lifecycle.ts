@@ -5,11 +5,10 @@ import type { MutationCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { publishBlockFor, publishBlockMessage } from "../billing/rules";
 import { MAX_APPLICATIONS } from "../shared/limits";
-import { loadParticipants } from "./applications";
-import { loadPlanView } from "./hackathons";
+import { loadParticipants, loadPlanView } from "./model";
 
 // Every write to a Hackathon's `status` lives here. Explicit return types: this file
-// schedules `internal.hiring.hackathons`, whose handlers call back into it, so inference would loop.
+// schedules `internal.hackathons`, whose handlers call back into it, so inference would loop.
 
 /** Opens a draft for applications, when the Founder's plan allows, and schedules each step after it. The caller checks `founderId` is the Founder. */
 export async function publish(
@@ -36,19 +35,17 @@ export async function publish(
 		hackathonId: hackathon._id,
 		kind: "everyone",
 	});
-	await ctx.scheduler.runAt(
-		hackathon.startsAt,
-		internal.hiring.hackathons.goLive,
-		{ hackathonId: hackathon._id },
-	);
+	await ctx.scheduler.runAt(hackathon.startsAt, internal.hackathons.goLive, {
+		hackathonId: hackathon._id,
+	});
 	await ctx.scheduler.runAt(
 		hackathon.endsAt,
-		internal.hiring.hackathons.startDeciding,
+		internal.hackathons.startDeciding,
 		{ hackathonId: hackathon._id },
 	);
 	await ctx.scheduler.runAt(
 		hackathon.decideBy,
-		internal.hiring.hackathons.closeDeciding,
+		internal.hackathons.closeDeciding,
 		{ hackathonId: hackathon._id },
 	);
 }
@@ -73,7 +70,7 @@ export async function goLive(
 	}
 	await ctx.db.patch(hackathon._id, { status: "live" });
 	for (const participant of participants) {
-		await ctx.scheduler.runAfter(0, internal.hiring.hackathons.copyCardsFor, {
+		await ctx.scheduler.runAfter(0, internal.hackathons.copyCardsFor, {
 			hackathonId: hackathon._id,
 			userId: participant.userId,
 		});
@@ -114,7 +111,7 @@ async function declineAppliedBatch(
 		await ctx.db.patch(application._id, { status: "declined" });
 	}
 	if (applied.length === MAX_APPLICATIONS) {
-		await ctx.scheduler.runAfter(0, internal.hiring.hackathons.declineApplied, {
+		await ctx.scheduler.runAfter(0, internal.hackathons.declineApplied, {
 			hackathonId,
 		});
 	}

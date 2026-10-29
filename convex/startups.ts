@@ -3,9 +3,9 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { shiftWeek, weekOf } from "./cycles/rules";
+import { loadHiringRecord } from "./hackathons/record";
 import { requireUserId } from "./lib/auth";
 import { assertUrl, limitText, requireLimitedText } from "./lib/text";
-import { loadHiringRecord } from "./model/hiringRecord";
 import {
 	EXPLORE_SCAN,
 	MAX_EXPLORE_ROWS,

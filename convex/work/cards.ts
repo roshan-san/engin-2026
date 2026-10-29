@@ -1,5 +1,9 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import {
+	loadHackathonCards,
+	requireHackathonFounder,
+} from "../hackathons/model";
 import { requireUserId } from "../lib/auth";
 import {
 	loadBoardCards,
@@ -14,10 +18,6 @@ import {
 	requireTeamOwner,
 	toCardView,
 } from "../model/cards";
-import {
-	loadHackathonCards,
-	requireHackathonFounder,
-} from "../model/hackathons";
 import { submitLandsIn } from "../shared/cardRules";
 import { shipped } from "../shared/validators";
 import { requireTeam } from "../startups/team";

@@ -1,6 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { phaseOf } from "../shared/hackathonPhase";
+import { loadParticipants, loadRunningHackathons } from "../hackathons/model";
+import { phaseOf } from "../hackathons/rules";
 import {
 	MAX_APPLICATIONS,
 	MAX_BOARD_CARDS,
@@ -9,9 +10,7 @@ import {
 } from "../shared/limits";
 import type { WaitingReason } from "../shared/places";
 import { loadLogoUrl } from "../startups/model";
-import { loadParticipants } from "./applications";
 import { loadHackathonCardsInReview } from "./cards";
-import { loadRunningHackathons } from "./hackathons";
 import {
 	isThreadUnread,
 	loadHackathonThreads,

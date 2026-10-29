@@ -1,9 +1,9 @@
+import { type HackathonPhase, phaseOf } from "@convex/hackathons/rules";
 import {
 	type ApplicationAction,
 	applicationRefusal,
 	type Decision,
 } from "@convex/shared/applicationRules";
-import { type HackathonPhase, phaseOf } from "@convex/shared/hackathonPhase";
 
 /** An Application as the Founder's views see it. */
 export type ViewedApplication = {

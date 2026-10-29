@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { appendActivity } from "../activity/model";
+import { finishIfDecided } from "../hackathons/lifecycle";
+import { loadParticipants, requireHackathonFounder } from "../hackathons/model";
 import { ensureHireInvite } from "../invites/model";
 import { requireUserId } from "../lib/auth";
 import { limitText, requireLimitedText } from "../lib/text";
@@ -9,14 +11,11 @@ import {
 	getApplication,
 	loadApplicationsForFounder,
 	loadParticipantProgress,
-	loadParticipants,
 	requireApplicationAllowed,
 	requireApplicationFounder,
 	requireOpen,
 	toFounderApplicationView,
 } from "../model/applications";
-import { finishIfDecided } from "../model/hackathonLifecycle";
-import { requireHackathonFounder } from "../model/hackathons";
 import { TEXT } from "../shared/limits";
 import { decision } from "../shared/validators";
 import { getTeamRole } from "../startups/team";

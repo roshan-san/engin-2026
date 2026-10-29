@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Id } from "../_generated/dataModel";
+import type { HackathonPhase } from "../hackathons/rules";
 import {
 	type CardAction,
 	type CardActor,
@@ -7,7 +8,6 @@ import {
 	type RuledCard,
 	submitLandsIn,
 } from "./cardRules";
-import type { HackathonPhase } from "./hackathonPhase";
 
 const fay = "user-fay" as Id<"users">;
 const lee = "user-lee" as Id<"users">;

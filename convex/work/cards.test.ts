@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { MAX_BOARD_CARDS } from "../shared/limits";
 import {
 	addContributor,
@@ -8,7 +9,6 @@ import {
 	setUpStartup,
 } from "../startups/startups.setup";
 import { cardOn, SHIPPED } from "../testing/cards.setup";
-import { publishedHackathon } from "../testing/hackathons.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
@@ -457,7 +457,7 @@ describe("locks", () => {
 	it("a published Hackathon's template Cards can't be worked as Cards, not even by the Founder", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
-		const space = await setup.founder.as.query(api.hiring.hackathons.get, {
+		const space = await setup.founder.as.query(api.hackathons.get, {
 			hackathonId,
 		});
 		const cardId = space?.cards[0]._id as Id<"cards">;
@@ -476,7 +476,7 @@ describe("locks", () => {
 				"Template Cards change in the Hackathon's post",
 			);
 		}
-		const after = await founder.query(api.hiring.hackathons.get, {
+		const after = await founder.query(api.hackathons.get, {
 			hackathonId,
 		});
 		expect(after?.cards[0]).toMatchObject({

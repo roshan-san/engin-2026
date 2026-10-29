@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { MAX_LISTED_CYCLES } from "../shared/limits";
 import {
 	addContributor,
@@ -12,7 +13,6 @@ import {
 	startHackathon,
 } from "../testing/applications.setup";
 import { cardOn, SHIPPED } from "../testing/cards.setup";
-import { publishedHackathon } from "../testing/hackathons.setup";
 import { advancePast, createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 

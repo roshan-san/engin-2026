@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
 import {
 	endHackathon,
 	participants,
 	startHackathon,
 } from "../testing/applications.setup";
-import { publishedHackathon } from "../testing/hackathons.setup";
 import { createTest, type TestConvex } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { runRating, toNextWeek, verifyCards } from "./rating.setup";

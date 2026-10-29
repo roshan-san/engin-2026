@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { givePro } from "../billing/billing.setup";
-import { finishIfDecided } from "../model/hackathonLifecycle";
 import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import {
 	addContributor,
@@ -16,18 +15,19 @@ import {
 	participants,
 	startHackathon,
 } from "../testing/applications.setup";
+import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
+import { signUp } from "../users/users.setup";
 import {
 	draftHackathon,
 	hackathonInput,
 	nextMonday,
 	publishedHackathon,
-} from "../testing/hackathons.setup";
-import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
-import { signUp } from "../users/users.setup";
+} from "./hackathons.setup";
+import { finishIfDecided } from "./lifecycle";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {
-	const space = await setup.founder.as.query(api.hiring.hackathons.get, {
+	const space = await setup.founder.as.query(api.hackathons.get, {
 		hackathonId,
 	});
 	if (!space) {
@@ -42,13 +42,13 @@ describe("drafts", () => {
 		await givePro(setup.t, setup.founder);
 		const hackathonId = await draftHackathon(setup);
 
-		const before = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const before = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
-		await setup.founder.as.mutation(api.hiring.hackathons.publish, {
+		await setup.founder.as.mutation(api.hackathons.publish, {
 			hackathonId,
 		});
-		const after = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const after = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 
@@ -93,7 +93,7 @@ describe("drafts", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 
-		const draft = sam.as.mutation(api.hiring.hackathons.create, {
+		const draft = sam.as.mutation(api.hackathons.create, {
 			startupId: setup.startupId,
 			...hackathonInput(),
 		});
@@ -127,7 +127,7 @@ describe("drafts", () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await draftHackathon(setup);
 
-		await setup.founder.as.mutation(api.hiring.hackathons.update, {
+		await setup.founder.as.mutation(api.hackathons.update, {
 			hackathonId,
 			...hackathonInput({
 				problem: "New problem",
@@ -144,7 +144,7 @@ describe("drafts", () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 
-		const edit = setup.founder.as.mutation(api.hiring.hackathons.update, {
+		const edit = setup.founder.as.mutation(api.hackathons.update, {
 			hackathonId,
 			...hackathonInput(),
 		});
@@ -157,10 +157,10 @@ describe("drafts", () => {
 		const sam = await addContributor(setup, "Sam");
 		const hackathonId = await draftHackathon(setup);
 
-		const forSam = await sam.as.query(api.hiring.hackathons.get, {
+		const forSam = await sam.as.query(api.hackathons.get, {
 			hackathonId,
 		});
-		const forFounder = await setup.founder.as.query(api.hiring.hackathons.get, {
+		const forFounder = await setup.founder.as.query(api.hackathons.get, {
 			hackathonId,
 		});
 
@@ -171,7 +171,7 @@ describe("drafts", () => {
 	it("an id that isn't a Hackathon has no space", async () => {
 		const setup = await setUpStartup(createTest());
 
-		const read = await setup.founder.as.query(api.hiring.hackathons.get, {
+		const read = await setup.founder.as.query(api.hackathons.get, {
 			hackathonId: "not-a-hackathon",
 		});
 
@@ -183,7 +183,7 @@ describe("drafts", () => {
 		const hackathonId = await draftHackathon(setup);
 		await setup.t.run(async (ctx) => await ctx.db.delete(hackathonId));
 
-		const read = await setup.founder.as.query(api.hiring.hackathons.get, {
+		const read = await setup.founder.as.query(api.hackathons.get, {
 			hackathonId,
 		});
 
@@ -195,7 +195,7 @@ describe("public page", () => {
 	it("an id that isn't a Hackathon reads as missing", async () => {
 		const setup = await setUpStartup(createTest());
 
-		const page = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const page = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId: "not-a-hackathon",
 		});
 
@@ -206,13 +206,12 @@ describe("public page", () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 
-		const signedOut = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const signedOut = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
-		const forFounder = await setup.founder.as.query(
-			api.hiring.hackathons.getPublic,
-			{ hackathonId },
-		);
+		const forFounder = await setup.founder.as.query(api.hackathons.getPublic, {
+			hackathonId,
+		});
 
 		expect(signedOut).toMatchObject({
 			isTeam: false,
@@ -233,7 +232,7 @@ describe("public page", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const sam = await signUp(setup.t, "Sam");
 
-		const page = await sam.as.query(api.hiring.hackathons.getPublic, {
+		const page = await sam.as.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 
@@ -248,7 +247,7 @@ describe("public page", () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 
-		const page = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const page = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 
@@ -281,7 +280,7 @@ describe("publish", () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 
-		const again = setup.founder.as.mutation(api.hiring.hackathons.publish, {
+		const again = setup.founder.as.mutation(api.hackathons.publish, {
 			hackathonId,
 		});
 
@@ -293,7 +292,7 @@ describe("publish", () => {
 		const hackathonId = await draftHackathon(setup);
 		await advancePast(setup.t, 8 * DAY);
 
-		const publish = setup.founder.as.mutation(api.hiring.hackathons.publish, {
+		const publish = setup.founder.as.mutation(api.hackathons.publish, {
 			hackathonId,
 		});
 
@@ -306,13 +305,12 @@ describe("publish", () => {
 		const draftId = await draftHackathon(setup);
 		const publishedId = await publishedHackathon(setup);
 
-		const forSam = await sam.as.query(api.hiring.hackathons.list, {
+		const forSam = await sam.as.query(api.hackathons.list, {
 			startupId: setup.startupId,
 		});
-		const forFounder = await setup.founder.as.query(
-			api.hiring.hackathons.list,
-			{ startupId: setup.startupId },
-		);
+		const forFounder = await setup.founder.as.query(api.hackathons.list, {
+			startupId: setup.startupId,
+		});
 
 		expect(forSam.map((row) => row._id)).toEqual([publishedId]);
 		expect(forFounder.map((row) => row._id)).toEqual([publishedId, draftId]);
@@ -324,10 +322,10 @@ describe("publish", () => {
 		const stranger = await signUp(setup.t, "Zed");
 		const hackathonId = await publishedHackathon(setup);
 
-		const rows = await sam.as.query(api.hiring.hackathons.list, {
+		const rows = await sam.as.query(api.hackathons.list, {
 			startupId: setup.startupId,
 		});
-		const outsider = stranger.as.query(api.hiring.hackathons.list, {
+		const outsider = stranger.as.query(api.hackathons.list, {
 			startupId: setup.startupId,
 		});
 
@@ -374,7 +372,7 @@ describe("publishing needs Pro", () => {
 	}
 
 	function publish(setup: Setup, hackathonId: Id<"hackathons">) {
-		return setup.founder.as.mutation(api.hiring.hackathons.publish, {
+		return setup.founder.as.mutation(api.hackathons.publish, {
 			hackathonId,
 		});
 	}
@@ -576,7 +574,7 @@ describe("lifecycle", () => {
 		await advancePast(setup.t, nextMonday() - Date.now() + HOUR);
 		await setup.t.finishAllScheduledFunctions(vi.runAllTimers);
 
-		const view = await waiting.as.query(api.hiring.hackathons.getPublic, {
+		const view = await waiting.as.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 		expect(view?.myApplication).toMatchObject({
@@ -596,7 +594,7 @@ describe("lifecycle", () => {
 		const { hackathon } = await spaceOf(setup, hackathonId);
 		expect(hackathon.status).toBe("deciding");
 		expect(hackathon.decideBy).toBe(hackathon.endsAt + 7 * DAY);
-		const [row] = await setup.founder.as.query(api.hiring.hackathons.list, {
+		const [row] = await setup.founder.as.query(api.hackathons.list, {
 			startupId: setup.startupId,
 		});
 		expect(row).toMatchObject({ status: "deciding", toDecide: 1 });
@@ -609,10 +607,10 @@ describe("lifecycle", () => {
 		await advancePast(setup.t, nextMonday() + 7 * DAY - Date.now() + HOUR);
 		await advancePast(setup.t, 0);
 
-		await setup.t.mutation(internal.hiring.hackathons.goLive, {
+		await setup.t.mutation(internal.hackathons.goLive, {
 			hackathonId,
 		});
-		await setup.t.mutation(internal.hiring.hackathons.copyCardsFor, {
+		await setup.t.mutation(internal.hackathons.copyCardsFor, {
 			hackathonId,
 			userId: ana.userId,
 		});
@@ -731,7 +729,7 @@ describe("hiring rows", () => {
 			});
 		}
 
-		const [row] = await setup.founder.as.query(api.hiring.hackathons.list, {
+		const [row] = await setup.founder.as.query(api.hackathons.list, {
 			startupId: setup.startupId,
 		});
 
@@ -750,7 +748,7 @@ describe("hiring rows", () => {
 		const { hackathonId } = await decidedHackathon(setup, [{ name: "Ben" }]);
 		await closeHackathon(setup, hackathonId);
 
-		const [row] = await setup.founder.as.query(api.hiring.hackathons.list, {
+		const [row] = await setup.founder.as.query(api.hackathons.list, {
 			startupId: setup.startupId,
 		});
 
@@ -775,7 +773,7 @@ describe("explore", () => {
 		const setup = await setUpStartup(createTest());
 		await publishedHackathon(setup);
 
-		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+		const rows = await setup.t.query(api.hackathons.explore, {});
 
 		expect(rows[0].startup.logoUrl).toBeNull();
 	});
@@ -784,7 +782,7 @@ describe("explore", () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 
-		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+		const rows = await setup.t.query(api.hackathons.explore, {});
 
 		expect(rows).toMatchObject([
 			{
@@ -817,7 +815,7 @@ describe("explore", () => {
 		});
 		await startHackathon(setup, liveId);
 
-		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+		const rows = await setup.t.query(api.hackathons.explore, {});
 
 		expect(rows.map((row) => [row.hackathonId, row.status])).toEqual([
 			[soonerId, "open"],
@@ -844,7 +842,7 @@ describe("explore", () => {
 		});
 		const soonestId = await publishedHackathon(setup);
 
-		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+		const rows = await setup.t.query(api.hackathons.explore, {});
 
 		expect(rows[0].hackathonId).toBe(soonestId);
 	});
@@ -860,7 +858,7 @@ describe("explore", () => {
 		await participants(zeta, secondId, ["Cal"]);
 		await startHackathon(zeta, secondId);
 
-		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+		const rows = await setup.t.query(api.hackathons.explore, {});
 
 		expect(rows.map((row) => row.hackathonId)).toEqual([secondId, firstId]);
 	});
@@ -874,7 +872,7 @@ describe("explore", () => {
 		await closeHackathon(setup, finishedId);
 		const openId = await publishedHackathon(setup);
 
-		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+		const rows = await setup.t.query(api.hackathons.explore, {});
 
 		expect(rows.map((row) => row.hackathonId)).toEqual([openId]);
 	});
@@ -894,7 +892,7 @@ describe("explore", () => {
 			weeks?: 1 | 2;
 			paid?: boolean;
 		}) =>
-			(await setup.t.query(api.hiring.hackathons.explore, args)).map(
+			(await setup.t.query(api.hackathons.explore, args)).map(
 				(row) => row.hackathonId,
 			);
 
@@ -914,7 +912,7 @@ describe("explore", () => {
 		await publishedHackathon(setup);
 		await publishedHackathon(setup, { startsAt: nextMonday() + 7 * DAY });
 
-		const rows = await setup.t.query(api.hiring.hackathons.explore, {});
+		const rows = await setup.t.query(api.hackathons.explore, {});
 
 		expect(rows).toHaveLength(2);
 		for (const row of rows) {

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { MAX_APPLICATIONS } from "../shared/limits";
 import {
 	addContributor,
@@ -16,7 +17,6 @@ import {
 	startHackathon,
 } from "../testing/applications.setup";
 import { SHIPPED } from "../testing/cards.setup";
-import { publishedHackathon } from "../testing/hackathons.setup";
 import { createTest } from "../testing/test.setup";
 
 async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
@@ -78,7 +78,7 @@ describe("applying", () => {
 			hackathonId,
 			answer: "Me again",
 		});
-		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const hackathon = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 
@@ -169,7 +169,7 @@ describe("applying", () => {
 		await setup.founder.as.mutation(api.hiring.applications.accept, {
 			applicationId: eleventh.applicationId,
 		});
-		const list = await setup.founder.as.query(api.hiring.hackathons.list, {
+		const list = await setup.founder.as.query(api.hackathons.list, {
 			startupId: setup.startupId,
 		});
 
@@ -204,10 +204,10 @@ describe("applying", () => {
 
 		await startHackathon(setup, hackathonId);
 
-		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const hackathon = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
-		const calView = await cal.as.query(api.hiring.hackathons.getPublic, {
+		const calView = await cal.as.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 		expect(hackathon?.status).toBe("live");
@@ -236,7 +236,7 @@ describe("applying", () => {
 					)
 					.take(1),
 		);
-		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const hackathon = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 		expect(stillApplied).toEqual([]);
@@ -790,7 +790,7 @@ describe("deciding", () => {
 			applicationId: ana.applicationId,
 			decision: "hired",
 		});
-		const halfway = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const halfway = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 		await setup.founder.as.mutation(api.hiring.applications.decide, {
@@ -799,7 +799,7 @@ describe("deciding", () => {
 			feedback: "Close one",
 		});
 
-		const hackathon = await setup.t.query(api.hiring.hackathons.getPublic, {
+		const hackathon = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 		expect(halfway?.status).toBe("deciding");
@@ -840,7 +840,7 @@ describe("deciding", () => {
 			feedback: "Close one",
 		});
 
-		const before = await ana.as.query(api.hiring.hackathons.getPublic, {
+		const before = await ana.as.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 		await ana.as.mutation(api.hiring.applications.keepPromise, {
@@ -854,7 +854,7 @@ describe("deciding", () => {
 			feedback: "Close one",
 			promiseAnswered: false,
 		});
-		const after = await ana.as.query(api.hiring.hackathons.getPublic, {
+		const after = await ana.as.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
 		expect(after?.myApplication).toMatchObject({

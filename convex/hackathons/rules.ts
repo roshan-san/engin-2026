@@ -1,7 +1,7 @@
 import type { Infer } from "convex/values";
 import { WEEK_MS } from "../cycles/rules";
-import { DECIDE_GRACE_MS } from "./limits";
-import type { hackathonStatus } from "./validators";
+import { DECIDE_GRACE_MS } from "../shared/limits";
+import type { hackathonStatus } from "../shared/validators";
 
 export type HackathonPhase = Infer<typeof hackathonStatus>;
 

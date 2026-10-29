@@ -1,5 +1,5 @@
 import type { Infer } from "convex/values";
-import { type HackathonPhase, isUnderway } from "./hackathonPhase";
+import { type HackathonPhase, isUnderway } from "../hackathons/rules";
 import { MAX_PARTICIPANTS } from "./limits";
 import type { applicationStatus, decision } from "./validators";
 

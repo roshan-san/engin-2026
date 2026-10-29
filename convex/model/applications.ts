@@ -2,12 +2,16 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import {
+	loadHackathonCards,
+	loadParticipants,
+	requireHackathonFounder,
+} from "../hackathons/model";
+import { phaseOf } from "../hackathons/rules";
+import {
 	type ApplicationAction,
 	applicationRefusal,
 } from "../shared/applicationRules";
-import { phaseOf } from "../shared/hackathonPhase";
-import { MAX_APPLICATIONS, MAX_PARTICIPANTS } from "../shared/limits";
-import { loadHackathonCards, requireHackathonFounder } from "./hackathons";
+import { MAX_APPLICATIONS } from "../shared/limits";
 
 type Ctx = QueryCtx | MutationCtx;
 
@@ -46,19 +50,6 @@ export async function getHackathonRole(
 		return "founder";
 	}
 	return (await isParticipant(ctx, hackathonId, userId)) ? "participant" : null;
-}
-
-/** The Hackathon's Participants' applications. */
-export async function loadParticipants(
-	ctx: Ctx,
-	hackathonId: Id<"hackathons">,
-): Promise<Doc<"applications">[]> {
-	return await ctx.db
-		.query("applications")
-		.withIndex("by_hackathon_and_status", (q) =>
-			q.eq("hackathonId", hackathonId).eq("status", "participating"),
-		)
-		.take(MAX_PARTICIPANTS);
 }
 
 /** The application and its Hackathon, once the person is confirmed as the Founder. */

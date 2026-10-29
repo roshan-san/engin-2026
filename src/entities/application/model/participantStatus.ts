@@ -1,4 +1,4 @@
-import { type HackathonPhase, phaseOf } from "@convex/shared/hackathonPhase";
+import { type HackathonPhase, phaseOf } from "@convex/hackathons/rules";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";
 

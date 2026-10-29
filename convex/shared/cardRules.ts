@@ -1,5 +1,5 @@
 import type { Id } from "../_generated/dataModel";
-import type { HackathonPhase } from "./hackathonPhase";
+import type { HackathonPhase } from "../hackathons/rules";
 
 export type CardRole = "founder" | "contributor" | "participant";
 

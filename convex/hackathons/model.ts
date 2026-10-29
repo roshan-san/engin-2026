@@ -5,17 +5,18 @@ import { loadPlan, planViewFor } from "../billing/model";
 import { PLANS, type PlanView } from "../billing/rules";
 import { weekOf, weekStart } from "../cycles/rules";
 import { limitText, requireLimitedText } from "../lib/text";
-import { hackathonDates, RUNNING } from "../shared/hackathonPhase";
 import {
 	MAX_HACKATHON_CARDS,
 	MAX_OPEN_HACKATHONS,
+	MAX_PARTICIPANTS,
 	MIN_HACKATHON_CARDS,
 	TEXT,
 } from "../shared/limits";
 import { jobMode, jobPay, jobRole } from "../shared/validators";
 import { loadFoundedStartups } from "../startups/model";
 import { requireFounder } from "../startups/team";
-import type { HiringRecord } from "./hiringRecord";
+import type { HiringRecord } from "./record";
+import { hackathonDates, RUNNING } from "./rules";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {
@@ -108,6 +109,21 @@ export async function loadRunningHackathons(
 		),
 	);
 	return byStatus.flat();
+}
+
+type Ctx = QueryCtx | MutationCtx;
+
+/** The Hackathon's Participants' applications. */
+export async function loadParticipants(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"applications">[]> {
+	return await ctx.db
+		.query("applications")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "participating"),
+		)
+		.take(MAX_PARTICIPANTS);
 }
 
 /** A Participant's Cards on the Hackathon. Without an owner, the template Cards every Participant starts with. */

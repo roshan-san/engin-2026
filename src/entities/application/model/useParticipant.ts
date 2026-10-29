@@ -5,7 +5,7 @@ import { createContext, useContext } from "react";
 import type { ParticipantStatus } from "./participantStatus";
 
 export type Hackathon = NonNullable<
-	FunctionReturnType<typeof api.hiring.hackathons.getPublic>
+	FunctionReturnType<typeof api.hackathons.getPublic>
 >;
 
 type Participant = {

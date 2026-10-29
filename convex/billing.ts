@@ -13,9 +13,9 @@ import {
 	subscriptionEvent,
 	syncSubscription,
 } from "./billing/model";
+import { loadPlanView } from "./hackathons/model";
 import { requireUserId } from "./lib/auth";
 import { isSafeReturnPath } from "./lib/returnPath";
-import { loadPlanView } from "./model/hackathons";
 import { planKey } from "./shared/validators";
 
 /** Every Dodo subscription webhook lands here. */

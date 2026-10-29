@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { verifyCards } from "../rating/rating.setup";
 import {
 	addContributor,
@@ -11,7 +12,6 @@ import {
 	participants,
 	startHackathon,
 } from "../testing/applications.setup";
-import { publishedHackathon } from "../testing/hackathons.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "./users.setup";
 

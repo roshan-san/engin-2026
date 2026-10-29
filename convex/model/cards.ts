@@ -4,13 +4,13 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
+import { phaseOf } from "../hackathons/rules";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import {
 	type CardAction,
 	type CardActor,
 	cardRefusal,
 } from "../shared/cardRules";
-import { phaseOf } from "../shared/hackathonPhase";
 import {
 	MAX_BOARD_CARDS,
 	MAX_HACKATHON_CARDS,

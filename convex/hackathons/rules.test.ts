@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	type HackathonPhase,
-	isRunning,
-	isUnderway,
-	phaseOf,
-} from "./hackathonPhase";
+import { type HackathonPhase, isRunning, isUnderway, phaseOf } from "./rules";
 
 const endsAt = 1_000_000;
 

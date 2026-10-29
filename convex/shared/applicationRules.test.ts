@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type { HackathonPhase } from "../hackathons/rules";
 import {
 	type ApplicationAction,
 	applicationRefusal,
 	type RuledApplication,
 } from "./applicationRules";
-import type { HackathonPhase } from "./hackathonPhase";
 
 const applied: RuledApplication = { status: "applied", shortlisted: false };
 const declined: RuledApplication = { status: "declined", shortlisted: false };

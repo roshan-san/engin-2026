@@ -2,7 +2,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { shiftWeek, weekOf } from "../cycles/rules";
-import { phaseOf } from "../shared/hackathonPhase";
+import { phaseOf } from "../hackathons/rules";
 import {
 	MAX_USER_APPLICATIONS,
 	STARTING_RATING,
