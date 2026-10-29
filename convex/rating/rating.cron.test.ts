@@ -7,10 +7,10 @@ import {
 	startHackathon,
 } from "../testing/applications.setup";
 import { publishedHackathon } from "../testing/hackathons.setup";
-import { runRating, toNextWeek, verifyCards } from "../testing/rating.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest, type TestConvex } from "../testing/test.setup";
 import { signUp } from "../testing/users.setup";
+import { runRating, toNextWeek, verifyCards } from "./rating.setup";
 
 async function startupRow(t: TestConvex, startupId: Id<"startups">) {
 	const startup = await t.run(async (ctx) => await ctx.db.get(startupId));
@@ -96,7 +96,7 @@ describe("rating", () => {
 		await runRating(setup.t);
 		const first = await startupRow(setup.t, setup.startupId);
 
-		await setup.t.mutation(internal.work.rating.rateStartups, {
+		await setup.t.mutation(internal.rating.rateStartups, {
 			week: first.ratedThrough,
 		});
 		await setup.t.finishInProgressScheduledFunctions();

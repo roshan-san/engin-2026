@@ -13,13 +13,13 @@ describe("presence", () => {
 		const setup = await setUpStartup(t);
 		const sam = await addContributor(setup, "Sam");
 
-		await sam.as.mutation(api.chat.presence.heartbeat, {
+		await sam.as.mutation(api.presence.heartbeat, {
 			startupId: setup.startupId,
 			sessionId: "sam-tab",
 			interval: INTERVAL,
 		});
 
-		const online = await setup.founder.as.query(api.chat.presence.list, {
+		const online = await setup.founder.as.query(api.presence.list, {
 			startupId: setup.startupId,
 		});
 		expect(online).toMatchObject([{ user: { _id: sam.userId } }]);
@@ -31,13 +31,13 @@ describe("presence", () => {
 		const outsider = await signUp(t, "Olly");
 
 		await expect(
-			outsider.as.mutation(api.chat.presence.heartbeat, {
+			outsider.as.mutation(api.presence.heartbeat, {
 				startupId: setup.startupId,
 				sessionId: "olly-tab",
 				interval: INTERVAL,
 			}),
 		).rejects.toThrow("You're not on this startup");
-		const online = await setup.founder.as.query(api.chat.presence.list, {
+		const online = await setup.founder.as.query(api.presence.list, {
 			startupId: setup.startupId,
 		});
 		expect(online).toEqual([]);
@@ -49,7 +49,7 @@ describe("presence", () => {
 		const outsider = await signUp(t, "Olly");
 
 		await expect(
-			outsider.as.query(api.chat.presence.list, {
+			outsider.as.query(api.presence.list, {
 				startupId: setup.startupId,
 			}),
 		).rejects.toThrow("You're not on this startup");
@@ -61,7 +61,7 @@ describe("presence", () => {
 
 		for (const interval of [0, -5, 999, 60_001, Number.POSITIVE_INFINITY]) {
 			await expect(
-				setup.founder.as.mutation(api.chat.presence.heartbeat, {
+				setup.founder.as.mutation(api.presence.heartbeat, {
 					startupId: setup.startupId,
 					sessionId: "fay-tab",
 					interval,
@@ -75,7 +75,7 @@ describe("presence", () => {
 		const setup = await setUpStartup(t);
 
 		await expect(
-			setup.founder.as.mutation(api.chat.presence.heartbeat, {
+			setup.founder.as.mutation(api.presence.heartbeat, {
 				startupId: setup.startupId,
 				sessionId: "x".repeat(65),
 				interval: INTERVAL,
@@ -101,14 +101,14 @@ describe("presence", () => {
 			[sam, "sam-tab"],
 			[lee, "lee-tab"],
 		] as const) {
-			await person.as.mutation(api.chat.presence.heartbeat, {
+			await person.as.mutation(api.presence.heartbeat, {
 				startupId: setup.startupId,
 				sessionId,
 				interval: INTERVAL,
 			});
 		}
 
-		const online = await setup.founder.as.query(api.chat.presence.list, {
+		const online = await setup.founder.as.query(api.presence.list, {
 			startupId: setup.startupId,
 		});
 
@@ -125,15 +125,16 @@ describe("presence", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const sam = await addContributor(setup, "Sam");
-		const { sessionToken } = await sam.as.mutation(
-			api.chat.presence.heartbeat,
-			{ startupId: setup.startupId, sessionId: "sam-tab", interval: INTERVAL },
-		);
+		const { sessionToken } = await sam.as.mutation(api.presence.heartbeat, {
+			startupId: setup.startupId,
+			sessionId: "sam-tab",
+			interval: INTERVAL,
+		});
 
-		await sam.as.mutation(api.chat.presence.disconnect, { sessionToken });
+		await sam.as.mutation(api.presence.disconnect, { sessionToken });
 		await advancePast(t, 2000);
 
-		const online = await setup.founder.as.query(api.chat.presence.list, {
+		const online = await setup.founder.as.query(api.presence.list, {
 			startupId: setup.startupId,
 		});
 		expect(online).toEqual([]);

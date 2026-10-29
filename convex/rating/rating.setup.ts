@@ -1,10 +1,10 @@
 import { vi } from "vitest";
 import { api, internal } from "../_generated/api";
-import { cardOn, SHIPPED } from "./cards.setup";
-import { nextMonday } from "./hackathons.setup";
-import type { Setup } from "./startups.setup";
-import { advancePast, HOUR, type TestConvex } from "./test.setup";
-import type { Person } from "./users.setup";
+import { cardOn, SHIPPED } from "../testing/cards.setup";
+import { nextMonday } from "../testing/hackathons.setup";
+import type { Setup } from "../testing/startups.setup";
+import { advancePast, HOUR, type TestConvex } from "../testing/test.setup";
+import type { Person } from "../testing/users.setup";
 
 /** n Cards owned by `person`, submitted and verified by the Founder (Self-verified when `person` is the Founder). */
 export async function verifyCards(
@@ -31,6 +31,6 @@ export async function toNextWeek(t: TestConvex): Promise<void> {
 
 /** The weekly cron: rates every Startup, then every person, for the week that just ended. */
 export async function runRating(t: TestConvex): Promise<void> {
-	await t.mutation(internal.work.rating.rateStartups, {});
+	await t.mutation(internal.rating.rateStartups, {});
 	await t.finishAllScheduledFunctions(vi.runAllTimers);
 }

@@ -1,7 +1,5 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { shiftWeek, weekOf } from "../shared/cycles";
-import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
 import {
 	buildParts,
 	countedWeeks,
@@ -10,7 +8,9 @@ import {
 	outcomeScore,
 	recentOutcomes,
 	toPartsView,
-} from "./rating";
+} from "../rating/model";
+import { shiftWeek, weekOf } from "../shared/cycles";
+import { MAX_PROFILE_ROWS, STARTING_RATING } from "../shared/limits";
 import { buildUniqueUsername } from "./username";
 
 export type PublicUser = {
@@ -49,7 +49,7 @@ export function isInvestorPro(user: Doc<"users"> | null): boolean {
 	return user?.investorVerifiedAt !== undefined;
 }
 
-/** Set weekly by the Rating run (`model/rating.ts`). */
+/** Set weekly by the Rating run (`rating/model.ts`). */
 export function isProvisional(user: Doc<"users">): boolean {
 	return user.provisional ?? true;
 }

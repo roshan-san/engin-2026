@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { toNextWeek, verifyCards } from "../testing/rating.setup";
+import { toNextWeek, verifyCards } from "../rating/rating.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
 

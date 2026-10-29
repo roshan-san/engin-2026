@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { verifyCards } from "../rating/rating.setup";
 import { decidedHackathon } from "../testing/applications.setup";
-import { verifyCards } from "../testing/rating.setup";
 import {
 	addContributor,
 	type Setup,

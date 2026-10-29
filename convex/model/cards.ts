@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { loadImageUrls } from "../files/model";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import {
 	type CardAction,
@@ -19,7 +20,6 @@ import {
 } from "../shared/limits";
 import { appendActivity } from "./activity";
 import { getHackathonRole } from "./applications";
-import { loadImageUrls } from "./files";
 import { getTeamRole, requireTeam } from "./teamAccess";
 import { loadPublicUser } from "./users";
 

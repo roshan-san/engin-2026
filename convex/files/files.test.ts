@@ -8,11 +8,11 @@ describe("files", () => {
 		const t = createTest();
 		const ada = await signUp(t, "Ada");
 
-		const url = await ada.as.mutation(api.files.files.generateUploadUrl, {});
+		const url = await ada.as.mutation(api.files.generateUploadUrl, {});
 
 		expect(typeof url).toBe("string");
-		await expect(
-			t.mutation(api.files.files.generateUploadUrl, {}),
-		).rejects.toThrow("Not authenticated");
+		await expect(t.mutation(api.files.generateUploadUrl, {})).rejects.toThrow(
+			"Not authenticated",
+		);
 	});
 });

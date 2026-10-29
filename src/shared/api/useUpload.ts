@@ -4,7 +4,7 @@ import { useMutation } from "convex/react";
 
 /** Uploads a file to Convex storage and resolves its id. */
 export function useUpload() {
-	const generateUploadUrl = useMutation(api.files.files.generateUploadUrl);
+	const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
 	async function upload(file: File): Promise<Id<"_storage">> {
 		const url = await generateUploadUrl({});

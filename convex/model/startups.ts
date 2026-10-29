@@ -1,9 +1,9 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { slugify } from "../lib/text";
+import { RATING } from "../rating/model";
 import { shiftWeek, weekStart } from "../shared/cycles";
 import { MAX_LISTED_HACKATHONS, MAX_USER_STARTUPS } from "../shared/limits";
-import { RATING } from "./rating";
 import { loadPublicUser } from "./users";
 
 export async function getStartupBySlug(

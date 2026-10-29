@@ -1,12 +1,12 @@
 import type { FunctionArgs } from "convex/server";
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { runRating, toNextWeek, verifyCards } from "../rating/rating.setup";
 import { MAX_USER_STARTUPS } from "../shared/limits";
 import {
 	draftHackathon,
 	publishedHackathon,
 } from "../testing/hackathons.setup";
-import { runRating, toNextWeek, verifyCards } from "../testing/rating.setup";
 import { addContributor, setUpStartup } from "../testing/startups.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../testing/users.setup";

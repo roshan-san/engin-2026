@@ -1,9 +1,9 @@
 import { v } from "convex/values";
-import { internal } from "../_generated/api";
-import { internalMutation } from "../_generated/server";
-import { rateStartup, rateUser } from "../model/rating";
-import { WEEK_MS, weekOf } from "../shared/cycles";
-import { RATING_PAGE } from "../shared/limits";
+import { internal } from "./_generated/api";
+import { internalMutation } from "./_generated/server";
+import { rateStartup, rateUser } from "./rating/model";
+import { WEEK_MS, weekOf } from "./shared/cycles";
+import { RATING_PAGE } from "./shared/limits";
 
 const pageArgs = {
 	week: v.optional(v.string()),
@@ -24,12 +24,12 @@ export const rateStartups = internalMutation({
 		);
 
 		if (!page.isDone) {
-			await ctx.scheduler.runAfter(0, internal.work.rating.rateStartups, {
+			await ctx.scheduler.runAfter(0, internal.rating.rateStartups, {
 				week,
 				cursor: page.continueCursor,
 			});
 		} else {
-			await ctx.scheduler.runAfter(0, internal.work.rating.rateUsers, { week });
+			await ctx.scheduler.runAfter(0, internal.rating.rateUsers, { week });
 		}
 	},
 });
@@ -46,7 +46,7 @@ export const rateUsers = internalMutation({
 		await Promise.all(page.page.map((user) => rateUser(ctx, user, week, now)));
 
 		if (!page.isDone) {
-			await ctx.scheduler.runAfter(0, internal.work.rating.rateUsers, {
+			await ctx.scheduler.runAfter(0, internal.rating.rateUsers, {
 				week,
 				cursor: page.continueCursor,
 			});

@@ -12,7 +12,7 @@ const HEARTBEAT_MS = 10_000;
  */
 export function useHeartbeat(startupId: Id<"startups">) {
 	const convex = useConvex();
-	const heartbeat = useMutation(api.chat.presence.heartbeat);
+	const heartbeat = useMutation(api.presence.heartbeat);
 
 	useEffect(() => {
 		const sessionId = crypto.randomUUID();
@@ -24,7 +24,7 @@ export function useHeartbeat(startupId: Id<"startups">) {
 			sessionToken = null;
 			if (!token) return;
 			convex
-				.mutation(api.chat.presence.disconnect, { sessionToken: token })
+				.mutation(api.presence.disconnect, { sessionToken: token })
 				.catch(() => {
 					// Best effort; the server drops the session after its deadline.
 				});
