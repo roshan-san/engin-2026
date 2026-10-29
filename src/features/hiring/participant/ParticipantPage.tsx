@@ -1,6 +1,7 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 import { useParticipant } from "~/entities/application";
+import { useHackathonThreads } from "~/entities/message";
 import { ThreadPanel } from "~/features/chat";
 import { Board, CardBoard, OpenCardPanel } from "~/features/work";
 import { roleLabel } from "~/shared/config/jobs";
@@ -10,7 +11,6 @@ import { DetailPanel } from "~/shared/ui/DetailPanel";
 import { Segmented } from "~/shared/ui/Segmented";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { useHackathonThreads } from "../space/useHackathonThreads";
 import { DecisionBanner } from "./DecisionBanner";
 
 const route = getRouteApi("/_shell/_authed/h/$id/");

@@ -4,6 +4,7 @@ import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useApplicants } from "~/entities/application";
 import { useReviewQueue } from "~/entities/card";
+import { useHackathonThreads } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
@@ -26,7 +27,6 @@ import {
 	type SidebarParticipant,
 	sidebarItems,
 } from "./sidebarItems";
-import { useHackathonThreads } from "./useHackathonThreads";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

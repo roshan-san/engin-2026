@@ -1,6 +1,6 @@
 import { splitBody } from "@convex/shared/mentions";
 import { Link } from "@tanstack/react-router";
-import type { MessageView } from "./useMessages";
+import type { MessageView } from "../api/useMessages";
 
 /** A message's text, with Card mentions as links that open the Card. */
 export function MessageBody({

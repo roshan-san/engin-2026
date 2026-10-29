@@ -1,13 +1,13 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { XIcon } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
+import { MessageList, PinnedStrip, useMessages } from "~/entities/message";
 import { Button } from "~/shared/ui/button";
 import { PanelHeader } from "~/shared/ui/PanelHeader";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { Composer } from "./Composer";
-import { MessageList } from "./MessageList";
-import { PinnedStrip } from "./PinnedStrip";
-import { useMessages } from "./useMessages";
+import { usePinMessage } from "./usePinMessage";
+import { useSendMessage } from "./useSendMessage";
 
 /** One thread: its pinned messages, the messages and the composer. Mounted only while it shows. */
 export function ThreadPanel({
@@ -44,7 +44,9 @@ export function ThreadPanel({
 	/** On a phone, closes the sheet the panel sits in. */
 	readonly onClose?: () => void;
 }) {
-	const { messages, pinned, send, pin, markRead } = useMessages(threadId);
+	const { messages, pinned, markRead } = useMessages(threadId);
+	const send = useSendMessage(threadId);
+	const pin = usePinMessage();
 	const newestId = messages?.at(-1)?._id;
 
 	// Read on opening, and again whenever a newer message lands while open.

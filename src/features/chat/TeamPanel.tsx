@@ -1,7 +1,7 @@
+import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
 import { PresenceList } from "./PresenceList";
 import { ThreadPanel } from "./ThreadPanel";
-import { useTeamThread } from "./useTeamThread";
 
 /** The Startup's Team thread, with who's online. */
 export function TeamPanel({ onClose }: { readonly onClose?: () => void }) {

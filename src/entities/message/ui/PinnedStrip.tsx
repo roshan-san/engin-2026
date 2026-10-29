@@ -3,7 +3,7 @@ import { PinIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/shared/ui/button";
 import { PersonName } from "~/shared/ui/PersonName";
-import type { MessageView } from "./useMessages";
+import type { MessageView } from "../api/useMessages";
 
 /** The Founder's pinned messages on top of the thread: the newest, or all of them. */
 export function PinnedStrip({

@@ -6,9 +6,9 @@ import { MentorNote } from "~/shared/ui/MentorNote";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { PersonName } from "~/shared/ui/PersonName";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { groupMessages } from "./groupMessages";
+import type { MessageView } from "../api/useMessages";
+import { groupMessages } from "../model/groupMessages";
 import { MessageBody } from "./MessageBody";
-import type { MessageView } from "./useMessages";
 
 /** How close to the bottom still counts as reading the latest. */
 const STICK_DISTANCE = 80;
