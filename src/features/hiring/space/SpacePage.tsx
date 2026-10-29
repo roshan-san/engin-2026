@@ -1,6 +1,7 @@
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
+import { STAGE, stageDate, useSpace } from "~/entities/hackathon";
 import { useWorkspace } from "~/entities/startup";
 import { roleLabel } from "~/shared/config/jobs";
 import { AppPage, BackLink } from "~/shared/ui/AppPage";
@@ -8,13 +9,11 @@ import { Badge } from "~/shared/ui/badge";
 import { Button } from "~/shared/ui/button";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
-import { STAGE, stageDate } from "../stage";
 import { CopyLinkButton } from "./CopyLinkButton";
 import { DraftView } from "./DraftView";
 import { RunningView } from "./RunningView";
 import { ScreeningView } from "./ScreeningView";
 import { useApplicants } from "./useApplicants";
-import { useSpace } from "./useSpace";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 

@@ -1,7 +1,6 @@
 import { hackathonDates } from "@convex/shared/hackathonPhase";
 import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import type { ReactNode } from "react";
-import { SignInCard } from "~/features/people";
 import {
 	type JobMode,
 	type JobPay,
@@ -52,10 +51,13 @@ function Unwritten({ children }: { readonly children: ReactNode }) {
 export function HackathonPost({
 	post,
 	size = "page",
+	signIn,
 }: {
 	readonly post: PostView;
 	/** `preview` is the form's smaller copy beside the fields. */
 	readonly size?: "page" | "preview";
+	/** Shown over the faded brief for a signed-out visitor. */
+	readonly signIn?: ReactNode;
 }) {
 	const role = labelOf(ROLES, post.job.role);
 	const facts = [
@@ -111,7 +113,7 @@ export function HackathonPost({
 			</Section>
 
 			{post.cards === null ? (
-				<GatedBrief post={post} />
+				<GatedBrief post={post} signIn={signIn} />
 			) : (
 				<Brief cards={post.cards} startsAt={post.startsAt} weeks={post.weeks} />
 			)}
@@ -164,7 +166,13 @@ function Brief({
 }
 
 /** Signed out: the brief faded out behind Sign in. The Card titles never reach the page; blank rows stand in for them. */
-function GatedBrief({ post }: { readonly post: PostView }) {
+function GatedBrief({
+	post,
+	signIn,
+}: {
+	readonly post: PostView;
+	readonly signIn: ReactNode;
+}) {
 	return (
 		<div className="relative">
 			<div
@@ -192,7 +200,7 @@ function GatedBrief({ post }: { readonly post: PostView }) {
 				</Section>
 			</div>
 			<div className="absolute inset-x-0 top-10 flex justify-center px-4">
-				<SignInCard>Sign in to see the full brief and apply.</SignInCard>
+				{signIn}
 			</div>
 		</div>
 	);

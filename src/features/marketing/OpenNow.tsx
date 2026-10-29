@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { HackathonExploreRow, useExploreHackathons } from "~/features/explore";
+import { useExploreHackathons } from "~/entities/hackathon";
+import { HackathonExploreRow } from "~/features/explore";
 import { RowList } from "~/shared/ui/RowList";
 import { Skeleton } from "~/shared/ui/skeleton";
 

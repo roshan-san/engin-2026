@@ -1,4 +1,11 @@
 import { Link } from "@tanstack/react-router";
+import {
+	groupHackathons,
+	HackathonRow,
+	type HiringRow,
+	hiringSummary,
+	useHackathons,
+} from "~/entities/hackathon";
 import { useWorkspace } from "~/entities/startup";
 import { AppPage, PageTitle } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
@@ -6,9 +13,6 @@ import { EmptyState } from "~/shared/ui/EmptyState";
 import { RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { HackathonRow } from "./HackathonRow";
-import { groupHackathons, type HiringRow, hiringSummary } from "./hiringGroups";
-import { useHackathons } from "./useHackathons";
 
 /** The Startup's Hackathons: Now, Drafts (Founder only) and Past. */
 export function HiringPage() {

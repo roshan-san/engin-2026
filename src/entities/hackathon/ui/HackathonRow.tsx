@@ -3,13 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { roleLabel, termsLine } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { Badge } from "~/shared/ui/badge";
-import { STAGE, stageDate } from "../stage";
 import {
 	type HiringRow,
 	needsYou,
 	promiseLine,
 	rowNumber,
-} from "./hiringGroups";
+} from "../model/hiringGroups";
+import { STAGE, stageDate } from "../model/stage";
 
 const ROW_CLASS =
 	"grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-2 px-2 py-4 text-left transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_14rem_9rem] focus-ring";

@@ -1,4 +1,5 @@
 import { getRouteApi } from "@tanstack/react-router";
+import { useExploreHackathons } from "~/entities/hackathon";
 import { ROLES } from "~/shared/config/jobs";
 import { hasFilters } from "~/shared/lib/search";
 import { EmptyState } from "~/shared/ui/EmptyState";
@@ -8,7 +9,6 @@ import { RowList } from "~/shared/ui/RowList";
 import { RowsSkeleton } from "~/shared/ui/RowsSkeleton";
 import { ExploreLayout } from "./ExploreLayout";
 import { HackathonExploreRow } from "./HackathonExploreRow";
-import { useExploreHackathons } from "./useExploreHackathons";
 
 const route = getRouteApi("/_shell/explore/hackathons");
 

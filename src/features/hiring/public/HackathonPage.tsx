@@ -2,8 +2,9 @@ import { phaseOf } from "@convex/shared/hackathonPhase";
 import { MAX_PARTICIPANTS } from "@convex/shared/limits";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { getRouteApi, Link } from "@tanstack/react-router";
+import { HackathonPost, STAGE, useHackathon } from "~/entities/hackathon";
 import { hiringLine } from "~/entities/startup";
-import { GoogleButton } from "~/features/people";
+import { GoogleButton, SignInCard } from "~/features/people";
 import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
@@ -21,7 +22,6 @@ import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { TILE, TILE_LINK } from "~/shared/ui/tile";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { STAGE } from "../stage";
 import { ApplyForm } from "./ApplyForm";
 import {
 	APPLY_COPY,
@@ -30,8 +30,6 @@ import {
 	applyState,
 	closedLabel,
 } from "./applyStatus";
-import { HackathonPost } from "./HackathonPost";
-import { useHackathon } from "./useHackathon";
 
 const route = getRouteApi("/_shell/hackathons/$id");
 
@@ -150,7 +148,12 @@ function SignedOutPage({ page }: { readonly page: HackathonView }) {
 	return (
 		<Page className="max-w-6xl">
 			<div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-16">
-				<HackathonPost post={postOf(page)} />
+				<HackathonPost
+					post={postOf(page)}
+					signIn={
+						<SignInCard>Sign in to see the full brief and apply.</SignInCard>
+					}
+				/>
 
 				<aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
 					<div className={cn(TILE, "flex flex-col gap-3")}>

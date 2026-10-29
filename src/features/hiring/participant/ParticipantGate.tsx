@@ -2,11 +2,11 @@ import type { Id } from "@convex/_generated/dataModel";
 import { phaseOf } from "@convex/shared/hackathonPhase";
 import { getRouteApi, Navigate, Outlet } from "@tanstack/react-router";
 import { createContext, useContext, useMemo } from "react";
+import { useHackathon } from "~/entities/hackathon";
 import { useMe } from "~/entities/person";
 import { type BoardScope, BoardScopeContext } from "~/features/work";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
-import { useHackathon } from "../public/useHackathon";
 import { type ParticipantStatus, participantStatus } from "./participantStatus";
 
 const route = getRouteApi("/_shell/_authed/h/$id");

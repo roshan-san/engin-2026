@@ -9,7 +9,7 @@ import { DetailPanel } from "~/shared/ui/DetailPanel";
 import { Segmented } from "~/shared/ui/Segmented";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import { useHackathonThreads } from "../space/useSpace";
+import { useHackathonThreads } from "../space/useHackathonThreads";
 import { DecisionBanner } from "./DecisionBanner";
 import { useParticipant } from "./ParticipantGate";
 

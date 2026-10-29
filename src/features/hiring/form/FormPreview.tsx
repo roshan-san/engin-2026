@@ -1,4 +1,4 @@
-import { HackathonPost } from "../public/HackathonPost";
+import { HackathonPost } from "~/entities/hackathon";
 import { type HackathonDraft, toParticipantsGet } from "./draft";
 
 /** The live preview beside the form: the post as Applicants will see it. */

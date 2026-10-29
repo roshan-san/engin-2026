@@ -25,8 +25,8 @@ import {
 	sidebarItems,
 } from "./sidebarItems";
 import { useApplicants } from "./useApplicants";
+import { useHackathonThreads } from "./useHackathonThreads";
 import { useReviewQueue } from "./useReviewQueue";
-import { useHackathonThreads } from "./useSpace";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
