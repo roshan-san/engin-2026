@@ -6,7 +6,7 @@ import { dateRange } from "~/shared/lib/dates";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Skeleton } from "~/shared/ui/skeleton";
-import { useSetGoal } from "./useSetGoal";
+import { useSetGoal } from "../api/useSetGoal";
 
 /** "Cycle 3 · Oct 12 – 18", then the week's goal; the Founder edits it in place. */
 export function CycleHeader() {

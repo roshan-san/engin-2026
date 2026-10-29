@@ -2,6 +2,7 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
 import { TeamPanel, useHeartbeat } from "~/features/chat";
+import { CycleHeader } from "~/features/set-cycle-goal";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
@@ -10,7 +11,6 @@ import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { OpenCardPanel } from "../cards/OpenCardPanel";
 import { Board } from "./Board";
 import { CardBoard } from "./CardBoard";
-import { CycleHeader } from "./CycleHeader";
 
 const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
 
