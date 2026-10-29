@@ -5,8 +5,8 @@ import { attempt } from "~/shared/lib/errors";
 
 /** Accepting and declining before the start. Failures are toasted and resolve `false`. */
 export function useScreening() {
-	const acceptApplication = useMutation(api.hiring.applications.accept);
-	const declineApplication = useMutation(api.hiring.applications.decline);
+	const acceptApplication = useMutation(api.applications.accept);
+	const declineApplication = useMutation(api.applications.decline);
 
 	return {
 		accept: (applicationId: Id<"applications">) =>

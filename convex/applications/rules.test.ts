@@ -4,7 +4,7 @@ import {
 	type ApplicationAction,
 	applicationRefusal,
 	type RuledApplication,
-} from "./applicationRules";
+} from "./rules";
 
 const applied: RuledApplication = { status: "applied", shortlisted: false };
 const declined: RuledApplication = { status: "declined", shortlisted: false };

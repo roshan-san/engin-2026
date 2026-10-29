@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import { decidedHackathon } from "../applications/applications.setup";
 import { INVITE_TTL_MS, MAX_INVITES } from "../shared/limits";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
-import { decidedHackathon } from "../testing/applications.setup";
 import { advancePast, createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 

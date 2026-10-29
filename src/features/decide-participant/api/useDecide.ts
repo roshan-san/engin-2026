@@ -5,11 +5,9 @@ import { attempt } from "~/shared/lib/errors";
 
 /** ★ Shortlist, Walkthrough done, then Hired or Not this time. Failures are toasted and resolve `false`. */
 export function useDecide(applicationId: Id<"applications">) {
-	const shortlistParticipant = useMutation(api.hiring.applications.shortlist);
-	const markWalkthroughDone = useMutation(
-		api.hiring.applications.markWalkthrough,
-	);
-	const decideParticipant = useMutation(api.hiring.applications.decide);
+	const shortlistParticipant = useMutation(api.applications.shortlist);
+	const markWalkthroughDone = useMutation(api.applications.markWalkthrough);
+	const decideParticipant = useMutation(api.applications.decide);
 
 	return {
 		shortlist: (shortlisted: boolean) =>

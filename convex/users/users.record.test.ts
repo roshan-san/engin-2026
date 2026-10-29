@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import {
+	decidedHackathon,
+	participants,
+	startHackathon,
+} from "../applications/applications.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { verifyCards } from "../rating/rating.setup";
 import {
@@ -7,11 +12,6 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import {
-	decidedHackathon,
-	participants,
-	startHackathon,
-} from "../testing/applications.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "./users.setup";
 

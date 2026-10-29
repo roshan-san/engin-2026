@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 import { applicationStatus, decision } from "../shared/validators";
 
-export const hiringTables = {
+export const applicationsTables = {
 	applications: defineTable({
 		hackathonId: v.id("hackathons"),
 		userId: v.id("users"),

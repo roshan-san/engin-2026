@@ -1,7 +1,7 @@
 import type { Infer } from "convex/values";
 import { type HackathonPhase, isUnderway } from "../hackathons/rules";
-import { MAX_PARTICIPANTS } from "./limits";
-import type { applicationStatus, decision } from "./validators";
+import { MAX_PARTICIPANTS } from "../shared/limits";
+import type { applicationStatus, decision } from "../shared/validators";
 
 export type Decision = Infer<typeof decision>;
 

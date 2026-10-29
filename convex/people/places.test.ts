@@ -2,18 +2,18 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
-	draftHackathon,
-	publishedHackathon,
-} from "../hackathons/hackathons.setup";
-import { addContributor, setUpStartup } from "../startups/startups.setup";
-import {
 	applicant,
 	closeHackathon,
 	decidedHackathon,
 	endHackathon,
 	participants,
 	startHackathon,
-} from "../testing/applications.setup";
+} from "../applications/applications.setup";
+import {
+	draftHackathon,
+	publishedHackathon,
+} from "../hackathons/hackathons.setup";
+import { addContributor, setUpStartup } from "../startups/startups.setup";
 import { SHIPPED } from "../testing/cards.setup";
 import { createTest } from "../testing/test.setup";
 import { type Person, signUp } from "../users/users.setup";
@@ -118,7 +118,7 @@ describe("groups", () => {
 		const ana = await applicant(setup, hackathonId, "Ana");
 
 		const before = await placesOf(ana);
-		await setup.founder.as.mutation(api.hiring.applications.decline, {
+		await setup.founder.as.mutation(api.applications.decline, {
 			applicationId: ana.applicationId,
 		});
 		const after = await placesOf(ana);
@@ -162,7 +162,7 @@ describe("groups", () => {
 		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
 
 		const before = await placesOf(ana);
-		await ana.as.mutation(api.hiring.applications.keepPromise, {
+		await ana.as.mutation(api.applications.keepPromise, {
 			applicationId: ana.applicationId,
 			kept: true,
 		});
@@ -235,7 +235,7 @@ describe("waiting", () => {
 		const ana = await applicant(setup, hackathonId, "Ana");
 
 		const lit = await placesOf(setup.founder);
-		await setup.founder.as.mutation(api.hiring.applications.accept, {
+		await setup.founder.as.mutation(api.applications.accept, {
 			applicationId: ana.applicationId,
 		});
 		const screened = await placesOf(setup.founder);
@@ -320,7 +320,7 @@ describe("waiting", () => {
 
 		const lit = await placesOf(setup.founder);
 		for (const participant of [ana, ben]) {
-			await setup.founder.as.mutation(api.hiring.applications.decide, {
+			await setup.founder.as.mutation(api.applications.decide, {
 				applicationId: participant.applicationId,
 				decision: "not_this_time",
 			});

@@ -1,8 +1,5 @@
+import type { ApplicationAction, Decision } from "@convex/applications/rules";
 import type { HackathonPhase } from "@convex/hackathons/rules";
-import type {
-	ApplicationAction,
-	Decision,
-} from "@convex/shared/applicationRules";
 import { refusalFor, type ViewedApplication } from "~/entities/application";
 
 export type DecideState = {

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import { publishedHackathon } from "../hackathons/hackathons.setup";
-import { addContributor, setUpStartup } from "../startups/startups.setup";
 import {
 	endHackathon,
 	participants,
 	startHackathon,
-} from "../testing/applications.setup";
+} from "../applications/applications.setup";
+import { publishedHackathon } from "../hackathons/hackathons.setup";
+import { addContributor, setUpStartup } from "../startups/startups.setup";
 import { createTest, type TestConvex } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { runRating, toNextWeek, verifyCards } from "./rating.setup";
@@ -196,15 +196,15 @@ describe("rating", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
-		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+		await setup.founder.as.mutation(api.applications.shortlist, {
 			applicationId: ana.applicationId,
 			shortlisted: true,
 		});
-		await setup.founder.as.mutation(api.hiring.applications.markWalkthrough, {
+		await setup.founder.as.mutation(api.applications.markWalkthrough, {
 			applicationId: ana.applicationId,
 		});
 		await endHackathon(setup, hackathonId);
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
 		});

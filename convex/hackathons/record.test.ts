@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { setUpStartup } from "../startups/startups.setup";
 import {
 	closeHackathon,
 	decidedHackathon,
-} from "../testing/applications.setup";
+} from "../applications/applications.setup";
+import { setUpStartup } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
 
 describe("hiring record", () => {
@@ -15,7 +15,7 @@ describe("hiring record", () => {
 			{ name: "Ben", decision: "not_this_time" },
 		]);
 		for (const participant of participants) {
-			await participant.as.mutation(api.hiring.applications.keepPromise, {
+			await participant.as.mutation(api.applications.keepPromise, {
 				applicationId: participant.applicationId,
 				kept: true,
 			});

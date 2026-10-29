@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import {
+	closeHackathon,
+	decidedHackathon,
+	endHackathon,
+	participants,
+	startHackathon,
+} from "../applications/applications.setup";
 import { givePro } from "../billing/billing.setup";
 import { MAX_LISTED_HACKATHONS } from "../shared/limits";
 import {
@@ -8,13 +15,6 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import {
-	closeHackathon,
-	decidedHackathon,
-	endHackathon,
-	participants,
-	startHackathon,
-} from "../testing/applications.setup";
 import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import {
@@ -485,7 +485,7 @@ describe("publishing needs Pro", () => {
 					)
 					.take(1),
 		);
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ben._id,
 			decision: "not_this_time",
 		});
@@ -706,7 +706,7 @@ describe("the decision deadline", () => {
 		} = await decidedHackathon(setup, [{ name: "Ben" }]);
 		await closeHackathon(setup, hackathonId);
 
-		const decide = setup.founder.as.mutation(api.hiring.applications.decide, {
+		const decide = setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ben.applicationId,
 			decision: "not_this_time",
 		});
@@ -723,7 +723,7 @@ describe("hiring rows", () => {
 			{ name: "Ben", decision: "not_this_time" },
 		]);
 		for (const participant of decided) {
-			await participant.as.mutation(api.hiring.applications.keepPromise, {
+			await participant.as.mutation(api.applications.keepPromise, {
 				applicationId: participant.applicationId,
 				kept: true,
 			});

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
+import {
+	endHackathon,
+	participants,
+	startHackathon,
+} from "../applications/applications.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { MAX_LISTED_CYCLES } from "../shared/limits";
 import {
@@ -7,11 +12,6 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import {
-	endHackathon,
-	participants,
-	startHackathon,
-} from "../testing/applications.setup";
 import { cardOn, SHIPPED } from "../testing/cards.setup";
 import { advancePast, createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
@@ -153,15 +153,15 @@ describe("activity", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
-		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+		await setup.founder.as.mutation(api.applications.shortlist, {
 			applicationId: ana.applicationId,
 			shortlisted: true,
 		});
-		await setup.founder.as.mutation(api.hiring.applications.markWalkthrough, {
+		await setup.founder.as.mutation(api.applications.markWalkthrough, {
 			applicationId: ana.applicationId,
 		});
 		await endHackathon(setup, hackathonId);
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
 		});

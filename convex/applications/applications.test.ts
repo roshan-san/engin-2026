@@ -8,6 +8,8 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
+import { SHIPPED } from "../testing/cards.setup";
+import { createTest } from "../testing/test.setup";
 import {
 	type Applicant,
 	applicant,
@@ -15,9 +17,7 @@ import {
 	endHackathon,
 	participants,
 	startHackathon,
-} from "../testing/applications.setup";
-import { SHIPPED } from "../testing/cards.setup";
-import { createTest } from "../testing/test.setup";
+} from "./applications.setup";
 
 async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
 	return await participant.as.query(api.work.cards.listParticipantBoard, {
@@ -74,7 +74,7 @@ describe("applying", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const ana = await applicant(setup, hackathonId, "Ana");
 
-		const again = ana.as.mutation(api.hiring.applications.apply, {
+		const again = ana.as.mutation(api.applications.apply, {
 			hackathonId,
 			answer: "Me again",
 		});
@@ -94,11 +94,11 @@ describe("applying", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const sam = await addContributor(setup, "Sam");
 
-		const founder = setup.founder.as.mutation(api.hiring.applications.apply, {
+		const founder = setup.founder.as.mutation(api.applications.apply, {
 			hackathonId,
 			answer: "Hire me",
 		});
-		const contributor = sam.as.mutation(api.hiring.applications.apply, {
+		const contributor = sam.as.mutation(api.applications.apply, {
 			hackathonId,
 			answer: "Hire me",
 		});
@@ -113,7 +113,7 @@ describe("applying", () => {
 		const ana = await applicant(setup, hackathonId, "Ana");
 		const ben = await applicant(setup, hackathonId, "Ben");
 
-		const accept = ben.as.mutation(api.hiring.applications.accept, {
+		const accept = ben.as.mutation(api.applications.accept, {
 			applicationId: ana.applicationId,
 		});
 
@@ -127,7 +127,7 @@ describe("applying", () => {
 		await participants(setup, hackathonId, names);
 		const eleventh = await applicant(setup, hackathonId, "Eleven");
 
-		const accept = setup.founder.as.mutation(api.hiring.applications.accept, {
+		const accept = setup.founder.as.mutation(api.applications.accept, {
 			applicationId: eleventh.applicationId,
 		});
 
@@ -139,18 +139,16 @@ describe("applying", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		const ben = await applicant(setup, hackathonId, "Ben");
-		await setup.founder.as.mutation(api.hiring.applications.decline, {
+		await setup.founder.as.mutation(api.applications.decline, {
 			applicationId: ben.applicationId,
 		});
 
-		const acceptAgain = setup.founder.as.mutation(
-			api.hiring.applications.accept,
-			{ applicationId: ana.applicationId },
-		);
-		const declineAgain = setup.founder.as.mutation(
-			api.hiring.applications.decline,
-			{ applicationId: ben.applicationId },
-		);
+		const acceptAgain = setup.founder.as.mutation(api.applications.accept, {
+			applicationId: ana.applicationId,
+		});
+		const declineAgain = setup.founder.as.mutation(api.applications.decline, {
+			applicationId: ben.applicationId,
+		});
 
 		await expect(acceptAgain).rejects.toThrow("They're already a Participant");
 		await expect(declineAgain).rejects.toThrow("They're already declined");
@@ -163,10 +161,10 @@ describe("applying", () => {
 		const [first] = await participants(setup, hackathonId, names);
 		const eleventh = await applicant(setup, hackathonId, "Eleven");
 
-		await setup.founder.as.mutation(api.hiring.applications.decline, {
+		await setup.founder.as.mutation(api.applications.decline, {
 			applicationId: first.applicationId,
 		});
-		await setup.founder.as.mutation(api.hiring.applications.accept, {
+		await setup.founder.as.mutation(api.applications.accept, {
 			applicationId: eleventh.applicationId,
 		});
 		const list = await setup.founder.as.query(api.hackathons.list, {
@@ -181,12 +179,12 @@ describe("applying", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const ana = await applicant(setup, hackathonId, "Ana");
 		const accept = () =>
-			setup.founder.as.mutation(api.hiring.applications.accept, {
+			setup.founder.as.mutation(api.applications.accept, {
 				applicationId: ana.applicationId,
 			});
 
 		await accept();
-		await setup.founder.as.mutation(api.hiring.applications.decline, {
+		await setup.founder.as.mutation(api.applications.decline, {
 			applicationId: ana.applicationId,
 		});
 		await accept();
@@ -250,7 +248,7 @@ describe("applying", () => {
 		await crowd(setup, hackathonId, MAX_APPLICATIONS);
 
 		const list = await setup.founder.as.query(
-			api.hiring.applications.listForHackathon,
+			api.applications.listForHackathon,
 			{ hackathonId },
 		);
 
@@ -267,7 +265,7 @@ describe("applying", () => {
 		const cal = await applicant(setup, hackathonId, "Cal");
 		await startHackathon(setup, hackathonId);
 
-		const accept = setup.founder.as.mutation(api.hiring.applications.accept, {
+		const accept = setup.founder.as.mutation(api.applications.accept, {
 			applicationId: cal.applicationId,
 		});
 		const late = applicant(setup, hackathonId, "Dee");
@@ -282,10 +280,10 @@ describe("applying", () => {
 		const ana = await applicant(setup, hackathonId, "Ana");
 
 		const list = await setup.founder.as.query(
-			api.hiring.applications.listForHackathon,
+			api.applications.listForHackathon,
 			{ hackathonId },
 		);
-		const asApplicant = ana.as.query(api.hiring.applications.listForHackathon, {
+		const asApplicant = ana.as.query(api.applications.listForHackathon, {
 			hackathonId,
 		});
 
@@ -314,10 +312,9 @@ describe("screening", () => {
 			async (ctx) => await ctx.db.patch(ana.userId, { username: undefined }),
 		);
 
-		const view = await setup.founder.as.query(
-			api.hiring.applications.getApplicant,
-			{ applicationId: ana.applicationId },
-		);
+		const view = await setup.founder.as.query(api.applications.getApplicant, {
+			applicationId: ana.applicationId,
+		});
 
 		expect(view).toMatchObject({
 			application: { status: "applied", answer: "I'm Ana and I fix signups." },
@@ -332,10 +329,10 @@ describe("screening", () => {
 		const hackathonId = await publishedHackathon(setup);
 		const ana = await applicant(setup, hackathonId, "Ana");
 
-		const forSam = sam.as.query(api.hiring.applications.getApplicant, {
+		const forSam = sam.as.query(api.applications.getApplicant, {
 			applicationId: ana.applicationId,
 		});
-		const forAna = ana.as.query(api.hiring.applications.getApplicant, {
+		const forAna = ana.as.query(api.applications.getApplicant, {
 			applicationId: ana.applicationId,
 		});
 
@@ -539,7 +536,7 @@ describe("live", () => {
 		});
 
 		const rows = await setup.founder.as.query(
-			api.hiring.applications.listForHackathon,
+			api.applications.listForHackathon,
 			{ hackathonId },
 		);
 
@@ -572,11 +569,11 @@ describe("deciding", () => {
 	}
 
 	async function walkthrough(setup: Setup, participant: Applicant) {
-		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+		await setup.founder.as.mutation(api.applications.shortlist, {
 			applicationId: participant.applicationId,
 			shortlisted: true,
 		});
-		await setup.founder.as.mutation(api.hiring.applications.markWalkthrough, {
+		await setup.founder.as.mutation(api.applications.markWalkthrough, {
 			applicationId: participant.applicationId,
 			notes: "Walked us through the signup fix",
 		});
@@ -607,7 +604,7 @@ describe("deciding", () => {
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
 		await startHackathon(setup, hackathonId);
 
-		const decide = setup.founder.as.mutation(api.hiring.applications.decide, {
+		const decide = setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
 		});
@@ -621,10 +618,9 @@ describe("deciding", () => {
 			participants: [ana],
 		} = await ended();
 
-		const mark = setup.founder.as.mutation(
-			api.hiring.applications.markWalkthrough,
-			{ applicationId: ana.applicationId },
-		);
+		const mark = setup.founder.as.mutation(api.applications.markWalkthrough, {
+			applicationId: ana.applicationId,
+		});
 
 		await expect(mark).rejects.toThrow("Shortlist them first");
 	});
@@ -635,7 +631,7 @@ describe("deciding", () => {
 			participants: [ana],
 		} = await ended();
 		const hire = () =>
-			setup.founder.as.mutation(api.hiring.applications.decide, {
+			setup.founder.as.mutation(api.applications.decide, {
 				applicationId: ana.applicationId,
 				decision: "hired",
 				feedback: "Great work",
@@ -663,7 +659,7 @@ describe("deciding", () => {
 			email: "ana@example.com",
 		});
 
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
 		});
@@ -691,13 +687,13 @@ describe("deciding", () => {
 			inviteId: invite.inviteId,
 		});
 
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
 		});
 
 		const list = await setup.founder.as.query(
-			api.hiring.applications.listForHackathon,
+			api.applications.listForHackathon,
 			{ hackathonId },
 		);
 		expect(list[0].application).toMatchObject({ decision: "hired" });
@@ -711,7 +707,7 @@ describe("deciding", () => {
 			participants: [ana],
 		} = await ended();
 		const decide = () =>
-			setup.founder.as.mutation(api.hiring.applications.decide, {
+			setup.founder.as.mutation(api.applications.decide, {
 				applicationId: ana.applicationId,
 				decision: "not_this_time",
 			});
@@ -726,23 +722,22 @@ describe("deciding", () => {
 			setup,
 			participants: [ana],
 		} = await ended();
-		await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+		await setup.founder.as.mutation(api.applications.shortlist, {
 			applicationId: ana.applicationId,
 			shortlisted: true,
 		});
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
 		});
 
-		const unstar = setup.founder.as.mutation(
-			api.hiring.applications.shortlist,
-			{ applicationId: ana.applicationId, shortlisted: false },
-		);
-		const mark = setup.founder.as.mutation(
-			api.hiring.applications.markWalkthrough,
-			{ applicationId: ana.applicationId },
-		);
+		const unstar = setup.founder.as.mutation(api.applications.shortlist, {
+			applicationId: ana.applicationId,
+			shortlisted: false,
+		});
+		const mark = setup.founder.as.mutation(api.applications.markWalkthrough, {
+			applicationId: ana.applicationId,
+		});
 
 		await expect(unstar).rejects.toThrow("They're already decided");
 		await expect(mark).rejects.toThrow("They're already decided");
@@ -755,10 +750,10 @@ describe("deciding", () => {
 		} = await ended();
 		await walkthrough(setup, ana);
 
-		const again = setup.founder.as.mutation(
-			api.hiring.applications.markWalkthrough,
-			{ applicationId: ana.applicationId, notes: "Second go" },
-		);
+		const again = setup.founder.as.mutation(api.applications.markWalkthrough, {
+			applicationId: ana.applicationId,
+			notes: "Second go",
+		});
 
 		await expect(again).rejects.toThrow("The Walkthrough is done");
 	});
@@ -770,10 +765,10 @@ describe("deciding", () => {
 		} = await ended();
 		await walkthrough(setup, ana);
 
-		const unstar = setup.founder.as.mutation(
-			api.hiring.applications.shortlist,
-			{ applicationId: ana.applicationId, shortlisted: false },
-		);
+		const unstar = setup.founder.as.mutation(api.applications.shortlist, {
+			applicationId: ana.applicationId,
+			shortlisted: false,
+		});
 
 		await expect(unstar).rejects.toThrow("The Walkthrough is done");
 	});
@@ -786,14 +781,14 @@ describe("deciding", () => {
 		} = await ended();
 		await walkthrough(setup, ana);
 
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
 		});
 		const halfway = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ben.applicationId,
 			decision: "not_this_time",
 			feedback: "Close one",
@@ -813,13 +808,13 @@ describe("deciding", () => {
 			participants: [ana],
 		} = await ended(["Ana"]);
 		const answer = () =>
-			ana.as.mutation(api.hiring.applications.keepPromise, {
+			ana.as.mutation(api.applications.keepPromise, {
 				applicationId: ana.applicationId,
 				kept: true,
 			});
 
 		await expect(answer()).rejects.toThrow("Wait for the decision");
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
 		});
@@ -834,7 +829,7 @@ describe("deciding", () => {
 			hackathonId,
 			participants: [ana],
 		} = await ended(["Ana"]);
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
 			feedback: "Close one",
@@ -843,7 +838,7 @@ describe("deciding", () => {
 		const before = await ana.as.query(api.hackathons.getPublic, {
 			hackathonId,
 		});
-		await ana.as.mutation(api.hiring.applications.keepPromise, {
+		await ana.as.mutation(api.applications.keepPromise, {
 			applicationId: ana.applicationId,
 			kept: true,
 		});
@@ -871,17 +866,17 @@ describe("deciding", () => {
 			hackathonId,
 			participants: [ana],
 		} = await ended(["Ana"]);
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
 		});
-		await ana.as.mutation(api.hiring.applications.keepPromise, {
+		await ana.as.mutation(api.applications.keepPromise, {
 			applicationId: ana.applicationId,
 			kept: false,
 		});
 
 		const list = await setup.founder.as.query(
-			api.hiring.applications.listForHackathon,
+			api.applications.listForHackathon,
 			{ hackathonId },
 		);
 
@@ -894,15 +889,15 @@ describe("deciding", () => {
 			setup,
 			participants: [ana],
 		} = await ended(["Ana"]);
-		await setup.founder.as.mutation(api.hiring.applications.decide, {
+		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
 		});
 
-		const answer = setup.founder.as.mutation(
-			api.hiring.applications.keepPromise,
-			{ applicationId: ana.applicationId, kept: false },
-		);
+		const answer = setup.founder.as.mutation(api.applications.keepPromise, {
+			applicationId: ana.applicationId,
+			kept: false,
+		});
 
 		await expect(answer).rejects.toThrow("This isn't your application");
 	});

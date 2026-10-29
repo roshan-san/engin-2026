@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import {
+	closeHackathon,
+	endHackathon,
+	participants,
+	startHackathon,
+} from "../applications/applications.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
 	MAX_MESSAGE_IMAGES,
@@ -13,12 +19,6 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import {
-	closeHackathon,
-	endHackathon,
-	participants,
-	startHackathon,
-} from "../testing/applications.setup";
 import { cardOn } from "../testing/cards.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";

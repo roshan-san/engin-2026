@@ -1,6 +1,7 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema } from "convex/server";
 import { activityTables } from "./activity/table";
+import { applicationsTables } from "./applications/table";
 import { billingTables } from "./billing/table";
 import { contributorsTables } from "./contributors/table";
 import { cyclesTables } from "./cycles/table";
@@ -9,7 +10,6 @@ import { invitesTables } from "./invites/table";
 import { maintenanceTables } from "./maintenance/table";
 import { startupsTables } from "./startups/table";
 import { chatTables } from "./tables/chat";
-import { hiringTables } from "./tables/hiring";
 import { workTables } from "./tables/work";
 import { usersTables } from "./users/table";
 
@@ -30,7 +30,7 @@ export default defineSchema({
 	...activityTables,
 	...cyclesTables,
 	...hackathonsTables,
-	...hiringTables,
+	...applicationsTables,
 	...chatTables,
 	...billingTables,
 	...maintenanceTables,

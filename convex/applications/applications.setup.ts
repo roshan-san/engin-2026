@@ -2,8 +2,8 @@ import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import type { Setup } from "../startups/startups.setup";
+import { advancePast, HOUR } from "../testing/test.setup";
 import { type Person, signUp } from "../users/users.setup";
-import { advancePast, HOUR } from "./test.setup";
 
 export type Applicant = Person & { applicationId: Id<"applications"> };
 
@@ -14,13 +14,10 @@ export async function applicant(
 	name: string,
 ): Promise<Applicant> {
 	const person = await signUp(setup.t, name);
-	const applicationId = await person.as.mutation(
-		api.hiring.applications.apply,
-		{
-			hackathonId,
-			answer: `I'm ${name} and I fix signups.`,
-		},
-	);
+	const applicationId = await person.as.mutation(api.applications.apply, {
+		hackathonId,
+		answer: `I'm ${name} and I fix signups.`,
+	});
 	return { ...person, applicationId };
 }
 
@@ -33,7 +30,7 @@ export async function participants(
 	const accepted: Applicant[] = [];
 	for (const name of names) {
 		const person = await applicant(setup, hackathonId, name);
-		await setup.founder.as.mutation(api.hiring.applications.accept, {
+		await setup.founder.as.mutation(api.applications.accept, {
 			applicationId: person.applicationId,
 		});
 		accepted.push(person);
@@ -105,13 +102,13 @@ export async function decidedHackathon(
 	await startHackathon(setup, hackathonId);
 	for (const [i, plan] of plans.entries()) {
 		if (plan.decision === "hired" || plan.shortlisted) {
-			await setup.founder.as.mutation(api.hiring.applications.shortlist, {
+			await setup.founder.as.mutation(api.applications.shortlist, {
 				applicationId: accepted[i].applicationId,
 				shortlisted: true,
 			});
 		}
 		if (plan.decision === "hired") {
-			await setup.founder.as.mutation(api.hiring.applications.markWalkthrough, {
+			await setup.founder.as.mutation(api.applications.markWalkthrough, {
 				applicationId: accepted[i].applicationId,
 			});
 		}
@@ -119,7 +116,7 @@ export async function decidedHackathon(
 	await endHackathon(setup, hackathonId);
 	for (const [i, plan] of plans.entries()) {
 		if (plan.decision) {
-			await setup.founder.as.mutation(api.hiring.applications.decide, {
+			await setup.founder.as.mutation(api.applications.decide, {
 				applicationId: accepted[i].applicationId,
 				decision: plan.decision,
 			});
