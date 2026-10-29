@@ -21,7 +21,7 @@ import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 const activityRoute = getRouteApi("/_shell/_authed/s/$slug/activity");
 
 /** The team's Record: every Cycle, beside the Rating or an open entry's What shipped. */
-export function ActivityPage() {
+export function StartupActivityPage() {
 	const { startup } = useWorkspace();
 	const signals = useSignals(startup.slug);
 	const { data, showEarlier, isLoadingEarlier } = useActivity(startup._id);
