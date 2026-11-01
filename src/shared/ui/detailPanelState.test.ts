@@ -56,3 +56,48 @@ describe("panelAfter", () => {
 		).toEqual({ where: "side", what: "default" });
 	});
 });
+
+describe("a panel that opens on request", () => {
+	const onRequest = { isMobile: false, opensOnRequest: true };
+
+	it("stays shut on desktop until asked for", () => {
+		expect(
+			panelShows({ ...onRequest, hasItem: false, isRequested: false }),
+		).toBeNull();
+		expect(
+			panelShows({ ...onRequest, hasItem: false, isRequested: true }),
+		).toEqual({ where: "side", what: "default" });
+	});
+
+	it("still shows an open item", () => {
+		expect(
+			panelShows({ ...onRequest, hasItem: true, isRequested: false }),
+		).toEqual({ where: "side", what: "item" });
+	});
+
+	it("close leaves nothing showing", () => {
+		const after = panelAfter("close", {
+			...onRequest,
+			hasItem: true,
+			isRequested: true,
+		});
+
+		expect(panelShows(after)).toBeNull();
+	});
+
+	it("back from an item opens the page's own panel", () => {
+		const after = panelAfter("back", {
+			...onRequest,
+			hasItem: true,
+			isRequested: false,
+		});
+
+		expect(panelShows(after)).toEqual({ where: "side", what: "default" });
+	});
+
+	it("other pages keep their panel open on desktop", () => {
+		expect(
+			panelShows({ isMobile: false, hasItem: false, isRequested: false }),
+		).toEqual({ where: "side", what: "default" });
+	});
+});

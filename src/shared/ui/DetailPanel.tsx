@@ -17,6 +17,7 @@ export function DetailPanel({
 	description,
 	onClose,
 	hasCloseButton = false,
+	collapses = false,
 }: {
 	readonly shows: PanelShows;
 	/** The open item (a Card, an entry). */
@@ -29,14 +30,18 @@ export function DetailPanel({
 	readonly onClose: () => void;
 	/** For panels without their own close button: the sheet adds one. */
 	readonly hasCloseButton?: boolean;
+	/** Takes no room on desktop while nothing is showing. */
+	readonly collapses?: boolean;
 }) {
 	const content = shows?.what === "item" ? item : fallback;
 
 	return (
 		<>
-			<aside className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex">
-				{shows?.where === "side" ? content : null}
-			</aside>
+			{collapses && shows?.where !== "side" ? null : (
+				<aside className="hidden w-[380px] shrink-0 flex-col border-l border-border md:flex">
+					{shows?.where === "side" ? content : null}
+				</aside>
+			)}
 			<Sheet
 				open={shows?.where === "sheet"}
 				onOpenChange={(isOpen) => {
