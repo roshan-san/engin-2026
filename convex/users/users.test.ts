@@ -17,8 +17,8 @@ describe("users", () => {
 			rating: 1000,
 			ratingChange: 0,
 			isProvisional: true,
-			isInvestorPro: false,
 		});
+		expect(me).not.toHaveProperty("isInvestorPro");
 	});
 
 	it("a public profile never shows the email", async () => {
@@ -41,25 +41,6 @@ describe("users", () => {
 		await expect(
 			sam.as.mutation(api.users.updateProfile, { username: "fay" }),
 		).rejects.toThrow("That username is taken");
-	});
-
-	it("Investor Pro is set only in the database", async () => {
-		const t = createTest();
-		const fay = await signUp(t, "Fay");
-		await t.run(
-			async (ctx) =>
-				await ctx.db.patch(fay.userId, { investorVerifiedAt: Date.now() }),
-		);
-
-		const me = await fay.as.query(api.users.getMe, {});
-
-		expect(me?.isInvestorPro).toBe(true);
-		await expect(
-			fay.as.mutation(api.users.updateProfile, {
-				// @ts-expect-error updateProfile takes no investorVerifiedAt
-				investorVerifiedAt: Date.now(),
-			}),
-		).rejects.toThrow();
 	});
 
 	it("a profile is saved with its bio and discipline", async () => {

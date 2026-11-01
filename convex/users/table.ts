@@ -22,7 +22,6 @@ export const usersTables = {
 		ratedThrough: v.optional(v.string()),
 		/** Set by the weekly run; absent means provisional. */
 		provisional: v.optional(v.boolean()),
-		investorVerifiedAt: v.optional(v.number()),
 	})
 		.index("email", ["email"])
 		.index("by_username", ["username"]),

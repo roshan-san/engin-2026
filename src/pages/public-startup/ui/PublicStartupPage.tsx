@@ -169,17 +169,14 @@ export function PublicStartupPage() {
 					</Section>
 				) : null}
 
-				<Section
-					label="Cycles"
-					aside={activity?.full ? "Investor Pro view" : null}
-				>
+				<Section label="Cycles">
 					{activity ? (
 						<ActivityFeed
 							cycles={activity.cycles}
 							hasMore={activity.hasMore}
 							onShowEarlier={showEarlier}
 							isLoadingEarlier={isLoadingEarlier}
-							mode={activity.full ? "full" : "masked"}
+							mode="masked"
 						/>
 					) : (
 						<Skeleton className="h-40 w-full" />
