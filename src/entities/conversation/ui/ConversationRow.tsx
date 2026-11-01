@@ -8,7 +8,7 @@ export function ConversationRow({
 	trailing,
 }: {
 	readonly line: string;
-	readonly author: Parameters<typeof displayName>[0] | null;
+	readonly author: Parameters<typeof displayName>[0];
 	readonly trailing?: ReactNode;
 }) {
 	return (
@@ -16,7 +16,7 @@ export function ConversationRow({
 			<div className="flex min-w-0 flex-1 flex-col">
 				<p className="text-sm break-words">{line}</p>
 				<span className="text-xs text-muted-foreground">
-					{author ? displayName(author) : "Someone"}
+					{displayName(author)}
 				</span>
 			</div>
 			{trailing}

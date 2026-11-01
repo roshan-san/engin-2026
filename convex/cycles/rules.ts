@@ -46,3 +46,23 @@ export const MAX_CYCLE_ENTRIES = 100;
 
 /** Longest allowed text per Cycle field. */
 export const CYCLE_TEXT = { goal: 140 };
+
+/** Whether last week still needs its Monday review: past the first Cycle, not closed, with something to look at. */
+export function isReviewDue({
+	cycleNumber,
+	isReviewed,
+	hasGoal,
+	conversationCount,
+	unfinishedCount,
+}: {
+	cycleNumber: number;
+	isReviewed: boolean;
+	hasGoal: boolean;
+	conversationCount: number;
+	unfinishedCount: number;
+}): boolean {
+	if (cycleNumber <= 1 || isReviewed) {
+		return false;
+	}
+	return hasGoal || conversationCount > 0 || unfinishedCount > 0;
+}
