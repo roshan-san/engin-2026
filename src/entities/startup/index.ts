@@ -7,6 +7,6 @@ export {
 	startupChipLabels,
 } from "./config/startupChips";
 export { hiringLine } from "./model/hiringLine";
-export { parseStartupSearch } from "./model/startupSearch";
+export { parseStartupSearch, startupExploreArgs } from "./model/startupSearch";
 export { StartupContext, useWorkspace } from "./model/Workspace";
 export { StartupExploreRow } from "./ui/StartupExploreRow";

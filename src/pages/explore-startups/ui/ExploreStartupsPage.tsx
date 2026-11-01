@@ -3,6 +3,7 @@ import {
 	CITIES,
 	STAGES,
 	StartupExploreRow,
+	startupExploreArgs,
 	useExploreStartups,
 } from "~/entities/startup";
 import { hasFilters } from "~/shared/lib/search";
@@ -52,7 +53,7 @@ export function ExploreStartupsPage() {
 			{startups === undefined || (isLoading && startups.length === 0) ? (
 				<RowsSkeleton rowClassName="h-16" />
 			) : startups.length === 0 ? (
-				hasFilters(search) ? (
+				hasFilters(startupExploreArgs(search)) ? (
 					<NoMatches
 						noun="startups"
 						onClear={() => void navigate({ search: {}, replace: true })}

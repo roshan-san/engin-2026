@@ -28,3 +28,8 @@ export function parseHackathonSearch(
 	// Every key is set, so a dropped value overrides the raw one the parent route passes down.
 	return { role, weeks, paid: paid ? true : undefined };
 }
+
+/** The query's arguments. The router's search also carries whatever else is in the URL, and the server refuses extras. */
+export function hackathonExploreArgs(search: HackathonSearch): HackathonSearch {
+	return { role: search.role, weeks: search.weeks, paid: search.paid };
+}

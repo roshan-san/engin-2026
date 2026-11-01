@@ -2,7 +2,10 @@ export { useExploreHackathons } from "./api/useExploreHackathons";
 export { useHackathon } from "./api/useHackathon";
 export { useHackathons } from "./api/useHackathons";
 export { useSpace } from "./api/useSpace";
-export { parseHackathonSearch } from "./model/hackathonSearch";
+export {
+	hackathonExploreArgs,
+	parseHackathonSearch,
+} from "./model/hackathonSearch";
 export {
 	groupHackathons,
 	type HiringRow,

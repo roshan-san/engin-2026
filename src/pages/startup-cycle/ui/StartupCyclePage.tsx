@@ -80,7 +80,7 @@ export function StartupCyclePage() {
 					<GoalPrompt />
 				) : (
 					<>
-						{cycle?.goal ? <CycleGoal goal={cycle.goal} /> : null}
+						{cycle ? <CycleGoal goal={cycle.goal} /> : null}
 						<Board />
 					</>
 				)}

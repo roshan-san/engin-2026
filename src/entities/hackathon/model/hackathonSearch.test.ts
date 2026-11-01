@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { hasFilters } from "~/shared/lib/search";
-import { parseHackathonSearch } from "./hackathonSearch";
+import {
+	type HackathonSearch,
+	hackathonExploreArgs,
+	parseHackathonSearch,
+} from "./hackathonSearch";
 
 describe("hackathon search", () => {
 	test("known chips are kept", () => {
@@ -33,5 +37,15 @@ describe("hackathon search", () => {
 	test("paid false is dropped", () => {
 		expect(parseHackathonSearch({ paid: "false" })).toEqual({});
 		expect(parseHackathonSearch({ paid: false })).toEqual({});
+	});
+
+	test("only known filters reach the query, whatever else the URL carries", () => {
+		const fromRouter = { paid: true, utm_source: "x" };
+
+		expect(hackathonExploreArgs(fromRouter as HackathonSearch)).toEqual({
+			role: undefined,
+			weeks: undefined,
+			paid: true,
+		});
 	});
 });

@@ -17,3 +17,8 @@ export function parseStartupSearch(
 
 	return { stage, city };
 }
+
+/** The query's arguments. The router's search also carries whatever else is in the URL, and the server refuses extras. */
+export function startupExploreArgs(search: StartupSearch): StartupSearch {
+	return { stage: search.stage, city: search.city };
+}

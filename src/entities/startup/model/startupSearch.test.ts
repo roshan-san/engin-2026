@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { parseStartupSearch } from "./startupSearch";
+import {
+	parseStartupSearch,
+	type StartupSearch,
+	startupExploreArgs,
+} from "./startupSearch";
 
 describe("startup search", () => {
 	test("known chips are kept", () => {
@@ -20,5 +24,14 @@ describe("startup search", () => {
 		expect(parseStartupSearch({ category: "saas" })).not.toHaveProperty(
 			"category",
 		);
+	});
+
+	test("only known filters reach the query, whatever else the URL carries", () => {
+		const fromRouter = { stage: "idea", category: "saas", utm_source: "x" };
+
+		expect(startupExploreArgs(fromRouter as StartupSearch)).toEqual({
+			stage: "idea",
+			city: undefined,
+		});
 	});
 });
