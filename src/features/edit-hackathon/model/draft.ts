@@ -71,7 +71,7 @@ export function missingParts(draft: HackathonDraft): string[] {
 		draft.startsAt === null ? "a start" : null,
 		draft.participantsGet.choice === "Custom" &&
 		!draft.participantsGet.custom.trim()
-			? "what Participants get"
+			? "what Builders get"
 			: null,
 	].filter((part) => part !== null);
 }

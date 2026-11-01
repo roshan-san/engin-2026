@@ -61,7 +61,7 @@ export function ParticipantBrief({
 			<Section label="How it ends" as="h3">
 				<ul className="flex list-disc flex-col gap-1.5 pl-4 text-sm text-muted-foreground marker:text-subtle-foreground">
 					<li>Ship each Card with what shipped. The Founder verifies it.</li>
-					<li>Shortlisted Participants get a Walkthrough call.</li>
+					<li>Shortlisted Builders get a Walkthrough call.</li>
 					<li>
 						The decision comes by {dayLabel(lastDay(hackathon.decideBy))}.
 					</li>
@@ -69,7 +69,7 @@ export function ParticipantBrief({
 			</Section>
 
 			{hackathon.participantsGet ? (
-				<Section label="What Participants get" as="h3">
+				<Section label="What Builders get" as="h3">
 					<p className="text-sm">{hackathon.participantsGet}</p>
 				</Section>
 			) : null}

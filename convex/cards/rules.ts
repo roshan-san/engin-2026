@@ -27,7 +27,7 @@ export type CardAction =
 	| { kind: "editNotes" };
 
 const VERIFIED = "This Card is approved, so only its notes can change";
-const STAYS_WITH_PARTICIPANT = "Hackathon Cards stay with their Participant";
+const STAYS_WITH_PARTICIPANT = "Hackathon Cards stay with their Builder";
 
 /** Why `actor` may not do `action` to `card`, in words to show; `null` when they may. */
 export function cardRefusal(

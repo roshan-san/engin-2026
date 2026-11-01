@@ -185,7 +185,7 @@ describe("reasonLine", () => {
 		],
 		[
 			{ kind: "participant_cards_to_review", role: "frontend", count: 1 },
-			"1 Participant Card to review on Frontend",
+			"1 Builder Card to review on Frontend",
 		],
 		[
 			{ kind: "hackathon_unread", role: "frontend" },
@@ -193,7 +193,7 @@ describe("reasonLine", () => {
 		],
 		[
 			{ kind: "participants_to_decide", role: "frontend", count: 2 },
-			"2 Participants to decide on Frontend",
+			"2 Builders to decide on Frontend",
 		],
 		[{ kind: "messages_unread" }, "Unread messages"],
 		[{ kind: "promise_pending" }, "Did they keep their promise?"],
@@ -280,7 +280,7 @@ describe("currentPlaceView", () => {
 			name: "Frontend",
 			logoName: "Zest",
 			logoUrl: null,
-			role: "Participant · Zest",
+			role: "Builder · Zest",
 		});
 	});
 

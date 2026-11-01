@@ -41,10 +41,10 @@ export function applicationRefusal(
 				return "Applications are closed";
 			}
 			if (application.status === "participating") {
-				return "They're already a Participant";
+				return "They're already a Builder";
 			}
 			return action.participants >= MAX_PARTICIPANTS
-				? `${MAX_PARTICIPANTS} Participants is the limit`
+				? `${MAX_PARTICIPANTS} Builders is the limit`
 				: null;
 		case "decline":
 			if (phase !== "open") {
@@ -71,7 +71,7 @@ function decideRefusal(
 		return "This Hackathon isn't running";
 	}
 	if (application.status !== "participating") {
-		return "They're not a Participant";
+		return "They're not a Builder";
 	}
 	if (application.decision) {
 		return "They're already decided";

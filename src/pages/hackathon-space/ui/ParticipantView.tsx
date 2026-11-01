@@ -130,7 +130,7 @@ export function ParticipantView({
 					</div>
 					<DetailPanel
 						shows={detail.shows}
-						title={row.user.name ?? "Participant"}
+						title={row.user.name ?? "Builder"}
 						description="Thread, Decide and Cards."
 						onClose={detail.close}
 						item={card}

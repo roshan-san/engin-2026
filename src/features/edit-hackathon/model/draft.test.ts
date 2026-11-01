@@ -107,12 +107,12 @@ describe("missingParts", () => {
 				...draft,
 				participantsGet: { choice: "Custom", custom: "  " },
 			}),
-		).toContain("what Participants get");
+		).toContain("what Builders get");
 		expect(
 			missingParts({
 				...draft,
 				participantsGet: { choice: "Custom", custom: "A laptop" },
 			}),
-		).not.toContain("what Participants get");
+		).not.toContain("what Builders get");
 	});
 });

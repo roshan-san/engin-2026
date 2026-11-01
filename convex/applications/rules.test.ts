@@ -51,13 +51,13 @@ describe("Screening", () => {
 		const full: ApplicationAction = { kind: "accept", participants: 10 };
 
 		expect(applicationRefusal(applied, "open", full)).toBe(
-			"10 Participants is the limit",
+			"10 Builders is the limit",
 		);
 	});
 
 	it("each happens once", () => {
 		expect(applicationRefusal(participant, "open", ACCEPT)).toBe(
-			"They're already a Participant",
+			"They're already a Builder",
 		);
 		expect(applicationRefusal(declined, "open", DECLINE)).toBe(
 			"They're already declined",
@@ -85,7 +85,7 @@ describe("the Decide steps", () => {
 	it("are only for Participants", () => {
 		for (const application of [applied, declined]) {
 			expect(applicationRefusal(application, "live", STAR)).toBe(
-				"They're not a Participant",
+				"They're not a Builder",
 			);
 		}
 	});

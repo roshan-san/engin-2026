@@ -122,7 +122,7 @@ export function RunningView({
 				</div>
 				<div className="flex flex-col gap-1">
 					<h2 className="mx-2 border-b border-border pb-2 text-xs font-semibold text-muted-foreground">
-						Participants
+						Builders
 					</h2>
 					<ul className="flex flex-col gap-0.5">
 						{items.participants.map((participant) => (

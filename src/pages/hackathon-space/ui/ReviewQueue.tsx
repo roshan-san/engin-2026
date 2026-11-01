@@ -73,7 +73,7 @@ export function ReviewQueue({
 		) : (
 			<EmptyState
 				title="Nothing to review."
-				body="Cards land here when a Participant ships them."
+				body="Cards land here when a Builder ships them."
 			/>
 		);
 	}

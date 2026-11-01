@@ -131,7 +131,7 @@ describe("applying", () => {
 			applicationId: eleventh.applicationId,
 		});
 
-		await expect(accept).rejects.toThrow("10 Participants is the limit");
+		await expect(accept).rejects.toThrow("10 Builders is the limit");
 	});
 
 	it("a Participant is accepted once, and an Applicant declined once", async () => {
@@ -150,7 +150,7 @@ describe("applying", () => {
 			applicationId: ben.applicationId,
 		});
 
-		await expect(acceptAgain).rejects.toThrow("They're already a Participant");
+		await expect(acceptAgain).rejects.toThrow("They're already a Builder");
 		await expect(declineAgain).rejects.toThrow("They're already declined");
 	});
 
@@ -411,7 +411,7 @@ describe("live", () => {
 		});
 
 		await expect(remove).rejects.toThrow(
-			"Hackathon Cards stay with their Participant",
+			"Hackathon Cards stay with their Builder",
 		);
 	});
 
@@ -424,7 +424,7 @@ describe("live", () => {
 		});
 
 		await expect(update).rejects.toThrow(
-			"Hackathon Cards stay with their Participant",
+			"Hackathon Cards stay with their Builder",
 		);
 	});
 
@@ -436,7 +436,7 @@ describe("live", () => {
 		});
 
 		await expect(remove).rejects.toThrow(
-			"Hackathon Cards stay with their Participant",
+			"Hackathon Cards stay with their Builder",
 		);
 	});
 

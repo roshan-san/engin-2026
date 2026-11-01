@@ -20,11 +20,11 @@ export function ParticipantsGetPart({
 }) {
 	return (
 		<Part
-			label="What Participants get"
-			note="Even ₹1,000 brings better Participants."
+			label="What Builders get"
+			note="Even ₹1,000 brings better Builders."
 		>
 			<ChipPicker
-				label="What Participants get"
+				label="What Builders get"
 				options={PARTICIPANTS_GET_CHIPS}
 				value={value.choice}
 				onChange={(choice) => onChange({ ...value, choice })}
@@ -32,7 +32,7 @@ export function ParticipantsGetPart({
 			{value.choice === "Custom" ? (
 				<div className="flex flex-col gap-1.5">
 					<Input
-						aria-label="What Participants get"
+						aria-label="What Builders get"
 						placeholder="One line"
 						value={value.custom}
 						maxLength={HACKATHON_TEXT.participantsGet}

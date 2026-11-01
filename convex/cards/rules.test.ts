@@ -45,7 +45,7 @@ const REASSIGN: CardAction = { kind: "reassign" };
 const EDIT_NOTES: CardAction = { kind: "editNotes" };
 
 const VERIFIED = "This Card is approved, so only its notes can change";
-const STAYS = "Hackathon Cards stay with their Participant";
+const STAYS = "Hackathon Cards stay with their Builder";
 
 describe("Startup Cards", () => {
 	it("anyone on the team moves, retitles, reassigns and edits notes on any open Card", () => {
@@ -124,7 +124,7 @@ describe("Hackathon Cards", () => {
 	});
 
 	it.each<HackathonPhase>(["open", "deciding", "done"])(
-		"a Participant can't work their Cards while the Hackathon is %s",
+		"a Builder can't work their Cards while the Hackathon is %s",
 		(phase) => {
 			for (const action of [MOVE, RETITLE, EDIT_NOTES, SUBMIT]) {
 				expect(cardRefusal(card("todo"), action, participant(phase))).toBe(

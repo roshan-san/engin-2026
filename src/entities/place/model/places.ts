@@ -64,11 +64,11 @@ export function reasonLine(reason: WaitingReason): string {
 		case "new_applicants":
 			return `${plural(reason.count, "new applicant", "new applicants")} on ${roleLabel(reason.role)}`;
 		case "participant_cards_to_review":
-			return `${plural(reason.count, "Participant Card", "Participant Cards")} to review on ${roleLabel(reason.role)}`;
+			return `${plural(reason.count, "Builder Card", "Builder Cards")} to review on ${roleLabel(reason.role)}`;
 		case "hackathon_unread":
 			return `Unread messages on ${roleLabel(reason.role)}`;
 		case "participants_to_decide":
-			return `${plural(reason.count, "Participant", "Participants")} to decide on ${roleLabel(reason.role)}`;
+			return `${plural(reason.count, "Builder", "Builders")} to decide on ${roleLabel(reason.role)}`;
 		case "messages_unread":
 			return "Unread messages";
 		case "promise_pending":
@@ -125,7 +125,7 @@ export function currentPlaceView(
 					name: roleLabel(hackathon.job.role),
 					logoName: hackathon.startupName,
 					logoUrl: hackathon.startupLogoUrl,
-					role: `Participant · ${hackathon.startupName}`,
+					role: `Builder · ${hackathon.startupName}`,
 				}
 			: null;
 	}

@@ -44,7 +44,7 @@ export function PlansDialog({
 				<DialogHeader>
 					<DialogTitle>Pro lets you publish Hackathons</DialogTitle>
 					<DialogDescription>
-						{note ? `${note} ` : ""}Participants always join free.
+						{note ? `${note} ` : ""}Builders always join free.
 					</DialogDescription>
 				</DialogHeader>
 				<fieldset className="flex flex-col gap-2">

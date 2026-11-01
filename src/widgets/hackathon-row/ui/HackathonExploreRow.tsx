@@ -46,7 +46,7 @@ export function HackathonExploreRow({
 						</div>
 						{hackathon.participantsGet ? (
 							<p className="truncate text-sm text-muted-foreground">
-								Participants get {hackathon.participantsGet}
+								Builders get {hackathon.participantsGet}
 							</p>
 						) : null}
 						{record ? (

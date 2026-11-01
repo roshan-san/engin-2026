@@ -133,7 +133,7 @@ export function HackathonForm({
 
 				<Part
 					label="Cards"
-					note="3–5 Cards, each done in a day. Every Participant starts with them in To do."
+					note="3–5 Cards, each done in a day. Every Builder starts with them in To do."
 				>
 					<CardRows
 						cards={draft.cards}

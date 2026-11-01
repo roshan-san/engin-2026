@@ -154,7 +154,7 @@ export function PublicStartupPage() {
 									</span>
 									{h.participantsGet ? (
 										<span className="text-sm">
-											Participants get {h.participantsGet}
+											Builders get {h.participantsGet}
 										</span>
 									) : null}
 								</Link>

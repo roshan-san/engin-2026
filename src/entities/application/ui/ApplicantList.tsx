@@ -6,7 +6,7 @@ import type { ApplicantRow } from "../model/applicantSort";
 
 const STATUS_LABEL = {
 	applied: null,
-	participating: "Participant",
+	participating: "Builder",
 	declined: "Declined",
 	left: "Left",
 } as const;

@@ -75,7 +75,7 @@ export function requireValidDraft(input: DraftInput, now: number) {
 		...hackathonDates(input.startsAt, weeks),
 		participantsGet: limitText(
 			input.participantsGet,
-			"Participants get",
+			"What Builders get",
 			HACKATHON_TEXT.participantsGet,
 		),
 		cards: input.cards.map((card) => ({
