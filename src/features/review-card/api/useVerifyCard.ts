@@ -26,7 +26,7 @@ export function useVerifyCard(scope: BoardScope) {
 	return async function verify(card: Pick<CardView, "_id" | "title">) {
 		return attempt(async () => {
 			await verifyOptimistically({ cardId: card._id });
-			toast.success(`Verified · ${card.title}`);
+			toast.success(`Approved · ${card.title}`);
 		});
 	};
 }

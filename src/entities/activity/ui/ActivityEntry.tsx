@@ -147,7 +147,7 @@ function EntryLine({
 			{children}
 			{entry.selfVerified ? (
 				<Badge variant="outline" className="text-muted-foreground">
-					Self-verified
+					Self-approved
 				</Badge>
 			) : null}
 			<time

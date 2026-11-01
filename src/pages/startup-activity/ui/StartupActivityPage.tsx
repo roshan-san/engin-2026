@@ -86,7 +86,7 @@ export function StartupActivityPage() {
 									</span>
 									<span className="tabular-nums">
 										{" · "}
-										{signals.verifiedTotal12} verified in 12 weeks
+										{signals.verifiedTotal12} approved in 12 weeks
 									</span>
 								</>
 							) : null
@@ -110,7 +110,7 @@ export function StartupActivityPage() {
 			panel={
 				<DetailPanel
 					shows={panel.shows}
-					title="What shipped"
+					title="What got done"
 					description="What the Card shipped."
 					onClose={panel.close}
 					item={
@@ -145,7 +145,7 @@ export function StartupActivityPage() {
 						onSelect={(id) => select(id === entryId ? undefined : id)}
 						emptyHint={
 							<>
-								Cards land here when they're verified on the{" "}
+								Cards land here when they're approved on the{" "}
 								<Link
 									to="/s/$slug/board"
 									params={{ slug: startup.slug }}

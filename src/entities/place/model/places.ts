@@ -60,7 +60,7 @@ export function reasonLine(reason: WaitingReason): string {
 		case "team_unread":
 			return "Unread team messages";
 		case "cards_to_verify":
-			return `${plural(reason.count, "Card", "Cards")} to verify`;
+			return `${plural(reason.count, "Card", "Cards")} to approve`;
 		case "new_applicants":
 			return `${plural(reason.count, "new applicant", "new applicants")} on ${roleLabel(reason.role)}`;
 		case "participant_cards_to_review":

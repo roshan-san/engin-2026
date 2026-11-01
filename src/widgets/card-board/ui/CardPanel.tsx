@@ -98,7 +98,7 @@ function OpenCard({
 	// Reviewing: the work comes first, then the Founder's notes on it.
 	const isReviewing = card.status === "review" && canVerify;
 	const shipped = card.shipped ? (
-		<Section label="What shipped" as="h3">
+		<Section label="What got done" as="h3">
 			<ShippedView card={card} />
 		</Section>
 	) : null;

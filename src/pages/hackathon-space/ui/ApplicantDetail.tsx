@@ -88,10 +88,10 @@ export function ApplicantDetail({
 					)}
 				</Section>
 
-				<Section label="Verified work" as="h3">
+				<Section label="Approved work" as="h3">
 					{record.work.length === 0 ? (
 						<p className="py-2 text-sm text-muted-foreground">
-							No verified work yet
+							No approved work yet
 						</p>
 					) : (
 						<RowList>

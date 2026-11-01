@@ -37,7 +37,7 @@ export function dropRefusal(
 	actor: CardActor,
 ): string | null {
 	if (card.status === to) return null;
-	if (to === "done") return "Only Verify moves a Card to Done";
+	if (to === "done") return "Only Approve moves a Card to Done";
 	return refusalFor(card, actionFor(to), actor);
 }
 

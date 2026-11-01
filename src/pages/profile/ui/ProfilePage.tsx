@@ -166,10 +166,10 @@ function SignedInProfile({
 				)}
 			</Section>
 
-			<Section label="Verified work">
+			<Section label="Approved work">
 				{details.work.length === 0 ? (
 					<p className="py-2 text-sm text-muted-foreground">
-						No verified work yet
+						No approved work yet
 					</p>
 				) : (
 					<RowList>
@@ -222,7 +222,7 @@ function SignedOutProfile({ profile }: { readonly profile: Profile }) {
 				/>
 			</header>
 			<SignInCard>
-				Sign in to see their bio, Hackathons and verified work.
+				Sign in to see their bio, Hackathons and approved work.
 			</SignInCard>
 		</Page>
 	);

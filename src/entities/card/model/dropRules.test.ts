@@ -60,7 +60,7 @@ describe("dropAction", () => {
 describe("dropRefusal", () => {
 	it("says Done only takes Verify", () => {
 		expect(dropRefusal(aCard("review"), "done", founder)).toBe(
-			"Only Verify moves a Card to Done",
+			"Only Approve moves a Card to Done",
 		);
 	});
 

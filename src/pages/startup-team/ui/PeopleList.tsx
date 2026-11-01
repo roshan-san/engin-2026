@@ -86,7 +86,7 @@ function PersonRow({
 			}
 			meta={
 				person.verifiedThisCycle > 0
-					? `${position} · ${person.verifiedThisCycle} verified this Cycle`
+					? `${position} · ${person.verifiedThisCycle} approved this Cycle`
 					: position
 			}
 			trailing={

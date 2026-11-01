@@ -273,7 +273,7 @@ describe("submit and verify", () => {
 		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
 
 		await expect(sam.as.mutation(api.cards.verify, { cardId })).rejects.toThrow(
-			"Only the Founder can verify a Card",
+			"Only the Founder can approve a Card",
 		);
 	});
 
@@ -345,7 +345,7 @@ describe("locks", () => {
 				cardId,
 				shipped: { ...SHIPPED, line: "Changed my mind" },
 			}),
-		).rejects.toThrow("This Card is verified");
+		).rejects.toThrow("This Card is approved");
 		await sam.as.mutation(api.cards.update, {
 			cardId,
 			notes: "Follow-up: A/B test the subject",
@@ -368,19 +368,19 @@ describe("locks", () => {
 
 		await expect(
 			sam.as.mutation(api.cards.update, { cardId, title: "New title" }),
-		).rejects.toThrow("This Card is verified");
+		).rejects.toThrow("This Card is approved");
 		await expect(
 			setup.founder.as.mutation(api.cards.update, {
 				cardId,
 				ownerId: setup.founder.userId,
 			}),
-		).rejects.toThrow("This Card is verified");
+		).rejects.toThrow("This Card is approved");
 		await expect(
 			setup.founder.as.mutation(api.cards.move, { cardId, to: "todo" }),
-		).rejects.toThrow("This Card is verified");
+		).rejects.toThrow("This Card is approved");
 		await expect(
 			setup.founder.as.mutation(api.cards.remove, { cardId }),
-		).rejects.toThrow("This Card is verified");
+		).rejects.toThrow("This Card is approved");
 	});
 
 	it("a Card in Review keeps its owner", async () => {

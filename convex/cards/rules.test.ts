@@ -44,7 +44,7 @@ const RETITLE: CardAction = { kind: "retitle" };
 const REASSIGN: CardAction = { kind: "reassign" };
 const EDIT_NOTES: CardAction = { kind: "editNotes" };
 
-const VERIFIED = "This Card is verified, so only its notes can change";
+const VERIFIED = "This Card is approved, so only its notes can change";
 const STAYS = "Hackathon Cards stay with their Participant";
 
 describe("Startup Cards", () => {
@@ -82,7 +82,7 @@ describe("Startup Cards", () => {
 	it("only the Founder verifies, and only a Card in Review", () => {
 		expect(cardRefusal(card("review"), VERIFY, founder)).toBeNull();
 		expect(cardRefusal(card("review"), VERIFY, contributor)).toBe(
-			"Only the Founder can verify a Card",
+			"Only the Founder can approve a Card",
 		);
 		expect(cardRefusal(card("in_progress"), VERIFY, founder)).toBe(
 			"This Card isn't in Review",
@@ -145,7 +145,7 @@ describe("Hackathon Cards", () => {
 			"Only the Founder can send a Card back",
 		);
 		expect(cardRefusal(card("review"), VERIFY, participant("live"))).toBe(
-			"Only the Founder can verify a Card",
+			"Only the Founder can approve a Card",
 		);
 	});
 

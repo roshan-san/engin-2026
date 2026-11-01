@@ -42,7 +42,7 @@ export function RecordSignals({
 						<span className="font-medium text-foreground">
 							{signals.verifiedTotal12}
 						</span>{" "}
-						verified in 12 weeks
+						approved in 12 weeks
 					</span>
 				</div>
 				<RhythmStrip strip={signals.strip} size="fluid" />

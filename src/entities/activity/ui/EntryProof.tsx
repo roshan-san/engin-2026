@@ -50,7 +50,7 @@ export function EntryProof({
 						<li key={url}>
 							<a
 								href={url}
-								aria-label={`Image ${index + 1} of What shipped`}
+								aria-label={`Image ${index + 1} of What got done`}
 								target="_blank"
 								rel="noreferrer noopener"
 								className="block overflow-hidden rounded-md border border-border transition-opacity hover:opacity-85"
@@ -73,10 +73,10 @@ export function EntryProof({
 			)}
 			<p className="flex items-center gap-1.5 text-xs text-muted-foreground">
 				{entry.selfVerified ? (
-					"Self-verified by the Founder"
+					"Self-approved by the Founder"
 				) : (
 					<>
-						Verified by
+						Approved by
 						<PersonAvatar person={card.verifier} size={16} />
 						<PersonName person={card.verifier} />
 					</>

@@ -49,7 +49,7 @@ export function DecideSheet({
 			<MentorNote>
 				{inReview === 1 ? "1 Card is" : `${inReview} Cards are`} still in
 				Review. The Hackathon stays open until they're reviewed, or until{" "}
-				{dayLabel(lastDay(hackathon.decideBy))}, when they stay unverified.
+				{dayLabel(lastDay(hackathon.decideBy))}, when they stay unapproved.
 			</MentorNote>
 		) : null;
 

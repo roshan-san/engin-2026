@@ -177,8 +177,8 @@ describe("isWaiting", () => {
 describe("reasonLine", () => {
 	it.each([
 		[{ kind: "team_unread" }, "Unread team messages"],
-		[{ kind: "cards_to_verify", count: 1 }, "1 Card to verify"],
-		[{ kind: "cards_to_verify", count: 2 }, "2 Cards to verify"],
+		[{ kind: "cards_to_verify", count: 1 }, "1 Card to approve"],
+		[{ kind: "cards_to_verify", count: 2 }, "2 Cards to approve"],
 		[
 			{ kind: "new_applicants", role: "frontend", count: 3 },
 			"3 new applicants on Frontend",
@@ -209,7 +209,7 @@ describe("placeHint", () => {
 
 	it("one reason reads in plain words", () => {
 		expect(placeHint([{ kind: "cards_to_verify", count: 2 }], "Founder")).toBe(
-			"2 Cards to verify",
+			"2 Cards to approve",
 		);
 	});
 

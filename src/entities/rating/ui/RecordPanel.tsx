@@ -29,7 +29,7 @@ export function RecordPanel({
 				<Section label="Who sees what">
 					<p className="text-xs leading-5 text-muted-foreground">
 						Anyone sees the Rating, rhythm, how many shipped each Cycle,
-						Hackathons and Hires. Card titles, What shipped, links and images
+						Hackathons and Hires. Card titles, What got done, links and images
 						stay with the team and Investor Pro.
 					</p>
 				</Section>
