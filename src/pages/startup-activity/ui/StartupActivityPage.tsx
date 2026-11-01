@@ -82,7 +82,7 @@ export function StartupActivityPage() {
 											tierText(signals.rating),
 										)}
 									>
-										Rating {signals.rating}
+										Momentum {signals.rating}
 									</span>
 									<span className="tabular-nums">
 										{" · "}

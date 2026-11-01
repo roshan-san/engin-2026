@@ -105,7 +105,7 @@ export function PublicStartupPage() {
 							>
 								{startup.rating}
 							</span>
-							<span className="text-xs text-muted-foreground">Rating</span>
+							<span className="text-xs text-muted-foreground">Momentum</span>
 						</div>
 					</div>
 					<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">

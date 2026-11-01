@@ -27,7 +27,7 @@ export function RecordSignals({
 			)}
 		>
 			<div className="flex flex-col gap-2">
-				<h2 className={LABEL}>Rating</h2>
+				<h2 className={LABEL}>Momentum</h2>
 				<RatingBadge
 					rating={signals.rating}
 					ratingChange={signals.ratingChange}

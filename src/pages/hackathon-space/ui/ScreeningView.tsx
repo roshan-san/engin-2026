@@ -42,7 +42,7 @@ const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
 const SORTS = [
 	{ value: "newest", label: "Newest" },
-	{ value: "rating", label: "Rating" },
+	{ value: "rating", label: "Momentum" },
 ] as const;
 
 const PANES = [
