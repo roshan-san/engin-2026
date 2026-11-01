@@ -68,7 +68,7 @@ function StartupRow({ slug }: { readonly slug: string }) {
 							className="flex h-8 items-center rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-ring"
 							onClick={() => setSettingsOpen(true)}
 						>
-							Settings
+							Team &amp; settings
 						</button>
 						<SettingsSheet
 							slug={slug}

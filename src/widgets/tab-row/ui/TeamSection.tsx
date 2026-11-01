@@ -10,7 +10,7 @@ import { useRemoveContributor } from "~/features/remove-contributor";
 import { EmptyState } from "~/shared/ui/EmptyState";
 import { PeopleList } from "./PeopleList";
 
-/** Settings' Team: people and, for the Founder, invites and Remove. */
+/** The Team: people and, for the Founder, invites and Remove. */
 export function TeamSection({
 	startupId,
 	isFounder,

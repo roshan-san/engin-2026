@@ -12,7 +12,7 @@ import {
 import { Spinner } from "~/shared/ui/spinner";
 import { TeamSection } from "./TeamSection";
 
-/** A Startup's Settings, in a side sheet over whichever tab is open: the Founder's details form, then the Team. */
+/** A Startup's Team & settings, in a side sheet over whichever tab is open: the Team, then the Founder's details form. */
 export function SettingsSheet({
 	slug,
 	open,
@@ -31,7 +31,7 @@ export function SettingsSheet({
 			<Sheet open={open} onOpenChange={guard.guardedOpenChange}>
 				<SheetContent className="overflow-y-auto">
 					<SheetHeader>
-						<SheetTitle>Settings</SheetTitle>
+						<SheetTitle>Team &amp; settings</SheetTitle>
 						<SheetDescription>
 							{isFounder
 								? "Your Startup's page and its team."
@@ -44,6 +44,12 @@ export function SettingsSheet({
 						</div>
 					) : found ? (
 						<div className="flex flex-col gap-8 pb-6">
+							<div className="px-4">
+								<TeamSection
+									startupId={found.startup._id}
+									isFounder={isFounder}
+								/>
+							</div>
 							{isFounder ? (
 								<StartupSettingsForm
 									startup={found.startup}
@@ -51,12 +57,6 @@ export function SettingsSheet({
 									onSaved={() => onOpenChange(false)}
 								/>
 							) : null}
-							<div className="px-4">
-								<TeamSection
-									startupId={found.startup._id}
-									isFounder={isFounder}
-								/>
-							</div>
 						</div>
 					) : null}
 				</SheetContent>
