@@ -3,6 +3,7 @@ import { useBoardCards, useBoardScope } from "~/entities/card";
 import { useCycle } from "~/entities/cycle";
 import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
+import { ReviewBanner } from "~/features/monday-review";
 import { CycleHeader, GoalPrompt } from "~/features/set-cycle-goal";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
@@ -60,6 +61,7 @@ export function StartupCyclePage() {
 		<CardBoard cardId={cardId} onCardChange={setCard}>
 			<AppPage
 				width={view === "board" && !asksForGoal ? "full" : "column"}
+				notice={<ReviewBanner />}
 				bar={{
 					title: <CycleHeader showsGoalInput={!asksForGoal} />,
 					actions: (

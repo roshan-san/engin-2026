@@ -12,14 +12,15 @@ export function Segmented<T extends string>({
 }: {
 	readonly label: string;
 	readonly options: readonly { value: T; label: ReactNode }[];
-	readonly value: T;
+	/** `null` while nothing is picked. */
+	readonly value: T | null;
 	readonly onChange: (value: T) => void;
 	readonly className?: string;
 }) {
 	return (
 		<RadioGroup.Root
 			aria-label={label}
-			value={value}
+			value={value ?? ""}
 			onValueChange={(next) => onChange(next as T)}
 			className={cn(
 				"inline-flex items-center gap-0.5 rounded-lg bg-muted p-0.5",

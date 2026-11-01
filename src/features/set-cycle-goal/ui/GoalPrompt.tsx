@@ -1,11 +1,11 @@
 import { CYCLE_TEXT } from "@convex/cycles/rules";
 import { type FormEvent, useState } from "react";
 import { useWorkspace } from "~/entities/startup";
+import { GOAL_QUESTION } from "~/shared/config/goalQuestion";
 import { Button } from "~/shared/ui/button";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { useSetGoal } from "../api/useSetGoal";
-import { GOAL_QUESTION } from "../config/goalQuestion";
 
 /** Asks for this week's goal, where a Cycle has none yet. */
 export function GoalPrompt() {

@@ -2,12 +2,12 @@ import { CYCLE_TEXT } from "@convex/cycles/rules";
 import { useRef, useState } from "react";
 import { useCycle } from "~/entities/cycle";
 import { useWorkspace } from "~/entities/startup";
+import { GOAL_QUESTION } from "~/shared/config/goalQuestion";
 import { dateRange } from "~/shared/lib/dates";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useSetGoal } from "../api/useSetGoal";
-import { GOAL_QUESTION } from "../config/goalQuestion";
 
 /** "Cycle 3 · Oct 12 – 18", then the week's goal; the Founder edits it in place. */
 export function CycleHeader({
