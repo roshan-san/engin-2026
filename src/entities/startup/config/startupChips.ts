@@ -34,3 +34,23 @@ export const CITIES: readonly Chip<Infer<typeof startupCity>>[] = [
 	{ value: "remote", label: "Remote" },
 	{ value: "other", label: "Other" },
 ];
+
+function labelOf(
+	chips: readonly { readonly value: string; readonly label: string }[],
+	value: string,
+): string {
+	return chips.find((chip) => chip.value === value)?.label ?? value;
+}
+
+/** A Startup's stage, kind and city in words, leaving out what it hasn't set. */
+export function startupChipLabels(startup: {
+	readonly stage?: string;
+	readonly category?: string;
+	readonly city?: string;
+}): string[] {
+	return [
+		startup.stage && labelOf(STAGES, startup.stage),
+		startup.category && labelOf(KINDS, startup.category),
+		startup.city && labelOf(CITIES, startup.city),
+	].filter((label) => label !== undefined && label !== "") as string[];
+}

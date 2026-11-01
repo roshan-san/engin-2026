@@ -4,10 +4,8 @@ import { ActivityFeed, usePublicActivity } from "~/entities/activity";
 import { usePlaces } from "~/entities/place";
 import { RecordSignals, useSignals } from "~/entities/rating";
 import {
-	CITIES,
 	hiringLine,
-	KINDS,
-	STAGES,
+	startupChipLabels,
 	usePublicStartup,
 } from "~/entities/startup";
 import { jobLine } from "~/shared/config/jobs";
@@ -25,13 +23,6 @@ import { Skeleton } from "~/shared/ui/skeleton";
 import { TILE, TILE_LINK } from "~/shared/ui/tile";
 
 const route = getRouteApi("/_shell/startups/$slug");
-
-function labelOf<T extends string>(
-	chips: readonly { value: T; label: string }[],
-	value: T,
-): string {
-	return chips.find((chip) => chip.value === value)?.label ?? value;
-}
 
 /** A Startup's public Record: who they are, their Rating, hiring and Cycles. */
 export function PublicStartupPage() {
@@ -63,11 +54,7 @@ export function PublicStartupPage() {
 	}
 
 	const hiring = hiringLine(startup.hiringRecord);
-	const chips = [
-		labelOf(STAGES, startup.stage),
-		labelOf(KINDS, startup.category),
-		labelOf(CITIES, startup.city),
-	];
+	const chips = startupChipLabels(startup);
 
 	const isOnTeam = places?.startups.some((s) => s.slug === slug) ?? false;
 
@@ -87,13 +74,15 @@ export function PublicStartupPage() {
 										{startup.oneLiner}
 									</p>
 								) : null}
-								<div className="flex flex-wrap items-center gap-2">
-									{chips.map((chip) => (
-										<Badge key={chip} variant="secondary">
-											{chip}
-										</Badge>
-									))}
-								</div>
+								{chips.length > 0 ? (
+									<div className="flex flex-wrap items-center gap-2">
+										{chips.map((chip) => (
+											<Badge key={chip} variant="secondary">
+												{chip}
+											</Badge>
+										))}
+									</div>
+								) : null}
 							</div>
 						</div>
 						<div className="flex shrink-0 flex-col items-start sm:items-end">

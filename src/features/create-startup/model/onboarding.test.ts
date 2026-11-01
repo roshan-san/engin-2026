@@ -1,32 +1,26 @@
 import { describe, expect, it } from "vitest";
 import {
 	canAdvance,
+	INITIAL_STATE,
 	type OnboardingState,
 	onboardingReducer,
+	STEPS,
 	toCreateArgs,
 } from "./onboarding";
 
-const BLANK: OnboardingState = {
-	step: "name",
-	name: "",
-	stage: null,
-	category: null,
-	city: null,
-	oneLiner: "",
-};
-
-const FILLED: OnboardingState = {
+const NAMED: OnboardingState = {
 	step: "oneLiner",
 	name: "Acme",
-	stage: "building",
-	category: "saas",
-	city: "pune",
 	oneLiner: "",
 };
 
 describe("onboarding steps", () => {
+	it("onboarding asks for a name and one line", () => {
+		expect(STEPS).toEqual(["name", "oneLiner"]);
+	});
+
 	it("a blank name can't advance", () => {
-		const typed = onboardingReducer(BLANK, {
+		const typed = onboardingReducer(INITIAL_STATE, {
 			type: "type",
 			field: "name",
 			value: "   ",
@@ -38,8 +32,8 @@ describe("onboarding steps", () => {
 		expect(next.step).toBe("name");
 	});
 
-	it("a typed name advances to stage", () => {
-		const typed = onboardingReducer(BLANK, {
+	it("a typed name advances to the one line", () => {
+		const typed = onboardingReducer(INITIAL_STATE, {
 			type: "type",
 			field: "name",
 			value: "Acme",
@@ -47,111 +41,55 @@ describe("onboarding steps", () => {
 
 		const next = onboardingReducer(typed, { type: "next" });
 
-		expect(next.step).toBe("stage");
+		expect(next.step).toBe("oneLiner");
 	});
 
-	it("picking a stage moves to kind", () => {
-		const atStage = { ...BLANK, name: "Acme", step: "stage" } as const;
+	it("back returns to the name with it kept", () => {
+		const back = onboardingReducer(NAMED, { type: "back" });
 
-		const next = onboardingReducer(atStage, {
-			type: "pick",
-			field: "stage",
-			value: "building",
-		});
-
-		expect(next.stage).toBe("building");
-		expect(next.step).toBe("kind");
-	});
-
-	it("next waits for a pick on a chip step", () => {
-		const atKind = {
-			...BLANK,
-			name: "Acme",
-			stage: "idea",
-			step: "kind",
-		} as const;
-
-		const next = onboardingReducer(atKind, { type: "next" });
-
-		expect(next.step).toBe("kind");
-	});
-
-	it("back from city returns to kind with choices kept", () => {
-		const atCity: OnboardingState = {
-			...BLANK,
-			name: "Acme",
-			stage: "launched",
-			category: "ai",
-			step: "city",
-		};
-
-		const back = onboardingReducer(atCity, { type: "back" });
-
-		expect(back).toEqual({ ...atCity, step: "kind" });
+		expect(back).toEqual({ ...NAMED, step: "name" });
 	});
 
 	it("back on the first step stays", () => {
-		const back = onboardingReducer(BLANK, { type: "back" });
+		const back = onboardingReducer(INITIAL_STATE, { type: "back" });
 
-		expect(back).toEqual(BLANK);
+		expect(back).toEqual(INITIAL_STATE);
 	});
 
 	it("goto returns to an earlier step", () => {
-		const atCity: OnboardingState = { ...FILLED, step: "city" };
-
-		const next = onboardingReducer(atCity, { type: "goto", step: "name" });
+		const next = onboardingReducer(NAMED, { type: "goto", step: "name" });
 
 		expect(next.step).toBe("name");
 	});
 
 	it("goto can't skip ahead", () => {
-		const atStage: OnboardingState = { ...FILLED, step: "stage" };
+		const next = onboardingReducer(
+			{ ...NAMED, step: "name" },
+			{ type: "goto", step: "oneLiner" },
+		);
 
-		const next = onboardingReducer(atStage, { type: "goto", step: "city" });
-
-		expect(next.step).toBe("stage");
-	});
-
-	it("picking the last chip moves to the one line", () => {
-		const atCity: OnboardingState = { ...FILLED, city: null, step: "city" };
-
-		const next = onboardingReducer(atCity, {
-			type: "pick",
-			field: "city",
-			value: "mumbai",
-		});
-
-		expect(next.step).toBe("oneLiner");
+		expect(next.step).toBe("name");
 	});
 });
 
 describe("onboarding create args", () => {
-	it("the one line is optional", () => {
-		const args = toCreateArgs({ ...FILLED, oneLiner: "  " });
-
-		expect(args).toEqual({
+	it("a name is all it takes", () => {
+		expect(toCreateArgs({ ...INITIAL_STATE, name: " Acme " })).toEqual({
 			name: "Acme",
-			stage: "building",
-			category: "saas",
-			city: "pune",
 		});
-		expect(args).not.toHaveProperty("oneLiner");
 	});
 
 	it("a typed one line is trimmed and sent", () => {
 		const args = toCreateArgs({
-			...FILLED,
+			...NAMED,
 			oneLiner: " Invoices for tailors ",
 		});
 
 		expect(args?.oneLiner).toBe("Invoices for tailors");
 	});
 
-	it("create args need every chip", () => {
-		expect(toCreateArgs({ ...FILLED, stage: null })).toBeNull();
-		expect(toCreateArgs({ ...FILLED, category: null })).toBeNull();
-		expect(toCreateArgs({ ...FILLED, city: null })).toBeNull();
-		expect(toCreateArgs({ ...FILLED, name: " " })).toBeNull();
-		expect(toCreateArgs(FILLED)).not.toBeNull();
+	it("create args need a name", () => {
+		expect(toCreateArgs(INITIAL_STATE)).toBeNull();
+		expect(toCreateArgs({ ...NAMED, name: " " })).toBeNull();
 	});
 });

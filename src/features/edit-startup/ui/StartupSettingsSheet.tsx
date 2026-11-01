@@ -180,7 +180,7 @@ function StartupSettings({
 				<ChipPicker
 					label="Stage"
 					options={STAGES}
-					value={draft.stage}
+					value={draft.stage ?? null}
 					onChange={(stage) => set("stage", stage)}
 				/>
 			</div>
@@ -189,7 +189,7 @@ function StartupSettings({
 				<ChipPicker
 					label="Kind"
 					options={KINDS}
-					value={draft.category}
+					value={draft.category ?? null}
 					onChange={(category) => set("category", category)}
 				/>
 			</div>
@@ -198,7 +198,7 @@ function StartupSettings({
 				<ChipPicker
 					label="City"
 					options={CITIES}
-					value={draft.city}
+					value={draft.city ?? null}
 					onChange={(city) => set("city", city)}
 				/>
 			</div>

@@ -4,7 +4,7 @@ import {
 	startupStage,
 } from "@convex/startups/rules";
 import { describe, expect, test } from "vitest";
-import { CITIES, KINDS, STAGES } from "./startupChips";
+import { CITIES, KINDS, STAGES, startupChipLabels } from "./startupChips";
 
 function literalsOf(validator: {
 	members: readonly { value: string }[];
@@ -29,5 +29,15 @@ describe("startup chips", () => {
 		expect(CITIES.map((chip) => chip.value).sort()).toEqual(
 			literalsOf(startupCity).sort(),
 		);
+	});
+
+	test("a Startup's labels skip what it hasn't set", () => {
+		expect(startupChipLabels({})).toEqual([]);
+		expect(startupChipLabels({ stage: "building", city: "bengaluru" })).toEqual(
+			["Building", "Bengaluru"],
+		);
+		expect(
+			startupChipLabels({ stage: "idea", category: "ai", city: "pune" }),
+		).toEqual(["Idea", "AI", "Pune"]);
 	});
 });

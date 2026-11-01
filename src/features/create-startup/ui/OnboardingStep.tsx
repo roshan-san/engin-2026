@@ -1,7 +1,5 @@
 import { STARTUP_TEXT } from "@convex/startups/rules";
 import { type ReactNode, useEffect, useRef } from "react";
-import { CITIES, KINDS, STAGES } from "~/entities/startup";
-import { ChipPicker } from "~/shared/ui/ChipPicker";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import type {
@@ -12,17 +10,11 @@ import type {
 
 export const STEP_LABELS: Record<Step, string> = {
 	name: "Name",
-	stage: "Stage",
-	kind: "Kind",
-	city: "City",
 	oneLiner: "One line",
 };
 
 const QUESTIONS: Record<Step, string> = {
 	name: "Name your startup.",
-	stage: "Pick your stage.",
-	kind: "What kind of startup is it?",
-	city: "Pick your city.",
 	oneLiner: "Describe it in one line.",
 };
 
@@ -59,43 +51,6 @@ function renderControl(
 					value={state.name}
 					maxLength={STARTUP_TEXT.name}
 					onChange={(value) => dispatch({ type: "type", field: "name", value })}
-				/>
-			);
-		case "stage":
-			return (
-				<>
-					<ChipPicker
-						pickOnArrow={false}
-						label="Stage"
-						options={STAGES}
-						value={state.stage}
-						onChange={(value) =>
-							dispatch({ type: "pick", field: "stage", value })
-						}
-					/>
-					<MentorNote>Be honest. It sets your baseline.</MentorNote>
-				</>
-			);
-		case "kind":
-			return (
-				<ChipPicker
-					pickOnArrow={false}
-					label="Kind"
-					options={KINDS}
-					value={state.category}
-					onChange={(value) =>
-						dispatch({ type: "pick", field: "category", value })
-					}
-				/>
-			);
-		case "city":
-			return (
-				<ChipPicker
-					pickOnArrow={false}
-					label="City"
-					options={CITIES}
-					value={state.city}
-					onChange={(value) => dispatch({ type: "pick", field: "city", value })}
 				/>
 			);
 		case "oneLiner":

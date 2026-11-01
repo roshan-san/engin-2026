@@ -89,9 +89,9 @@ export const explore = query({
 export const create = mutation({
 	args: {
 		name: v.string(),
-		stage: startupStage,
-		category: startupCategory,
-		city: startupCity,
+		stage: v.optional(startupStage),
+		category: v.optional(startupCategory),
+		city: v.optional(startupCity),
 		oneLiner: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {

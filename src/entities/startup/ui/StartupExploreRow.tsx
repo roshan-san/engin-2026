@@ -5,27 +5,11 @@ import { Badge } from "~/shared/ui/badge";
 import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RhythmStrip } from "~/shared/ui/RhythmStrip";
-import { CITIES, KINDS, STAGES } from "../config/startupChips";
+import { startupChipLabels } from "../config/startupChips";
 
 export type StartupExploreRowData = FunctionReturnType<
 	typeof api.startups.explore
 >[number];
-
-function labelOf(
-	chips: readonly { readonly value: string; readonly label: string }[],
-	value: string,
-) {
-	return chips.find((chip) => chip.value === value)?.label ?? value;
-}
-
-/** "Building · SaaS · Bengaluru" */
-function chipsLine(startup: StartupExploreRowData): string {
-	return [
-		labelOf(STAGES, startup.stage),
-		labelOf(KINDS, startup.category),
-		labelOf(CITIES, startup.city),
-	].join(" · ");
-}
 
 /** One Startup: who it is, its Rating and its last 12 weeks. */
 export function StartupExploreRow({
@@ -33,6 +17,9 @@ export function StartupExploreRow({
 }: {
 	readonly startup: StartupExploreRowData;
 }) {
+	// "Building · SaaS · Bengaluru"
+	const chips = startupChipLabels(startup).join(" · ");
+
 	return (
 		<li>
 			<Link
@@ -56,9 +43,11 @@ export function StartupExploreRow({
 								{startup.oneLiner}
 							</span>
 						) : null}
-						<span className="truncate text-xs text-muted-foreground">
-							{chipsLine(startup)}
-						</span>
+						{chips ? (
+							<span className="truncate text-xs text-muted-foreground">
+								{chips}
+							</span>
+						) : null}
 					</div>
 				</div>
 				<div className="flex shrink-0 items-center justify-between gap-6 sm:justify-end">

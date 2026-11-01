@@ -17,7 +17,7 @@ import { Button } from "~/shared/ui/button";
 import { Kbd } from "~/shared/ui/Kbd";
 import { Spinner } from "~/shared/ui/spinner";
 
-/** Founder onboarding: one question per screen, then the new Startup's Board, or New hackathon for someone who came to post one. */
+/** Founder onboarding: a name, then one line, then the new Startup's Board, or New hackathon for someone who came to post one. */
 export function OnboardingPage() {
 	const navigate = useNavigate();
 	const { intent } = useSearch({ from: "/_shell/_authed/onboarding" });

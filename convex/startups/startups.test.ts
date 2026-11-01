@@ -35,6 +35,33 @@ describe("startups", () => {
 		});
 	});
 
+	it("a Startup needs only a name", async () => {
+		const t = createTest();
+		const founder = await signUp(t, "Fay");
+
+		const { startupId, slug } = await founder.as.mutation(api.startups.create, {
+			name: "Acme",
+		});
+
+		const row = await t.run(async (ctx) => await ctx.db.get(startupId));
+		expect(row?.stage).toBeUndefined();
+		const page = await t.query(api.startups.getPublic, { slug });
+		expect(page?.name).toBe("Acme");
+	});
+
+	it("a set Explore chip leaves out a Startup without that chip", async () => {
+		const t = createTest();
+		const founder = await signUp(t, "Fay");
+		await founder.as.mutation(api.startups.create, acme);
+		await founder.as.mutation(api.startups.create, { name: "Bare" });
+
+		const all = await t.query(api.startups.explore, {});
+		const building = await t.query(api.startups.explore, { stage: "building" });
+
+		expect(all).toHaveLength(2);
+		expect(building.map((row) => row.name)).toEqual(["Acme"]);
+	});
+
 	it("slugs stay unique", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");
