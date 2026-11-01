@@ -241,7 +241,7 @@ export function ShipDialog({
 					{missing ? (
 						<MentorNote>
 							{missing === "line"
-								? "Add what shipped"
+								? "Add what got done"
 								: missing === "invalidLink"
 									? "Links start with https://"
 									: "Add a link or an image"}

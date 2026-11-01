@@ -132,7 +132,7 @@ export function normalizeNotes(notes: string): string {
 export function parseShipped(input: Shipped): Shipped {
 	const line = input.line.trim();
 	if (!line) {
-		throw new ConvexError("Say what shipped");
+		throw new ConvexError("Say what got done");
 	}
 	if (line.length > CARD_TEXT.shippedLine) {
 		throw new ConvexError(

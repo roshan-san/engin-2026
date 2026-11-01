@@ -246,7 +246,7 @@ describe("submit and verify", () => {
 				cardId,
 				shipped: { ...SHIPPED, line: "  " },
 			}),
-		).rejects.toThrow("Say what shipped");
+		).rejects.toThrow("Say what got done");
 		await expect(
 			setup.founder.as.mutation(api.cards.submit, {
 				cardId,

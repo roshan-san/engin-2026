@@ -60,7 +60,7 @@ export function ParticipantBrief({
 
 			<Section label="How it ends" as="h3">
 				<ul className="flex list-disc flex-col gap-1.5 pl-4 text-sm text-muted-foreground marker:text-subtle-foreground">
-					<li>Ship each Card with what shipped. The Founder verifies it.</li>
+					<li>Ship each Card with what got done. The Founder approves it.</li>
 					<li>Shortlisted Builders get a Walkthrough call.</li>
 					<li>
 						The decision comes by {dayLabel(lastDay(hackathon.decideBy))}.
