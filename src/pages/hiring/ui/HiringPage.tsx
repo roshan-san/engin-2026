@@ -32,7 +32,7 @@ export function HiringPage() {
 			bar={{
 				title: (
 					<PageTitle
-						name="Hiring"
+						name="Hackathons"
 						context={rows ? hiringSummary(rows, isFounder) : null}
 					/>
 				),
@@ -47,7 +47,7 @@ export function HiringPage() {
 			) : rows.length === 0 ? (
 				<EmptyState
 					title={
-						isFounder ? "Hire by watching people build." : "No hackathons yet."
+						isFounder ? "Bring builders in by watching them work." : "No hackathons yet."
 					}
 					body={
 						isFounder

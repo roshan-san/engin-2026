@@ -138,7 +138,7 @@ export function PublicStartupPage() {
 				)}
 
 				{startup.openHackathons.length > 0 ? (
-					<Section label="Hiring now">
+					<Section label="Open Hackathons">
 						<div className="grid gap-3 sm:grid-cols-2">
 							{startup.openHackathons.map((h) => (
 								<Link
@@ -164,7 +164,7 @@ export function PublicStartupPage() {
 				) : null}
 
 				{hiring ? (
-					<Section label="Hiring record">
+					<Section label="Hackathon record">
 						<p className="text-sm">{hiring}</p>
 					</Section>
 				) : null}

@@ -26,7 +26,7 @@ export function NewHackathonPage() {
 			bar={{
 				back: (
 					<BackLink
-						label="Hiring"
+						label="Hackathons"
 						link={{ to: "/s/$slug/hiring", params: { slug: startup.slug } }}
 					/>
 				),

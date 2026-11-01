@@ -47,7 +47,7 @@ export function StartupActivityPage() {
 		toast(
 			hasEarlier
 				? "That Card is in an earlier Cycle. Show earlier to find it."
-				: "That Card isn't in Activity.",
+				: "That Card isn't in the Record.",
 			{ id: "stale-entry" },
 		);
 	}, [loaded, hasEarlier, entryId, open, navigate]);
@@ -72,7 +72,7 @@ export function StartupActivityPage() {
 			bar={{
 				title: (
 					<PageTitle
-						name="Activity"
+						name="Record"
 						context={
 							signals ? (
 								<>
