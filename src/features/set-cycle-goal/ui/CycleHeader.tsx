@@ -7,9 +7,15 @@ import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Skeleton } from "~/shared/ui/skeleton";
 import { useSetGoal } from "../api/useSetGoal";
+import { GOAL_QUESTION } from "../config/goalQuestion";
 
 /** "Cycle 3 · Oct 12 – 18", then the week's goal; the Founder edits it in place. */
-export function CycleHeader() {
+export function CycleHeader({
+	showsGoalInput = true,
+}: {
+	/** Off while the page asks for the goal itself. */
+	readonly showsGoalInput?: boolean;
+}) {
 	const { startup, isFounder } = useWorkspace();
 	const cycle = useCycle(startup._id);
 	const setGoal = useSetGoal(startup._id);
@@ -59,6 +65,10 @@ export function CycleHeader() {
 		);
 	}
 
+	if (!showsGoalInput) {
+		return <div className="flex min-w-0 flex-1 items-center">{when}</div>;
+	}
+
 	return (
 		<div className="flex min-w-0 flex-1 items-center gap-3">
 			{when}
@@ -66,7 +76,7 @@ export function CycleHeader() {
 			<div className="relative -ml-2 min-w-0 max-w-xl flex-1">
 				<Input
 					aria-label="Cycle goal"
-					placeholder="Set this week's goal"
+					placeholder={GOAL_QUESTION}
 					value={draft ?? goal}
 					maxLength={CYCLE_TEXT.goal}
 					autoComplete="off"
@@ -97,9 +107,7 @@ export function CycleHeader() {
 				{isFocused ? (
 					// Below the bar, over the Board's top edge, so the bar keeps its height.
 					<div className="absolute top-full left-2 z-10 mt-2 rounded-md bg-background px-1">
-						<MentorNote>
-							What has to ship by Sunday? Keep it to one line.
-						</MentorNote>
+						<MentorNote>Keep it to one line.</MentorNote>
 					</div>
 				) : null}
 			</div>

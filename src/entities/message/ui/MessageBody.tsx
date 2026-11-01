@@ -31,7 +31,7 @@ export function MessageBody({
 				return (
 					<Link
 						key={key}
-						to="/s/$slug/board"
+						to="/s/$slug/cycle"
 						params={{ slug }}
 						search={{ card: mention.cardId }}
 						className="inline-flex max-w-full items-center rounded-md bg-muted px-1.5 align-bottom text-foreground hover:bg-accent focus-ring"

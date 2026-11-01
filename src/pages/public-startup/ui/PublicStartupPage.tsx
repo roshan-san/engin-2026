@@ -99,8 +99,8 @@ export function PublicStartupPage() {
 						<span>On engin since {monthYearLabel(startup.createdAt)}</span>
 						{isOnTeam ? (
 							<Button asChild size="sm" className="ml-auto">
-								<Link to="/s/$slug/board" params={{ slug }}>
-									Open Board
+								<Link to="/s/$slug/cycle" params={{ slug }}>
+									Open Cycle
 								</Link>
 							</Button>
 						) : null}

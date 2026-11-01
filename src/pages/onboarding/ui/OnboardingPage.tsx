@@ -17,7 +17,7 @@ import { Button } from "~/shared/ui/button";
 import { Kbd } from "~/shared/ui/Kbd";
 import { Spinner } from "~/shared/ui/spinner";
 
-/** Founder onboarding: a name, then one line, then the new Startup's Board, or New hackathon for someone who came to post one. */
+/** Founder onboarding: a name, then one line, then the new Startup's Cycle, or New hackathon for someone who came to post one. */
 export function OnboardingPage() {
 	const navigate = useNavigate();
 	const { intent } = useSearch({ from: "/_shell/_authed/onboarding" });
@@ -48,7 +48,7 @@ export function OnboardingPage() {
 			const slug = await createStartup(args);
 			if (!slug) return;
 			await navigate({
-				to: intent === "post" ? "/s/$slug/hiring/new" : "/s/$slug/board",
+				to: intent === "post" ? "/s/$slug/hiring/new" : "/s/$slug/cycle",
 				params: { slug },
 				replace: true,
 			});

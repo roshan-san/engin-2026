@@ -132,7 +132,7 @@ export function PlaceSwitcher({
 									<PlaceRow
 										key={startup.startupId}
 										link={{
-											to: "/s/$slug/board",
+											to: "/s/$slug/cycle",
 											params: { slug: startup.slug },
 										}}
 										name={startup.name}

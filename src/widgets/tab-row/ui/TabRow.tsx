@@ -79,8 +79,8 @@ function StartupRow({ slug }: { readonly slug: string }) {
 				) : null
 			}
 		>
-			<Link to="/s/$slug/board" params={{ slug }} className={TAB_CLASS}>
-				Board
+			<Link to="/s/$slug/cycle" params={{ slug }} className={TAB_CLASS}>
+				Cycle
 			</Link>
 			<Link to="/s/$slug/hiring" params={{ slug }} className={TAB_CLASS}>
 				Hackathons

@@ -123,7 +123,7 @@ export function StartupActivityPage() {
 							<>
 								Cards land here when they're approved on the{" "}
 								<Link
-									to="/s/$slug/board"
+									to="/s/$slug/cycle"
 									params={{ slug: startup.slug }}
 									className="text-foreground underline underline-offset-4 hover:text-link"
 								>

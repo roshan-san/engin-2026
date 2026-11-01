@@ -21,7 +21,7 @@ export function homeIntent(
 			readonly search: { readonly intent?: "post" };
 	  }
 	| {
-			readonly to: "/s/$slug/hiring/new" | "/s/$slug/board";
+			readonly to: "/s/$slug/hiring/new" | "/s/$slug/cycle";
 			readonly slug: string;
 	  }
 	| null {
@@ -35,6 +35,6 @@ export function homeIntent(
 			: { to: "/onboarding", search: { intent: "post" } };
 	}
 	return founded
-		? { to: "/s/$slug/board", slug: founded.slug }
+		? { to: "/s/$slug/cycle", slug: founded.slug }
 		: { to: "/onboarding", search: {} };
 }
