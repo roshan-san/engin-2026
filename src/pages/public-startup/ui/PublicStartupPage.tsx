@@ -11,7 +11,6 @@ import {
 import { jobLine } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel, monthYearLabel } from "~/shared/lib/dates";
-import { tierText } from "~/shared/lib/tierText";
 import { Badge } from "~/shared/ui/badge";
 import { Button } from "~/shared/ui/button";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
@@ -84,17 +83,6 @@ export function PublicStartupPage() {
 									</div>
 								) : null}
 							</div>
-						</div>
-						<div className="flex shrink-0 flex-col items-start sm:items-end">
-							<span
-								className={cn(
-									"text-3xl font-semibold tabular-nums",
-									tierText(startup.rating),
-								)}
-							>
-								{startup.rating}
-							</span>
-							<span className="text-xs text-muted-foreground">Momentum</span>
 						</div>
 					</div>
 					<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
