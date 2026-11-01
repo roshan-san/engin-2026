@@ -42,7 +42,11 @@ export function HomePage() {
 		}
 		redirected.current = true;
 		if (target.to === "/onboarding") {
-			void navigate({ to: "/onboarding", replace: true });
+			void navigate({
+				to: "/onboarding",
+				search: target.search,
+				replace: true,
+			});
 		} else {
 			void navigate({
 				to: target.to,
@@ -234,7 +238,8 @@ function StartCard() {
 	return (
 		<div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border p-4">
 			<p className="text-sm">
-				Run your startup's week here, and hire by watching people build.
+				Ship every week with your team, and bring builders in by watching them
+				work.
 			</p>
 			<Button asChild size="sm">
 				<Link to="/onboarding">
@@ -250,7 +255,7 @@ function FindCard() {
 	return (
 		<div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border p-4">
 			<p className="text-sm">
-				Build on a startup's real problem, and get a Decision either way.
+				Build on a startup's real problem, and hear back either way.
 			</p>
 			<Button asChild size="sm" variant="outline">
 				<Link to="/explore/hackathons">
@@ -269,25 +274,26 @@ function TwoWaysIn() {
 			<div>
 				<h2 className="text-2xl font-semibold">Welcome to engin</h2>
 				<p className="mt-1 text-sm text-muted-foreground">
-					Pick where to start. You can do both later.
+					This is where it finally happens. Pick where to start; you can do both
+					later.
 				</p>
 			</div>
 			<div className="grid gap-3 sm:grid-cols-2">
 				<Link to="/onboarding" className={CARD}>
 					<p className="font-medium">I'm a Founder</p>
 					<p className="text-sm text-muted-foreground">
-						Set up your startup, run your week on a Board, and hire through
-						small hiring Hackathons.
+						Set a goal each Cycle, ship it with your team, and bring builders in
+						through Hackathons.
 					</p>
 					<span className="mt-auto flex items-center gap-1 text-sm font-medium">
-						Start a startup <ArrowRight className="size-4" />
+						Start building <ArrowRight className="size-4" />
 					</span>
 				</Link>
 				<Link to="/explore/hackathons" className={CARD}>
 					<p className="font-medium">I want to build</p>
 					<p className="text-sm text-muted-foreground">
-						Join a startup's hiring Hackathon, ship on your own Board, and earn
-						a Rating.
+						Join a startup's Hackathon, ship real work on your own Board, and
+						build your Momentum.
 					</p>
 					<span className="mt-auto flex items-center gap-1 text-sm font-medium">
 						Find a hackathon <ArrowRight className="size-4" />

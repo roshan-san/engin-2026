@@ -60,28 +60,47 @@ describe("rating math", () => {
 
 	it("a Participant's outcome is Hired, then Finalist, then Built", () => {
 		expect(
-			outcomeOf({
-				status: "participating",
-				decision: "hired",
-				shortlisted: true,
-			}),
+			outcomeOf(
+				{ status: "participating", decision: "hired", shortlisted: true },
+				true,
+			),
 		).toBe("hired");
 		expect(
-			outcomeOf({
-				status: "participating",
-				decision: "not_this_time",
-				shortlisted: true,
-			}),
+			outcomeOf(
+				{
+					status: "participating",
+					decision: "not_this_time",
+					shortlisted: true,
+				},
+				true,
+			),
 		).toBe("finalist");
 		expect(
-			outcomeOf({
-				status: "participating",
-				decision: "not_this_time",
-				shortlisted: false,
-			}),
+			outcomeOf(
+				{
+					status: "participating",
+					decision: "not_this_time",
+					shortlisted: false,
+				},
+				true,
+			),
 		).toBe("built");
 		for (const status of ["declined", "applied"]) {
-			expect(outcomeOf({ status, shortlisted: false })).toBeNull();
+			expect(outcomeOf({ status, shortlisted: false }, true)).toBeNull();
+		}
+	});
+
+	it("only Hired counts without a Done Card", () => {
+		expect(
+			outcomeOf(
+				{ status: "participating", decision: "hired", shortlisted: true },
+				false,
+			),
+		).toBe("hired");
+		for (const shortlisted of [true, false]) {
+			expect(
+				outcomeOf({ status: "participating", shortlisted }, false),
+			).toBeNull();
 		}
 	});
 

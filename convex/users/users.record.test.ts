@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import {
 	decidedHackathon,
+	endHackathon,
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
+import { SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { verifyCards } from "../rating/rating.setup";
 import {
@@ -59,9 +61,43 @@ describe("profile record", () => {
 		expect(record?.work).toEqual([]);
 	});
 
-	it("Not this time shows as Built", async () => {
+	it("Not this time without a Done Card leaves no outcome", async () => {
 		const setup = await setUpStartup(createTest());
 		await decidedHackathon(setup, [{ name: "Ana", decision: "not_this_time" }]);
+
+		const record = await recordOf(setup, "ana");
+
+		expect(record?.hackathons).toEqual([]);
+	});
+
+	it("Hired counts without a Done Card", async () => {
+		const setup = await setUpStartup(createTest());
+		await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+
+		const record = await recordOf(setup, "ana");
+
+		expect(record?.hackathons).toMatchObject([{ outcome: "hired" }]);
+	});
+
+	it("Not this time with a Done Card shows as Built", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		const [card] = await ana.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: ana.userId,
+		});
+		await ana.as.mutation(api.cards.submit, {
+			cardId: card._id,
+			shipped: SHIPPED,
+		});
+		await setup.founder.as.mutation(api.cards.verify, { cardId: card._id });
+		await endHackathon(setup, hackathonId);
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
 
 		const record = await recordOf(setup, "ana");
 

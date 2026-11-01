@@ -3,6 +3,6 @@ import { z } from "zod";
 import { HomePage } from "~/pages/home";
 
 export const Route = createFileRoute("/_shell/_authed/home")({
-	validateSearch: z.object({ intent: z.enum(["post"]).optional() }),
+	validateSearch: z.object({ intent: z.enum(["post", "start"]).optional() }),
 	component: HomePage,
 });

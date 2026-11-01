@@ -23,7 +23,9 @@ export function rowNumber(row: HiringRow): string {
 		case "live":
 			return `${row.toReview} to review`;
 		case "deciding":
-			return `${row.toDecide} to decide`;
+			return row.toDecide === 0 && row.toReview > 0
+				? `${row.toReview} to review`
+				: `${row.toDecide} to decide`;
 		case "done": {
 			const parts = [];
 			if (row.hires > 0) parts.push(`${row.hires} hired`);
@@ -37,7 +39,7 @@ export function rowNumber(row: HiringRow): string {
 export function needsYou(row: HiringRow): boolean {
 	return (
 		(row.status === "live" && row.toReview > 0) ||
-		(row.status === "deciding" && row.toDecide > 0)
+		(row.status === "deciding" && (row.toDecide > 0 || row.toReview > 0))
 	);
 }
 

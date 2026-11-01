@@ -70,6 +70,12 @@ describe("row number", () => {
 		);
 	});
 
+	it("deciding with everyone decided shows the Cards still to review", () => {
+		expect(rowNumber(row({ status: "deciding", toReview: 2 }))).toBe(
+			"2 to review",
+		);
+	});
+
 	it("a draft says so", () => {
 		expect(rowNumber(row({ status: "draft" }))).toBe("Draft");
 	});
@@ -101,6 +107,7 @@ describe("needsYou", () => {
 	it("Cards to review and Participants to decide wait on the Founder", () => {
 		expect(needsYou(row({ status: "live", toReview: 2 }))).toBe(true);
 		expect(needsYou(row({ status: "deciding", toDecide: 1 }))).toBe(true);
+		expect(needsYou(row({ status: "deciding", toReview: 1 }))).toBe(true);
 	});
 
 	it("applicants and finished Hackathons don't", () => {

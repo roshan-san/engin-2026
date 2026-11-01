@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { XIcon } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import {
@@ -17,9 +17,10 @@ import { Button } from "~/shared/ui/button";
 import { Kbd } from "~/shared/ui/Kbd";
 import { Spinner } from "~/shared/ui/spinner";
 
-/** Founder onboarding: one question per screen, then the new Startup's Board. */
+/** Founder onboarding: one question per screen, then the new Startup's Board, or New hackathon for someone who came to post one. */
 export function OnboardingPage() {
 	const navigate = useNavigate();
+	const { intent } = useSearch({ from: "/_shell/_authed/onboarding" });
 	const createStartup = useCreateStartup();
 	const [state, dispatch] = useReducer(onboardingReducer, INITIAL_STATE);
 	const [isPending, setIsPending] = useState(false);
@@ -47,12 +48,12 @@ export function OnboardingPage() {
 			const slug = await createStartup(args);
 			if (!slug) return;
 			await navigate({
-				to: "/s/$slug/board",
+				to: intent === "post" ? "/s/$slug/hiring/new" : "/s/$slug/board",
 				params: { slug },
 				replace: true,
 			});
 		} finally {
-			// Unmounted once the Board opens; only a failure gets here still on the page.
+			// Unmounted once the next page opens; only a failure gets here still on the page.
 			isSubmittingRef.current = false;
 			if (rootRef.current) setIsPending(false);
 		}

@@ -5,11 +5,7 @@ import { appendActivity } from "../activity/model";
 import { getHackathonRole } from "../applications/model";
 import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
-import {
-	MAX_HACKATHON_CARDS,
-	MAX_PARTICIPANTS,
-	phaseOf,
-} from "../hackathons/rules";
+import { phaseOf } from "../hackathons/rules";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
@@ -196,20 +192,6 @@ export async function loadBoardCards(
 		verifiedThisWeek,
 	]);
 	return [...todo, ...inProgress, ...review, ...done];
-}
-
-/** Participants' Cards waiting in Review on the Hackathon. */
-export async function loadHackathonCardsInReview(
-	ctx: Ctx,
-	hackathonId: Id<"hackathons">,
-): Promise<Doc<"cards">[]> {
-	const inReview = await ctx.db
-		.query("cards")
-		.withIndex("by_hackathon_and_status", (q) =>
-			q.eq("hackathonId", hackathonId).eq("status", "review"),
-		)
-		.take(MAX_PARTICIPANTS * MAX_HACKATHON_CARDS);
-	return inReview.filter((card) => card.ownerId !== undefined);
 }
 
 export type CardView = Awaited<ReturnType<typeof toCardView>>;

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
@@ -16,6 +16,7 @@ import {
 } from "../hackathons/hackathons.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
+import { PRIVATE_THREAD_GRACE_MS } from "../threads/rules";
 import { type Person, signUp } from "../users/users.setup";
 
 async function placesOf(person: Person) {
@@ -151,25 +152,45 @@ describe("groups", () => {
 
 		expect(before.applied).toHaveLength(1);
 		expect(after.applied).toEqual([]);
-		expect((await placesOf(ben)).hackathons).toEqual([]);
+		// The deadline gave Ben Not this time, so the promise question is waiting.
+		expect((await placesOf(ben)).hackathons).toMatchObject([
+			{
+				hackathonId,
+				decision: "not_this_time",
+				waiting: [{ kind: "promise_pending" }],
+			},
+		]);
 	});
 
-	it("a Hackathon stays after the decision until the promise is answered, then drops", async () => {
+	it("a finished Hackathon stays while its private thread is open, then drops once the promise is answered", async () => {
+		const setup = await setUpStartup(createTest());
+		const {
+			hackathonId,
+			participants: [ana],
+		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+		await ana.as.mutation(api.applications.keepPromise, {
+			applicationId: ana.applicationId,
+			kept: true,
+		});
+
+		const during = await placesOf(ana);
+		vi.advanceTimersByTime(PRIVATE_THREAD_GRACE_MS);
+		const after = await placesOf(ana);
+
+		expect(during.hackathons).toMatchObject([{ hackathonId }]);
+		expect(after.hackathons).toEqual([]);
+	});
+
+	it("after the private thread locks, an unanswered promise still keeps the Hackathon", async () => {
 		const setup = await setUpStartup(createTest());
 		const {
 			hackathonId,
 			participants: [ana],
 		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
 
-		const before = await placesOf(ana);
-		await ana.as.mutation(api.applications.keepPromise, {
-			applicationId: ana.applicationId,
-			kept: true,
-		});
-		const after = await placesOf(ana);
+		vi.advanceTimersByTime(PRIVATE_THREAD_GRACE_MS);
 
-		expect(before.hackathons).toMatchObject([{ hackathonId }]);
-		expect(after.hackathons).toEqual([]);
+		expect((await placesOf(ana)).hackathons).toMatchObject([{ hackathonId }]);
 	});
 });
 
@@ -398,6 +419,26 @@ describe("waiting", () => {
 
 		expect(places.startups[0].waiting).toEqual([
 			{ kind: "cards_to_verify", count: 1 },
+		]);
+	});
+
+	it("Cards still in Review while deciding read as Cards to review", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		const [card] = await boardOf(hackathonId, ana);
+		await ana.as.mutation(api.cards.submit, {
+			cardId: card._id,
+			shipped: SHIPPED,
+		});
+		await endHackathon(setup, hackathonId);
+
+		const places = await placesOf(setup.founder);
+
+		expect(places.startups[0].waiting).toEqual([
+			{ kind: "participant_cards_to_review", role: "frontend", count: 1 },
+			{ kind: "participants_to_decide", role: "frontend", count: 1 },
 		]);
 	});
 

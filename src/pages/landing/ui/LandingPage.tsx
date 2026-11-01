@@ -12,6 +12,7 @@ import {
 	POST_INTENT_PATH,
 	pickLanding,
 	readLastPlace,
+	START_INTENT_PATH,
 	usePlaces,
 } from "~/entities/place";
 import { GoogleButton } from "~/features/sign-in";
@@ -25,15 +26,15 @@ import { Pricing } from "./Pricing";
 const STEPS = [
 	{
 		title: "Post your real problem",
-		body: "One or two weeks, a handful of Participants, and the stipend shown upfront.",
+		body: "One or two weeks, a handful of Builders, and the stipend shown upfront.",
 	},
 	{
-		title: "Participants ship on their own Boards",
-		body: "Each works through the same Cards. You see what shipped, Card by Card.",
+		title: "Builders ship on their own Boards",
+		body: "Each works through the same Cards. You see what got done, Card by Card.",
 	},
 	{
-		title: "Walkthrough, then a Decision",
-		body: "Talk through the work with your shortlist. Every Participant hears back.",
+		title: "Walkthrough, then a decision",
+		body: "Talk through the work with your shortlist. Every Builder hears back.",
 	},
 ] as const;
 
@@ -41,17 +42,17 @@ const AUDIENCES = [
 	{
 		title: "For Founders",
 		lines: [
-			"Stop guessing from CVs: watch real work on your real problem.",
-			"Hire in one click; the Participant joins your team.",
-			"Then run your team's week in Cycles on the same Board.",
+			"Set one goal each Cycle and ship it with your team.",
+			"Show what got done, so your Record builds week by week.",
+			"When you need someone, watch them work on your real problem first.",
 		],
 	},
 	{
-		title: "For Participants",
+		title: "For Builders",
 		lines: [
 			"Work on a real startup problem, not a puzzle.",
-			"The stipend is shown upfront, and you always get a Decision.",
-			"Verified work builds a Rating that follows you.",
+			"The stipend is shown upfront, and you always hear back.",
+			"Approved work builds Momentum that follows you.",
 		],
 	},
 ] as const;
@@ -117,22 +118,22 @@ export function LandingPage({
 				<section className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
 					<div className="flex flex-col gap-5">
 						<p className="text-sm font-medium text-muted-foreground">
-							Hiring Hackathons for early-stage startups
+							The fast lane for founders
 						</p>
 						<h1 className="text-3xl font-semibold text-balance md:text-5xl">
-							Watch them ship before you hire.
+							This is where it finally happens.
 						</h1>
 						<p className="text-lg text-muted-foreground text-pretty">
-							Run a small, private Hackathon on your real problem. A handful of
-							Participants work on their own Boards. You check what ships, then
-							decide. Stipend shown upfront.
+							Pick a goal on Monday. Ship it by Sunday. Do it again next week.
+							When you need someone else on the team, watch them build before
+							you decide.
 						</p>
 						<div className="flex flex-wrap items-center gap-3">
 							<GoogleButton
-								label="Post a hackathon"
+								label="Start building"
 								variant="default"
 								size="lg"
-								returnTo={POST_INTENT_PATH}
+								returnTo={START_INTENT_PATH}
 							/>
 							<Link
 								to="/explore/hackathons"
@@ -145,8 +146,35 @@ export function LandingPage({
 					<BoardMock />
 				</section>
 
+				<section className="flex max-w-2xl flex-col gap-4">
+					<h2 className="text-2xl font-semibold">Why engin exists</h2>
+					<div className="flex flex-col gap-3 text-muted-foreground">
+						<p>
+							A startup is two things: what you ship and who you talk to.
+							Everything else can wait.
+						</p>
+						<p>
+							I built engin to keep the first of those moving, one week at a
+							time, with a small team and nothing to hide behind. When it's time
+							to bring someone in, you see their work first, and they always
+							hear back.
+						</p>
+						<p>If you've been meaning to start, start here.</p>
+					</div>
+					<p className="text-sm font-medium">Roshan, founder of engin</p>
+				</section>
+
 				<section className="flex flex-col gap-6">
-					<h2 className="text-2xl font-semibold">How it works</h2>
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<h2 className="text-2xl font-semibold">
+							Bring builders in with a Hackathon
+						</h2>
+						<GoogleButton
+							label="Post a hackathon"
+							size="sm"
+							returnTo={POST_INTENT_PATH}
+						/>
+					</div>
 					<ol className="grid gap-3 md:grid-cols-3">
 						{STEPS.map((step, index) => (
 							<li key={step.title} className={cn(TILE, "flex flex-col gap-2")}>
@@ -186,13 +214,13 @@ export function LandingPage({
 					)}
 				>
 					<h2 className="text-2xl font-semibold text-balance">
-						See if they can actually do the work.
+						Start this week.
 					</h2>
 					<GoogleButton
-						label="Post a hackathon"
+						label="Start building"
 						variant="default"
 						size="lg"
-						returnTo={POST_INTENT_PATH}
+						returnTo={START_INTENT_PATH}
 					/>
 				</section>
 			</div>

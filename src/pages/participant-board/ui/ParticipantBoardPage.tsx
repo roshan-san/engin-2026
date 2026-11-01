@@ -1,3 +1,4 @@
+import { isThreadOpen } from "@convex/threads/rules";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 import { useParticipant } from "~/entities/application";
@@ -83,7 +84,13 @@ export function ParticipantBoardPage() {
 					? "Only you and the Founder see this."
 					: "Ask here. Everyone sees it."
 			}
-			isReadOnly={page.status === "done"}
+			isReadOnly={
+				!isThreadOpen(
+					panel === "founder" ? "private" : "everyone",
+					page,
+					Date.now(),
+				)
+			}
 			onClose={onClose}
 		/>
 	);

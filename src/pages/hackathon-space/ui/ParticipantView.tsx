@@ -1,5 +1,6 @@
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { phaseOf } from "@convex/hackathons/rules";
+import { isThreadOpen } from "@convex/threads/rules";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -95,7 +96,7 @@ export function ParticipantView({
 				userId={userId}
 				placeholder={`Message ${name}`}
 				emptyNote="Only you two see this."
-				isReadOnly={phase === "done"}
+				isReadOnly={!isThreadOpen("private", hackathon, Date.now())}
 				onClose={onClose}
 			/>
 		) : (

@@ -6,6 +6,7 @@ import {
 } from "../applications/applications.setup";
 import { setUpStartup } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
+import { publishedHackathon } from "./hackathons.setup";
 
 describe("hiring record", () => {
 	it("the hiring record counts promises and hires", async () => {
@@ -47,5 +48,17 @@ describe("hiring record", () => {
 		});
 
 		expect(page?.hiringRecord).toMatchObject({ finished: 1, undecided: 1 });
+	});
+
+	it("a Hackathon nobody joined doesn't count as finished", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await closeHackathon(setup, hackathonId);
+
+		const page = await setup.t.query(api.startups.getPublic, {
+			slug: setup.slug,
+		});
+
+		expect(page?.hiringRecord).toMatchObject({ finished: 0, undecided: 0 });
 	});
 });

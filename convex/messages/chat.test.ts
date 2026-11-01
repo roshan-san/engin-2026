@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
@@ -15,6 +15,7 @@ import {
 	setUpStartup,
 } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
+import { PRIVATE_THREAD_GRACE_MS } from "../threads/rules";
 import { signUp } from "../users/users.setup";
 import {
 	MAX_MESSAGE_IMAGES,
@@ -237,7 +238,7 @@ describe("chat", () => {
 		).rejects.toThrow("Only Everyone messages can be pinned");
 	});
 
-	it("nobody posts in a Hackathon's threads once it's done", async () => {
+	it("Everyone locks once the Hackathon is done, and private threads 14 days later", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const hackathonId = await publishedHackathon(setup);
@@ -255,6 +256,17 @@ describe("chat", () => {
 				body: "hi",
 			}),
 		).rejects.toThrow("This Hackathon has ended.");
+		await setup.founder.as.mutation(api.messages.send, {
+			threadId: privateThread._id,
+			body: "Thanks for the work",
+		});
+		await ada.as.mutation(api.messages.send, {
+			threadId: privateThread._id,
+			body: "Thanks for the chance",
+		});
+
+		vi.advanceTimersByTime(PRIVATE_THREAD_GRACE_MS);
+
 		await expect(
 			setup.founder.as.mutation(api.messages.send, {
 				threadId: privateThread._id,

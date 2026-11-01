@@ -3,7 +3,11 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_USER_APPLICATIONS } from "../applications/rules";
 import { shiftWeek, weekOf } from "../cycles/rules";
-import { phaseOf } from "../hackathons/rules";
+import {
+	MAX_HACKATHON_CARDS,
+	MAX_LISTED_HACKATHONS,
+	phaseOf,
+} from "../hackathons/rules";
 import { STARTING_RATING, WEEK_COUNT_CAP } from "./rules";
 
 export const RATING = {
@@ -71,13 +75,18 @@ export function buildParts(counts: number[]): Parts {
 	};
 }
 
-export function outcomeOf(a: {
-	status: string;
-	decision?: string;
-	shortlisted: boolean;
-}): Outcome | null {
+/** Hired always counts; Finalist and Built need a Done Card to show for it. */
+export function outcomeOf(
+	a: {
+		status: string;
+		decision?: string;
+		shortlisted: boolean;
+	},
+	hasDoneCard: boolean,
+): Outcome | null {
 	if (a.status !== "participating") return null;
 	if (a.decision === "hired") return "hired";
+	if (!hasDoneCard) return null;
 	return a.shortlisted ? "finalist" : "built";
 }
 
@@ -168,6 +177,21 @@ export async function loadPersonCounts(
 	);
 }
 
+async function hasDoneCard(
+	ctx: QueryCtx,
+	application: Doc<"applications">,
+): Promise<boolean> {
+	const cards = await ctx.db
+		.query("cards")
+		.withIndex("by_hackathon_and_owner", (q) =>
+			q
+				.eq("hackathonId", application.hackathonId)
+				.eq("ownerId", application.userId),
+		)
+		.take(MAX_HACKATHON_CARDS);
+	return cards.some((card) => card.status === "done");
+}
+
 /** A person's finished Hackathon outcomes, newest end first. */
 export async function loadOutcomes(
 	ctx: QueryCtx,
@@ -180,7 +204,10 @@ export async function loadOutcomes(
 	const now = Date.now();
 	const outcomes = await Promise.all(
 		applications.map(async (application) => {
-			const outcome = outcomeOf(application);
+			const outcome = outcomeOf(
+				application,
+				await hasDoneCard(ctx, application),
+			);
 			if (!outcome) {
 				return [];
 			}
@@ -219,8 +246,20 @@ async function hasFinishedHackathon(
 		.withIndex("by_startup_and_status", (q) =>
 			q.eq("startupId", startupId).eq("status", "done"),
 		)
-		.first();
-	return done !== null;
+		.take(MAX_LISTED_HACKATHONS);
+	for (const hackathon of done) {
+		// One nobody joined ended without anyone building, so it proves nothing.
+		const participant = await ctx.db
+			.query("applications")
+			.withIndex("by_hackathon_and_status", (q) =>
+				q.eq("hackathonId", hackathon._id).eq("status", "participating"),
+			)
+			.first();
+		if (participant) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /** Moves one Startup's Rating for `week`. A rerun of the same week does nothing. */

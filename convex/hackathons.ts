@@ -3,13 +3,13 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getApplication, toMyApplicationView } from "./applications/model";
-import { loadHackathonCardsInReview } from "./cards/model";
 import * as lifecycle from "./hackathons/lifecycle";
 import {
 	copyTemplateCardsTo,
 	draftArgs,
 	insertTemplateCards,
 	loadHackathonCards,
+	loadHackathonCardsInReview,
 	loadParticipants,
 	matchesExplore,
 	replaceTemplateCards,
@@ -133,6 +133,7 @@ export const getPublic = query({
 			startsAt: hackathon.startsAt,
 			endsAt: hackathon.endsAt,
 			decideBy: hackathon.decideBy,
+			finishedAt: hackathon.finishedAt,
 			participantsGet: hackathon.participantsGet ?? null,
 			status: hackathon.status,
 			startup: {

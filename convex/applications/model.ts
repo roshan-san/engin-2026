@@ -137,15 +137,16 @@ export async function loadApplicationsForFounder(
 	return [...participants, ...others];
 }
 
-/** How far a Participant has got: their Cards on the Hackathon, and how many are Done. */
+/** How far a Participant has got: their Cards on the Hackathon, how many are Done, and how many wait in Review. */
 export async function loadParticipantProgress(
 	ctx: Ctx,
 	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
-): Promise<{ done: number; total: number }> {
+): Promise<{ done: number; inReview: number; total: number }> {
 	const cards = await loadHackathonCards(ctx, hackathonId, userId);
 	return {
 		done: cards.filter((card) => card.status === "done").length,
+		inReview: cards.filter((card) => card.status === "review").length,
 		total: cards.length,
 	};
 }
@@ -163,6 +164,7 @@ export function toFounderApplicationView(application: Doc<"applications">) {
 		walkthroughAt: application.walkthroughAt ?? null,
 		walkthroughNotes: application.walkthroughNotes ?? null,
 		decision: application.decision ?? null,
+		decisionMissed: application.decisionMissed ?? false,
 		feedback: application.feedback ?? null,
 	};
 }

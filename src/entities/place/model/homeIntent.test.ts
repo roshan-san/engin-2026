@@ -14,9 +14,10 @@ describe("homeIntent", () => {
 		expect(homeIntent("post", undefined)).toBeNull();
 	});
 
-	it("sends a newcomer to onboarding", () => {
+	it("sends a newcomer to onboarding, still meaning to post", () => {
 		expect(homeIntent("post", { startups: [] })).toEqual({
 			to: "/onboarding",
+			search: { intent: "post" },
 		});
 	});
 
@@ -34,6 +35,23 @@ describe("homeIntent", () => {
 	it("sends a Contributor who founded nothing to onboarding", () => {
 		expect(
 			homeIntent("post", { startups: [{ slug: "a", role: "contributor" }] }),
-		).toEqual({ to: "/onboarding" });
+		).toEqual({ to: "/onboarding", search: { intent: "post" } });
+	});
+
+	it("start opens the Startup you founded", () => {
+		expect(
+			homeIntent("start", {
+				startups: [
+					{ slug: "a", role: "contributor" },
+					{ slug: "b", role: "founder" },
+				],
+			}),
+		).toEqual({ to: "/s/$slug/board", slug: "b" });
+	});
+
+	it("start sends anyone who founded nothing to onboarding", () => {
+		expect(
+			homeIntent("start", { startups: [{ slug: "a", role: "contributor" }] }),
+		).toEqual({ to: "/onboarding", search: {} });
 	});
 });

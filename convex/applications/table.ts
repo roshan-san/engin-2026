@@ -13,6 +13,8 @@ export const applicationsTables = {
 		walkthroughAt: v.optional(v.number()),
 		walkthroughNotes: v.optional(v.string()),
 		decision: v.optional(decision),
+		/** The Founder didn't decide by `decideBy`, so the deadline gave Not this time. */
+		decisionMissed: v.optional(v.boolean()),
 		feedback: v.optional(v.string()),
 		promiseKept: v.optional(v.boolean()),
 	})
