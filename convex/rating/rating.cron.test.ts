@@ -135,7 +135,6 @@ describe("rating", () => {
 				{
 					name: `Startup ${i}`,
 					stage: "building",
-					category: "saas",
 					city: "remote",
 				},
 			);

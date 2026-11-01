@@ -3,7 +3,7 @@ import { changedFields } from "~/shared/lib/changedFields";
 
 type SettingsStartup = Pick<
 	Doc<"startups">,
-	"name" | "oneLiner" | "website" | "stage" | "category" | "city"
+	"name" | "oneLiner" | "website" | "stage" | "city"
 >;
 
 /** The settings form: text fields as typed, chips as picked. The logo saves on upload, not here. */
@@ -12,7 +12,6 @@ export type SettingsDraft = {
 	oneLiner: string;
 	website: string;
 	stage: Doc<"startups">["stage"];
-	category: Doc<"startups">["category"];
 	city: Doc<"startups">["city"];
 };
 
@@ -22,7 +21,6 @@ export function toSettingsDraft(startup: SettingsStartup): SettingsDraft {
 		oneLiner: startup.oneLiner ?? "",
 		website: startup.website ?? "",
 		stage: startup.stage,
-		category: startup.category,
 		city: startup.city,
 	};
 }

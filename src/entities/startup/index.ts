@@ -3,7 +3,6 @@ export { usePublicStartup } from "./api/usePublicStartup";
 export { useStartup } from "./api/useStartup";
 export {
 	CITIES,
-	KINDS,
 	STAGES,
 	startupChipLabels,
 } from "./config/startupChips";

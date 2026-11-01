@@ -74,7 +74,6 @@ export async function toPublicStartup(
 		website: startup.website ?? null,
 		logo: await loadLogoUrl(ctx, startup),
 		stage: startup.stage,
-		category: startup.category,
 		city: startup.city,
 		rating: startup.rating,
 		ratingChange: startup.ratingChange,
@@ -107,13 +106,11 @@ export function matchesExploreStartup(
 	startup: Doc<"startups">,
 	chips: {
 		stage?: Doc<"startups">["stage"];
-		category?: Doc<"startups">["category"];
 		city?: Doc<"startups">["city"];
 	},
 ): boolean {
 	return (
 		(chips.stage === undefined || startup.stage === chips.stage) &&
-		(chips.category === undefined || startup.category === chips.category) &&
 		(chips.city === undefined || startup.city === chips.city)
 	);
 }
@@ -129,7 +126,6 @@ export async function toExploreStartup(
 		name: startup.name,
 		oneLiner: startup.oneLiner ?? null,
 		stage: startup.stage,
-		category: startup.category,
 		city: startup.city,
 		rating: startup.rating,
 		ratingChange: startup.ratingChange,

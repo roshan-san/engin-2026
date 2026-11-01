@@ -439,7 +439,6 @@ describe("card mentions", () => {
 			{
 				name: "Beta",
 				stage: "building",
-				category: "saas",
 				city: "bengaluru",
 			},
 		);

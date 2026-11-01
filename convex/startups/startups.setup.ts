@@ -16,7 +16,6 @@ export async function setUpStartup(t: TestConvex): Promise<Setup> {
 	const { startupId, slug } = await founder.as.mutation(api.startups.create, {
 		name: "Acme",
 		stage: "building",
-		category: "saas",
 		city: "bengaluru",
 	});
 	return { t, founder, startupId, slug };

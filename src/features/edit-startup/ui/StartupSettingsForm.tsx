@@ -1,7 +1,7 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { STARTUP_TEXT } from "@convex/startups/rules";
 import { type FormEvent, useRef, useState } from "react";
-import { CITIES, KINDS, STAGES } from "~/entities/startup";
+import { CITIES, STAGES } from "~/entities/startup";
 import { useReportChanged } from "~/shared/lib/useDiscardGuard";
 import { Button } from "~/shared/ui/button";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
@@ -126,15 +126,6 @@ export function StartupSettingsForm({
 					options={STAGES}
 					value={draft.stage ?? null}
 					onChange={(stage) => set("stage", stage)}
-				/>
-			</div>
-			<div className="flex flex-col gap-1.5">
-				<span className="text-sm font-medium">Kind</span>
-				<ChipPicker
-					label="Kind"
-					options={KINDS}
-					value={draft.category ?? null}
-					onChange={(category) => set("category", category)}
 				/>
 			</div>
 			<div className="flex flex-col gap-1.5">

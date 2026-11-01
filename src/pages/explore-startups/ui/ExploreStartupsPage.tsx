@@ -1,7 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
 import {
 	CITIES,
-	KINDS,
 	STAGES,
 	StartupExploreRow,
 	useExploreStartups,
@@ -40,12 +39,6 @@ export function ExploreStartupsPage() {
 						options={STAGES}
 						value={search.stage}
 						onChange={(stage) => setFilter({ stage })}
-					/>
-					<FilterChips
-						label="Kind"
-						options={KINDS}
-						value={search.category}
-						onChange={(category) => setFilter({ category })}
 					/>
 					<FilterChips
 						label="City"

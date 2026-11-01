@@ -20,7 +20,6 @@ import {
 import {
 	MAX_USER_STARTUPS,
 	STARTUP_TEXT,
-	startupCategory,
 	startupCity,
 	startupStage,
 } from "./startups/rules";
@@ -65,7 +64,6 @@ export const getPublic = query({
 export const explore = query({
 	args: {
 		stage: v.optional(startupStage),
-		category: v.optional(startupCategory),
 		city: v.optional(startupCity),
 	},
 	handler: async (ctx, args) => {
@@ -90,7 +88,6 @@ export const create = mutation({
 	args: {
 		name: v.string(),
 		stage: v.optional(startupStage),
-		category: v.optional(startupCategory),
 		city: v.optional(startupCity),
 		oneLiner: v.optional(v.string()),
 	},
@@ -115,7 +112,6 @@ export const create = mutation({
 			slug,
 			oneLiner,
 			stage: args.stage,
-			category: args.category,
 			city: args.city,
 			founderId: userId,
 			rating: STARTING_RATING,
@@ -133,7 +129,7 @@ export const create = mutation({
 type StartupPatch = Partial<
 	Pick<
 		Doc<"startups">,
-		"name" | "oneLiner" | "website" | "logo" | "stage" | "category" | "city"
+		"name" | "oneLiner" | "website" | "logo" | "stage" | "city"
 	>
 >;
 
@@ -145,7 +141,6 @@ export const update = mutation({
 		website: v.optional(v.string()),
 		logo: v.optional(v.id("_storage")),
 		stage: v.optional(startupStage),
-		category: v.optional(startupCategory),
 		city: v.optional(startupCity),
 	},
 	handler: async (ctx, args) => {
@@ -171,9 +166,6 @@ export const update = mutation({
 		}
 		if (args.stage !== undefined) {
 			patch.stage = args.stage;
-		}
-		if (args.category !== undefined) {
-			patch.category = args.category;
 		}
 		if (args.city !== undefined) {
 			patch.city = args.city;
