@@ -46,7 +46,7 @@ export function PeopleList({
 								<ConfirmButton
 									label="Remove"
 									title={`Remove ${displayName(person)}?`}
-									description="They lose access to this Board."
+									description="They lose access to this Startup."
 									actionLabel="Remove"
 									onConfirm={() => onRemove(person)}
 								/>

@@ -188,13 +188,10 @@ export function tabsForSignedOut(tabs: TabsKind): TabsKind {
 	return tabs?.kind === "explore" ? tabs : null;
 }
 
-/** Only the Founder sees a Startup's ⚙. */
+/** Everyone on a Startup sees its Settings: the Team is in there. */
 export function canSeeSettings(
 	places: Places | undefined,
 	slug: string,
 ): boolean {
-	return (
-		places?.startups.some((s) => s.slug === slug && s.role === "founder") ??
-		false
-	);
+	return places?.startups.some((s) => s.slug === slug) ?? false;
 }

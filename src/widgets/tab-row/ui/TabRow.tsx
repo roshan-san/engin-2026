@@ -8,7 +8,7 @@ import {
 	tabsFromRoute,
 	usePlaces,
 } from "~/entities/place";
-import { StartupSettingsSheet } from "~/features/edit-startup";
+import { SettingsSheet } from "./SettingsSheet";
 
 const TAB_CLASS =
 	"relative flex shrink-0 items-center px-2 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:text-foreground focus-ring aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-2 aria-[current=page]:after:bottom-0 aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-foreground";
@@ -70,7 +70,7 @@ function StartupRow({ slug }: { readonly slug: string }) {
 						>
 							Settings
 						</button>
-						<StartupSettingsSheet
+						<SettingsSheet
 							slug={slug}
 							open={settingsOpen}
 							onOpenChange={setSettingsOpen}
@@ -87,9 +87,6 @@ function StartupRow({ slug }: { readonly slug: string }) {
 			</Link>
 			<Link to="/s/$slug/activity" params={{ slug }} className={TAB_CLASS}>
 				Record
-			</Link>
-			<Link to="/s/$slug/team" params={{ slug }} className={TAB_CLASS}>
-				Team
 			</Link>
 		</TabRowFrame>
 	);

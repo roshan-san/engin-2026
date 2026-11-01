@@ -1,1 +1,1 @@
-export { StartupSettingsSheet } from "./ui/StartupSettingsSheet";
+export { StartupSettingsForm } from "./ui/StartupSettingsForm";
