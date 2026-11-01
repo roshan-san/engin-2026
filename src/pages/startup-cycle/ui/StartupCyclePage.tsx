@@ -4,7 +4,7 @@ import { useCycle } from "~/entities/cycle";
 import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
 import { ReviewBanner } from "~/features/monday-review";
-import { CycleHeader, GoalPrompt } from "~/features/set-cycle-goal";
+import { CycleGoal, CycleHeader, GoalPrompt } from "~/features/set-cycle-goal";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
@@ -120,6 +120,7 @@ export function StartupCyclePage() {
 					<>
 						<Section label="What you ship this week">
 							{asksForGoal ? <GoalPrompt /> : null}
+							{cycle?.goal ? <CycleGoal goal={cycle.goal} /> : null}
 							<CycleCards />
 						</Section>
 						<ConversationsSection />

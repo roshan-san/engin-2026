@@ -45,6 +45,15 @@ describe("toCloseArgs", () => {
 		expect(args.nextGoal).toBe("Twenty users");
 	});
 
+	it("leaves out a goal the Founder never touched, whatever it is by now", () => {
+		const args = toCloseArgs(
+			{ ...draft, nextGoal: null },
+			{ week, currentGoal: "Edited in the bar" },
+		);
+
+		expect(args).not.toHaveProperty("nextGoal");
+	});
+
 	it("leaves out a goal that didn't change", () => {
 		const args = toCloseArgs(
 			{ ...draft, nextGoal: "Ten users" },

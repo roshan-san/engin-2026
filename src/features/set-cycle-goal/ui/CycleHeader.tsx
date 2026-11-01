@@ -41,7 +41,9 @@ export function CycleHeader({
 			</span>
 		</span>
 	);
-	const divider = <span aria-hidden className="h-4 w-px shrink-0 bg-border" />;
+	const divider = (
+		<span aria-hidden className="hidden h-4 w-px shrink-0 bg-border md:block" />
+	);
 
 	async function save() {
 		setIsFocused(false);
@@ -58,7 +60,7 @@ export function CycleHeader({
 				{goal ? (
 					<>
 						{divider}
-						<p className="truncate text-sm">{goal}</p>
+						<p className="hidden truncate text-sm md:block">{goal}</p>
 					</>
 				) : null}
 			</div>
@@ -73,7 +75,7 @@ export function CycleHeader({
 		<div className="flex min-w-0 flex-1 items-center gap-3">
 			{when}
 			{divider}
-			<div className="relative -ml-2 min-w-0 max-w-xl flex-1">
+			<div className="relative -ml-2 hidden min-w-0 max-w-xl flex-1 md:block">
 				<Input
 					aria-label="Cycle goal"
 					placeholder={GOAL_QUESTION}

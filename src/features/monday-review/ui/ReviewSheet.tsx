@@ -51,7 +51,7 @@ export function ReviewSheet({
 	const [draft, setDraft] = useState<ReviewDraft>({
 		goalMet: null,
 		dropped: new Set(),
-		nextGoal: review.currentGoal ?? "",
+		nextGoal: null,
 	});
 	const hasGoal = review.goal !== null;
 
@@ -139,7 +139,7 @@ export function ReviewSheet({
 						</label>
 						<Input
 							id="review-next-goal"
-							value={draft.nextGoal}
+							value={draft.nextGoal ?? review.currentGoal ?? ""}
 							maxLength={CYCLE_TEXT.goal}
 							autoComplete="off"
 							onChange={(event) => {

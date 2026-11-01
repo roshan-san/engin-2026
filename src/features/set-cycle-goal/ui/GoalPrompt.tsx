@@ -7,16 +7,16 @@ import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { useSetGoal } from "../api/useSetGoal";
 
-/** Asks for this week's goal, where a Cycle has none yet. */
-export function GoalPrompt() {
+/** Asks for this week's goal, or changes `current`. */
+export function GoalPrompt({ current = "" }: { readonly current?: string }) {
 	const { startup } = useWorkspace();
 	const setGoal = useSetGoal(startup._id);
-	const [draft, setDraft] = useState("");
+	const [draft, setDraft] = useState(current);
 
 	function submit(event: FormEvent) {
 		event.preventDefault();
 		const goal = draft.trim();
-		if (goal) void setGoal(goal);
+		if (goal && goal !== current) void setGoal(goal);
 	}
 
 	return (
@@ -32,8 +32,11 @@ export function GoalPrompt() {
 					autoComplete="off"
 					onChange={(event) => setDraft(event.target.value)}
 				/>
-				<Button type="submit" disabled={draft.trim() === ""}>
-					Set goal
+				<Button
+					type="submit"
+					disabled={draft.trim() === "" || draft.trim() === current}
+				>
+					{current ? "Save" : "Set goal"}
 				</Button>
 			</div>
 			<MentorNote>Keep it to one line.</MentorNote>

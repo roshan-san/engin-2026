@@ -1,7 +1,8 @@
 export type ReviewDraft = {
 	readonly goalMet: boolean | null;
 	readonly dropped: ReadonlySet<string>;
-	readonly nextGoal: string;
+	/** `null` until typed in, so the sheet shows the goal as it is now. */
+	readonly nextGoal: string | null;
 };
 
 /** A week with a goal needs its answer first. */
@@ -14,7 +15,7 @@ export function toCloseArgs(
 	draft: ReviewDraft,
 	review: { readonly week: string; readonly currentGoal: string | null },
 ) {
-	const nextGoal = draft.nextGoal.trim();
+	const nextGoal = draft.nextGoal?.trim();
 	return {
 		week: review.week,
 		...(draft.goalMet === null ? {} : { goalMet: draft.goalMet }),
