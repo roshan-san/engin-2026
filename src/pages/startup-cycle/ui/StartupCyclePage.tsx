@@ -19,6 +19,7 @@ import {
 } from "~/widgets/card-board";
 import { TeamPanel } from "~/widgets/chat-panel";
 import { type CycleView, showsGoalPrompt } from "../model/goalPrompt";
+import { ConversationsSection } from "./ConversationsSection";
 
 const cycleRoute = getRouteApi("/_shell/_authed/s/$slug/cycle");
 
@@ -114,10 +115,13 @@ export function StartupCyclePage() {
 						<Board />
 					)
 				) : (
-					<Section label="What you ship this week">
-						{asksForGoal ? <GoalPrompt /> : null}
-						<CycleCards />
-					</Section>
+					<>
+						<Section label="What you ship this week">
+							{asksForGoal ? <GoalPrompt /> : null}
+							<CycleCards />
+						</Section>
+						<ConversationsSection />
+					</>
 				)}
 			</AppPage>
 		</CardBoard>
