@@ -1,7 +1,6 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { CYCLE_TEXT } from "@convex/cycles/rules";
 import { useState } from "react";
-import { ConversationRow } from "~/entities/conversation";
 import type { CycleReview } from "~/entities/cycle";
 import { GOAL_QUESTION } from "~/shared/config/goalQuestion";
 import { Button } from "~/shared/ui/button";
@@ -114,20 +113,6 @@ export function ReviewSheet({
 											onChange={(fate) => setFate(card._id, fate)}
 										/>
 									</li>
-								))}
-							</ul>
-						</Section>
-					) : null}
-
-					{review.conversations.length > 0 ? (
-						<Section label="Who you talked to">
-							<ul className="flex flex-col divide-y divide-border">
-								{review.conversations.map((conversation) => (
-									<ConversationRow
-										key={conversation._id}
-										line={conversation.line}
-										author={conversation.author}
-									/>
 								))}
 							</ul>
 						</Section>

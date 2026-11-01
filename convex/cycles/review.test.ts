@@ -52,7 +52,6 @@ describe("isReviewDue", () => {
 		cycleNumber: 2,
 		isReviewed: false,
 		hasGoal: false,
-		conversationCount: 0,
 		unfinishedCount: 0,
 	};
 
@@ -60,9 +59,8 @@ describe("isReviewDue", () => {
 		expect(isReviewDue(nothing)).toBe(false);
 	});
 
-	it("is due for a goal, a conversation or an unfinished Card alone", () => {
+	it("is due for a goal or an unfinished Card alone", () => {
 		expect(isReviewDue({ ...nothing, hasGoal: true })).toBe(true);
-		expect(isReviewDue({ ...nothing, conversationCount: 1 })).toBe(true);
 		expect(isReviewDue({ ...nothing, unfinishedCount: 1 })).toBe(true);
 	});
 
@@ -75,16 +73,12 @@ describe("isReviewDue", () => {
 });
 
 describe("the Monday review", () => {
-	it("shows the Founder last week's goal, Cards and conversations", async () => {
+	it("shows the Founder last week's goal and unfinished Cards", async () => {
 		const setup = await setUpStartup(createTest());
 		const args = { startupId: setup.startupId };
 		await setup.founder.as.mutation(api.cycles.setGoal, {
 			...args,
 			goal: "Ten users",
-		});
-		await setup.founder.as.mutation(api.conversations.add, {
-			...args,
-			line: "Priya",
 		});
 		await addCard(setup, "Unfinished");
 		await toNextWeek(setup.t);
@@ -97,8 +91,19 @@ describe("the Monday review", () => {
 			goal: "Ten users",
 			currentGoal: null,
 			unfinished: [{ title: "Unfinished" }],
-			conversations: [{ line: "Priya" }],
 		});
+		expect(review).not.toHaveProperty("conversations");
+	});
+
+	it("isn't due for a goalless week with no open Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		await toNextWeek(setup.t);
+
+		expect(
+			await setup.founder.as.query(api.cycles.getReview, {
+				startupId: setup.startupId,
+			}),
+		).toBeNull();
 	});
 
 	it("closes last week: Drop deletes, carried Cards stay, the next goal is set", async () => {

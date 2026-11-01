@@ -5,7 +5,6 @@ import { applicationsTables } from "./applications/table";
 import { billingTables } from "./billing/table";
 import { cardsTables } from "./cards/table";
 import { contributorsTables } from "./contributors/table";
-import { conversationsTables } from "./conversations/table";
 import { cyclesTables } from "./cycles/table";
 import { hackathonsTables } from "./hackathons/table";
 import { invitesTables } from "./invites/table";
@@ -27,7 +26,6 @@ export default defineSchema({
 	...usersTables,
 	...startupsTables,
 	...contributorsTables,
-	...conversationsTables,
 	...invitesTables,
 	...cardsTables,
 	...activityTables,

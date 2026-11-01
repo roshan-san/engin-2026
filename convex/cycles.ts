@@ -3,7 +3,6 @@ import { mutation, query } from "./_generated/server";
 import { cycleHeader } from "./activity/model";
 import { loadBoardCards, toCardView } from "./cards/model";
 import { MAX_BOARD_CARDS } from "./cards/rules";
-import { loadConversations } from "./conversations/model";
 import { closeCycle, loadGoal, loadGoalRow, saveGoal } from "./cycles/model";
 import { cycleNumber, isReviewDue, shiftWeek, weekOf } from "./cycles/rules";
 import { requireUserId } from "./lib/auth";
@@ -45,10 +44,9 @@ export const getReview = query({
 
 		const now = Date.now();
 		const week = shiftWeek(weekOf(now), -1);
-		const [row, cards, conversations, currentGoal] = await Promise.all([
+		const [row, cards, currentGoal] = await Promise.all([
 			loadGoalRow(ctx, args.startupId, week),
 			loadBoardCards(ctx, args.startupId, now),
-			loadConversations(ctx, args.startupId, week),
 			loadGoal(ctx, args.startupId, weekOf(now)),
 		]);
 		const unfinished = cards.filter(
@@ -60,7 +58,6 @@ export const getReview = query({
 				cycleNumber: number,
 				isReviewed: row?.reviewedAt !== undefined,
 				hasGoal: row?.goal !== undefined,
-				conversationCount: conversations.length,
 				unfinishedCount: unfinished.length,
 			})
 		) {
@@ -74,7 +71,6 @@ export const getReview = query({
 			unfinished: await Promise.all(
 				unfinished.map((card) => toCardView(ctx, card)),
 			),
-			conversations,
 		};
 	},
 });

@@ -52,17 +52,15 @@ export function isReviewDue({
 	cycleNumber,
 	isReviewed,
 	hasGoal,
-	conversationCount,
 	unfinishedCount,
 }: {
 	cycleNumber: number;
 	isReviewed: boolean;
 	hasGoal: boolean;
-	conversationCount: number;
 	unfinishedCount: number;
 }): boolean {
 	if (cycleNumber <= 1 || isReviewed) {
 		return false;
 	}
-	return hasGoal || conversationCount > 0 || unfinishedCount > 0;
+	return hasGoal || unfinishedCount > 0;
 }
