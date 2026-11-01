@@ -5,8 +5,6 @@ export type PanelState = {
 	readonly hasItem: boolean;
 	/** Whether you asked for the page's own panel on a phone. */
 	readonly isRequested: boolean;
-	/** On desktop too, the page's own panel waits to be asked for. */
-	readonly opensOnRequest?: boolean;
 };
 
 export type PanelShows = {
@@ -19,30 +17,25 @@ export function panelShows({
 	isMobile,
 	hasItem,
 	isRequested,
-	opensOnRequest = false,
 }: PanelState): PanelShows {
 	const what = hasItem ? "item" : "default";
 	if (isMobile === undefined) {
 		return null;
 	}
 	if (!isMobile) {
-		return hasItem || isRequested || !opensOnRequest
-			? { where: "side", what }
-			: null;
+		return { where: "side", what };
 	}
 	return hasItem || isRequested ? { where: "sheet", what } : null;
 }
 
-/** The panel after back or close: both leave the item; back keeps the page's own panel showing where it would otherwise shut. */
+/** The panel after back or close: both leave the item; back on a phone keeps the sheet open on the page's own panel. */
 export function panelAfter(
 	action: "back" | "close",
 	state: PanelState,
 ): PanelState {
 	return {
-		...state,
+		isMobile: state.isMobile,
 		hasItem: false,
-		isRequested:
-			action === "back" &&
-			(state.isMobile === true || state.opensOnRequest === true),
+		isRequested: action === "back" && state.isMobile === true,
 	};
 }

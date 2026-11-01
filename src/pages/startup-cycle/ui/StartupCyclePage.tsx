@@ -8,29 +8,17 @@ import { CycleGoal, CycleHeader, GoalPrompt } from "~/features/set-cycle-goal";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
-import { Section } from "~/shared/ui/Section";
-import { Segmented } from "~/shared/ui/Segmented";
 import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
-import {
-	Board,
-	CardBoard,
-	CycleCards,
-	OpenCardPanel,
-} from "~/widgets/card-board";
+import { Board, CardBoard, OpenCardPanel } from "~/widgets/card-board";
 import { TeamPanel } from "~/widgets/chat-panel";
-import { type CycleView, showsGoalPrompt } from "../model/goalPrompt";
+import { showsGoalPrompt } from "../model/goalPrompt";
 
 const cycleRoute = getRouteApi("/_shell/_authed/s/$slug/cycle");
 
-const VIEWS: readonly { value: CycleView; label: string }[] = [
-	{ value: "list", label: "List" },
-	{ value: "board", label: "Board" },
-];
-
-/** The Startup's home: this week's goal, Cards and conversations, with the Board as a second view of the same Cards. */
+/** The Startup's home: this week's goal and the Board, beside the side panel. */
 export function StartupCyclePage() {
-	const { card: cardId, view = "list" } = cycleRoute.useSearch();
+	const { card: cardId } = cycleRoute.useSearch();
 	const navigate = cycleRoute.useNavigate();
 	const { startup, isFounder } = useWorkspace();
 	const isTeamUnread = useTeamThread(startup._id)?.unread ?? false;
@@ -41,57 +29,36 @@ export function StartupCyclePage() {
 		void navigate({ search: (prev) => ({ ...prev, card }) });
 	}
 
-	const panel = useDetailPanel(cardId !== undefined, () => setCard(undefined), {
-		opensOnRequest: true,
-	});
+	const panel = useDetailPanel(cardId !== undefined, () => setCard(undefined));
+	const onClose = panel.isMobile ? panel.close : undefined;
 
 	// Until both have loaded, a prompt could flash over a Board that has Cards.
 	const asksForGoal =
 		cycle !== undefined &&
 		cards !== undefined &&
-		showsGoalPrompt({
-			isFounder,
-			goal: cycle.goal,
-			cardCount: cards.length,
-			view,
-		});
+		showsGoalPrompt({ isFounder, goal: cycle.goal, cardCount: cards.length });
 
 	return (
 		<CardBoard cardId={cardId} onCardChange={setCard}>
 			<AppPage
-				width={view === "board" && !asksForGoal ? "full" : "column"}
+				width={asksForGoal ? "column" : "full"}
 				notice={<ReviewBanner />}
 				bar={{
 					title: <CycleHeader showsGoalInput={!asksForGoal} />,
 					actions: (
-						<>
-							<Segmented
-								label="View"
-								options={VIEWS}
-								value={view}
-								onChange={(next) =>
-									void navigate({
-										search: (prev) => ({
-											...prev,
-											view: next === "list" ? undefined : next,
-										}),
-									})
-								}
-							/>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={cardId ? panel.back : panel.toggle}
-							>
-								Threads
-								{isTeamUnread ? <UnreadDot /> : null}
-							</Button>
-						</>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="md:hidden"
+							onClick={panel.open}
+						>
+							Threads
+							{isTeamUnread ? <UnreadDot /> : null}
+						</Button>
 					),
 				}}
 				panel={
 					<DetailPanel
-						collapses
 						shows={panel.shows}
 						title={cardId ? "Card" : "Threads"}
 						description={cardId ? "Edit this Card." : "Talk with your team."}
@@ -101,27 +68,20 @@ export function StartupCyclePage() {
 								backLabel="Threads"
 								isBackUnread={isTeamUnread}
 								onBack={panel.back}
-								onClose={panel.close}
+								onClose={onClose}
 							/>
 						}
-						fallback={<TeamPanel onClose={panel.close} />}
+						fallback={<TeamPanel onClose={onClose} />}
 					/>
 				}
 			>
 				<h1 className="sr-only">Cycle</h1>
-				{view === "board" ? (
-					asksForGoal ? (
-						<GoalPrompt />
-					) : (
-						<Board />
-					)
+				{asksForGoal ? (
+					<GoalPrompt />
 				) : (
 					<>
-						<Section label="What you ship this week">
-							{asksForGoal ? <GoalPrompt /> : null}
-							{cycle?.goal ? <CycleGoal goal={cycle.goal} /> : null}
-							<CycleCards />
-						</Section>
+						{cycle?.goal ? <CycleGoal goal={cycle.goal} /> : null}
+						<Board />
 					</>
 				)}
 			</AppPage>
