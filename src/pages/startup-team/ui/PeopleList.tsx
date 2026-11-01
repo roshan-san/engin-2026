@@ -9,7 +9,7 @@ import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 
-/** The Founder and Contributors: face, name, Rating and what they verified this Cycle. */
+/** The Founder and Contributors: face, name and Rating. */
 export function PeopleList({
 	people,
 	canRemove,
@@ -84,11 +84,7 @@ function PersonRow({
 					<PersonName person={person} />
 				)
 			}
-			meta={
-				person.verifiedThisCycle > 0
-					? `${position} · ${person.verifiedThisCycle} approved this Cycle`
-					: position
-			}
+			meta={position}
 			trailing={
 				<div className="flex items-center gap-3">
 					<RatingBadge

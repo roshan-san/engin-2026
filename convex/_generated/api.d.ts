@@ -62,9 +62,6 @@ import type * as messages_table from "../messages/table.js";
 import type * as places from "../places.js";
 import type * as places_model from "../places/model.js";
 import type * as places_rules from "../places/rules.js";
-import type * as presence from "../presence.js";
-import type * as presence_model from "../presence/model.js";
-import type * as presence_rules from "../presence/rules.js";
 import type * as rating from "../rating.js";
 import type * as rating_model from "../rating/model.js";
 import type * as rating_rules from "../rating/rules.js";
@@ -145,9 +142,6 @@ declare const fullApi: ApiFromModules<{
   places: typeof places;
   "places/model": typeof places_model;
   "places/rules": typeof places_rules;
-  presence: typeof presence;
-  "presence/model": typeof presence_model;
-  "presence/rules": typeof presence_rules;
   rating: typeof rating;
   "rating/model": typeof rating_model;
   "rating/rules": typeof rating_rules;
@@ -195,6 +189,5 @@ export declare const internal: FilterApi<
 >;
 
 export declare const components: {
-  presence: import("@convex-dev/presence/_generated/component.js").ComponentApi<"presence">;
   dodopayments: import("@dodopayments/convex/_generated/component.js").ComponentApi<"dodopayments">;
 };

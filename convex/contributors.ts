@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
-import { loadVerifiedThisCycle, toTeamPerson } from "./contributors/model";
+import { toTeamPerson } from "./contributors/model";
 import { MAX_CONTRIBUTORS } from "./contributors/rules";
 import { requireUserId } from "./lib/auth";
 import { requireFounder, requireTeam } from "./startups/team";
@@ -18,10 +18,9 @@ export const list = query({
 				q.eq("startupId", args.startupId),
 			)
 			.take(MAX_CONTRIBUTORS);
-		const counts = await loadVerifiedThisCycle(ctx, args.startupId, Date.now());
 		const toPerson = async (id: Id<"users">) => {
 			const user = await ctx.db.get(id);
-			return user ? toTeamPerson(user, counts.get(id) ?? 0) : null;
+			return user ? toTeamPerson(user) : null;
 		};
 		const contributors = await Promise.all(
 			rows.map((row) => toPerson(row.userId)),

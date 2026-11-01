@@ -2,7 +2,6 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
 import { CycleHeader } from "~/features/set-cycle-goal";
-import { useHeartbeat } from "~/features/stay-online";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
@@ -19,9 +18,6 @@ export function StartupBoardPage() {
 	const navigate = boardRoute.useNavigate();
 	const { startup } = useWorkspace();
 	const isTeamUnread = useTeamThread(startup._id)?.unread ?? false;
-
-	// Online for as long as the workspace is open, whichever panel is showing.
-	useHeartbeat(startup._id);
 
 	function setCard(card: string | undefined) {
 		void navigate({ search: (prev) => ({ ...prev, card }) });
