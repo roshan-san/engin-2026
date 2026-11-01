@@ -47,7 +47,9 @@ export function HiringPage() {
 			) : rows.length === 0 ? (
 				<EmptyState
 					title={
-						isFounder ? "Bring builders in by watching them work." : "No hackathons yet."
+						isFounder
+							? "Bring builders in by watching them work."
+							: "No hackathons yet."
 					}
 					body={
 						isFounder

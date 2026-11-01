@@ -266,9 +266,7 @@ export function ScreeningView({
 				shows={panel.shows}
 				title={view !== undefined ? "Applicant" : "# Everyone"}
 				description={
-					view !== undefined
-						? "Accept or decline."
-						: "Talk to every Builder."
+					view !== undefined ? "Accept or decline." : "Talk to every Builder."
 				}
 				onClose={panel.close}
 				hasCloseButton
@@ -287,8 +285,8 @@ export function ScreeningView({
 					<AlertDialogHeader>
 						<AlertDialogTitle>Remove {removing?.name}?</AlertDialogTitle>
 						<AlertDialogDescription>
-							They stop being a Builder. You can accept them again before
-							the start.
+							They stop being a Builder. You can accept them again before the
+							start.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

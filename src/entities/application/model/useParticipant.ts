@@ -14,7 +14,7 @@ type Participant = {
 	status: ParticipantStatus;
 };
 
-export const ParticipantContext = createContext<Builder | null>(null);
+export const ParticipantContext = createContext<Participant | null>(null);
 
 /** The Participant's Hackathon and their place in it; only inside `ParticipantGate`. */
 export function useParticipant(): Participant {
