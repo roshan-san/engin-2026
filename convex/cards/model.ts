@@ -274,6 +274,10 @@ export async function markVerified(
 		verifiedAt: now,
 		verifiedBy: verifierId,
 	});
+	// Only someone else's approval counts: self-approval would list anyone in a minute.
+	if (card.ownerId && card.ownerId !== verifierId) {
+		await ctx.db.patch(card.ownerId, { approvedWork: true });
+	}
 	// Hackathon work is the Participant's, not the Startup's: it stays off the Activity.
 	if (card.hackathonId) {
 		return;

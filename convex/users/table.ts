@@ -22,7 +22,15 @@ export const usersTables = {
 		ratedThrough: v.optional(v.string()),
 		/** Set by the weekly run; absent means provisional. */
 		provisional: v.optional(v.boolean()),
+		/** Set once someone else approves one of their Cards; lists them on Explore People. */
+		approvedWork: v.optional(v.literal(true)),
 	})
 		.index("email", ["email"])
-		.index("by_username", ["username"]),
+		.index("by_username", ["username"])
+		.index("by_approvedWork_and_rating", ["approvedWork", "rating"])
+		.index("by_approvedWork_and_discipline_and_rating", [
+			"approvedWork",
+			"discipline",
+			"rating",
+		]),
 };

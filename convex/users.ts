@@ -4,6 +4,7 @@ import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import { discipline } from "./lib/disciplines";
+import { MAX_EXPLORE_ROWS } from "./lib/explore";
 import { limitText } from "./lib/text";
 import {
 	loadProfileRecord,
@@ -20,6 +21,29 @@ export const getMe = query({
 		const userId = await getAuthUserId(ctx);
 		const user = userId ? await ctx.db.get(userId) : null;
 		return user ? toOwnProfile(user) : null;
+	},
+});
+
+/** People whose work someone else approved, for anyone: best Rating first, as public profiles. */
+export const explore = query({
+	args: { discipline: v.optional(discipline) },
+	handler: async (ctx, args) => {
+		const filter = args.discipline;
+		const query =
+			filter === undefined
+				? ctx.db
+						.query("users")
+						.withIndex("by_approvedWork_and_rating", (q) =>
+							q.eq("approvedWork", true),
+						)
+				: ctx.db
+						.query("users")
+						.withIndex("by_approvedWork_and_discipline_and_rating", (q) =>
+							q.eq("approvedWork", true).eq("discipline", filter),
+						);
+		const users = await query.order("desc").take(MAX_EXPLORE_ROWS);
+		// No username means no page to link to.
+		return users.filter((user) => user.username).map(toPublicProfile);
 	},
 });
 
