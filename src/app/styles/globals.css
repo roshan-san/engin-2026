@@ -120,6 +120,10 @@
 
 	--glow: #0b5c99;
 
+	/* Landing page panels: scrolling from founders to contributors changes the colour. */
+	--panel-founder: #0b3a66;
+	--panel-contributor: #f5b83d;
+
 	/* Rating Tiers (convex/rating/rules.ts): grey, green, blue, violet, amber. Text colours. */
 	--tier-1: #a1a1aa;
 	--tier-2: #3fb87a;

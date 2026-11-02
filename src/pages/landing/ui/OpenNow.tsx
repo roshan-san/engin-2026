@@ -29,7 +29,8 @@ export function OpenNow() {
 	}
 
 	return (
-		<section className="flex flex-col gap-4">
+		// Its own dark block: the rows' muted text doesn't read on the panel's colour.
+		<section className="flex flex-col gap-4 rounded-xl bg-background p-4 text-foreground">
 			<div className="flex items-baseline justify-between">
 				<h2 className="text-2xl font-semibold">Open now</h2>
 				<Link
