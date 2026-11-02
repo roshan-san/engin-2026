@@ -139,6 +139,9 @@ function ExploreTabs() {
 			<Link to="/explore/startups" className={TAB_CLASS}>
 				Startups
 			</Link>
+			<Link to="/explore/people" className={TAB_CLASS}>
+				People
+			</Link>
 		</TabRowFrame>
 	);
 }
