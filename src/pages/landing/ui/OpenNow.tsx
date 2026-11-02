@@ -6,7 +6,7 @@ import { HackathonExploreRow } from "~/widgets/hackathon-row";
 
 const SKELETON_ROWS = ["a", "b", "c"] as const;
 
-/** Holds the space of a Hackathon row while the list loads, so Pricing doesn't jump. */
+/** Holds the space of a Hackathon row while the list loads, so the panel doesn't jump. */
 function OpenNowSkeleton() {
 	return SKELETON_ROWS.map((key) => (
 		<li key={key} className="flex items-start gap-3 px-2 py-4" aria-hidden>
