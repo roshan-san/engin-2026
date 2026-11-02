@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
+import { discipline } from "./lib/disciplines";
 import { limitText } from "./lib/text";
 import {
 	loadProfileRecord,
@@ -10,7 +11,7 @@ import {
 	toProfileAbout,
 	toPublicProfile,
 } from "./users/model";
-import { discipline, normalizeUsername, USER_TEXT } from "./users/rules";
+import { normalizeUsername, USER_TEXT } from "./users/rules";
 import { requireUsername } from "./users/username";
 
 export const getMe = query({

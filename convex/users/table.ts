@@ -1,7 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import { discipline } from "./rules";
+import { discipline } from "../lib/disciplines";
 
 export const usersTables = {
 	users: defineTable({

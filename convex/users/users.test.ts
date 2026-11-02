@@ -59,6 +59,22 @@ describe("users", () => {
 		});
 	});
 
+	it("a profile's discipline comes from the one list", async () => {
+		const t = createTest();
+		const fay = await signUp(t, "Fay");
+
+		await fay.as.mutation(api.users.updateProfile, { discipline: "developer" });
+		const me = await fay.as.query(api.users.getMe, {});
+		expect(me?.discipline).toBe("developer");
+
+		await expect(
+			fay.as.mutation(api.users.updateProfile, {
+				// @ts-expect-error The old value is no longer in the list.
+				discipline: "engineer",
+			}),
+		).rejects.toThrow();
+	});
+
 	it("a person clears their discipline", async () => {
 		const t = createTest();
 		const fay = await signUp(t, "Fay");

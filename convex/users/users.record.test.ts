@@ -144,7 +144,7 @@ describe("profile record", () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		await sam.as.mutation(api.users.updateProfile, {
-			discipline: "engineer",
+			discipline: "developer",
 			bio: "Ships the onboarding flow",
 		});
 
@@ -155,7 +155,7 @@ describe("profile record", () => {
 		expect(profile).toMatchObject({
 			name: "Sam",
 			username: "sam",
-			discipline: "engineer",
+			discipline: "developer",
 			rating: 1000,
 			details: null,
 		});

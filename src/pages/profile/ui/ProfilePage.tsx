@@ -2,14 +2,9 @@ import type { api } from "@convex/_generated/api";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { useRef, useState } from "react";
-import {
-	disciplineLabel,
-	hackathonLine,
-	useMe,
-	useProfile,
-	workLine,
-} from "~/entities/person";
+import { hackathonLine, useMe, useProfile, workLine } from "~/entities/person";
 import { SignInCard } from "~/features/sign-in";
+import { disciplineLabel } from "~/shared/config/disciplines";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
 import { AppPage } from "~/shared/ui/AppPage";

@@ -49,6 +49,7 @@ import type * as invites_model from "../invites/model.js";
 import type * as invites_rules from "../invites/rules.js";
 import type * as invites_table from "../invites/table.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_disciplines from "../lib/disciplines.js";
 import type * as lib_explore from "../lib/explore.js";
 import type * as lib_returnPath from "../lib/returnPath.js";
 import type * as lib_text from "../lib/text.js";
@@ -129,6 +130,7 @@ declare const fullApi: ApiFromModules<{
   "invites/rules": typeof invites_rules;
   "invites/table": typeof invites_table;
   "lib/auth": typeof lib_auth;
+  "lib/disciplines": typeof lib_disciplines;
   "lib/explore": typeof lib_explore;
   "lib/returnPath": typeof lib_returnPath;
   "lib/text": typeof lib_text;
