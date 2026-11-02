@@ -98,7 +98,7 @@ export function HackathonPost({
 					{post.participantsGet ? (
 						<li>
 							<Badge variant="status" tone="success">
-								Participants get {post.participantsGet}
+								Builders get {post.participantsGet}
 							</Badge>
 						</li>
 					) : null}
@@ -136,7 +136,7 @@ function Brief({
 				<ol className="flex flex-col gap-1.5">
 					{cards.length === 0 ? (
 						<li className="rounded-md border border-dashed border-border px-3 py-2.5 text-sm">
-							<Unwritten>The Cards each Participant starts with.</Unwritten>
+							<Unwritten>The Cards each Builder starts with.</Unwritten>
 						</li>
 					) : null}
 					{cards.map((title, index) => (
@@ -218,7 +218,7 @@ function Timeline({
 		{
 			title: "Apply",
 			when: startsAt === null ? null : `until ${dayLabel(lastDay(startsAt))}`,
-			body: `Say how you'd approach it. Up to ${MAX_PARTICIPANTS} become Participants.`,
+			body: `Say how you'd approach it. Up to ${MAX_PARTICIPANTS} become Builders.`,
 		},
 		{
 			title: "Build",

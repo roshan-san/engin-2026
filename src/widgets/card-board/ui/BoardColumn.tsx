@@ -24,9 +24,9 @@ function emptyTitle(column: Column, canAddCards: boolean) {
 		case "in_progress":
 			return "Move a Card here when you start";
 		case "review":
-			return "Cards land here once What shipped is in";
+			return "Cards land here once What got done is in";
 		case "done":
-			return "Verified Cards end up here";
+			return "Approved Cards end up here";
 	}
 }
 

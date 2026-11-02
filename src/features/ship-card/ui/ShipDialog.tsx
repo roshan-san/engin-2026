@@ -116,7 +116,7 @@ export function ShipDialog({
 				}}
 			>
 				<DialogHeader>
-					<DialogTitle>What shipped?</DialogTitle>
+					<DialogTitle>What got done?</DialogTitle>
 					<DialogDescription className="truncate">
 						{card.title}
 					</DialogDescription>
@@ -124,7 +124,7 @@ export function ShipDialog({
 
 				<div className="flex flex-col gap-1.5">
 					<Input
-						aria-label="What shipped"
+						aria-label="What got done"
 						value={line}
 						maxLength={CARD_TEXT.shippedLine}
 						autoFocus
@@ -241,7 +241,7 @@ export function ShipDialog({
 					{missing ? (
 						<MentorNote>
 							{missing === "line"
-								? "Add what shipped"
+								? "Add what got done"
 								: missing === "invalidLink"
 									? "Links start with https://"
 									: "Add a link or an image"}

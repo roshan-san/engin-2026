@@ -42,7 +42,7 @@ const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
 const SORTS = [
 	{ value: "newest", label: "Newest" },
-	{ value: "rating", label: "Rating" },
+	{ value: "rating", label: "Momentum" },
 ] as const;
 
 const PANES = [
@@ -202,7 +202,7 @@ export function ScreeningView({
 						</span>{" "}
 						{/* The count says it on a phone; the word is for screen readers there. */}
 						<span className="sr-only text-muted-foreground sm:not-sr-only">
-							Participants
+							Builders
 						</span>
 					</span>
 					<Segmented
@@ -266,9 +266,7 @@ export function ScreeningView({
 				shows={panel.shows}
 				title={view !== undefined ? "Applicant" : "# Everyone"}
 				description={
-					view !== undefined
-						? "Accept or decline."
-						: "Talk to every Participant."
+					view !== undefined ? "Accept or decline." : "Talk to every Builder."
 				}
 				onClose={panel.close}
 				hasCloseButton
@@ -287,8 +285,8 @@ export function ScreeningView({
 					<AlertDialogHeader>
 						<AlertDialogTitle>Remove {removing?.name}?</AlertDialogTitle>
 						<AlertDialogDescription>
-							They stop being a Participant. You can accept them again before
-							the start.
+							They stop being a Builder. You can accept them again before the
+							start.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

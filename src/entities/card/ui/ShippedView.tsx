@@ -34,7 +34,7 @@ export function ShippedView({ card }: { readonly card: CardView }) {
 								href={url}
 								target="_blank"
 								rel="noreferrer noopener"
-								aria-label={`Image ${index + 1} of What shipped`}
+								aria-label={`Image ${index + 1} of What got done`}
 							>
 								<img
 									src={url}
@@ -49,10 +49,10 @@ export function ShippedView({ card }: { readonly card: CardView }) {
 			{card.status === "done" ? (
 				<p className="text-xs text-muted-foreground">
 					{card.selfVerified ? (
-						"Self-verified"
+						"Self-approved"
 					) : (
 						<>
-							Verified by <PersonName person={card.verifiedBy} />
+							Approved by <PersonName person={card.verifiedBy} />
 							{card.verifiedAt !== null
 								? ` · ${relativeTime(card.verifiedAt, Date.now())}`
 								: null}

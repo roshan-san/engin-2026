@@ -25,10 +25,10 @@ describe("rating", () => {
 		const startsAt = weekStart("2026-W42");
 
 		expect(stripTooltip({ startsAt, count: 3 })).toBe(
-			"Oct 12 – 18 · 3 verified",
+			"Oct 12 – 18 · 3 approved",
 		);
 		expect(stripTooltip({ startsAt, count: WEEK_COUNT_CAP })).toBe(
-			"Oct 12 – 18 · 50+ verified",
+			"Oct 12 – 18 · 50+ approved",
 		);
 		expect(stripTooltip({ startsAt, count: null })).toBe("Before Engin");
 	});

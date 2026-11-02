@@ -83,10 +83,10 @@ function StartupRow({ slug }: { readonly slug: string }) {
 				Board
 			</Link>
 			<Link to="/s/$slug/hiring" params={{ slug }} className={TAB_CLASS}>
-				Hiring
+				Hackathons
 			</Link>
 			<Link to="/s/$slug/activity" params={{ slug }} className={TAB_CLASS}>
-				Activity
+				Record
 			</Link>
 			<Link to="/s/$slug/team" params={{ slug }} className={TAB_CLASS}>
 				Team

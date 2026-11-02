@@ -105,7 +105,7 @@ export function PublicStartupPage() {
 							>
 								{startup.rating}
 							</span>
-							<span className="text-xs text-muted-foreground">Rating</span>
+							<span className="text-xs text-muted-foreground">Momentum</span>
 						</div>
 					</div>
 					<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
@@ -138,7 +138,7 @@ export function PublicStartupPage() {
 				)}
 
 				{startup.openHackathons.length > 0 ? (
-					<Section label="Hiring now">
+					<Section label="Open Hackathons">
 						<div className="grid gap-3 sm:grid-cols-2">
 							{startup.openHackathons.map((h) => (
 								<Link
@@ -154,7 +154,7 @@ export function PublicStartupPage() {
 									</span>
 									{h.participantsGet ? (
 										<span className="text-sm">
-											Participants get {h.participantsGet}
+											Builders get {h.participantsGet}
 										</span>
 									) : null}
 								</Link>
@@ -164,7 +164,7 @@ export function PublicStartupPage() {
 				) : null}
 
 				{hiring ? (
-					<Section label="Hiring record">
+					<Section label="Hackathon record">
 						<p className="text-sm">{hiring}</p>
 					</Section>
 				) : null}

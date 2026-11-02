@@ -55,7 +55,7 @@ export function ReviewBar({
 				onClick={() => void handleVerify()}
 			>
 				{isVerifying ? <Spinner /> : null}
-				Verify
+				Approve
 				<Kbd className="border-primary-foreground/20 text-primary-foreground/60">
 					V
 				</Kbd>

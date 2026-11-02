@@ -73,7 +73,7 @@ export function ReviewQueue({
 		) : (
 			<EmptyState
 				title="Nothing to review."
-				body="Cards land here when a Participant ships them."
+				body="Cards land here when a Builder ships them."
 			/>
 		);
 	}
@@ -119,7 +119,7 @@ export function ReviewQueue({
 										</Button>
 										{canVerify(card) ? (
 											<Button size="sm" onClick={() => void verify(card._id)}>
-												Verify
+												Approve
 											</Button>
 										) : (
 											<span className="text-xs text-muted-foreground">
@@ -136,7 +136,7 @@ export function ReviewQueue({
 			</div>
 			<p className="hidden shrink-0 items-center justify-center gap-1.5 border-t border-border px-3 py-2 text-xs text-muted-foreground md:flex">
 				<Kbd>J</Kbd>
-				<Kbd>K</Kbd> move · <Kbd>V</Kbd> verify · <Kbd>Enter</Kbd> open
+				<Kbd>K</Kbd> move · <Kbd>V</Kbd> approve · <Kbd>Enter</Kbd> open
 			</p>
 		</div>
 	);

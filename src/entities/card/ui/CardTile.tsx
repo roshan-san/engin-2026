@@ -40,7 +40,7 @@ export function CardFace({ card }: { readonly card: CardView }) {
 					) : null}
 					{card.selfVerified ? (
 						<Badge variant="outline" className="text-muted-foreground">
-							Self-verified
+							Self-approved
 						</Badge>
 					) : null}
 				</div>

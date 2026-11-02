@@ -33,5 +33,5 @@ export function stripTooltip(cell: Pick<StripCell, "startsAt" | "count">) {
 	if (cell.count === null) return "Before Engin";
 	const count =
 		cell.count >= WEEK_COUNT_CAP ? `${WEEK_COUNT_CAP}+` : cell.count;
-	return `${dateRange(cell.startsAt, cell.startsAt + WEEK_MS)} · ${count} verified`;
+	return `${dateRange(cell.startsAt, cell.startsAt + WEEK_MS)} · ${count} approved`;
 }

@@ -27,7 +27,7 @@ export function RecordSignals({
 			)}
 		>
 			<div className="flex flex-col gap-2">
-				<h2 className={LABEL}>Rating</h2>
+				<h2 className={LABEL}>Momentum</h2>
 				<RatingBadge
 					rating={signals.rating}
 					ratingChange={signals.ratingChange}
@@ -42,7 +42,7 @@ export function RecordSignals({
 						<span className="font-medium text-foreground">
 							{signals.verifiedTotal12}
 						</span>{" "}
-						verified in 12 weeks
+						approved in 12 weeks
 					</span>
 				</div>
 				<RhythmStrip strip={signals.strip} size="fluid" />

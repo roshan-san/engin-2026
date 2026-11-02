@@ -117,7 +117,7 @@ function SignedInPage({ page }: { readonly page: HackathonView }) {
 				<DetailPanel
 					shows={panel.shows}
 					title={panelTitle}
-					description="Apply, and who's hiring."
+					description="Apply, and who's behind it."
 					onClose={panel.close}
 					hasCloseButton
 					item={null}

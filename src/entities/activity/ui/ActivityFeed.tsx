@@ -47,7 +47,7 @@ export function ActivityFeed({
 									<span>{dates}</span>
 								</>
 							) : null}
-							<span className="ml-auto">Nothing verified</span>
+							<span className="ml-auto">Nothing approved</span>
 						</p>
 					);
 				}
@@ -95,7 +95,7 @@ export function ActivityFeed({
 							</ul>
 						) : isEmpty ? (
 							<div className="py-1 text-sm text-muted-foreground">
-								<p>{isCurrent ? "Nothing verified yet" : "Nothing verified"}</p>
+								<p>{isCurrent ? "Nothing approved yet" : "Nothing approved"}</p>
 								{isCurrent && emptyHint ? (
 									<div className="mt-1 text-xs">{emptyHint}</div>
 								) : null}

@@ -47,7 +47,7 @@ export function StartupActivityPage() {
 		toast(
 			hasEarlier
 				? "That Card is in an earlier Cycle. Show earlier to find it."
-				: "That Card isn't in Activity.",
+				: "That Card isn't in the Record.",
 			{ id: "stale-entry" },
 		);
 	}, [loaded, hasEarlier, entryId, open, navigate]);
@@ -72,7 +72,7 @@ export function StartupActivityPage() {
 			bar={{
 				title: (
 					<PageTitle
-						name="Activity"
+						name="Record"
 						context={
 							signals ? (
 								<>
@@ -82,11 +82,11 @@ export function StartupActivityPage() {
 											tierText(signals.rating),
 										)}
 									>
-										Rating {signals.rating}
+										Momentum {signals.rating}
 									</span>
 									<span className="tabular-nums">
 										{" · "}
-										{signals.verifiedTotal12} verified in 12 weeks
+										{signals.verifiedTotal12} approved in 12 weeks
 									</span>
 								</>
 							) : null
@@ -110,7 +110,7 @@ export function StartupActivityPage() {
 			panel={
 				<DetailPanel
 					shows={panel.shows}
-					title="What shipped"
+					title="What got done"
 					description="What the Card shipped."
 					onClose={panel.close}
 					item={
@@ -145,7 +145,7 @@ export function StartupActivityPage() {
 						onSelect={(id) => select(id === entryId ? undefined : id)}
 						emptyHint={
 							<>
-								Cards land here when they're verified on the{" "}
+								Cards land here when they're approved on the{" "}
 								<Link
 									to="/s/$slug/board"
 									params={{ slug: startup.slug }}

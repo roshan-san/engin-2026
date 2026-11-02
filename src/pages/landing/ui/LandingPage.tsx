@@ -26,7 +26,7 @@ import { Pricing } from "./Pricing";
 const STEPS = [
 	{
 		title: "Post your real problem",
-		body: "One or two weeks, a handful of Builders, and the stipend shown upfront.",
+		body: "One or two weeks, on your real problem, with a handful of Builders.",
 	},
 	{
 		title: "Builders ship on their own Boards",
@@ -51,7 +51,7 @@ const AUDIENCES = [
 		title: "For Builders",
 		lines: [
 			"Work on a real startup problem, not a puzzle.",
-			"The stipend is shown upfront, and you always hear back.",
+			"You always hear back, whatever the decision.",
 			"Approved work builds Momentum that follows you.",
 		],
 	},

@@ -56,7 +56,7 @@ function SpaceBody({
 			bar={{
 				back: (
 					<BackLink
-						label="Hiring"
+						label="Hackathons"
 						link={{ to: "/s/$slug/hiring", params: { slug } }}
 					/>
 				),

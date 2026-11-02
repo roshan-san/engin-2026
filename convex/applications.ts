@@ -226,7 +226,7 @@ export const decide = mutation({
 		if (args.decision === "hired") {
 			const participant = await ctx.db.get(application.userId);
 			if (!participant?.email) {
-				throw new ConvexError("This Participant has no email to invite");
+				throw new ConvexError("This Builder has no email to invite");
 			}
 			await ensureHireInvite(ctx, {
 				startupId: hackathon.startupId,

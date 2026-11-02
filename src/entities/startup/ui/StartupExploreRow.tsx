@@ -47,7 +47,7 @@ export function StartupExploreRow({
 							<span className="truncate font-medium">{startup.name}</span>
 							{startup.isHiring ? (
 								<Badge variant="status" tone="link">
-									Hiring
+									Open Hackathon
 								</Badge>
 							) : null}
 						</div>

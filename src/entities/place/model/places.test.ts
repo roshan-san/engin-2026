@@ -177,15 +177,15 @@ describe("isWaiting", () => {
 describe("reasonLine", () => {
 	it.each([
 		[{ kind: "team_unread" }, "Unread team messages"],
-		[{ kind: "cards_to_verify", count: 1 }, "1 Card to verify"],
-		[{ kind: "cards_to_verify", count: 2 }, "2 Cards to verify"],
+		[{ kind: "cards_to_verify", count: 1 }, "1 Card to approve"],
+		[{ kind: "cards_to_verify", count: 2 }, "2 Cards to approve"],
 		[
 			{ kind: "new_applicants", role: "frontend", count: 3 },
 			"3 new applicants on Frontend",
 		],
 		[
 			{ kind: "participant_cards_to_review", role: "frontend", count: 1 },
-			"1 Participant Card to review on Frontend",
+			"1 Builder Card to review on Frontend",
 		],
 		[
 			{ kind: "hackathon_unread", role: "frontend" },
@@ -193,7 +193,7 @@ describe("reasonLine", () => {
 		],
 		[
 			{ kind: "participants_to_decide", role: "frontend", count: 2 },
-			"2 Participants to decide on Frontend",
+			"2 Builders to decide on Frontend",
 		],
 		[{ kind: "messages_unread" }, "Unread messages"],
 		[{ kind: "promise_pending" }, "Did they keep their promise?"],
@@ -209,7 +209,7 @@ describe("placeHint", () => {
 
 	it("one reason reads in plain words", () => {
 		expect(placeHint([{ kind: "cards_to_verify", count: 2 }], "Founder")).toBe(
-			"2 Cards to verify",
+			"2 Cards to approve",
 		);
 	});
 
@@ -280,7 +280,7 @@ describe("currentPlaceView", () => {
 			name: "Frontend",
 			logoName: "Zest",
 			logoUrl: null,
-			role: "Participant · Zest",
+			role: "Builder · Zest",
 		});
 	});
 

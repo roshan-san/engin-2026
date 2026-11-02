@@ -29,7 +29,7 @@ export function boardAnnouncements(
 			}
 			const label = columnLabel(String(over.id));
 			return drop === "ship"
-				? `${title}: say what shipped to move it to ${label}`
+				? `${title}: say what got done to move it to ${label}`
 				: `${title} moved to ${label}`;
 		},
 		onDragCancel: ({ active }) =>

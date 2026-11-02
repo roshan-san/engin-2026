@@ -46,7 +46,7 @@ export function CardRows({
 			<div className="flex flex-col gap-1.5 px-1.5 pt-0.5 pb-1.5">
 				{cards.length < MAX_HACKATHON_CARDS ? (
 					<NewCardInput
-						placeholder="What will a Participant finish in a day?"
+						placeholder="What will a Builder finish in a day?"
 						shortcut={null}
 						onCreate={async (title) => {
 							onChange([...cards, draftCard(title)]);
@@ -130,7 +130,7 @@ function DraftCardTile({
 						// biome-ignore lint/a11y/noAutofocus: see above
 						autoFocus={card.notes.length === 0}
 						aria-label={`Card ${number} notes`}
-						placeholder="Notes for the Participant"
+						placeholder="Notes for the Builder"
 						value={card.notes}
 						maxLength={CARD_TEXT.notes}
 						className={cn(BARE_FIELD_CLASS, "text-xs text-muted-foreground")}

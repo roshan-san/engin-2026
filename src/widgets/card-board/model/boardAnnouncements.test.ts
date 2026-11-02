@@ -53,7 +53,7 @@ describe("the Board's screen-reader announcements", () => {
 				active,
 				over: { id: "review" },
 			} as unknown as DragEndEvent),
-		).toBe("Fix login: say what shipped to move it to Review");
+		).toBe("Fix login: say what got done to move it to Review");
 	});
 
 	it("says nothing moved when the Card is dropped outside every column", () => {
