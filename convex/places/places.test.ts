@@ -55,7 +55,6 @@ describe("groups", () => {
 		const zeta = await zedFounder.as.mutation(api.startups.create, {
 			name: "Zeta",
 			stage: "building",
-			category: "saas",
 			city: "pune",
 		});
 		await setup.t.run(

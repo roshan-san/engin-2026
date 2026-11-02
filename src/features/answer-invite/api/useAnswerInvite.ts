@@ -35,7 +35,7 @@ export function useAnswerInvite() {
 			const { inviteId, slug } = invite;
 			if (await answer(inviteId, () => acceptInvite({ inviteId }))) {
 				onJoined?.();
-				await navigate({ to: "/s/$slug/board", params: { slug } });
+				await navigate({ to: "/s/$slug/cycle", params: { slug } });
 			}
 		},
 		decline: async (invite: MyInvite) => {

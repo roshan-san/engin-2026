@@ -1,7 +1,10 @@
 import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useKept } from "~/shared/lib/useKept";
-import type { HackathonSearch } from "../model/hackathonSearch";
+import {
+	type HackathonSearch,
+	parseHackathonSearch,
+} from "../model/hackathonSearch";
 
 /**
  * Open and live Hackathons that match the filters. `hackathons` keeps the previous
@@ -9,7 +12,7 @@ import type { HackathonSearch } from "../model/hackathonSearch";
  * they may be out of date.
  */
 export function useExploreHackathons(search: HackathonSearch) {
-	const live = useQuery(api.hackathons.explore, search);
+	const live = useQuery(api.hackathons.explore, parseHackathonSearch(search));
 	const hackathons = useKept(live, "explore-hackathons");
 	return { hackathons, isLoading: live === undefined };
 }

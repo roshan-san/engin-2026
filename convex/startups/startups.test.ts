@@ -14,7 +14,6 @@ import { addContributor, setUpStartup } from "./startups.setup";
 const acme = {
 	name: "Acme",
 	stage: "building",
-	category: "saas",
 	city: "bengaluru",
 } as const;
 
@@ -33,6 +32,33 @@ describe("startups", () => {
 			ratingChange: 0,
 			founderId: founder.userId,
 		});
+	});
+
+	it("a Startup needs only a name", async () => {
+		const t = createTest();
+		const founder = await signUp(t, "Fay");
+
+		const { startupId, slug } = await founder.as.mutation(api.startups.create, {
+			name: "Acme",
+		});
+
+		const row = await t.run(async (ctx) => await ctx.db.get(startupId));
+		expect(row?.stage).toBeUndefined();
+		const page = await t.query(api.startups.getPublic, { slug });
+		expect(page?.name).toBe("Acme");
+	});
+
+	it("a set Explore chip leaves out a Startup without that chip", async () => {
+		const t = createTest();
+		const founder = await signUp(t, "Fay");
+		await founder.as.mutation(api.startups.create, acme);
+		await founder.as.mutation(api.startups.create, { name: "Bare" });
+
+		const all = await t.query(api.startups.explore, {});
+		const building = await t.query(api.startups.explore, { stage: "building" });
+
+		expect(all).toHaveLength(2);
+		expect(building.map((row) => row.name)).toEqual(["Acme"]);
 	});
 
 	it("slugs stay unique", async () => {
@@ -182,7 +208,6 @@ describe("startups", () => {
 					name: `Idea ${i}`,
 					slug: `idea-${i}`,
 					stage: "idea",
-					category: "saas",
 					city: "pune",
 					founderId: fay.userId,
 					rating: 1000,
@@ -235,7 +260,6 @@ describe("explore", () => {
 				name: "Acme",
 				oneLiner: null,
 				stage: "building",
-				category: "saas",
 				city: "bengaluru",
 				rating: 1000,
 				ratingChange: 0,
@@ -261,21 +285,32 @@ describe("explore", () => {
 		expect(rows.map((row) => row.name)).toEqual(["High", "Middle", "Low"]);
 	});
 
+	it("Kind is gone from what anyone can see", async () => {
+		const setup = await setUpStartup(createTest());
+		await setup.t.run(
+			async (ctx) => await ctx.db.patch(setup.startupId, { category: "saas" }),
+		);
+
+		const [row] = await setup.t.query(api.startups.explore, {});
+		const page = await setup.t.query(api.startups.getPublic, {
+			slug: setup.slug,
+		});
+
+		expect(row).not.toHaveProperty("category");
+		expect(page).not.toHaveProperty("category");
+	});
+
 	it("each chip filters", async () => {
 		const t = createTest();
 		await secondStartup(t, { name: "Alpha" });
 		await secondStartup(t, {
 			name: "Beta",
 			stage: "launched",
-			category: "fintech",
 			city: "pune",
 		});
 
 		const byStage = await t.query(api.startups.explore, {
 			stage: "launched",
-		});
-		const byCategory = await t.query(api.startups.explore, {
-			category: "saas",
 		});
 		const byCity = await t.query(api.startups.explore, {
 			city: "pune",
@@ -286,7 +321,6 @@ describe("explore", () => {
 		});
 
 		expect(byStage.map((row) => row.name)).toEqual(["Beta"]);
-		expect(byCategory.map((row) => row.name)).toEqual(["Alpha"]);
 		expect(byCity.map((row) => row.name)).toEqual(["Beta"]);
 		expect(byAll).toEqual([]);
 	});

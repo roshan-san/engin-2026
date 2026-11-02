@@ -2,6 +2,6 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_shell/_authed/s/$slug/")({
 	beforeLoad: ({ params }) => {
-		throw redirect({ to: "/s/$slug/board", params: { slug: params.slug } });
+		throw redirect({ to: "/s/$slug/cycle", params: { slug: params.slug } });
 	},
 });

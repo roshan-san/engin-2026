@@ -33,7 +33,6 @@ describe("profile record", () => {
 		const { startupId, slug } = await zed.as.mutation(api.startups.create, {
 			name: "Zeta",
 			stage: "idea",
-			category: "ai",
 			city: "remote",
 		});
 		const zeta = { t: acme.t, founder: zed, startupId, slug };

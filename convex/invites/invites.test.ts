@@ -179,7 +179,7 @@ describe("invites", () => {
 		const gus = await signUp(t, "Gus");
 		const { startupId: otherStartupId } = await gus.as.mutation(
 			api.startups.create,
-			{ name: "Bolt", stage: "idea", category: "saas", city: "pune" },
+			{ name: "Bolt", stage: "idea", city: "pune" },
 		);
 		const sam = await signUp(t, "Sam");
 		await t.run(async (ctx) => {

@@ -46,7 +46,7 @@ describe("homeIntent", () => {
 					{ slug: "b", role: "founder" },
 				],
 			}),
-		).toEqual({ to: "/s/$slug/board", slug: "b" });
+		).toEqual({ to: "/s/$slug/cycle", slug: "b" });
 	});
 
 	it("start sends anyone who founded nothing to onboarding", () => {

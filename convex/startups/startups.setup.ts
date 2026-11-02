@@ -10,13 +10,12 @@ export type Setup = {
 	slug: string;
 };
 
-/** Acme, a building-stage SaaS in Bengaluru, owned by its Founder Fay. */
+/** Acme, a building-stage Startup in Bengaluru, owned by its Founder Fay. */
 export async function setUpStartup(t: TestConvex): Promise<Setup> {
 	const founder = await signUp(t, "Fay");
 	const { startupId, slug } = await founder.as.mutation(api.startups.create, {
 		name: "Acme",
 		stage: "building",
-		category: "saas",
 		city: "bengaluru",
 	});
 	return { t, founder, startupId, slug };

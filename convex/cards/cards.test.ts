@@ -558,7 +558,6 @@ describe("card view", () => {
 			{
 				name: "Beta",
 				stage: "building",
-				category: "saas",
 				city: "bengaluru",
 			},
 		);

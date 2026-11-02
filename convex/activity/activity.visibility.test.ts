@@ -40,7 +40,7 @@ describe("visibility", () => {
 			slug: setup.slug,
 		});
 
-		expect(page?.full).toBe(false);
+		expect(page).not.toHaveProperty("full");
 		const cycles = page?.cycles ?? [];
 		expect(cycles.every((cycle) => cycle.goal === null)).toBe(true);
 		expect(cycles.reduce((sum, cycle) => sum + cycle.shippedCount, 0)).toBe(1);
@@ -65,28 +65,6 @@ describe("visibility", () => {
 		});
 
 		expect(founder).toEqual(signedOut);
-	});
-
-	it("Investor Pro sees everything", async () => {
-		const setup = await busyStartup();
-		const ivy = await signUp(setup.t, "Ivy");
-		await setup.t.run(
-			async (ctx) =>
-				await ctx.db.patch(ivy.userId, { investorVerifiedAt: Date.now() }),
-		);
-
-		const page = await ivy.as.query(api.activity.listPublic, {
-			slug: setup.slug,
-		});
-
-		expect(page?.full).toBe(true);
-		const cycles = page?.cycles ?? [];
-		expect(cycles.map((cycle) => cycle.goal)).toContain("Get 10 paying users");
-		const entries = cycles.flatMap((cycle) => cycle.entries);
-		expect(
-			entries.find((entry) => entry.kind === "card_verified"),
-		).toMatchObject({ line: "Shipped 1", card: { title: "Card 1" } });
-		expect(entries.map((entry) => entry.kind)).toContain("contributor_joined");
 	});
 
 	it("signals need no sign-in", async () => {

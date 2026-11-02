@@ -34,4 +34,15 @@ describe("hackathon search", () => {
 		expect(parseHackathonSearch({ paid: "false" })).toEqual({});
 		expect(parseHackathonSearch({ paid: false })).toEqual({});
 	});
+
+	test("only known filters reach the query, whatever else the URL carries", () => {
+		const fromRouter = { paid: true, utm_source: "x" };
+
+		expect(Object.keys(parseHackathonSearch(fromRouter)).sort()).toEqual([
+			"paid",
+			"role",
+			"weeks",
+		]);
+		expect(parseHackathonSearch(fromRouter).paid).toBe(true);
+	});
 });

@@ -157,7 +157,10 @@ export const move = mutation({
 		requireAllowed(card, { kind: "move", to: args.to }, actor);
 
 		await ctx.db.patch(card._id, { status: args.to });
-		await finishAfterReview(ctx, card);
+		// Only a Send back can empty the Review queue.
+		if (card.status === "review") {
+			await finishAfterReview(ctx, card);
+		}
 	},
 });
 

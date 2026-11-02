@@ -96,7 +96,7 @@ function YourPlaces({
 					places.startups.map((startup) => (
 						<Link
 							key={startup.startupId}
-							to="/s/$slug/board"
+							to="/s/$slug/cycle"
 							params={{ slug: startup.slug }}
 							className={CARD}
 						>

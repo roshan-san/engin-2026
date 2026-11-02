@@ -45,11 +45,6 @@ export async function loadPublicUser(
 	return user ? toPublicUser(user) : null;
 }
 
-/** A verified investor, who sees a Startup's full public Activity. */
-export function isInvestorPro(user: Doc<"users"> | null): boolean {
-	return user?.investorVerifiedAt !== undefined;
-}
-
 /** Set weekly by the Rating run (`rating/model.ts`). */
 export function isProvisional(user: Doc<"users">): boolean {
 	return user.provisional ?? true;
@@ -72,13 +67,12 @@ export function toProfileAbout(user: Doc<"users">) {
 	};
 }
 
-/** The signed-in person's own account: their whole profile plus email and Investor Pro. */
+/** The signed-in person's own account: their whole profile plus email. */
 export function toOwnProfile(user: Doc<"users">) {
 	return {
 		...toPublicProfile(user),
 		...toProfileAbout(user),
 		email: user.email ?? null,
-		isInvestorPro: isInvestorPro(user),
 	};
 }
 

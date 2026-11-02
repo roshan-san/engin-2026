@@ -394,7 +394,7 @@ describe("tabsForSignedOut", () => {
 });
 
 describe("canSeeSettings", () => {
-	it("the Founder sees the gear", () => {
+	it("the Founder sees Settings", () => {
 		expect(
 			canSeeSettings(
 				places({ startups: [startup("acme", "Acme", [])] }),
@@ -403,15 +403,19 @@ describe("canSeeSettings", () => {
 		).toBe(true);
 	});
 
-	it("a Contributor doesn't", () => {
+	it("a Contributor does too", () => {
 		const contributor = {
 			...startup("acme", "Acme", []),
 			role: "contributor" as const,
 		};
 
 		expect(canSeeSettings(places({ startups: [contributor] }), "acme")).toBe(
-			false,
+			true,
 		);
+	});
+
+	it("someone not on the Startup doesn't", () => {
+		expect(canSeeSettings(places({ startups: [] }), "acme")).toBe(false);
 	});
 
 	it("nobody sees it while places load", () => {

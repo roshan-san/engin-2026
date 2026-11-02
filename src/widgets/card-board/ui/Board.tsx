@@ -187,7 +187,9 @@ export function Board() {
 							<NewCardInput
 								inputRef={newCardRef}
 								note={
-									cards.length === 0 ? "Three Cards is a good week." : undefined
+									cards.length === 0
+										? "Three to five Cards is a good week."
+										: undefined
 								}
 								onCreate={create}
 							/>

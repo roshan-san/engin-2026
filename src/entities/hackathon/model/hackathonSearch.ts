@@ -16,7 +16,7 @@ function parseWeeks(raw: unknown): 1 | 2 | undefined {
 	return weeks === 1 || weeks === 2 ? weeks : undefined;
 }
 
-/** Hackathon filters from the URL. Unknown values become `undefined`, so a bad link shows everything. */
+/** Hackathon filters from the URL, safe to send to the query. Unknown values become `undefined` and other params are left out, so a bad link shows everything. */
 export function parseHackathonSearch(
 	raw: Record<string, unknown>,
 ): HackathonSearch {

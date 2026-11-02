@@ -12,9 +12,8 @@ describe("has filters", () => {
 		expect(hasFilters({ weeks: 2 })).toBe(true);
 	});
 
-	test("a Startup stage, kind or city counts", () => {
+	test("a Startup stage or city counts", () => {
 		expect(hasFilters({ stage: "building" })).toBe(true);
-		expect(hasFilters({ category: "saas" })).toBe(true);
 		expect(hasFilters({ city: "bengaluru" })).toBe(true);
 	});
 

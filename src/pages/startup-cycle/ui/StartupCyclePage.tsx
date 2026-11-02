@@ -1,8 +1,10 @@
 import { getRouteApi } from "@tanstack/react-router";
+import { useBoardCards, useBoardScope } from "~/entities/card";
+import { useCycle } from "~/entities/cycle";
 import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
-import { CycleHeader } from "~/features/set-cycle-goal";
-import { useHeartbeat } from "~/features/stay-online";
+import { ReviewBanner } from "~/features/monday-review";
+import { CycleGoal, CycleHeader, GoalPrompt } from "~/features/set-cycle-goal";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
@@ -10,18 +12,18 @@ import { UnreadDot } from "~/shared/ui/UnreadDot";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { Board, CardBoard, OpenCardPanel } from "~/widgets/card-board";
 import { TeamPanel } from "~/widgets/chat-panel";
+import { showsGoalPrompt } from "../model/goalPrompt";
 
-const boardRoute = getRouteApi("/_shell/_authed/s/$slug/board");
+const cycleRoute = getRouteApi("/_shell/_authed/s/$slug/cycle");
 
-/** The Startup's workspace: the Cycle header and the Board, beside the side panel. */
-export function StartupBoardPage() {
-	const { card: cardId } = boardRoute.useSearch();
-	const navigate = boardRoute.useNavigate();
-	const { startup } = useWorkspace();
+/** The Startup's home: this week's goal and the Board, beside the side panel. */
+export function StartupCyclePage() {
+	const { card: cardId } = cycleRoute.useSearch();
+	const navigate = cycleRoute.useNavigate();
+	const { startup, isFounder } = useWorkspace();
 	const isTeamUnread = useTeamThread(startup._id)?.unread ?? false;
-
-	// Online for as long as the workspace is open, whichever panel is showing.
-	useHeartbeat(startup._id);
+	const cycle = useCycle(startup._id);
+	const cards = useBoardCards(useBoardScope());
 
 	function setCard(card: string | undefined) {
 		void navigate({ search: (prev) => ({ ...prev, card }) });
@@ -30,12 +32,19 @@ export function StartupBoardPage() {
 	const panel = useDetailPanel(cardId !== undefined, () => setCard(undefined));
 	const onClose = panel.isMobile ? panel.close : undefined;
 
+	// Until both have loaded, a prompt could flash over a Board that has Cards.
+	const asksForGoal =
+		cycle !== undefined &&
+		cards !== undefined &&
+		showsGoalPrompt({ isFounder, goal: cycle.goal, cardCount: cards.length });
+
 	return (
 		<CardBoard cardId={cardId} onCardChange={setCard}>
 			<AppPage
-				width="full"
+				width={asksForGoal ? "column" : "full"}
+				notice={<ReviewBanner />}
 				bar={{
-					title: <CycleHeader />,
+					title: <CycleHeader showsGoalInput={!asksForGoal} />,
 					actions: (
 						<Button
 							variant="ghost"
@@ -66,8 +75,15 @@ export function StartupBoardPage() {
 					/>
 				}
 			>
-				<h1 className="sr-only">Board</h1>
-				<Board />
+				<h1 className="sr-only">Cycle</h1>
+				{asksForGoal ? (
+					<GoalPrompt />
+				) : (
+					<>
+						{cycle ? <CycleGoal goal={cycle.goal} /> : null}
+						<Board />
+					</>
+				)}
 			</AppPage>
 		</CardBoard>
 	);

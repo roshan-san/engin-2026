@@ -3,7 +3,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { requireLimitedText } from "../lib/text";
 import { CYCLE_TEXT } from "./rules";
 
-async function loadGoalRow(
+export async function loadGoalRow(
 	ctx: QueryCtx | MutationCtx,
 	startupId: Id<"startups">,
 	week: string,
@@ -45,4 +45,19 @@ export async function saveGoal(
 		return;
 	}
 	await ctx.db.insert("cycleGoals", { startupId, week, goal: text });
+}
+
+/** Marks the week reviewed, making its row if it never had a goal. */
+export async function closeCycle(
+	ctx: MutationCtx,
+	existing: Doc<"cycleGoals"> | null,
+	startupId: Id<"startups">,
+	week: string,
+	{ goalMet, now }: { goalMet: boolean | undefined; now: number },
+): Promise<void> {
+	if (existing) {
+		await ctx.db.patch(existing._id, { goalMet, reviewedAt: now });
+		return;
+	}
+	await ctx.db.insert("cycleGoals", { startupId, week, reviewedAt: now });
 }

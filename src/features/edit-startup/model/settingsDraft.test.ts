@@ -7,7 +7,6 @@ const startup = {
 	oneLiner: "Invoices for plumbers",
 	website: "https://acme.test",
 	stage: "building",
-	category: "saas",
 	city: "pune",
 } as Doc<"startups">;
 

@@ -10,8 +10,6 @@ import {
 } from "~/entities/activity";
 import { RecordPanel, RecordSignals, useSignals } from "~/entities/rating";
 import { useWorkspace } from "~/entities/startup";
-import { cn } from "~/shared/lib/cn";
-import { tierText } from "~/shared/lib/tierText";
 import { AppPage, PageTitle } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
@@ -70,29 +68,7 @@ export function StartupActivityPage() {
 	return (
 		<AppPage
 			bar={{
-				title: (
-					<PageTitle
-						name="Record"
-						context={
-							signals ? (
-								<>
-									<span
-										className={cn(
-											"font-medium tabular-nums",
-											tierText(signals.rating),
-										)}
-									>
-										Momentum {signals.rating}
-									</span>
-									<span className="tabular-nums">
-										{" · "}
-										{signals.verifiedTotal12} approved in 12 weeks
-									</span>
-								</>
-							) : null
-						}
-					/>
-				),
+				title: <PageTitle name="Record" />,
 				actions: (
 					<Button
 						asChild
@@ -147,7 +123,7 @@ export function StartupActivityPage() {
 							<>
 								Cards land here when they're approved on the{" "}
 								<Link
-									to="/s/$slug/board"
+									to="/s/$slug/cycle"
 									params={{ slug: startup.slug }}
 									className="text-foreground underline underline-offset-4 hover:text-link"
 								>

@@ -10,9 +10,9 @@ export const startupsTables = {
 		oneLiner: v.optional(v.string()),
 		website: v.optional(v.string()),
 		logo: v.optional(v.id("_storage")),
-		stage: startupStage,
-		category: startupCategory,
-		city: startupCity,
+		stage: v.optional(startupStage),
+		category: v.optional(startupCategory),
+		city: v.optional(startupCity),
 		/** The one Founder. */
 		founderId: v.id("users"),
 		rating: v.number(),

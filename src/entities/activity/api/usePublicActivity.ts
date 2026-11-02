@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { useState } from "react";
 import { useKept } from "~/shared/lib/useKept";
 
-/** The public Cycles, masked unless you're Investor Pro. Show earlier asks for one more page. */
+/** The public Cycles, masked. Show earlier asks for one more page. */
 export function usePublicActivity(slug: string | undefined) {
 	const [count, setCount] = useState(CYCLES_PAGE);
 	const live = useQuery(

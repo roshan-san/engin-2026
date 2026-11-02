@@ -1,5 +1,8 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { useExploreHackathons } from "~/entities/hackathon";
+import {
+	parseHackathonSearch,
+	useExploreHackathons,
+} from "~/entities/hackathon";
 import { ROLES } from "~/shared/config/jobs";
 import { hasFilters } from "~/shared/lib/search";
 import { EmptyState } from "~/shared/ui/EmptyState";
@@ -62,7 +65,7 @@ export function ExploreHackathonsPage() {
 			{hackathons === undefined || (isLoading && hackathons.length === 0) ? (
 				<RowsSkeleton rowClassName="h-20" />
 			) : hackathons.length === 0 ? (
-				hasFilters(search) ? (
+				hasFilters(parseHackathonSearch(search)) ? (
 					<NoMatches
 						noun="hackathons"
 						onClear={() => void navigate({ search: {}, replace: true })}

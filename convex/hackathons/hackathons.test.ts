@@ -366,7 +366,7 @@ describe("publishing needs Pro", () => {
 	async function secondStartup(setup: Setup): Promise<Setup> {
 		const { startupId, slug } = await setup.founder.as.mutation(
 			api.startups.create,
-			{ name: "Beta", stage: "building", category: "saas", city: "pune" },
+			{ name: "Beta", stage: "building", city: "pune" },
 		);
 		return { ...setup, startupId, slug };
 	}
@@ -763,7 +763,6 @@ describe("explore", () => {
 		const { startupId, slug } = await founder.as.mutation(api.startups.create, {
 			name,
 			stage: "building",
-			category: "saas",
 			city: "pune",
 		});
 		return { t: setup.t, founder, startupId, slug };

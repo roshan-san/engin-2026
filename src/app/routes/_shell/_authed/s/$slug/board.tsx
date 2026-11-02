@@ -1,8 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
-import { StartupBoardPage } from "~/pages/startup-board";
 
+/** Old links and remembered places open the Cycle. */
 export const Route = createFileRoute("/_shell/_authed/s/$slug/board")({
 	validateSearch: z.object({ card: z.string().optional() }),
-	component: StartupBoardPage,
+	beforeLoad: ({ params, search }) => {
+		throw redirect({
+			to: "/s/$slug/cycle",
+			params: { slug: params.slug },
+			search: { card: search.card },
+		});
+	},
 });

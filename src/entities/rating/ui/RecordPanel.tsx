@@ -30,7 +30,7 @@ export function RecordPanel({
 					<p className="text-xs leading-5 text-muted-foreground">
 						Anyone sees Momentum, rhythm, how many shipped each Cycle,
 						Hackathons and Hires. Card titles, What got done, links and images
-						stay with the team and Investor Pro.
+						stay with the team.
 					</p>
 				</Section>
 			</PanelBody>

@@ -1,26 +1,15 @@
 import type { Doc } from "@convex/_generated/dataModel";
 import { STARTUP_TEXT } from "@convex/startups/rules";
 import { type FormEvent, useRef, useState } from "react";
-import { CITIES, KINDS, STAGES, useStartup } from "~/entities/startup";
-import {
-	useDiscardGuard,
-	useReportChanged,
-} from "~/shared/lib/useDiscardGuard";
+import { CITIES, STAGES } from "~/entities/startup";
+import { useReportChanged } from "~/shared/lib/useDiscardGuard";
 import { Button } from "~/shared/ui/button";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
-import { DiscardChangesDialog } from "~/shared/ui/DiscardChangesDialog";
 import { Input } from "~/shared/ui/input";
 import { Label } from "~/shared/ui/label";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { PlaceLogo } from "~/shared/ui/PlaceLogo";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetFooter,
-	SheetHeader,
-	SheetTitle,
-} from "~/shared/ui/sheet";
+import { SheetFooter } from "~/shared/ui/sheet";
 import { Spinner } from "~/shared/ui/spinner";
 import { useStartupSettings } from "../api/useStartupSettings";
 import {
@@ -29,53 +18,8 @@ import {
 	toUpdateArgs,
 } from "../model/settingsDraft";
 
-/** The Founder's Startup settings, in a side sheet over whichever tab is open. */
-export function StartupSettingsSheet({
-	slug,
-	open,
-	onOpenChange,
-}: {
-	readonly slug: string;
-	readonly open: boolean;
-	readonly onOpenChange: (open: boolean) => void;
-}) {
-	const found = useStartup(open ? slug : undefined);
-	const guard = useDiscardGuard(onOpenChange);
-
-	return (
-		<>
-			<Sheet open={open} onOpenChange={guard.guardedOpenChange}>
-				<SheetContent className="overflow-y-auto">
-					<SheetHeader>
-						<SheetTitle>Startup settings</SheetTitle>
-						<SheetDescription>
-							What people see on your Startup's page.
-						</SheetDescription>
-					</SheetHeader>
-					{found === undefined ? (
-						<div className="flex justify-center py-6">
-							<Spinner />
-						</div>
-					) : found?.role === "founder" ? (
-						<StartupSettings
-							startup={found.startup}
-							onChangedChange={guard.setIsChanged}
-							onSaved={() => onOpenChange(false)}
-						/>
-					) : null}
-				</SheetContent>
-			</Sheet>
-			<DiscardChangesDialog
-				open={guard.isAsking}
-				onKeepEditing={guard.keepEditing}
-				onDiscard={guard.discard}
-			/>
-		</>
-	);
-}
-
 /** One Save sends only what changed; the logo saves on pick. */
-function StartupSettings({
+export function StartupSettingsForm({
 	startup,
 	onChangedChange,
 	onSaved,
@@ -180,17 +124,8 @@ function StartupSettings({
 				<ChipPicker
 					label="Stage"
 					options={STAGES}
-					value={draft.stage}
+					value={draft.stage ?? null}
 					onChange={(stage) => set("stage", stage)}
-				/>
-			</div>
-			<div className="flex flex-col gap-1.5">
-				<span className="text-sm font-medium">Kind</span>
-				<ChipPicker
-					label="Kind"
-					options={KINDS}
-					value={draft.category}
-					onChange={(category) => set("category", category)}
 				/>
 			</div>
 			<div className="flex flex-col gap-1.5">
@@ -198,7 +133,7 @@ function StartupSettings({
 				<ChipPicker
 					label="City"
 					options={CITIES}
-					value={draft.city}
+					value={draft.city ?? null}
 					onChange={(city) => set("city", city)}
 				/>
 			</div>

@@ -1,7 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
 import {
 	CITIES,
-	KINDS,
+	parseStartupSearch,
 	STAGES,
 	StartupExploreRow,
 	useExploreStartups,
@@ -42,12 +42,6 @@ export function ExploreStartupsPage() {
 						onChange={(stage) => setFilter({ stage })}
 					/>
 					<FilterChips
-						label="Kind"
-						options={KINDS}
-						value={search.category}
-						onChange={(category) => setFilter({ category })}
-					/>
-					<FilterChips
 						label="City"
 						options={CITIES}
 						value={search.city}
@@ -59,7 +53,7 @@ export function ExploreStartupsPage() {
 			{startups === undefined || (isLoading && startups.length === 0) ? (
 				<RowsSkeleton rowClassName="h-16" />
 			) : startups.length === 0 ? (
-				hasFilters(search) ? (
+				hasFilters(parseStartupSearch(search)) ? (
 					<NoMatches
 						noun="startups"
 						onClear={() => void navigate({ search: {}, replace: true })}

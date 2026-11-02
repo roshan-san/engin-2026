@@ -2,6 +2,7 @@ import { CYCLE_TEXT } from "@convex/cycles/rules";
 import { useRef, useState } from "react";
 import { useCycle } from "~/entities/cycle";
 import { useWorkspace } from "~/entities/startup";
+import { GOAL_QUESTION } from "~/shared/config/goalQuestion";
 import { dateRange } from "~/shared/lib/dates";
 import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
@@ -9,7 +10,12 @@ import { Skeleton } from "~/shared/ui/skeleton";
 import { useSetGoal } from "../api/useSetGoal";
 
 /** "Cycle 3 · Oct 12 – 18", then the week's goal; the Founder edits it in place. */
-export function CycleHeader() {
+export function CycleHeader({
+	showsGoalInput = true,
+}: {
+	/** Off while the page asks for the goal itself. */
+	readonly showsGoalInput?: boolean;
+}) {
 	const { startup, isFounder } = useWorkspace();
 	const cycle = useCycle(startup._id);
 	const setGoal = useSetGoal(startup._id);
@@ -35,7 +41,9 @@ export function CycleHeader() {
 			</span>
 		</span>
 	);
-	const divider = <span aria-hidden className="h-4 w-px shrink-0 bg-border" />;
+	const divider = (
+		<span aria-hidden className="hidden h-4 w-px shrink-0 bg-border md:block" />
+	);
 
 	async function save() {
 		setIsFocused(false);
@@ -45,14 +53,14 @@ export function CycleHeader() {
 		if (next === goal || (await setGoal(next))) setDraft(null);
 	}
 
-	if (!isFounder) {
+	if (!isFounder || !showsGoalInput) {
 		return (
 			<div className="flex min-w-0 flex-1 items-center gap-3">
 				{when}
 				{goal ? (
 					<>
 						{divider}
-						<p className="truncate text-sm">{goal}</p>
+						<p className="hidden truncate text-sm md:block">{goal}</p>
 					</>
 				) : null}
 			</div>
@@ -63,10 +71,10 @@ export function CycleHeader() {
 		<div className="flex min-w-0 flex-1 items-center gap-3">
 			{when}
 			{divider}
-			<div className="relative -ml-2 min-w-0 max-w-xl flex-1">
+			<div className="relative -ml-2 hidden min-w-0 max-w-xl flex-1 md:block">
 				<Input
 					aria-label="Cycle goal"
-					placeholder="Set this week's goal"
+					placeholder={GOAL_QUESTION}
 					value={draft ?? goal}
 					maxLength={CYCLE_TEXT.goal}
 					autoComplete="off"
@@ -97,9 +105,7 @@ export function CycleHeader() {
 				{isFocused ? (
 					// Below the bar, over the Board's top edge, so the bar keeps its height.
 					<div className="absolute top-full left-2 z-10 mt-2 rounded-md bg-background px-1">
-						<MentorNote>
-							What has to ship by Sunday? Keep it to one line.
-						</MentorNote>
+						<MentorNote>Keep it to one line.</MentorNote>
 					</div>
 				) : null}
 			</div>
