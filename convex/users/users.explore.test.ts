@@ -16,7 +16,7 @@ import {
 import { createTest } from "../testing/test.setup";
 import type { Person } from "./users.setup";
 
-const listedIds = async (setup: Setup, discipline?: "designer") =>
+const listedIds = async (setup: Setup, discipline?: "designer" | "developer") =>
 	(await setup.t.query(api.users.explore, { discipline })).map(
 		(row) => row._id,
 	);
@@ -71,6 +71,59 @@ describe("who Explore People lists", () => {
 		await setup.founder.as.mutation(api.cards.verify, { cardId: card._id });
 
 		expect(await listedIds(setup)).toEqual([ana.userId]);
+	});
+});
+
+describe("a listed person's discipline", () => {
+	it("comes from their team role when they haven't set one", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+
+		await verifyCards(setup, sam, 1);
+
+		expect(await listedIds(setup, "developer")).toEqual([sam.userId]);
+	});
+
+	it("comes from the Hackathon for a Builder", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId: Id<"hackathons"> = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		const [card] = await ana.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: ana.userId,
+		});
+		await ana.as.mutation(api.cards.submit, {
+			cardId: card._id,
+			shipped: SHIPPED,
+		});
+
+		await setup.founder.as.mutation(api.cards.verify, { cardId: card._id });
+
+		expect(await listedIds(setup, "developer")).toEqual([ana.userId]);
+	});
+
+	it("stays the one they chose", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await setProfile(setup, sam, { discipline: "designer" });
+
+		await verifyCards(setup, sam, 1);
+
+		expect(await listedIds(setup, "designer")).toEqual([sam.userId]);
+		expect(await listedIds(setup, "developer")).toEqual([]);
+	});
+
+	it("stays cleared if they clear it after being listed", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await verifyCards(setup, sam, 1);
+		await sam.as.mutation(api.users.updateProfile, { discipline: null });
+
+		await verifyCards(setup, sam, 1);
+
+		expect(await listedIds(setup, "developer")).toEqual([]);
+		expect(await listedIds(setup)).toEqual([sam.userId]);
 	});
 });
 

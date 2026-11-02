@@ -45,7 +45,7 @@ describe("a Contributor's label", () => {
 		expect(team.contributors[0].label).toBeNull();
 	});
 
-	it("stops at 40 characters", async () => {
+	it("fits any Hackathon title, up to 60 characters", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const set = (label: string) =>
@@ -54,8 +54,8 @@ describe("a Contributor's label", () => {
 				label,
 			});
 
-		await expect(set("x".repeat(41))).rejects.toThrow();
-		await expect(set("x".repeat(40))).resolves.toBeNull();
+		await expect(set("x".repeat(61))).rejects.toThrow();
+		await expect(set("x".repeat(60))).resolves.toBeNull();
 	});
 
 	it("can't be set by someone off the startup, or by the Founder", async () => {

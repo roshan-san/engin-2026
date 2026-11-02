@@ -260,6 +260,41 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 	};
 }
 
+/** Lists a Card's owner on Explore People once, filling a discipline they haven't set so the filter finds them. */
+async function listOwner(
+	ctx: MutationCtx,
+	card: Doc<"cards">,
+	ownerId: Id<"users">,
+): Promise<void> {
+	const owner = await ctx.db.get(ownerId);
+	if (!owner || owner.approvedWork) {
+		return;
+	}
+	await ctx.db.patch(ownerId, {
+		approvedWork: true,
+		discipline: owner.discipline ?? (await roleDiscipline(ctx, card, ownerId)),
+	});
+}
+
+/** What the owner does on this Card's Hackathon or Startup. */
+async function roleDiscipline(
+	ctx: MutationCtx,
+	card: Doc<"cards">,
+	ownerId: Id<"users">,
+): Promise<Doc<"users">["discipline"]> {
+	if (card.hackathonId) {
+		const hackathon = await ctx.db.get(card.hackathonId);
+		return hackathon?.job.discipline;
+	}
+	const contributor = await ctx.db
+		.query("contributors")
+		.withIndex("by_startup_and_user", (q) =>
+			q.eq("startupId", card.startupId).eq("userId", ownerId),
+		)
+		.unique();
+	return contributor?.discipline;
+}
+
 /** Moves a Card to Done, locking its What shipped, and logs it on the Startup's Activity. The owner verifying their own Card is self-verified. */
 export async function markVerified(
 	ctx: MutationCtx,
@@ -276,7 +311,7 @@ export async function markVerified(
 	});
 	// Only someone else's approval counts: self-approval would list anyone in a minute.
 	if (card.ownerId && card.ownerId !== verifierId) {
-		await ctx.db.patch(card.ownerId, { approvedWork: true });
+		await listOwner(ctx, card, card.ownerId);
 	}
 	// Hackathon work is the Participant's, not the Startup's: it stays off the Activity.
 	if (card.hackathonId) {
