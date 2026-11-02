@@ -14,6 +14,7 @@ import {
 	type CardAction,
 	type CardActor,
 	cardRefusal,
+	isUnfinished,
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
@@ -103,10 +104,7 @@ export async function requireParticipantBoardAccess(
 
 /** A Card the Founder sent back: it is back in play but still carries its last submission. */
 export function isChangesAsked(card: Doc<"cards">): boolean {
-	return (
-		(card.status === "todo" || card.status === "in_progress") &&
-		card.submittedAt !== undefined
-	);
+	return isUnfinished(card) && card.submittedAt !== undefined;
 }
 
 /** The owner has to be on the Startup's team. */
@@ -155,23 +153,62 @@ export function parseShipped(input: Shipped): Shipped {
 	return { line, links, images: input.images };
 }
 
+function loadOpenCards(
+	ctx: Ctx,
+	startupId: Id<"startups">,
+	status: "todo" | "in_progress" | "review",
+): Promise<Doc<"cards">[]> {
+	return ctx.db
+		.query("cards")
+		.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
+			q
+				.eq("startupId", startupId)
+				.eq("hackathonId", undefined)
+				.eq("status", status),
+		)
+		.order("desc")
+		.take(MAX_BOARD_CARDS);
+}
+
+/** The Startup's Cards still being worked on, To do first. */
+export async function loadUnfinishedCards(
+	ctx: Ctx,
+	startupId: Id<"startups">,
+): Promise<Doc<"cards">[]> {
+	const [todo, inProgress] = await Promise.all([
+		loadOpenCards(ctx, startupId, "todo"),
+		loadOpenCards(ctx, startupId, "in_progress"),
+	]);
+	return [...todo, ...inProgress];
+}
+
+/** Deletes those of `cardIds` that are this Startup's and unfinished; any other Card stays as it is. */
+export async function dropUnfinishedCards(
+	ctx: MutationCtx,
+	startupId: Id<"startups">,
+	cardIds: Id<"cards">[],
+): Promise<void> {
+	const cards = await Promise.all(
+		[...new Set(cardIds)].map((cardId) => ctx.db.get(cardId)),
+	);
+	for (const card of cards) {
+		if (
+			card &&
+			card.startupId === startupId &&
+			!card.hackathonId &&
+			isUnfinished(card)
+		) {
+			await ctx.db.delete(card._id);
+		}
+	}
+}
+
 /** Open Cards, plus the Cards verified this Cycle, newest first within each column. */
 export async function loadBoardCards(
 	ctx: Ctx,
 	startupId: Id<"startups">,
 	now: number,
 ): Promise<Doc<"cards">[]> {
-	const open = (status: "todo" | "in_progress" | "review") =>
-		ctx.db
-			.query("cards")
-			.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
-				q
-					.eq("startupId", startupId)
-					.eq("hackathonId", undefined)
-					.eq("status", status),
-			)
-			.order("desc")
-			.take(MAX_BOARD_CARDS);
 	const thisWeek = weekStart(weekOf(now));
 	const verifiedThisWeek = ctx.db
 		.query("cards")
@@ -186,9 +223,9 @@ export async function loadBoardCards(
 		.take(MAX_BOARD_CARDS);
 
 	const [todo, inProgress, review, done] = await Promise.all([
-		open("todo"),
-		open("in_progress"),
-		open("review"),
+		loadOpenCards(ctx, startupId, "todo"),
+		loadOpenCards(ctx, startupId, "in_progress"),
+		loadOpenCards(ctx, startupId, "review"),
 		verifiedThisWeek,
 	]);
 	return [...todo, ...inProgress, ...review, ...done];

@@ -41,28 +41,24 @@ export async function loadHiringRecord(
 		.query("hackathons")
 		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
 		.take(MAX_LISTED_HACKATHONS);
-	const withParticipants = await Promise.all(
-		hackathons.map(async (hackathon) => ({
-			hackathon,
-			participants: await loadParticipants(ctx, hackathon._id),
-		})),
-	);
-	const tallies = withParticipants.map(({ hackathon, participants }) =>
-		tallyParticipants(hackathon, participants),
+	const participantLists = await Promise.all(
+		hackathons.map((hackathon) => loadParticipants(ctx, hackathon._id)),
 	);
 
 	const record: HiringRecord = {
-		// One nobody joined ended without anyone building, so it proves nothing.
-		finished: withParticipants.filter(
-			({ hackathon, participants }) =>
-				hackathon.status === "done" && participants.length > 0,
-		).length,
+		finished: 0,
 		hires: 0,
 		promisesKept: 0,
 		promisesAnswered: 0,
 		undecided: 0,
 	};
-	for (const tally of tallies) {
+	for (const [index, hackathon] of hackathons.entries()) {
+		const participants = participantLists[index];
+		// One nobody joined ended without anyone building, so it proves nothing.
+		if (hackathon.status === "done" && participants.length > 0) {
+			record.finished += 1;
+		}
+		const tally = tallyParticipants(hackathon, participants);
 		record.hires += tally.hires;
 		record.promisesKept += tally.promisesKept;
 		record.promisesAnswered += tally.promisesAnswered;

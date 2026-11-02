@@ -16,7 +16,7 @@ function parseWeeks(raw: unknown): 1 | 2 | undefined {
 	return weeks === 1 || weeks === 2 ? weeks : undefined;
 }
 
-/** Hackathon filters from the URL. Unknown values become `undefined`, so a bad link shows everything. */
+/** Hackathon filters from the URL, safe to send to the query. Unknown values become `undefined` and other params are left out, so a bad link shows everything. */
 export function parseHackathonSearch(
 	raw: Record<string, unknown>,
 ): HackathonSearch {
@@ -27,9 +27,4 @@ export function parseHackathonSearch(
 
 	// Every key is set, so a dropped value overrides the raw one the parent route passes down.
 	return { role, weeks, paid: paid ? true : undefined };
-}
-
-/** The query's arguments. The router's search also carries whatever else is in the URL, and the server refuses extras. */
-export function hackathonExploreArgs(search: HackathonSearch): HackathonSearch {
-	return { role: search.role, weeks: search.weeks, paid: search.paid };
 }

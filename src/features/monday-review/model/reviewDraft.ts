@@ -1,6 +1,9 @@
+import type { Id } from "@convex/_generated/dataModel";
+import { goalToSave } from "@convex/cycles/rules";
+
 export type ReviewDraft = {
 	readonly goalMet: boolean | null;
-	readonly dropped: ReadonlySet<string>;
+	readonly dropped: ReadonlySet<Id<"cards">>;
 	/** `null` until typed in, so the sheet shows the goal as it is now. */
 	readonly nextGoal: string | null;
 };
@@ -15,11 +18,11 @@ export function toCloseArgs(
 	draft: ReviewDraft,
 	review: { readonly week: string; readonly currentGoal: string | null },
 ) {
-	const nextGoal = draft.nextGoal?.trim();
+	const nextGoal = goalToSave(draft.nextGoal ?? "", review.currentGoal);
 	return {
 		week: review.week,
 		...(draft.goalMet === null ? {} : { goalMet: draft.goalMet }),
 		dropCardIds: [...draft.dropped],
-		...(nextGoal && nextGoal !== review.currentGoal ? { nextGoal } : {}),
+		...(nextGoal ? { nextGoal } : {}),
 	};
 }

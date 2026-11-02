@@ -6,8 +6,8 @@ import { ReviewSheet } from "./ReviewSheet";
 
 /** One quiet row while the Founder has a Monday review due. Nothing else on the page waits for it. */
 export function ReviewBanner() {
-	const { startup } = useWorkspace();
-	const review = useReview(startup._id);
+	const { startup, isFounder } = useWorkspace();
+	const review = useReview(startup._id, isFounder);
 	const [isOpen, setIsOpen] = useState(false);
 
 	if (!review) return null;

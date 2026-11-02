@@ -1,9 +1,9 @@
 import { getRouteApi } from "@tanstack/react-router";
 import {
 	CITIES,
+	parseStartupSearch,
 	STAGES,
 	StartupExploreRow,
-	startupExploreArgs,
 	useExploreStartups,
 } from "~/entities/startup";
 import { hasFilters } from "~/shared/lib/search";
@@ -53,7 +53,7 @@ export function ExploreStartupsPage() {
 			{startups === undefined || (isLoading && startups.length === 0) ? (
 				<RowsSkeleton rowClassName="h-16" />
 			) : startups.length === 0 ? (
-				hasFilters(startupExploreArgs(search)) ? (
+				hasFilters(parseStartupSearch(search)) ? (
 					<NoMatches
 						noun="startups"
 						onClear={() => void navigate({ search: {}, replace: true })}

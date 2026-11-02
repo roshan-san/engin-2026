@@ -10,14 +10,7 @@ export function useCloseReview(startupId: Id<"startups">) {
 	return (args: {
 		week: string;
 		goalMet?: boolean;
-		dropCardIds: string[];
+		dropCardIds: Id<"cards">[];
 		nextGoal?: string;
-	}): Promise<boolean> =>
-		attempt(() =>
-			closeReview({
-				...args,
-				startupId,
-				dropCardIds: args.dropCardIds as Id<"cards">[],
-			}),
-		);
+	}): Promise<boolean> => attempt(() => closeReview({ ...args, startupId }));
 }

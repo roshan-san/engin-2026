@@ -8,7 +8,7 @@ export type StartupSearch = {
 	city?: Infer<typeof startupCity>;
 };
 
-/** Startup filters from the URL. Unknown values become `undefined`. */
+/** Startup filters from the URL, safe to send to the query. Unknown values become `undefined` and other params are left out. */
 export function parseStartupSearch(
 	raw: Record<string, unknown>,
 ): StartupSearch {
@@ -16,9 +16,4 @@ export function parseStartupSearch(
 	const city = pickChip(CITIES, raw.city);
 
 	return { stage, city };
-}
-
-/** The query's arguments. The router's search also carries whatever else is in the URL, and the server refuses extras. */
-export function startupExploreArgs(search: StartupSearch): StartupSearch {
-	return { stage: search.stage, city: search.city };
 }

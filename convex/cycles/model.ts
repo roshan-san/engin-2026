@@ -50,11 +50,11 @@ export async function saveGoal(
 /** Marks the week reviewed, making its row if it never had a goal. */
 export async function closeCycle(
 	ctx: MutationCtx,
+	existing: Doc<"cycleGoals"> | null,
 	startupId: Id<"startups">,
 	week: string,
 	{ goalMet, now }: { goalMet: boolean | undefined; now: number },
 ): Promise<void> {
-	const existing = await loadGoalRow(ctx, startupId, week);
 	if (existing) {
 		await ctx.db.patch(existing._id, { goalMet, reviewedAt: now });
 		return;

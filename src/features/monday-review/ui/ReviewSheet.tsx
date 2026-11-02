@@ -5,6 +5,7 @@ import type { CycleReview } from "~/entities/cycle";
 import { GOAL_QUESTION } from "~/shared/config/goalQuestion";
 import { Button } from "~/shared/ui/button";
 import { Input } from "~/shared/ui/input";
+import { Label } from "~/shared/ui/label";
 import { Section } from "~/shared/ui/Section";
 import { Segmented } from "~/shared/ui/Segmented";
 import {
@@ -54,7 +55,7 @@ export function ReviewSheet({
 	});
 	const hasGoal = review.goal !== null;
 
-	function setFate(cardId: string, fate: "carry" | "drop") {
+	function setFate(cardId: Id<"cards">, fate: "carry" | "drop") {
 		setDraft((current) => {
 			const dropped = new Set(current.dropped);
 			if (fate === "drop") dropped.add(cardId);
@@ -119,9 +120,7 @@ export function ReviewSheet({
 					) : null}
 
 					<div className="flex flex-col gap-2">
-						<label htmlFor="review-next-goal" className="text-sm font-medium">
-							{GOAL_QUESTION}
-						</label>
+						<Label htmlFor="review-next-goal">{GOAL_QUESTION}</Label>
 						<Input
 							id="review-next-goal"
 							value={draft.nextGoal ?? review.currentGoal ?? ""}

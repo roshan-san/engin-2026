@@ -1,11 +1,11 @@
-import { CYCLE_TEXT } from "@convex/cycles/rules";
+import { CYCLE_TEXT, goalToSave } from "@convex/cycles/rules";
 import { useState } from "react";
 import { useWorkspace } from "~/entities/startup";
 import { GOAL_QUESTION } from "~/shared/config/goalQuestion";
+import { isSendKey } from "~/shared/lib/keys";
 import { Button } from "~/shared/ui/button";
 import { Textarea } from "~/shared/ui/textarea";
 import { useSetGoal } from "../api/useSetGoal";
-import { goalToSave } from "../model/goalDraft";
 
 /** This week's goal above a phone's Board, since its bar has no room. The Founder sets and edits it here. */
 export function CycleGoal({ goal }: { readonly goal: string | null }) {
@@ -43,7 +43,7 @@ function FounderGoal({ goal }: { readonly goal: string | null }) {
 					setDraft(event.target.value.replace(/\s*\n\s*/g, " "))
 				}
 				onKeyDown={(event) => {
-					if (event.key === "Enter") {
+					if (isSendKey(event.nativeEvent)) {
 						event.preventDefault();
 						save();
 					}

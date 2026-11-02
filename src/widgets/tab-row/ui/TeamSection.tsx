@@ -34,20 +34,22 @@ export function TeamSection({
 				</p>
 			) : null}
 			<PeopleList people={people} canRemove={isFounder} onRemove={remove} />
-			{isFounder && people && people.contributors.length === 0 ? (
-				<EmptyState
-					size="compact"
-					title="Invite your first Contributor"
-					action={<InviteButton onSend={send} />}
-				/>
-			) : isFounder ? (
-				<InviteButton onSend={send} />
-			) : null}
 			{isFounder ? (
-				<PendingInvites
-					invites={invites}
-					onRevoke={(invite) => revoke(invite.inviteId)}
-				/>
+				<>
+					{people && people.contributors.length === 0 ? (
+						<EmptyState
+							size="compact"
+							title="Invite your first Contributor"
+							action={<InviteButton onSend={send} />}
+						/>
+					) : (
+						<InviteButton onSend={send} />
+					)}
+					<PendingInvites
+						invites={invites}
+						onRevoke={(invite) => revoke(invite.inviteId)}
+					/>
+				</>
 			) : null}
 		</div>
 	);

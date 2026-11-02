@@ -3,11 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_USER_APPLICATIONS } from "../applications/rules";
 import { shiftWeek, weekOf } from "../cycles/rules";
-import {
-	MAX_HACKATHON_CARDS,
-	MAX_LISTED_HACKATHONS,
-	phaseOf,
-} from "../hackathons/rules";
+import { MAX_HACKATHON_CARDS, phaseOf } from "../hackathons/rules";
 import { STARTING_RATING, WEEK_COUNT_CAP } from "./rules";
 
 export const RATING = {
@@ -204,11 +200,7 @@ export async function loadOutcomes(
 	const now = Date.now();
 	const outcomes = await Promise.all(
 		applications.map(async (application) => {
-			const outcome = outcomeOf(
-				application,
-				await hasDoneCard(ctx, application),
-			);
-			if (!outcome) {
+			if (application.status !== "participating") {
 				return [];
 			}
 			const hackathon = await ctx.db.get(application.hackathonId);
@@ -216,9 +208,16 @@ export async function loadOutcomes(
 				return [];
 			}
 			const phase = phaseOf(hackathon, now);
-			return phase === "deciding" || phase === "done"
-				? [{ outcome, hackathon }]
-				: [];
+			if (phase !== "deciding" && phase !== "done") {
+				return [];
+			}
+			// Hired counts without a Done Card, so only read Cards when they can matter.
+			const outcome = outcomeOf(
+				application,
+				application.decision !== "hired" &&
+					(await hasDoneCard(ctx, application)),
+			);
+			return outcome ? [{ outcome, hackathon }] : [];
 		}),
 	);
 	return outcomes
@@ -241,13 +240,12 @@ async function hasFinishedHackathon(
 	ctx: QueryCtx,
 	startupId: Id<"startups">,
 ): Promise<boolean> {
-	const done = await ctx.db
+	const done = ctx.db
 		.query("hackathons")
 		.withIndex("by_startup_and_status", (q) =>
 			q.eq("startupId", startupId).eq("status", "done"),
-		)
-		.take(MAX_LISTED_HACKATHONS);
-	for (const hackathon of done) {
+		);
+	for await (const hackathon of done) {
 		// One nobody joined ended without anyone building, so it proves nothing.
 		const participant = await ctx.db
 			.query("applications")

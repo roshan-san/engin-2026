@@ -89,6 +89,11 @@ export function cardRefusal(
 	}
 }
 
+/** Still being worked on: neither submitted nor approved. */
+export function isUnfinished(card: RuledCard): boolean {
+	return card.status === "todo" || card.status === "in_progress";
+}
+
 /** Where a submitted Card lands: the Founder's own goes straight to Done, self-verified. */
 export function submitLandsIn(
 	card: RuledCard,

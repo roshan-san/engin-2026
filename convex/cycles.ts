@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { cycleHeader } from "./activity/model";
-import { loadBoardCards, toCardView } from "./cards/model";
+import { dropUnfinishedCards, loadUnfinishedCards } from "./cards/model";
 import { MAX_BOARD_CARDS } from "./cards/rules";
 import { closeCycle, loadGoal, loadGoalRow, saveGoal } from "./cycles/model";
 import { cycleNumber, isReviewDue, shiftWeek, weekOf } from "./cycles/rules";
@@ -44,19 +44,20 @@ export const getReview = query({
 
 		const now = Date.now();
 		const week = shiftWeek(weekOf(now), -1);
-		const [row, cards, currentGoal] = await Promise.all([
-			loadGoalRow(ctx, args.startupId, week),
-			loadBoardCards(ctx, args.startupId, now),
+		const row = await loadGoalRow(ctx, args.startupId, week);
+		// Closed for most of the week: this runs on every Cycle page, so skip the Cards.
+		if (row?.reviewedAt !== undefined) {
+			return null;
+		}
+		const [unfinished, currentGoal] = await Promise.all([
+			loadUnfinishedCards(ctx, args.startupId),
 			loadGoal(ctx, args.startupId, weekOf(now)),
 		]);
-		const unfinished = cards.filter(
-			(card) => card.status === "todo" || card.status === "in_progress",
-		);
 		const number = cycleNumber(startup._creationTime, now);
 		if (
 			!isReviewDue({
 				cycleNumber: number,
-				isReviewed: row?.reviewedAt !== undefined,
+				isReviewed: false,
 				hasGoal: row?.goal !== undefined,
 				unfinishedCount: unfinished.length,
 			})
@@ -68,9 +69,7 @@ export const getReview = query({
 			number: number - 1,
 			goal: row?.goal ?? null,
 			currentGoal,
-			unfinished: await Promise.all(
-				unfinished.map((card) => toCardView(ctx, card)),
-			),
+			unfinished: unfinished.map(({ _id, title }) => ({ _id, title })),
 		};
 	},
 });
@@ -105,22 +104,12 @@ export const closeReview = mutation({
 			throw new ConvexError("Say whether the goal happened");
 		}
 
-		await closeCycle(ctx, args.startupId, args.week, {
+		await closeCycle(ctx, row, args.startupId, args.week, {
 			goalMet: hasGoal ? args.goalMet : undefined,
 			now,
 		});
 		// A Card that moved on or left since the sheet opened just stays as it is.
-		for (const cardId of args.dropCardIds) {
-			const card = await ctx.db.get(cardId);
-			if (
-				card &&
-				card.startupId === args.startupId &&
-				!card.hackathonId &&
-				(card.status === "todo" || card.status === "in_progress")
-			) {
-				await ctx.db.delete(cardId);
-			}
-		}
+		await dropUnfinishedCards(ctx, args.startupId, args.dropCardIds);
 		if (args.nextGoal?.trim()) {
 			await saveGoal(ctx, args.startupId, weekOf(now), args.nextGoal);
 		}

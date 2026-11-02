@@ -17,7 +17,7 @@ export function StartupExploreRow({
 }: {
 	readonly startup: StartupExploreRowData;
 }) {
-	// "Building · SaaS · Bengaluru"
+	// "Building · Bengaluru"
 	const chips = startupChipLabels(startup).join(" · ");
 
 	return (

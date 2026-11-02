@@ -1,6 +1,6 @@
 import { getRouteApi } from "@tanstack/react-router";
 import {
-	hackathonExploreArgs,
+	parseHackathonSearch,
 	useExploreHackathons,
 } from "~/entities/hackathon";
 import { ROLES } from "~/shared/config/jobs";
@@ -65,7 +65,7 @@ export function ExploreHackathonsPage() {
 			{hackathons === undefined || (isLoading && hackathons.length === 0) ? (
 				<RowsSkeleton rowClassName="h-20" />
 			) : hackathons.length === 0 ? (
-				hasFilters(hackathonExploreArgs(search)) ? (
+				hasFilters(parseHackathonSearch(search)) ? (
 					<NoMatches
 						noun="hackathons"
 						onClear={() => void navigate({ search: {}, replace: true })}

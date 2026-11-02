@@ -29,12 +29,11 @@ export function homeIntent(
 		return null;
 	}
 	const founded = places.startups.find((startup) => startup.role === "founder");
-	if (intent === "post") {
-		return founded
-			? { to: "/s/$slug/hiring/new", slug: founded.slug }
-			: { to: "/onboarding", search: { intent: "post" } };
+	if (!founded) {
+		return { to: "/onboarding", search: intent === "post" ? { intent } : {} };
 	}
-	return founded
-		? { to: "/s/$slug/cycle", slug: founded.slug }
-		: { to: "/onboarding", search: {} };
+	return {
+		to: intent === "post" ? "/s/$slug/hiring/new" : "/s/$slug/cycle",
+		slug: founded.slug,
+	};
 }

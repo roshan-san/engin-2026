@@ -1,3 +1,4 @@
+import type { Id } from "@convex/_generated/dataModel";
 import { describe, expect, it } from "vitest";
 import { canCloseReview, type ReviewDraft, toCloseArgs } from "./reviewDraft";
 
@@ -22,7 +23,7 @@ describe("canCloseReview", () => {
 describe("toCloseArgs", () => {
 	it("sends the answer and the Cards to drop, and leaves out a blank goal", () => {
 		const args = toCloseArgs(
-			{ goalMet: true, dropped: new Set(["a"]), nextGoal: "  " },
+			{ goalMet: true, dropped: new Set(["a" as Id<"cards">]), nextGoal: "  " },
 			{ week, currentGoal: null },
 		);
 

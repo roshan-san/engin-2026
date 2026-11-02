@@ -3,7 +3,7 @@ import { useQuery } from "convex/react";
 import { useKept } from "~/shared/lib/useKept";
 import {
 	type HackathonSearch,
-	hackathonExploreArgs,
+	parseHackathonSearch,
 } from "../model/hackathonSearch";
 
 /**
@@ -12,7 +12,7 @@ import {
  * they may be out of date.
  */
 export function useExploreHackathons(search: HackathonSearch) {
-	const live = useQuery(api.hackathons.explore, hackathonExploreArgs(search));
+	const live = useQuery(api.hackathons.explore, parseHackathonSearch(search));
 	const hackathons = useKept(live, "explore-hackathons");
 	return { hackathons, isLoading: live === undefined };
 }

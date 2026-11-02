@@ -7,7 +7,7 @@ export type CycleReview = NonNullable<
 	FunctionReturnType<typeof api.cycles.getReview>
 >;
 
-/** The Monday review the Founder has due; `null` when none is, `undefined` while loading. */
-export function useReview(startupId: Id<"startups">) {
-	return useQuery(api.cycles.getReview, { startupId });
+/** The Monday review the Founder has due; `null` when none is, `undefined` while loading or for anyone else. */
+export function useReview(startupId: Id<"startups">, isFounder: boolean) {
+	return useQuery(api.cycles.getReview, isFounder ? { startupId } : "skip");
 }

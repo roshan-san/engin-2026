@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { goalToSave } from "./goalDraft";
+import { goalToSave } from "./rules";
 
 describe("goalToSave", () => {
 	it("gives a new goal, trimmed", () => {

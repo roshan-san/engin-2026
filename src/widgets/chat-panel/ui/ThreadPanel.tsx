@@ -18,7 +18,6 @@ export function ThreadPanel({
 	mentions,
 	canPin = false,
 	isReadOnly = false,
-	actions,
 	onClose,
 }: {
 	/** `undefined` while the thread loads. */
@@ -38,8 +37,6 @@ export function ThreadPanel({
 	readonly canPin?: boolean;
 	/** No composer: the thread can be read but not written to. */
 	readonly isReadOnly?: boolean;
-	/** Shown at the right of the header. */
-	readonly actions?: ReactNode;
 	/** On a phone, closes the sheet the panel sits in. */
 	readonly onClose?: () => void;
 }) {
@@ -63,7 +60,6 @@ export function ThreadPanel({
 					title
 				)}
 				<div className="ml-auto flex items-center gap-2">
-					{actions}
 					{onClose ? (
 						<Button
 							variant="ghost"

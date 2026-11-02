@@ -53,7 +53,7 @@ export function CycleHeader({
 		if (next === goal || (await setGoal(next))) setDraft(null);
 	}
 
-	if (!isFounder) {
+	if (!isFounder || !showsGoalInput) {
 		return (
 			<div className="flex min-w-0 flex-1 items-center gap-3">
 				{when}
@@ -65,10 +65,6 @@ export function CycleHeader({
 				) : null}
 			</div>
 		);
-	}
-
-	if (!showsGoalInput) {
-		return <div className="flex min-w-0 flex-1 items-center">{when}</div>;
 	}
 
 	return (

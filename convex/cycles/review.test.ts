@@ -106,6 +106,20 @@ describe("the Monday review", () => {
 		).toBeNull();
 	});
 
+	it("a Card listed twice is dropped once", async () => {
+		const setup = await weekAfterGoal();
+		const cardId = await addCard(setup, "Drop me");
+
+		await setup.founder.as.mutation(api.cycles.closeReview, {
+			startupId: setup.startupId,
+			week: lastWeek(),
+			goalMet: false,
+			dropCardIds: [cardId, cardId],
+		});
+
+		expect(await cardExists(setup, cardId)).toBe(false);
+	});
+
 	it("closes last week: Drop deletes, carried Cards stay, the next goal is set", async () => {
 		const setup = await weekAfterGoal();
 		const args = { startupId: setup.startupId };
