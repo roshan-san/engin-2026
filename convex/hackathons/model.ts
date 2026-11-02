@@ -5,6 +5,7 @@ import { loadPlan, planViewFor } from "../billing/model";
 import { MAX_OPEN_HACKATHONS, PLANS, type PlanView } from "../billing/rules";
 import { CARD_TEXT } from "../cards/rules";
 import { weekOf, weekStart } from "../cycles/rules";
+import { discipline } from "../lib/disciplines";
 import { limitText, requireLimitedText } from "../lib/text";
 import { loadFoundedStartups } from "../startups/model";
 import { requireFounder } from "../startups/team";
@@ -14,7 +15,6 @@ import {
 	hackathonDates,
 	jobMode,
 	jobPay,
-	jobRole,
 	MAX_HACKATHON_CARDS,
 	MAX_PARTICIPANTS,
 	MIN_HACKATHON_CARDS,
@@ -23,7 +23,12 @@ import {
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {
-	job: v.object({ role: jobRole, pay: jobPay, mode: jobMode }),
+	job: v.object({
+		title: v.string(),
+		discipline,
+		pay: jobPay,
+		mode: jobMode,
+	}),
 	problem: v.string(),
 	weeks: v.number(),
 	startsAt: v.number(),
@@ -64,7 +69,10 @@ export function requireValidDraft(input: DraftInput, now: number) {
 	}
 
 	return {
-		job: input.job,
+		job: {
+			...input.job,
+			title: requireLimitedText(input.job.title, "Title", HACKATHON_TEXT.title),
+		},
 		problem: requireLimitedText(
 			input.problem,
 			"Problem",
@@ -219,13 +227,14 @@ export async function copyTemplateCardsTo(
 export function matchesExplore(
 	hackathon: Doc<"hackathons">,
 	filters: {
-		role?: Doc<"hackathons">["job"]["role"];
+		discipline?: Doc<"hackathons">["job"]["discipline"];
 		weeks?: 1 | 2;
 		paid?: boolean;
 	},
 ): boolean {
 	return (
-		(filters.role === undefined || hackathon.job.role === filters.role) &&
+		(filters.discipline === undefined ||
+			hackathon.job.discipline === filters.discipline) &&
 		(filters.weeks === undefined || hackathon.weeks === filters.weeks) &&
 		(filters.paid !== true || hackathon.participantsGet !== undefined)
 	);

@@ -147,7 +147,7 @@ export async function loadProfileRecord(
 			? [
 					{
 						startup,
-						job: { role: hackathon.job.role },
+						job: { title: hackathon.job.title },
 						outcome,
 						endsAt: hackathon.endsAt,
 					},

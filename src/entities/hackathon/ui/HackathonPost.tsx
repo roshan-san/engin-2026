@@ -1,13 +1,7 @@
 import { hackathonDates, MAX_PARTICIPANTS } from "@convex/hackathons/rules";
 import type { ReactNode } from "react";
-import {
-	type JobMode,
-	type JobPay,
-	type JobRole,
-	MODES,
-	PAYS,
-	ROLES,
-} from "~/shared/config/jobs";
+import { type Discipline, disciplineLabel } from "~/shared/config/disciplines";
+import { type JobMode, type JobPay, MODES, PAYS } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
 import { buildDaysLabel, lastDay } from "~/shared/lib/hackathonDates";
@@ -17,7 +11,8 @@ import { Section } from "~/shared/ui/Section";
 export type PostView = {
 	readonly startupName: string;
 	readonly job: {
-		readonly role: JobRole | null;
+		readonly title: string;
+		readonly discipline: Discipline | null;
 		readonly pay: JobPay | null;
 		readonly mode: JobMode | null;
 	};
@@ -58,8 +53,9 @@ export function HackathonPost({
 	/** Shown over the faded brief for a signed-out visitor. */
 	readonly signIn?: ReactNode;
 }) {
-	const role = labelOf(ROLES, post.job.role);
+	const title = post.job.title.trim();
 	const facts = [
+		post.job.discipline ? disciplineLabel(post.job.discipline) : null,
 		labelOf(PAYS, post.job.pay),
 		labelOf(MODES, post.job.mode),
 		post.startsAt === null
@@ -87,7 +83,7 @@ export function HackathonPost({
 				<Title
 					className={cn("font-semibold", isPage ? "text-3xl" : "text-2xl")}
 				>
-					{role ?? <Unwritten>The role</Unwritten>}
+					{title || <Unwritten>The title</Unwritten>}
 				</Title>
 				<ul className="flex flex-wrap gap-2">
 					{facts.map((fact) => (

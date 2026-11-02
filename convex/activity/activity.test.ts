@@ -172,13 +172,13 @@ describe("activity", () => {
 		expect(
 			entries.find((entry) => entry.kind === "participant_hired"),
 		).toMatchObject({
-			job: { role: "frontend" },
+			job: { title: "Frontend" },
 			actor: { name: "Ana" },
 			card: null,
 		});
 		expect(
 			entries.find((entry) => entry.kind === "hackathon_finished"),
-		).toMatchObject({ job: { role: "frontend" } });
+		).toMatchObject({ job: { title: "Frontend" } });
 	});
 
 	it("only the team reads the list", async () => {

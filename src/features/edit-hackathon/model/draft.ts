@@ -1,5 +1,6 @@
 import { MIN_HACKATHON_CARDS } from "@convex/hackathons/rules";
-import type { Job, JobMode, JobPay, JobRole } from "~/shared/config/jobs";
+import type { Discipline } from "~/shared/config/disciplines";
+import type { Job, JobMode, JobPay } from "~/shared/config/jobs";
 import { startOptions } from "./startOptions";
 
 export const PARTICIPANTS_GET = [
@@ -11,7 +12,12 @@ export const PARTICIPANTS_GET = [
 
 /** A Hackathon being written. Chips start unpicked; Cards are added one at a time, as on the Board. */
 export type HackathonDraft = {
-	job: { role: JobRole | null; pay: JobPay | null; mode: JobMode | null };
+	job: {
+		title: string;
+		discipline: Discipline | null;
+		pay: JobPay | null;
+		mode: JobMode | null;
+	};
 	problem: string;
 	weeks: 1 | 2;
 	startsAt: number | null;
@@ -26,7 +32,7 @@ export function draftCard(title = "", notes = "") {
 
 export function emptyDraft(now: number): HackathonDraft {
 	return {
-		job: { role: null, pay: null, mode: null },
+		job: { title: "", discipline: null, pay: null, mode: null },
 		problem: "",
 		weeks: 1,
 		startsAt: startOptions(now)[0].startsAt,
@@ -57,10 +63,11 @@ export function fromParticipantsGet(value: string | null): {
 
 /** What's still to fill in before the draft can be saved, in form order. */
 export function missingParts(draft: HackathonDraft): string[] {
-	const { role, pay, mode } = draft.job;
+	const { title, discipline, pay, mode } = draft.job;
 	const untitled = draft.cards.filter((card) => !card.title.trim()).length;
 	return [
-		role === null ? "a role" : null,
+		title.trim() ? null : "a title",
+		discipline === null ? "a discipline" : null,
 		pay === null ? "the pay" : null,
 		mode === null ? "where" : null,
 		draft.problem.trim() ? null : "the problem",
@@ -82,11 +89,17 @@ export function isDraftReady(draft: HackathonDraft): boolean {
 
 /** The draft as `hackathons.create` / `update` args. Call only when ready. */
 export function toDraftArgs(draft: HackathonDraft) {
-	const { role, pay, mode } = draft.job;
-	if (!role || !pay || !mode || draft.startsAt === null) {
+	const { title, discipline, pay, mode } = draft.job;
+	if (
+		!title.trim() ||
+		!discipline ||
+		!pay ||
+		!mode ||
+		draft.startsAt === null
+	) {
 		throw new Error("Finish the form first");
 	}
-	const job: Job = { role, pay, mode };
+	const job: Job = { title: title.trim(), discipline, pay, mode };
 	return {
 		job,
 		problem: draft.problem.trim(),

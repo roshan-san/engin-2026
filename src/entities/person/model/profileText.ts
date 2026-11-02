@@ -1,5 +1,3 @@
-import { type JobRole, roleLabel } from "~/shared/config/jobs";
-
 type Outcome = "built" | "finalist" | "hired";
 type StartupRef = { readonly name: string; readonly slug: string };
 
@@ -16,10 +14,10 @@ export function outcomeLabel<O extends Outcome>(o: O): (typeof OUTCOMES)[O] {
 /** "Hired · Frontend at Acme". */
 export function hackathonLine(h: {
 	readonly outcome: Outcome;
-	readonly job: { readonly role: JobRole };
+	readonly job: { readonly title: string };
 	readonly startup: StartupRef;
 }): string {
-	return `${outcomeLabel(h.outcome)} · ${roleLabel(h.job.role)} at ${h.startup.name}`;
+	return `${outcomeLabel(h.outcome)} · ${h.job.title} at ${h.startup.name}`;
 }
 
 /** "38 cards at Acme", or "500+ cards at Acme" past the read cap. */

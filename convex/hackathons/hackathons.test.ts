@@ -191,6 +191,38 @@ describe("drafts", () => {
 	});
 });
 
+describe("the job's title", () => {
+	const withTitle = (title: string) =>
+		hackathonInput({
+			job: { title, discipline: "marketing", pay: "6_9l", mode: "remote" },
+		});
+
+	it("is trimmed", async () => {
+		const setup = await setUpStartup(createTest());
+		const id = await setup.founder.as.mutation(api.hackathons.create, {
+			startupId: setup.startupId,
+			...withTitle("  Growth lead  "),
+		});
+
+		const stored = await setup.t.run((ctx) => ctx.db.get(id));
+		expect(stored?.job.title).toBe("Growth lead");
+		expect(stored?.job.discipline).toBe("marketing");
+	});
+
+	it("can't be blank or over 60 characters", async () => {
+		const setup = await setUpStartup(createTest());
+		const create = (title: string) =>
+			setup.founder.as.mutation(api.hackathons.create, {
+				startupId: setup.startupId,
+				...withTitle(title),
+			});
+
+		await expect(create("   ")).rejects.toThrow();
+		await expect(create("x".repeat(61))).rejects.toThrow();
+		await expect(create("x".repeat(60))).resolves.toBeDefined();
+	});
+});
+
 describe("public page", () => {
 	it("an id that isn't a Hackathon reads as missing", async () => {
 		const setup = await setUpStartup(createTest());
@@ -252,7 +284,7 @@ describe("public page", () => {
 		});
 
 		expect(page?.problem).not.toBe("");
-		expect(page?.job.role).not.toBeNull();
+		expect(page?.job.title).not.toBeNull();
 		expect(page?.cards).toBeNull();
 		expect(JSON.stringify(page)).not.toContain("Fix signup");
 	});
@@ -787,7 +819,12 @@ describe("explore", () => {
 			{
 				hackathonId,
 				status: "open",
-				job: { role: "frontend", pay: "6_9l", mode: "remote" },
+				job: {
+					title: "Frontend",
+					discipline: "developer",
+					pay: "6_9l",
+					mode: "remote",
+				},
 				weeks: 1,
 				participantsGet: "Ship real work and meet the team",
 				startup: {
@@ -876,18 +913,28 @@ describe("explore", () => {
 		expect(rows.map((row) => row.hackathonId)).toEqual([openId]);
 	});
 
-	it("role, length and paid filter", async () => {
+	it("discipline, length and paid filter", async () => {
 		const setup = await setUpStartup(createTest());
 		const designerId = await publishedHackathon(setup, {
-			job: { role: "designer", pay: "equity", mode: "remote" },
+			job: {
+				title: "Designer",
+				discipline: "designer",
+				pay: "equity",
+				mode: "remote",
+			},
 			participantsGet: undefined,
 		});
 		const backendId = await publishedHackathon(setup, {
-			job: { role: "backend", pay: "6_9l", mode: "remote" },
+			job: {
+				title: "Backend",
+				discipline: "developer",
+				pay: "6_9l",
+				mode: "remote",
+			},
 			weeks: 2,
 		});
 		const ids = async (args: {
-			role?: "designer";
+			discipline?: "designer";
 			weeks?: 1 | 2;
 			paid?: boolean;
 		}) =>
@@ -895,10 +942,10 @@ describe("explore", () => {
 				(row) => row.hackathonId,
 			);
 
-		expect(await ids({ role: "designer" })).toEqual([designerId]);
+		expect(await ids({ discipline: "designer" })).toEqual([designerId]);
 		expect(await ids({ weeks: 2 })).toEqual([backendId]);
 		expect(await ids({ paid: true })).toEqual([backendId]);
-		expect(await ids({ role: "designer", paid: true })).toEqual([]);
+		expect(await ids({ discipline: "designer", paid: true })).toEqual([]);
 		expect(await ids({})).toHaveLength(2);
 	});
 

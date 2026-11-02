@@ -52,16 +52,6 @@ export const hackathonStatus = v.union(
 	v.literal("deciding"),
 	v.literal("done"),
 );
-export const jobRole = v.union(
-	v.literal("frontend"),
-	v.literal("backend"),
-	v.literal("fullstack"),
-	v.literal("designer"),
-	v.literal("marketing"),
-	v.literal("sales"),
-	v.literal("ops"),
-	v.literal("other"),
-);
 export const jobPay = v.union(
 	v.literal("3_6l"),
 	v.literal("6_9l"),
@@ -78,6 +68,10 @@ export const jobMode = v.union(
 export const hackathonWeeks = v.union(v.literal(1), v.literal(2));
 
 /** Longest allowed text per Hackathon field. */
-export const HACKATHON_TEXT = { participantsGet: 140, problem: 2000 };
+export const HACKATHON_TEXT = {
+	title: 60,
+	participantsGet: 140,
+	problem: 2000,
+};
 
 export const MAX_APPLICATIONS = 500;

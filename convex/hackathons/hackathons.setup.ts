@@ -20,7 +20,12 @@ export function hackathonInput(
 	overrides: Partial<HackathonInput> = {},
 ): HackathonInput {
 	return {
-		job: { role: "frontend", pay: "6_9l", mode: "remote" },
+		job: {
+			title: "Frontend",
+			discipline: "developer",
+			pay: "6_9l",
+			mode: "remote",
+		},
 		problem: "Our signup drops people before they finish.",
 		weeks: 1,
 		startsAt: nextMonday(),

@@ -12,7 +12,6 @@ import {
 	closedLabel,
 } from "~/features/apply-to-hackathon";
 import { GoogleButton, SignInCard } from "~/features/sign-in";
-import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";
@@ -79,7 +78,7 @@ function SignedInPage({ page }: { readonly page: HackathonView }) {
 			bar={{
 				title: (
 					<p className="truncate text-sm font-medium">
-						{roleLabel(page.job.role)}
+						{page.job.title}
 						<span className="text-muted-foreground">
 							{" "}
 							· {page.startup.name}

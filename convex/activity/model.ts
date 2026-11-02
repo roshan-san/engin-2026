@@ -12,7 +12,6 @@ import {
 	weekStart,
 } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
-import type { jobRole } from "../hackathons/rules";
 import {
 	buildParts,
 	countedWeeks,
@@ -25,7 +24,6 @@ import { loadPublicUser, type PublicUser } from "../users/model";
 import type { activityKind } from "./rules";
 
 type ActivityKind = Infer<typeof activityKind>;
-type JobRole = Infer<typeof jobRole>;
 
 /** The only writer to `activity`, which is append-only. */
 export async function appendActivity(
@@ -60,7 +58,7 @@ export type EntryView = {
 		verifier: PublicUser | null;
 	} | null;
 	/** hackathon_finished and participant_hired only; null when the Hackathon is gone. */
-	job: { role: JobRole } | null;
+	job: { title: string } | null;
 };
 
 export type CycleView = {
@@ -95,7 +93,7 @@ async function loadCard(ctx: QueryCtx, row: Doc<"activity">) {
 
 async function loadJob(ctx: QueryCtx, row: Doc<"activity">) {
 	const hackathon = row.hackathonId ? await ctx.db.get(row.hackathonId) : null;
-	return hackathon ? { role: hackathon.job.role } : null;
+	return hackathon ? { title: hackathon.job.title } : null;
 }
 
 async function toEntryView(

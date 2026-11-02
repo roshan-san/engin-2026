@@ -44,7 +44,12 @@ describe("what Participants get", () => {
 describe("isDraftReady", () => {
 	const ready: HackathonDraft = {
 		...emptyDraft(0),
-		job: { role: "frontend", pay: "6_9l", mode: "remote" },
+		job: {
+			title: "Frontend",
+			discipline: "developer",
+			pay: "6_9l",
+			mode: "remote",
+		},
 		problem: "Signups drop off",
 		cards: [
 			draftCard("Fix signup"),
@@ -55,9 +60,9 @@ describe("isDraftReady", () => {
 
 	it("needs the job, the problem, 3 titled Cards and a start", () => {
 		expect(isDraftReady(ready)).toBe(true);
-		expect(isDraftReady({ ...ready, job: { ...ready.job, role: null } })).toBe(
-			false,
-		);
+		expect(
+			isDraftReady({ ...ready, job: { ...ready.job, discipline: null } }),
+		).toBe(false);
 		expect(isDraftReady({ ...ready, problem: "  " })).toBe(false);
 		expect(isDraftReady({ ...ready, cards: ready.cards.slice(0, 2) })).toBe(
 			false,
@@ -75,7 +80,8 @@ describe("isDraftReady", () => {
 describe("missingParts", () => {
 	it("a new draft still needs the job, the problem and its Cards", () => {
 		expect(missingParts(emptyDraft(Date.now()))).toEqual([
-			"a role",
+			"a title",
+			"a discipline",
 			"the pay",
 			"where",
 			"the problem",
@@ -83,10 +89,25 @@ describe("missingParts", () => {
 		]);
 	});
 
+	it("a title of only spaces still needs writing", () => {
+		const draft: HackathonDraft = {
+			...emptyDraft(Date.now()),
+			job: { title: "   ", discipline: "sales", pay: "6_9l", mode: "remote" },
+		};
+
+		expect(missingParts(draft)).toContain("a title");
+		expect(missingParts(draft)).not.toContain("a discipline");
+	});
+
 	it("one untitled Card is named once", () => {
 		const draft: HackathonDraft = {
 			...emptyDraft(Date.now()),
-			job: { role: "frontend", pay: "6_9l", mode: "remote" },
+			job: {
+				title: "Frontend",
+				discipline: "developer",
+				pay: "6_9l",
+				mode: "remote",
+			},
 			problem: "Signup drops people",
 			cards: [draftCard("A"), draftCard("B"), draftCard(" ")],
 		};
@@ -97,7 +118,12 @@ describe("missingParts", () => {
 	it("an empty Custom line is named; a written one isn't", () => {
 		const draft: HackathonDraft = {
 			...emptyDraft(Date.now()),
-			job: { role: "frontend", pay: "6_9l", mode: "remote" },
+			job: {
+				title: "Frontend",
+				discipline: "developer",
+				pay: "6_9l",
+				mode: "remote",
+			},
 			problem: "Signup drops people",
 			cards: [draftCard("A"), draftCard("B"), draftCard("C")],
 		};

@@ -103,7 +103,7 @@ describe("profile record", () => {
 		expect(record?.hackathons).toMatchObject([
 			{
 				outcome: "built",
-				job: { role: "frontend" },
+				job: { title: "Frontend" },
 				startup: { name: "Acme", slug: "acme" },
 			},
 		]);

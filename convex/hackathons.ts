@@ -25,11 +25,11 @@ import {
 } from "./hackathons/record";
 import {
 	hackathonWeeks,
-	jobRole,
 	MAX_LISTED_HACKATHONS,
 	phaseOf,
 } from "./hackathons/rules";
 import { requireUserId } from "./lib/auth";
+import { discipline } from "./lib/disciplines";
 import { MAX_EXPLORE_ROWS } from "./lib/explore";
 import { loadLogoUrl, toPublicStartup } from "./startups/model";
 import { getTeamRole, requireFounder, requireTeam } from "./startups/team";
@@ -158,7 +158,7 @@ export const getPublic = query({
 /** Hackathons Participants can still join or that are live now, for anyone. */
 export const explore = query({
 	args: {
-		role: v.optional(jobRole),
+		discipline: v.optional(discipline),
 		weeks: v.optional(hackathonWeeks),
 		paid: v.optional(v.boolean()),
 	},

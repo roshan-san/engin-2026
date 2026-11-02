@@ -6,8 +6,8 @@ describe("has filters", () => {
 		expect(hasFilters({})).toBe(false);
 	});
 
-	test("a Hackathon role or the paid chip counts", () => {
-		expect(hasFilters({ role: "frontend" })).toBe(true);
+	test("a Hackathon discipline or the paid chip counts", () => {
+		expect(hasFilters({ discipline: "developer" })).toBe(true);
 		expect(hasFilters({ paid: true })).toBe(true);
 		expect(hasFilters({ weeks: 2 })).toBe(true);
 	});

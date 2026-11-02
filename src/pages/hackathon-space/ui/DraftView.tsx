@@ -14,7 +14,6 @@ import {
 } from "~/features/edit-hackathon";
 import { usePortal } from "~/features/open-billing-portal";
 import { CheckoutNotice, PlansDialog } from "~/features/upgrade-plan";
-import { roleLabel } from "~/shared/config/jobs";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";
 import { Button } from "~/shared/ui/button";
@@ -93,7 +92,7 @@ export function DraftView({
 							publishing.opensPlans
 								? null
 								: {
-										title: `Publish ${draft.job.role ? roleLabel(draft.job.role) : "this post"}?`,
+										title: `Publish ${draft.job.title.trim() || "this post"}?`,
 										description: `Applications open now${
 											draft.startsAt === null
 												? ""

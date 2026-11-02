@@ -1,8 +1,8 @@
-import { type JobRole, ROLES } from "~/shared/config/jobs";
+import { DISCIPLINES, type Discipline } from "~/shared/config/disciplines";
 import { pickChip } from "~/shared/lib/search";
 
 export type HackathonSearch = {
-	role?: JobRole;
+	discipline?: Discipline;
 	weeks?: 1 | 2;
 	paid?: true;
 };
@@ -20,11 +20,11 @@ function parseWeeks(raw: unknown): 1 | 2 | undefined {
 export function parseHackathonSearch(
 	raw: Record<string, unknown>,
 ): HackathonSearch {
-	const role = pickChip(ROLES, raw.role);
+	const discipline = pickChip(DISCIPLINES, raw.discipline);
 	const weeks = parseWeeks(raw.weeks);
 	// The router decodes `?paid=true` to a boolean; a hand-typed value may stay text.
 	const paid = raw.paid === true || raw.paid === "true";
 
 	// Every key is set, so a dropped value overrides the raw one the parent route passes down.
-	return { role, weeks, paid: paid ? true : undefined };
+	return { discipline, weeks, paid: paid ? true : undefined };
 }

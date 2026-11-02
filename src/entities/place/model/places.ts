@@ -1,7 +1,6 @@
 import type { api } from "@convex/_generated/api";
 import type { WaitingReason } from "@convex/places/rules";
 import type { FunctionReturnType } from "convex/server";
-import { roleLabel } from "~/shared/config/jobs";
 
 export type Places = FunctionReturnType<typeof api.places.list>;
 
@@ -62,13 +61,13 @@ export function reasonLine(reason: WaitingReason): string {
 		case "cards_to_verify":
 			return `${plural(reason.count, "Card", "Cards")} to approve`;
 		case "new_applicants":
-			return `${plural(reason.count, "new applicant", "new applicants")} on ${roleLabel(reason.role)}`;
+			return `${plural(reason.count, "new applicant", "new applicants")} on ${reason.title}`;
 		case "participant_cards_to_review":
-			return `${plural(reason.count, "Builder Card", "Builder Cards")} to review on ${roleLabel(reason.role)}`;
+			return `${plural(reason.count, "Builder Card", "Builder Cards")} to review on ${reason.title}`;
 		case "hackathon_unread":
-			return `Unread messages on ${roleLabel(reason.role)}`;
+			return `Unread messages on ${reason.title}`;
 		case "participants_to_decide":
-			return `${plural(reason.count, "Builder", "Builders")} to decide on ${roleLabel(reason.role)}`;
+			return `${plural(reason.count, "Builder", "Builders")} to decide on ${reason.title}`;
 		case "messages_unread":
 			return "Unread messages";
 		case "promise_pending":
@@ -122,7 +121,7 @@ export function currentPlaceView(
 		const hackathon = places.hackathons.find((h) => h.hackathonId === id);
 		return hackathon
 			? {
-					name: roleLabel(hackathon.job.role),
+					name: hackathon.job.title,
 					logoName: hackathon.startupName,
 					logoUrl: hackathon.startupLogoUrl,
 					role: `Builder · ${hackathon.startupName}`,
@@ -156,7 +155,7 @@ export function filterPlaces(places: Places, query: string): Places {
 		...places,
 		startups: places.startups.filter((s) => s.name.toLowerCase().includes(q)),
 		hackathons: places.hackathons.filter((h) =>
-			`${roleLabel(h.job.role)} ${h.startupName}`.toLowerCase().includes(q),
+			`${h.job.title} ${h.startupName}`.toLowerCase().includes(q),
 		),
 	};
 }

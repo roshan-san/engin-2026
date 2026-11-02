@@ -8,7 +8,7 @@ describe("profileText", () => {
 		expect(
 			hackathonLine({
 				outcome: "hired",
-				job: { role: "frontend" },
+				job: { title: "Frontend" },
 				startup: acme,
 			}),
 		).toBe("Hired · Frontend at Acme");

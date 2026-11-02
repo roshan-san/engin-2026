@@ -31,13 +31,15 @@ function startup(slug: string, name: string, waiting: WaitingReason[]) {
 	};
 }
 
-function liveHackathon(
-	role: "frontend" | "fullstack",
-	waiting: WaitingReason[],
-) {
+function liveHackathon(title: string, waiting: WaitingReason[]) {
 	return {
 		hackathonId,
-		job: { role, pay: "equity", mode: "remote" } as const,
+		job: {
+			title,
+			discipline: "developer",
+			pay: "equity",
+			mode: "remote",
+		} as const,
 		startupName: "Acme",
 		startupSlug: "acme",
 		startupLogoUrl: null,
@@ -52,7 +54,12 @@ function liveHackathon(
 function hackathonRow(id: string, startupName: string) {
 	return {
 		hackathonId: id as Id<"hackathons">,
-		job: { role: "frontend", pay: "6_9l", mode: "remote" } as const,
+		job: {
+			title: "Frontend",
+			discipline: "developer",
+			pay: "6_9l",
+			mode: "remote",
+		} as const,
 		startupName,
 		startupSlug: startupName.toLowerCase(),
 		startupLogoUrl: null,
@@ -144,7 +151,7 @@ describe("othersWaiting", () => {
 	it("places with nothing waiting never count, even an empty list", () => {
 		const quiet = places({
 			startups: [startup("acme", "Acme", [])],
-			hackathons: [liveHackathon("frontend", [])],
+			hackathons: [liveHackathon("Frontend", [])],
 		});
 
 		expect(othersWaiting(quiet, null)).toBe(false);
@@ -152,7 +159,7 @@ describe("othersWaiting", () => {
 
 	it("a waiting Hackathon Board counts from a Startup", () => {
 		const onBoard = places({
-			hackathons: [liveHackathon("frontend", [{ kind: "promise_pending" }])],
+			hackathons: [liveHackathon("Frontend", [{ kind: "promise_pending" }])],
 		});
 
 		expect(othersWaiting(onBoard, { kind: "startup", slug: "acme" })).toBe(
@@ -180,19 +187,19 @@ describe("reasonLine", () => {
 		[{ kind: "cards_to_verify", count: 1 }, "1 Card to approve"],
 		[{ kind: "cards_to_verify", count: 2 }, "2 Cards to approve"],
 		[
-			{ kind: "new_applicants", role: "frontend", count: 3 },
+			{ kind: "new_applicants", title: "Frontend", count: 3 },
 			"3 new applicants on Frontend",
 		],
 		[
-			{ kind: "participant_cards_to_review", role: "frontend", count: 1 },
+			{ kind: "participant_cards_to_review", title: "Frontend", count: 1 },
 			"1 Builder Card to review on Frontend",
 		],
 		[
-			{ kind: "hackathon_unread", role: "frontend" },
+			{ kind: "hackathon_unread", title: "Frontend" },
 			"Unread messages on Frontend",
 		],
 		[
-			{ kind: "participants_to_decide", role: "frontend", count: 2 },
+			{ kind: "participants_to_decide", title: "Frontend", count: 2 },
 			"2 Builders to decide on Frontend",
 		],
 		[{ kind: "messages_unread" }, "Unread messages"],
