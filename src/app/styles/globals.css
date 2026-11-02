@@ -9,7 +9,8 @@
  *   lg   18  Heading: one per panel, dialog or form part; a website lead paragraph
  *   2xl  24  Title: a name or question that heads its content; website section headings
  *   3xl  30  Hero: a website page's name, a Profile's Rating, prices
- *   5xl  48  Display: the Landing headline on desktop
+ *   5xl  48  Display: Landing section headings on desktop, the Landing headline on phones
+ *   7xl  88  Poster: the Landing headline on desktop, and nothing else
  * Weights: 400 to read, 500 for emphasis in body text, 600 from lg up.
  */
 @theme {
@@ -31,6 +32,9 @@
 	--text-5xl: 3rem;
 	--text-5xl--line-height: 3.25rem;
 	--text-5xl--letter-spacing: -0.03em;
+	--text-7xl: 5.5rem;
+	--text-7xl--line-height: 5.5rem;
+	--text-7xl--letter-spacing: -0.04em;
 }
 
 @theme inline {
@@ -120,8 +124,7 @@
 
 	--glow: #0b5c99;
 
-	/* Landing page panels: scrolling from founders to contributors changes the colour. */
-	--panel-founder: #0b3a66;
+	/* The Landing page is the app's dark until the contributor section, the only colour change. */
 	--panel-contributor: #f5b83d;
 
 	/* Rating Tiers (convex/rating/rules.ts): grey, green, blue, violet, amber. Text colours. */

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { POST_INTENT_PATH, START_INTENT_PATH } from "~/entities/place";
 import { GoogleButton } from "~/features/sign-in";
 import { BoardMock } from "./BoardMock";
+import { BuildersMock, DoneCardMock, GoalMock } from "./LandingMocks";
 import { LandingPanel } from "./LandingPanel";
 import { OpenNow } from "./OpenNow";
 
@@ -66,28 +67,32 @@ const HACKATHON_STEPS = [
 
 function Heading({ children }: { readonly children: ReactNode }) {
 	return (
-		<h2 className="text-4xl font-semibold text-balance md:text-6xl">
+		<h2 className="text-3xl font-semibold text-balance md:text-5xl">
 			{children}
 		</h2>
 	);
 }
 
 function Lead({ children }: { readonly children: ReactNode }) {
-	return <p className="text-xl text-pretty text-current/80">{children}</p>;
+	return (
+		<p className="text-lg text-pretty text-current/70 md:text-2xl">
+			{children}
+		</p>
+	);
 }
 
 function PointText({ point }: { readonly point: Point }) {
 	return (
 		<>
-			<p className="text-xl font-semibold">{point.title}</p>
-			<p className="mt-1 text-lg text-current/80">{point.body}</p>
+			<p className="text-lg font-semibold md:text-2xl">{point.title}</p>
+			<p className="mt-1 text-lg text-current/70">{point.body}</p>
 		</>
 	);
 }
 
 function Points({ points }: { readonly points: readonly Point[] }) {
 	return (
-		<ul className="flex flex-col gap-8">
+		<ul className="flex flex-col gap-10">
 			{points.map((point) => (
 				<li key={point.title}>
 					<PointText point={point} />
@@ -99,10 +104,10 @@ function Points({ points }: { readonly points: readonly Point[] }) {
 
 function NumberedPoints({ points }: { readonly points: readonly Point[] }) {
 	return (
-		<ol className="flex flex-col gap-8">
+		<ol className="flex flex-col gap-10">
 			{points.map((point, index) => (
 				<li key={point.title} className="flex gap-5">
-					<span className="text-xl font-semibold tabular-nums text-current/60">
+					<span className="text-lg font-semibold tabular-nums text-current/50 md:text-2xl">
 						{index + 1}
 					</span>
 					<div className="min-w-0">
@@ -114,24 +119,36 @@ function NumberedPoints({ points }: { readonly points: readonly Point[] }) {
 	);
 }
 
+function FindHackathonLink() {
+	return (
+		<Link
+			to="/explore/hackathons"
+			className="rounded-sm text-lg font-medium underline underline-offset-4 focus-ring"
+		>
+			Find a hackathon →
+		</Link>
+	);
+}
+
 export function HeroPanel() {
 	return (
-		<LandingPanel
-			left={
-				<>
-					<h1 className="text-6xl font-semibold text-balance md:text-8xl">
-						The fast lane for founders
-					</h1>
+		<section className="mx-auto flex w-full max-w-6xl flex-col justify-center gap-12 px-4 py-20 md:min-h-dvh md:gap-16 md:px-6 md:py-32">
+			<div className="flex flex-col items-start gap-8">
+				<h1 className="text-5xl font-semibold text-balance md:text-7xl">
+					The fast lane for founders
+				</h1>
+				<div className="flex flex-wrap items-center gap-x-6 gap-y-4">
 					<GoogleButton
 						label="Start building"
 						variant="default"
 						size="lg"
 						returnTo={START_INTENT_PATH}
 					/>
-				</>
-			}
-			right={<BoardMock />}
-		/>
+					<FindHackathonLink />
+				</div>
+			</div>
+			<BoardMock />
+		</section>
 	);
 }
 
@@ -154,7 +171,12 @@ export function SeenPanel() {
 export function WeekPanel() {
 	return (
 		<LandingPanel
-			left={<Heading>One goal a week.</Heading>}
+			left={
+				<>
+					<Heading>One goal a week.</Heading>
+					<GoalMock />
+				</>
+			}
 			right={<NumberedPoints points={WEEK} />}
 		/>
 	);
@@ -163,7 +185,12 @@ export function WeekPanel() {
 export function BeliefsPanel() {
 	return (
 		<LandingPanel
-			left={<Heading>How we think.</Heading>}
+			left={
+				<>
+					<Heading>How we think.</Heading>
+					<DoneCardMock />
+				</>
+			}
 			right={<Points points={BELIEFS} />}
 		/>
 	);
@@ -173,7 +200,7 @@ export function MomentumPanel() {
 	return (
 		<LandingPanel
 			left={
-				<h2 className="font-mono text-6xl font-semibold md:text-8xl">p = mv</h2>
+				<h2 className="font-mono text-5xl font-semibold md:text-7xl">p = mv</h2>
 			}
 			right={
 				<Lead>
@@ -191,13 +218,14 @@ export function HackathonsPanel() {
 			left={
 				<>
 					<Heading>Need someone? Watch them build first.</Heading>
-					<p className="text-sm text-current/80">Hackathons are on Pro.</p>
+					<p className="text-sm text-current/70">Hackathons are on Pro.</p>
 					<GoogleButton
 						label="Post a hackathon"
 						variant="default"
 						size="lg"
 						returnTo={POST_INTENT_PATH}
 					/>
+					<BuildersMock />
 				</>
 			}
 			right={<NumberedPoints points={HACKATHON_STEPS} />}
@@ -217,12 +245,7 @@ export function ContributorsPanel() {
 						You hear back whatever the decision. Approved work raises your
 						Momentum.
 					</Lead>
-					<Link
-						to="/explore/hackathons"
-						className="rounded-sm text-lg font-medium underline underline-offset-4 focus-ring"
-					>
-						Find a hackathon →
-					</Link>
+					<FindHackathonLink />
 				</>
 			}
 			right={<OpenNow />}
@@ -232,21 +255,20 @@ export function ContributorsPanel() {
 
 export function FreePanel() {
 	return (
-		<LandingPanel
-			left={
-				<>
-					<Heading>Free for teams of up to 10.</Heading>
-					<Lead>No card. Start this week.</Lead>
-				</>
-			}
-			right={
+		<section
+			id="pricing"
+			className="flex items-center border-t border-border md:min-h-[85dvh]"
+		>
+			<div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-4 py-24 text-center md:px-6 md:py-32">
+				<Heading>Free for teams of up to 10.</Heading>
+				<Lead>No card. Start this week.</Lead>
 				<GoogleButton
 					label="Start building"
 					variant="default"
 					size="lg"
 					returnTo={START_INTENT_PATH}
 				/>
-			}
-		/>
+			</div>
+		</section>
 	);
 }

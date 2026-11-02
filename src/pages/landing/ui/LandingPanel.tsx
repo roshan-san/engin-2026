@@ -2,13 +2,13 @@ import type { ReactNode } from "react";
 import { cn } from "~/shared/lib/cn";
 
 const TONES = {
-	founder: "bg-[var(--panel-founder)] text-white",
+	founder: "border-t border-border",
 	// The default Button and the focus ring are light for the dark app, so they flip here.
 	contributor:
 		"bg-[var(--panel-contributor)] text-[#18181b] [--primary:#18181b] [--primary-foreground:#fafafa] [--ring:#18181b]",
 } as const;
 
-/** One screen of the landing page: its own colour, and two columns from `lg`. Grows when its content is taller than the screen. */
+/** One section of the landing page, most of a screen from `md`: two columns from `lg`, or one when `right` renders nothing. */
 export function LandingPanel({
 	tone = "founder",
 	left,
@@ -16,13 +16,18 @@ export function LandingPanel({
 }: {
 	readonly tone?: keyof typeof TONES;
 	readonly left: ReactNode;
-	readonly right?: ReactNode;
+	readonly right: ReactNode;
 }) {
 	return (
-		<section className={cn("flex min-h-dvh items-center", TONES[tone])}>
-			<div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-16 md:px-6 lg:grid-cols-2 lg:gap-16">
+		<section className={cn("flex items-center md:min-h-[85dvh]", TONES[tone])}>
+			<div
+				className={cn(
+					"mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-24 md:px-6 md:py-32",
+					"lg:grid-cols-2 lg:gap-20 lg:has-[>:empty]:grid-cols-1",
+				)}
+			>
 				<div className="flex min-w-0 flex-col items-start gap-6">{left}</div>
-				{right ? <div className="min-w-0">{right}</div> : null}
+				<div className="min-w-0 empty:hidden">{right}</div>
 			</div>
 		</section>
 	);
