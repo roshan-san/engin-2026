@@ -147,6 +147,20 @@ export async function loadHackathonCards(
 		.take(MAX_HACKATHON_CARDS);
 }
 
+/** Participants' Cards waiting in Review on the Hackathon. */
+export async function loadHackathonCardsInReview(
+	ctx: QueryCtx | MutationCtx,
+	hackathonId: Id<"hackathons">,
+): Promise<Doc<"cards">[]> {
+	const inReview = await ctx.db
+		.query("cards")
+		.withIndex("by_hackathon_and_status", (q) =>
+			q.eq("hackathonId", hackathonId).eq("status", "review"),
+		)
+		.take(MAX_PARTICIPANTS * MAX_HACKATHON_CARDS);
+	return inReview.filter((card) => card.ownerId !== undefined);
+}
+
 export async function insertTemplateCards(
 	ctx: MutationCtx,
 	hackathon: Pick<Doc<"hackathons">, "_id" | "startupId">,

@@ -1,4 +1,4 @@
-import { POST_INTENT_PATH } from "~/entities/place";
+import { POST_INTENT_PATH, START_INTENT_PATH } from "~/entities/place";
 import { planLines } from "~/entities/plan";
 import { GoogleButton } from "~/features/sign-in";
 import { cn } from "~/shared/lib/cn";
@@ -11,7 +11,8 @@ export function Pricing() {
 			<div>
 				<h2 className="text-2xl font-semibold">Pricing</h2>
 				<p className="mt-1 text-sm text-muted-foreground">
-					Founders pay to publish hiring Hackathons. Participants join free.
+					Everything you need to ship is free. Pro adds Hackathons, to bring
+					builders in.
 				</p>
 			</div>
 			<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
@@ -22,10 +23,15 @@ export function Pricing() {
 						<span className="text-sm text-muted-foreground">forever</span>
 					</p>
 					<p className="text-sm text-muted-foreground">
-						Board, Cycles, What shipped, team chat, public Startup page.
-						Unlimited people.
+						Cycles, Board, Record, team chat, public Startup page. Unlimited
+						people.
 					</p>
-					<GoogleButton label="Get started" size="sm" className="mt-auto" />
+					<GoogleButton
+						label="Start building"
+						size="sm"
+						className="mt-auto"
+						returnTo={START_INTENT_PATH}
+					/>
 				</div>
 				{planLines().map((plan) => (
 					<div
@@ -53,10 +59,6 @@ export function Pricing() {
 					</div>
 				))}
 			</div>
-			<p className="text-sm text-muted-foreground">
-				One Internshala post: $34. One Hackathon on engin: $15, or about $3 on a
-				longer plan.
-			</p>
 		</section>
 	);
 }

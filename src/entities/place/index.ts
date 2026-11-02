@@ -1,5 +1,9 @@
 export { usePlaces } from "./api/usePlaces";
-export { homeIntent, POST_INTENT_PATH } from "./model/homeIntent";
+export {
+	homeIntent,
+	POST_INTENT_PATH,
+	START_INTENT_PATH,
+} from "./model/homeIntent";
 export { landingView, pickLanding, readLastPlace } from "./model/landing";
 export {
 	type CurrentPlace,

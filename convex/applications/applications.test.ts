@@ -542,7 +542,7 @@ describe("live", () => {
 
 		const progressOf = (userId: Id<"users">) =>
 			rows.find((row) => row.user._id === userId)?.progress;
-		expect(progressOf(ana.userId)).toEqual({ done: 1, total: 3 });
+		expect(progressOf(ana.userId)).toEqual({ done: 1, inReview: 0, total: 3 });
 		expect(rows.filter((row) => row.progress?.done === 0)).toHaveLength(1);
 	});
 
@@ -596,6 +596,141 @@ describe("deciding", () => {
 		});
 
 		await expect(verify).rejects.toThrow("This Hackathon has ended");
+	});
+
+	/** A Participant with one Card in Review, once the Hackathon has ended. */
+	async function endedWithCardInReview() {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		const [card] = await boardOf(hackathonId, ana);
+		await ana.as.mutation(api.cards.submit, {
+			cardId: card._id,
+			shipped: SHIPPED,
+		});
+		await endHackathon(setup, hackathonId);
+		return { setup, hackathonId, ana, cardId: card._id };
+	}
+
+	async function statusOf(setup: Setup, hackathonId: Id<"hackathons">) {
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		return hackathon?.status;
+	}
+
+	it("the deadline tells undecided Participants Not this time, marked as missed", async () => {
+		const { setup, hackathonId, participants: accepted } = await ended();
+		const [ana, ben] = accepted;
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+
+		await closeHackathon(setup, hackathonId);
+
+		const rows = await setup.founder.as.query(
+			api.applications.listForHackathon,
+			{ hackathonId },
+		);
+		const applicationOf = (person: Applicant) =>
+			rows.find((row) => row.user._id === person.userId)?.application;
+		expect(applicationOf(ana)).toMatchObject({
+			decision: "not_this_time",
+			decisionMissed: false,
+		});
+		expect(applicationOf(ben)).toMatchObject({
+			decision: "not_this_time",
+			decisionMissed: true,
+		});
+	});
+
+	it("a missed decision opens the promise question", async () => {
+		const {
+			setup,
+			hackathonId,
+			participants: [ana],
+		} = await ended(["Ana"]);
+		await closeHackathon(setup, hackathonId);
+
+		await ana.as.mutation(api.applications.keepPromise, {
+			applicationId: ana.applicationId,
+			kept: false,
+		});
+
+		const view = await ana.as.query(api.hackathons.getPublic, { hackathonId });
+		expect(view?.myApplication).toMatchObject({
+			decision: "not_this_time",
+			promiseAnswered: true,
+		});
+	});
+
+	it("the last decision waits for Cards in Review, and verifying finishes the Hackathon", async () => {
+		const { setup, hackathonId, ana, cardId } = await endedWithCardInReview();
+
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+		const waiting = await statusOf(setup, hackathonId);
+		await setup.founder.as.mutation(api.cards.verify, { cardId });
+
+		expect(waiting).toBe("deciding");
+		expect(await statusOf(setup, hackathonId)).toBe("done");
+	});
+
+	it("sending the last Card back finishes a decided Hackathon", async () => {
+		const { setup, hackathonId, ana, cardId } = await endedWithCardInReview();
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+
+		await setup.founder.as.mutation(api.cards.move, {
+			cardId,
+			to: "in_progress",
+		});
+
+		expect(await statusOf(setup, hackathonId)).toBe("done");
+	});
+
+	it("verifying a Card doesn't finish a Hackathon still undecided", async () => {
+		const { setup, hackathonId, cardId } = await endedWithCardInReview();
+
+		await setup.founder.as.mutation(api.cards.verify, { cardId });
+
+		expect(await statusOf(setup, hackathonId)).toBe("deciding");
+	});
+
+	it("the deadline closes a Hackathon with Cards still in Review, unverified", async () => {
+		const { setup, hackathonId, ana, cardId } = await endedWithCardInReview();
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+
+		await closeHackathon(setup, hackathonId);
+
+		const card = await setup.t.run(async (ctx) => await ctx.db.get(cardId));
+		expect(await statusOf(setup, hackathonId)).toBe("done");
+		expect(card).toMatchObject({ status: "review" });
+		expect(card?.verifiedAt).toBeUndefined();
+	});
+
+	it("the Founder sees how many of a Participant's Cards are in Review", async () => {
+		const { setup, hackathonId, ana } = await endedWithCardInReview();
+
+		const rows = await setup.founder.as.query(
+			api.applications.listForHackathon,
+			{ hackathonId },
+		);
+
+		expect(rows.find((row) => row.user._id === ana.userId)?.progress).toEqual({
+			done: 0,
+			inReview: 1,
+			total: 3,
+		});
 	});
 
 	it("decisions wait until the Hackathon ends", async () => {

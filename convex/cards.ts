@@ -2,7 +2,6 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import {
 	loadBoardCards,
-	loadHackathonCardsInReview,
 	markVerified,
 	normalizeNotes,
 	normalizeTitle,
@@ -14,8 +13,10 @@ import {
 	toCardView,
 } from "./cards/model";
 import { shipped, submitLandsIn } from "./cards/rules";
+import { finishAfterReview } from "./hackathons/lifecycle";
 import {
 	loadHackathonCards,
+	loadHackathonCardsInReview,
 	requireHackathonFounder,
 } from "./hackathons/model";
 import { requireUserId } from "./lib/auth";
@@ -156,6 +157,7 @@ export const move = mutation({
 		requireAllowed(card, { kind: "move", to: args.to }, actor);
 
 		await ctx.db.patch(card._id, { status: args.to });
+		await finishAfterReview(ctx, card);
 	},
 });
 
@@ -192,6 +194,7 @@ export const verify = mutation({
 		}
 
 		await markVerified(ctx, card, card.shipped, userId, Date.now());
+		await finishAfterReview(ctx, card);
 	},
 });
 

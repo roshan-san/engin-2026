@@ -43,6 +43,15 @@ export function DecideSheet({
 	const name = user.name ?? user.username ?? "them";
 	const firstName = name.split(/\s+/)[0];
 	const note = feedback.trim();
+	const inReview = row.progress?.inReview ?? 0;
+	const reviewNote =
+		inReview > 0 && hackathon.status !== "done" ? (
+			<MentorNote>
+				{inReview === 1 ? "1 Card is" : `${inReview} Cards are`} still in
+				Review. The Hackathon stays open until they're reviewed, or until{" "}
+				{dayLabel(lastDay(hackathon.decideBy))}, when they stay unverified.
+			</MentorNote>
+		) : null;
 
 	if (state.decided) {
 		return (
@@ -51,8 +60,12 @@ export function DecideSheet({
 					<span className="font-medium">
 						{state.decided === "hired" ? "Hired" : "Not this time"}
 					</span>
+					{application.decisionMissed
+						? " · Missed the decision deadline"
+						: null}
 					{application.feedback ? ` · ${application.feedback}` : null}
 				</p>
+				{reviewNote}
 				<WalkthroughNotes application={application} />
 			</Section>
 		);
@@ -132,8 +145,10 @@ export function DecideSheet({
 						<>
 							<MentorNote>
 								Due {dayLabel(lastDay(hackathon.decideBy))}. They see your note.
-								Anyone left undecided by then stays undecided.
+								Anyone undecided by then gets Not this time, and your record
+								shows you didn't decide.
 							</MentorNote>
+							{reviewNote}
 							<Input
 								aria-label="Note for them"
 								placeholder="One line for them"

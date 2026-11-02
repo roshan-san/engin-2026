@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { isParticipant } from "../applications/model";
 import { getTeamRole } from "../startups/team";
+import { isThreadOpen } from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
 
@@ -54,13 +55,13 @@ export async function requireThreadAccess(
 	return access;
 }
 
-/** A done Hackathon's threads are read-only; Team threads never lock. */
+/** Throws once `isThreadOpen` says the thread no longer takes messages. */
 export async function requireThreadOpen(ctx: Ctx, thread: Doc<"threads">) {
 	if (!thread.hackathonId) {
 		return;
 	}
 	const hackathon = await ctx.db.get(thread.hackathonId);
-	if (hackathon?.status === "done") {
+	if (hackathon && !isThreadOpen(thread.kind, hackathon, Date.now())) {
 		throw new ConvexError("This Hackathon has ended.");
 	}
 }

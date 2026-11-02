@@ -8,7 +8,12 @@ import {
 } from "../applications/applications.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
-import { createTest, type TestConvex } from "../testing/test.setup";
+import {
+	advancePast,
+	createTest,
+	DAY,
+	type TestConvex,
+} from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { runRating, toNextWeek, verifyCards } from "./rating.setup";
 
@@ -189,6 +194,17 @@ describe("rating", () => {
 		await runRating(setup.t);
 
 		expect((await startupRow(setup.t, setup.startupId)).ratedWeeks).toBe(1);
+	});
+
+	it("a Hackathon nobody joined leaves a Startup provisional", async () => {
+		const setup = await setUpStartup(createTest());
+		await publishedHackathon(setup);
+		await advancePast(setup.t, 8 * DAY);
+		await toNextWeek(setup.t);
+
+		await runRating(setup.t);
+
+		expect((await startupRow(setup.t, setup.startupId)).provisional).toBe(true);
 	});
 
 	it("a Hired Participant's Rating counts the outcome", async () => {

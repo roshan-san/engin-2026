@@ -1,9 +1,12 @@
 /** Where to send someone who wants to post a Hackathon, through sign-in if they need it. */
 export const POST_INTENT_PATH = "/home?intent=post";
 
-/** Where `/home?intent=post` should go once places have loaded; `null` means stay on Home. */
+/** Where to send someone who wants to get going, through sign-in if they need it. */
+export const START_INTENT_PATH = "/home?intent=start";
+
+/** Where `/home?intent=…` should go once places have loaded; `null` means stay on Home. */
 export function homeIntent(
-	intent: "post" | undefined,
+	intent: "post" | "start" | undefined,
 	places:
 		| {
 				readonly startups: readonly {
@@ -13,14 +16,25 @@ export function homeIntent(
 		  }
 		| undefined,
 ):
-	| { readonly to: "/onboarding" }
-	| { readonly to: "/s/$slug/hiring/new"; readonly slug: string }
+	| {
+			readonly to: "/onboarding";
+			readonly search: { readonly intent?: "post" };
+	  }
+	| {
+			readonly to: "/s/$slug/hiring/new" | "/s/$slug/board";
+			readonly slug: string;
+	  }
 	| null {
-	if (intent !== "post" || places === undefined) {
+	if (intent === undefined || places === undefined) {
 		return null;
 	}
 	const founded = places.startups.find((startup) => startup.role === "founder");
+	if (intent === "post") {
+		return founded
+			? { to: "/s/$slug/hiring/new", slug: founded.slug }
+			: { to: "/onboarding", search: { intent: "post" } };
+	}
 	return founded
-		? { to: "/s/$slug/hiring/new", slug: founded.slug }
-		: { to: "/onboarding" };
+		? { to: "/s/$slug/board", slug: founded.slug }
+		: { to: "/onboarding", search: {} };
 }

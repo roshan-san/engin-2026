@@ -25,7 +25,10 @@ export function tallyParticipants(
 		hires: count((p) => p.decision === "hired"),
 		promisesKept: count((p) => p.promiseKept === true),
 		promisesAnswered: count((p) => p.promiseKept !== undefined),
-		undecided: hackathon.status === "done" ? count((p) => !p.decision) : 0,
+		undecided:
+			hackathon.status === "done"
+				? count((p) => !p.decision || p.decisionMissed === true)
+				: 0,
 	};
 }
 
@@ -38,15 +41,22 @@ export async function loadHiringRecord(
 		.query("hackathons")
 		.withIndex("by_startup", (q) => q.eq("startupId", startupId))
 		.take(MAX_LISTED_HACKATHONS);
-	const tallies = await Promise.all(
-		hackathons.map(async (hackathon) =>
-			tallyParticipants(hackathon, await loadParticipants(ctx, hackathon._id)),
-		),
+	const withParticipants = await Promise.all(
+		hackathons.map(async (hackathon) => ({
+			hackathon,
+			participants: await loadParticipants(ctx, hackathon._id),
+		})),
+	);
+	const tallies = withParticipants.map(({ hackathon, participants }) =>
+		tallyParticipants(hackathon, participants),
 	);
 
 	const record: HiringRecord = {
-		finished: hackathons.filter((hackathon) => hackathon.status === "done")
-			.length,
+		// One nobody joined ended without anyone building, so it proves nothing.
+		finished: withParticipants.filter(
+			({ hackathon, participants }) =>
+				hackathon.status === "done" && participants.length > 0,
+		).length,
 		hires: 0,
 		promisesKept: 0,
 		promisesAnswered: 0,

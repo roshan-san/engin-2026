@@ -1,10 +1,14 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { MAX_USER_APPLICATIONS } from "../applications/rules";
-import { loadHackathonCardsInReview } from "../cards/model";
 import { MAX_BOARD_CARDS } from "../cards/rules";
-import { loadParticipants, loadRunningHackathons } from "../hackathons/model";
 import {
+	loadHackathonCardsInReview,
+	loadParticipants,
+	loadRunningHackathons,
+} from "../hackathons/model";
+import {
+	isUnderway,
 	MAX_APPLICATIONS,
 	MAX_LISTED_HACKATHONS,
 	phaseOf,
@@ -16,6 +20,7 @@ import {
 	loadTeamThreads,
 	loadThreadRead,
 } from "../threads/model";
+import { isThreadOpen } from "../threads/rules";
 import type { WaitingReason } from "./rules";
 
 /** A decision is in, and the Participant hasn't said whether the promise was kept. */
@@ -75,11 +80,13 @@ async function hackathonReasons(
 			reasons.push({ kind: "new_applicants", role, count: applied.length });
 		}
 	}
-	if (phase === "live") {
+	if (isUnderway(phase)) {
 		const count = (await loadHackathonCardsInReview(ctx, hackathon._id)).length;
 		if (count > 0) {
 			reasons.push({ kind: "participant_cards_to_review", role, count });
 		}
+	}
+	if (phase === "live") {
 		if (
 			await anyUnread(
 				ctx,
@@ -164,13 +171,15 @@ export async function participantReasons(
 
 /**
  * The Hackathons the person builds in or applied to. A finished Hackathon stays
- * until its Participant answers the promise question; applications leave when it ends.
+ * while its private thread is open or its promise question is unanswered;
+ * applications leave when it ends.
  */
 export async function loadHackathonPlaces(ctx: QueryCtx, userId: Id<"users">) {
 	const applications = await ctx.db
 		.query("applications")
 		.withIndex("by_user", (q) => q.eq("userId", userId))
 		.take(MAX_USER_APPLICATIONS);
+	const now = Date.now();
 
 	const loaded = await Promise.all(
 		applications.map(async (application) => {
@@ -179,7 +188,8 @@ export async function loadHackathonPlaces(ctx: QueryCtx, userId: Id<"users">) {
 				hackathon &&
 				(hackathon.status !== "done" ||
 					(application.status === "participating" &&
-						isPromisePending(application)));
+						(isPromisePending(application) ||
+							isThreadOpen("private", hackathon, now))));
 			const startup = shown ? await ctx.db.get(hackathon.startupId) : null;
 			if (!hackathon || !startup) {
 				return { building: null, applied: null };

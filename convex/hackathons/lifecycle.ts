@@ -4,7 +4,11 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { publishBlockFor, publishBlockMessage } from "../billing/rules";
-import { loadParticipants, loadPlanView } from "./model";
+import {
+	loadHackathonCardsInReview,
+	loadParticipants,
+	loadPlanView,
+} from "./model";
 import { MAX_APPLICATIONS } from "./rules";
 
 // Every write to a Hackathon's `status` lives here. Explicit return types: this file
@@ -129,7 +133,10 @@ export async function startDeciding(
 	await ctx.db.patch(hackathon._id, { status: "deciding" });
 }
 
-/** At `decideBy` the Hackathon closes; Participants still undecided stay that way. */
+/**
+ * At `decideBy` the Hackathon closes: anyone undecided gets Not this time, marked as
+ * a missed decision, and any Card still in Review stays unverified.
+ */
 export async function closeDeciding(
 	ctx: MutationCtx,
 	hackathonId: Id<"hackathons">,
@@ -138,10 +145,18 @@ export async function closeDeciding(
 	if (hackathon?.status !== "live" && hackathon?.status !== "deciding") {
 		return;
 	}
+	for (const participant of await loadParticipants(ctx, hackathon._id)) {
+		if (!participant.decision) {
+			await ctx.db.patch(participant._id, {
+				decision: "not_this_time",
+				decisionMissed: true,
+			});
+		}
+	}
 	await finish(ctx, hackathon, { log: true });
 }
 
-/** Ends the Hackathon once every Participant has a decision. Call after each decision. */
+/** Ends the Hackathon once every Participant has a decision and no Card waits in Review. Call after each decision and each review. */
 export async function finishIfDecided(
 	ctx: MutationCtx,
 	hackathon: Doc<"hackathons">,
@@ -156,7 +171,21 @@ export async function finishIfDecided(
 	) {
 		return;
 	}
+	if ((await loadHackathonCardsInReview(ctx, hackathon._id)).length > 0) {
+		return;
+	}
 	await finish(ctx, hackathon, { log: true });
+}
+
+/** `finishIfDecided` for the Hackathon a just-reviewed Card belongs to, if any. */
+export async function finishAfterReview(
+	ctx: MutationCtx,
+	card: Doc<"cards">,
+): Promise<void> {
+	const hackathon = card.hackathonId && (await ctx.db.get(card.hackathonId));
+	if (hackathon) {
+		await finishIfDecided(ctx, hackathon);
+	}
 }
 
 /** Marks the Hackathon done, once, and logs it on the Startup's Activity when `log` is set. */
@@ -168,7 +197,7 @@ async function finish(
 	if (hackathon.status === "done") {
 		return;
 	}
-	await ctx.db.patch(hackathon._id, { status: "done" });
+	await ctx.db.patch(hackathon._id, { status: "done", finishedAt: Date.now() });
 	if (log) {
 		await appendActivity(ctx, {
 			startupId: hackathon.startupId,

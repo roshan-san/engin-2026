@@ -28,7 +28,7 @@ export function BoardMock() {
 							{card}
 							{"verified" in column ? (
 								<span className="mt-1.5 flex items-center gap-1 text-xs font-medium text-success">
-									✓ Verified
+									✓ Approved
 								</span>
 							) : null}
 						</div>
