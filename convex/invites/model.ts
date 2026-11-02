@@ -19,6 +19,8 @@ export async function createInvite(
 		startupId: Id<"startups">;
 		email: string;
 		invitedBy: Id<"users">;
+		discipline: Doc<"invites">["discipline"];
+		label?: string;
 		hackathonId?: Id<"hackathons">;
 	},
 ): Promise<Id<"invites">> {
@@ -43,6 +45,8 @@ export async function createInvite(
 		startupId: args.startupId,
 		email,
 		invitedBy: args.invitedBy,
+		discipline: args.discipline,
+		label: args.label,
 		status: "pending",
 		expiresAt: Date.now() + INVITE_TTL_MS,
 		hackathonId: args.hackathonId,
@@ -61,6 +65,7 @@ export async function ensureHireInvite(
 		email: string;
 		invitedBy: Id<"users">;
 		hackathonId: Id<"hackathons">;
+		job: Doc<"hackathons">["job"];
 	},
 ): Promise<void> {
 	if (await getTeamRole(ctx, args.startupId, args.userId)) {
@@ -72,13 +77,19 @@ export async function ensureHireInvite(
 		normalizeEmail(args.email),
 	);
 	if (open) {
-		await ctx.db.patch(open._id, { hackathonId: args.hackathonId });
+		await ctx.db.patch(open._id, {
+			hackathonId: args.hackathonId,
+			discipline: args.job.discipline,
+			label: args.job.title,
+		});
 		return;
 	}
 	await createInvite(ctx, {
 		startupId: args.startupId,
 		email: args.email,
 		invitedBy: args.invitedBy,
+		discipline: args.job.discipline,
+		label: args.job.title,
 		hackathonId: args.hackathonId,
 	});
 }

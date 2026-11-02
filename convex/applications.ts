@@ -234,6 +234,7 @@ export const decide = mutation({
 				email: participant.email,
 				invitedBy: userId,
 				hackathonId: hackathon._id,
+				job: hackathon.job,
 			});
 			await appendActivity(ctx, {
 				startupId: hackathon.startupId,

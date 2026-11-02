@@ -1,5 +1,12 @@
+import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
-import type { TeamPeople, TeamPerson } from "~/entities/contributor";
+import {
+	type TeamPeople,
+	type TeamPerson,
+	teamRoleLine,
+} from "~/entities/contributor";
+import { useMe } from "~/entities/person";
+import { EditLabelButton } from "~/features/edit-team-label";
 import { displayName } from "~/shared/lib/displayName";
 import { ConfirmButton } from "~/shared/ui/ConfirmButton";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
@@ -9,18 +16,22 @@ import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 
-/** The Founder and Contributors: face, name and Rating. */
+/** The Founder and Contributors: face, name, team role and Rating. */
 export function PeopleList({
+	startupId,
 	people,
 	canRemove,
 	onRemove,
 }: {
+	readonly startupId: Id<"startups">;
 	readonly people: TeamPeople | undefined;
 	/** The Founder can remove Contributors. */
 	readonly canRemove: boolean;
 	/** Resolves `true` once removed (the error is shown already otherwise). */
 	readonly onRemove: (person: TeamPerson) => Promise<boolean>;
 }) {
+	const me = useMe();
+
 	if (people === undefined) {
 		return (
 			<div className="flex flex-col gap-3">
@@ -40,17 +51,22 @@ export function PeopleList({
 					<PersonRow
 						key={person._id}
 						person={person}
-						position="Contributor"
-						remove={
-							canRemove ? (
-								<ConfirmButton
-									label="Remove"
-									title={`Remove ${displayName(person)}?`}
-									description="They lose access to this Startup."
-									actionLabel="Remove"
-									onConfirm={() => onRemove(person)}
-								/>
-							) : null
+						position={`Contributor · ${teamRoleLine(person)}`}
+						actions={
+							<>
+								{person._id === me?._id ? (
+									<EditLabelButton startupId={startupId} label={person.label} />
+								) : null}
+								{canRemove ? (
+									<ConfirmButton
+										label="Remove"
+										title={`Remove ${displayName(person)}?`}
+										description="They lose access to this Startup."
+										actionLabel="Remove"
+										onConfirm={() => onRemove(person)}
+									/>
+								) : null}
+							</>
 						}
 					/>
 				))}
@@ -62,11 +78,11 @@ export function PeopleList({
 function PersonRow({
 	person,
 	position,
-	remove,
+	actions,
 }: {
-	readonly person: TeamPerson;
-	readonly position: "Founder" | "Contributor";
-	readonly remove?: React.ReactNode;
+	readonly person: NonNullable<TeamPeople["founder"]>;
+	readonly position: string;
+	readonly actions?: React.ReactNode;
 }) {
 	return (
 		<Row
@@ -93,7 +109,7 @@ function PersonRow({
 						ratingChange={person.ratingChange}
 						isProvisional={person.isProvisional}
 					/>
-					{remove}
+					{actions}
 				</div>
 			}
 		/>

@@ -32,6 +32,7 @@ export async function addContributor(
 			await ctx.db.insert("contributors", {
 				startupId: setup.startupId,
 				userId: person.userId,
+				discipline: "developer",
 			}),
 	);
 	return person;

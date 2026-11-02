@@ -783,6 +783,55 @@ describe("deciding", () => {
 		expect(await activityKinds(setup)).toContain("participant_hired");
 	});
 
+	it("a hire joins with the Hackathon's discipline and title", async () => {
+		const {
+			setup,
+			participants: [ana],
+		} = await ended(["Ana"]);
+		await walkthrough(setup, ana);
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+
+		const [invite] = await ana.as.query(api.invites.listMine, {});
+		await ana.as.mutation(api.invites.accept, { inviteId: invite.inviteId });
+
+		const team = await ana.as.query(api.contributors.list, {
+			startupId: setup.startupId,
+		});
+		expect(team.contributors).toMatchObject([
+			{ _id: ana.userId, discipline: "developer", label: "Frontend" },
+		]);
+	});
+
+	it("a hire already invited as something else takes the Hackathon's role", async () => {
+		const {
+			setup,
+			participants: [ana],
+		} = await ended(["Ana"]);
+		await walkthrough(setup, ana);
+		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "sales",
+			startupId: setup.startupId,
+			email: "ana@example.com",
+		});
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+		});
+
+		const [invite] = await ana.as.query(api.invites.listMine, {});
+		await ana.as.mutation(api.invites.accept, { inviteId: invite.inviteId });
+
+		const team = await ana.as.query(api.contributors.list, {
+			startupId: setup.startupId,
+		});
+		expect(team.contributors).toMatchObject([
+			{ discipline: "developer", label: "Frontend" },
+		]);
+	});
+
 	it("Hired still works when the Participant was already invited", async () => {
 		const {
 			setup,
@@ -790,6 +839,7 @@ describe("deciding", () => {
 		} = await ended(["Ana"]);
 		await walkthrough(setup, ana);
 		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "ana@example.com",
 		});
@@ -814,6 +864,7 @@ describe("deciding", () => {
 		} = await ended(["Ana"]);
 		await walkthrough(setup, ana);
 		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "ana@example.com",
 		});

@@ -38,7 +38,11 @@ describe("profile record", () => {
 		const zeta = { t: acme.t, founder: zed, startupId, slug };
 		await acme.t.run(
 			async (ctx) =>
-				await ctx.db.insert("contributors", { startupId, userId: sam.userId }),
+				await ctx.db.insert("contributors", {
+					discipline: "developer",
+					startupId,
+					userId: sam.userId,
+				}),
 		);
 		await verifyCards(acme, sam, 3);
 		await verifyCards(zeta, sam, 1);

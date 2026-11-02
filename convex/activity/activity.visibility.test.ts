@@ -20,6 +20,7 @@ async function busyStartup(): Promise<Setup> {
 	const sam = await addContributor(setup, "Sam");
 	await verifyCards(setup, sam, 1);
 	await setup.founder.as.mutation(api.invites.create, {
+		discipline: "developer",
 		startupId: setup.startupId,
 		email: "jo@example.com",
 	});

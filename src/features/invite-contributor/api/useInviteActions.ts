@@ -2,6 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
+import type { Discipline } from "~/shared/config/disciplines";
 import { attempt } from "~/shared/lib/errors";
 
 /** The Founder sends and revokes Invites to the Startup. Both resolve `true` once done; failures are toasted. */
@@ -9,9 +10,9 @@ export function useInviteActions(startupId: Id<"startups">) {
 	const createInvite = useMutation(api.invites.create);
 	const revokeInvite = useMutation(api.invites.revoke);
 
-	async function send(email: string) {
+	async function send(email: string, discipline: Discipline) {
 		return attempt(async () => {
-			await createInvite({ startupId, email });
+			await createInvite({ startupId, email, discipline });
 			toast.success(
 				`Invite created. Tell them to sign in with ${email.trim()}.`,
 			);

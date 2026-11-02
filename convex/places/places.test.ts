@@ -60,6 +60,7 @@ describe("groups", () => {
 		await setup.t.run(
 			async (ctx) =>
 				await ctx.db.insert("contributors", {
+					discipline: "developer",
 					startupId: zeta.startupId,
 					userId: setup.founder.userId,
 				}),
