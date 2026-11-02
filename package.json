@@ -16,7 +16,9 @@
     "test": "vitest run",
     "maintenance:on": "convex run --prod maintenance:set \"{\\\"on\\\":true}\"",
     "maintenance:off": "convex run --prod maintenance:set \"{\\\"on\\\":false}\"",
-    "maintenance:status": "convex run --prod maintenance:status"
+    "maintenance:status": "convex run --prod maintenance:status",
+    "wipe:dev": "node scripts/wipe.ts dev",
+    "wipe:prod": "node scripts/wipe.ts prod"
   },
   "dependencies": {
     "@auth/core": "0.41.3",
