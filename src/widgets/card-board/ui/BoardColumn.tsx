@@ -33,7 +33,9 @@ function emptyTitle(column: Column, canAddCards: boolean) {
 /** One Board column: its glyph, label and count, an optional header slot, then its Cards. */
 export function BoardColumn({
 	id,
+	dropId = id,
 	label,
+	ariaLabel = label,
 	cards,
 	dropState,
 	openCardId,
@@ -41,21 +43,25 @@ export function BoardColumn({
 	children,
 }: {
 	readonly id: Column;
+	/** The droppable id: the column, or a lane's column (`laneDropId`). */
+	readonly dropId?: string;
 	readonly label: string;
+	/** What a screen reader calls the column, when the label alone isn't enough (in a lane). */
+	readonly ariaLabel?: string;
 	readonly cards: readonly CardView[];
 	readonly dropState: DropState;
 	readonly openCardId: string | undefined;
 	readonly onOpen: (cardId: string) => void;
 	readonly children?: ReactNode;
 }) {
-	const { setNodeRef, isOver } = useDroppable({ id });
+	const { setNodeRef, isOver } = useDroppable({ id: dropId });
 	const canAddCards = useBoardScope().kind === "startup";
 
 	return (
 		<section
 			ref={setNodeRef}
 			data-column={id}
-			aria-label={label}
+			aria-label={ariaLabel}
 			// Focusable by code only: where focus lands when its last Card is gone.
 			tabIndex={-1}
 			className={cn(
