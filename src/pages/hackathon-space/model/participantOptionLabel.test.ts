@@ -4,6 +4,7 @@ import { participantOptionLabel } from "./participantOptionLabel";
 const asha = {
 	name: "Asha",
 	decision: null,
+	isJoined: false,
 	reviewCount: 0,
 	unread: false,
 } as const;
@@ -17,7 +18,13 @@ describe("participantOptionLabel", () => {
 				reviewCount: 2,
 				unread: true,
 			}),
-		).toBe("Asha · Hired");
+		).toBe("Asha · Offer");
+	});
+
+	it("an Offer they took reads Joined", () => {
+		expect(
+			participantOptionLabel({ ...asha, decision: "hired", isJoined: true }),
+		).toBe("Asha · Joined");
 	});
 
 	it("names a Not this time decision", () => {

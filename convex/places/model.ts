@@ -1,6 +1,9 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { MAX_USER_APPLICATIONS } from "../applications/rules";
+import {
+	isWalkthroughRequested,
+	MAX_USER_APPLICATIONS,
+} from "../applications/rules";
 import { MAX_BOARD_CARDS } from "../cards/rules";
 import {
 	loadHackathonCardsInReview,
@@ -214,6 +217,8 @@ export async function loadHackathonPlaces(ctx: QueryCtx, userId: Id<"users">) {
 					startsAt: hackathon.startsAt,
 					endsAt: hackathon.endsAt,
 					decision: application.decision ?? null,
+					isJoined: application.joinedAt !== undefined,
+					walkthroughRequested: isWalkthroughRequested(application),
 					waiting: await participantReasons(ctx, application),
 				},
 				applied: null,

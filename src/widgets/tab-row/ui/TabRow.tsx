@@ -99,7 +99,10 @@ function ParticipantTabs({ hackathonId }: { readonly hackathonId: string }) {
 				page,
 				page.myApplication?.decision ?? null,
 				Date.now(),
-				{ walkthroughRequested: page.myApplication?.walkthroughRequested },
+				{
+					walkthroughRequested: page.myApplication?.walkthroughRequested,
+					isJoined: page.myApplication?.offer.state === "joined",
+				},
 			)
 		: null;
 

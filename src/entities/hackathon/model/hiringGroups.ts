@@ -28,9 +28,9 @@ export function rowNumber(row: HiringRow): string {
 				: `${row.toDecide} to decide`;
 		case "done": {
 			const parts = [];
-			if (row.hires > 0) parts.push(`${row.hires} hired`);
+			if (row.hires > 0) parts.push(`${row.hires} joined`);
 			if (row.undecided > 0) parts.push(`${row.undecided} didn't decide`);
-			return parts.length > 0 ? parts.join(" · ") : "No hire";
+			return parts.length > 0 ? parts.join(" · ") : "Nobody joined";
 		}
 	}
 }

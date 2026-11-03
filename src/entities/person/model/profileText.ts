@@ -1,17 +1,17 @@
-type Outcome = "built" | "finalist" | "hired";
+type Outcome = "built" | "finalist" | "joined";
 type StartupRef = { readonly name: string; readonly slug: string };
 
 const OUTCOMES = {
 	built: "Built",
 	finalist: "Finalist",
-	hired: "Hired",
+	joined: "Joined",
 } as const satisfies Record<Outcome, string>;
 
 export function outcomeLabel<O extends Outcome>(o: O): (typeof OUTCOMES)[O] {
 	return OUTCOMES[o];
 }
 
-/** "Hired · Frontend at Acme". */
+/** "Joined · Frontend at Acme". */
 export function hackathonLine(h: {
 	readonly outcome: Outcome;
 	readonly job: { readonly title: string };

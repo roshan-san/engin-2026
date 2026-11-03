@@ -22,7 +22,7 @@ export function entrySummary(entry: EntryView): {
 		case "hackathon_finished":
 			return { actor: null, text: `Hackathon finished · ${job}` };
 		case "participant_hired":
-			return { actor, text: `was hired · ${job}` };
+			return { actor, text: `joined · ${job}` };
 	}
 }
 

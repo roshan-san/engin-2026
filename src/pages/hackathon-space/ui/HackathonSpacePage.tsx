@@ -44,8 +44,7 @@ function SpaceBody({
 	const { hackathon, cards } = space;
 	const applicants = useApplicants(hackathon._id);
 	const hires =
-		applicants?.filter((row) => row.application.decision === "hired").length ??
-		0;
+		applicants?.filter((row) => row.application.joinedAt !== null).length ?? 0;
 	const current = { ...hackathon, status: phaseOf(hackathon, Date.now()) };
 	const stage = STAGE[current.status];
 
@@ -71,9 +70,9 @@ function SpaceBody({
 							{" · "}
 							{hackathon.status === "done" ? (
 								hires > 0 ? (
-									`${hires} hired`
+									`${hires} joined`
 								) : (
-									"No hire"
+									"Nobody joined"
 								)
 							) : (
 								<>

@@ -1,23 +1,23 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Button } from "~/shared/ui/button";
 import { Spinner } from "~/shared/ui/spinner";
 import { useKeepPromise } from "../api/useKeepPromise";
 import { decisionTitle } from "../model/decisionCopy";
 
-/** The Founder's decision, their note, and the one-tap promise question. */
+/** The Founder's decision and note (or the Offer, passed in), and the one-tap promise question. */
 export function DecisionBanner({
-	startupName,
 	application,
+	offer,
 }: {
-	readonly startupName: string;
 	readonly application: {
 		readonly applicationId: Id<"applications">;
 		readonly decision: "hired" | "not_this_time";
 		readonly feedback: string | null;
 		readonly promiseAnswered: boolean;
 	};
+	/** For an Offer: the line that answers it. */
+	readonly offer?: ReactNode;
 }) {
 	const keepPromise = useKeepPromise(application.applicationId);
 	const [saving, setSaving] = useState<boolean | null>(null);
@@ -33,26 +33,21 @@ export function DecisionBanner({
 			aria-label="Decision"
 			className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-border bg-muted/30 px-4 py-3 md:px-6"
 		>
-			<p className="min-w-0 flex-1 text-sm">
-				<span className="font-medium">
-					{decisionTitle(application.decision)}
-				</span>
-				{application.feedback ? (
-					<span className="text-muted-foreground"> {application.feedback}</span>
-				) : null}
-				{application.decision === "hired" ? (
-					<>
-						{" "}
-						<Link
-							to="/home"
-							className="underline underline-offset-2 hover:text-foreground focus-ring"
-						>
-							Join {startupName} from Home
-						</Link>
-						.
-					</>
-				) : null}
-			</p>
+			{application.decision === "hired" && offer ? (
+				offer
+			) : (
+				<p className="min-w-0 flex-1 text-sm">
+					<span className="font-medium">
+						{decisionTitle(application.decision)}
+					</span>
+					{application.feedback ? (
+						<span className="text-muted-foreground">
+							{" "}
+							{application.feedback}
+						</span>
+					) : null}
+				</p>
+			)}
 			{application.promiseAnswered ? (
 				<p className="text-sm text-muted-foreground">Thanks.</p>
 			) : (

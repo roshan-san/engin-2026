@@ -212,7 +212,7 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 				<>
 					<ApplyHeading page={page} />
 					<p className="text-sm text-muted-foreground">
-						Build on real work. Get hired on what you ship.
+						Build on real work. Get an Offer on what you ship.
 					</p>
 					<GoogleButton
 						variant="default"

@@ -23,7 +23,7 @@ describe("hiringLine", () => {
 				promisesAnswered: 3,
 				undecided: 0,
 			}),
-		).toBe("2 hackathons · 1 hire · promises kept 3/3");
+		).toBe("2 hackathons · 1 joined · promises kept 3/3");
 	});
 
 	it("Participants left waiting show as undecided", () => {

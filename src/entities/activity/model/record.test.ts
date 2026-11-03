@@ -51,7 +51,7 @@ describe("record", () => {
 			entrySummary(
 				entry({ kind: "participant_hired", job: { title: "Frontend" } }),
 			),
-		).toEqual({ actor: "Sam", text: "was hired · Frontend" });
+		).toEqual({ actor: "Sam", text: "joined · Frontend" });
 		expect(
 			entrySummary(entry({ kind: "hackathon_finished", job: null })),
 		).toEqual({ actor: null, text: "Hackathon finished · a job" });

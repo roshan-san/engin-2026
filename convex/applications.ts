@@ -6,6 +6,7 @@ import {
 	getPrivateThread,
 	loadApplicationsForFounder,
 	loadOfferInvite,
+	loadOfferView,
 	loadParticipantProgress,
 	markJoined,
 	requireApplicationAllowed,
@@ -58,6 +59,10 @@ export const listForHackathon = query({
 								...toPublicUser(user),
 								isProvisional: isProvisional(user),
 							},
+							offer:
+								application.decision === "hired"
+									? (await loadOfferView(ctx, application)).state
+									: null,
 							progress:
 								application.status === "participating"
 									? await loadParticipantProgress(

@@ -72,18 +72,29 @@ describe("momentum math", () => {
 	});
 
 	it("outcomes sum their points and cap at 1", () => {
-		expect(outcomeScore(["hired", "finalist"])).toBe(1);
+		expect(outcomeScore(["joined", "finalist"])).toBe(1);
 		expect(outcomeScore(["built"])).toBe(0.2);
 		expect(outcomeScore([])).toBe(0);
 	});
 
-	it("a Participant's outcome is Hired, then Finalist, then Built", () => {
+	it("a Participant's outcome is Joined, then Finalist, then Built", () => {
+		expect(
+			outcomeOf(
+				{
+					status: "participating",
+					decision: "hired",
+					shortlisted: true,
+					joinedAt: 1,
+				},
+				true,
+			),
+		).toBe("joined");
 		expect(
 			outcomeOf(
 				{ status: "participating", decision: "hired", shortlisted: true },
 				true,
 			),
-		).toBe("hired");
+		).toBe("finalist");
 		expect(
 			outcomeOf(
 				{
@@ -109,13 +120,24 @@ describe("momentum math", () => {
 		}
 	});
 
-	it("only Hired counts without a Done Card", () => {
+	it("only Joined counts without a Done Card", () => {
+		expect(
+			outcomeOf(
+				{
+					status: "participating",
+					decision: "hired",
+					shortlisted: true,
+					joinedAt: 1,
+				},
+				false,
+			),
+		).toBe("joined");
 		expect(
 			outcomeOf(
 				{ status: "participating", decision: "hired", shortlisted: true },
 				false,
 			),
-		).toBe("hired");
+		).toBeNull();
 		for (const shortlisted of [true, false]) {
 			expect(
 				outcomeOf({ status: "participating", shortlisted }, false),

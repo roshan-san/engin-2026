@@ -30,8 +30,13 @@ export function InviteTray() {
 						key={invite.inviteId}
 						className="flex items-center gap-2 rounded-sm px-2 py-1.5"
 					>
-						<span className="min-w-0 flex-1 truncate text-sm">
-							{inviteTitle(invite)}
+						<span className="flex min-w-0 flex-1 flex-col">
+							<span className="truncate text-sm">{inviteTitle(invite)}</span>
+							{invite.terms ? (
+								<span className="truncate text-xs text-muted-foreground">
+									{invite.terms}
+								</span>
+							) : null}
 						</span>
 						<Button
 							size="sm"

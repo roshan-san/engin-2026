@@ -53,9 +53,12 @@ export function participantStatusText(
 	hackathon: { status: HackathonPhase; startsAt: number; endsAt: number },
 	decision: "hired" | "not_this_time" | null,
 	now: number,
-	standing: { readonly walkthroughRequested?: boolean } = {},
+	standing: {
+		readonly walkthroughRequested?: boolean;
+		readonly isJoined?: boolean;
+	} = {},
 ): string {
-	if (decision === "hired") return "Hired";
+	if (decision === "hired") return standing.isJoined ? "Joined" : "Offer";
 	if (decision === "not_this_time") return "Not this time";
 	if (standing.walkthroughRequested) return "Walkthrough";
 	const { line } = participantStatus(hackathon, decision, now);

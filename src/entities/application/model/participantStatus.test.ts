@@ -76,8 +76,13 @@ describe("participantStatusText", () => {
 
 	it("a decision is the status once it's in", () => {
 		expect(participantStatusText(hackathon("done"), "hired", midway)).toBe(
-			"Hired",
+			"Offer",
 		);
+		expect(
+			participantStatusText(hackathon("done"), "hired", midway, {
+				isJoined: true,
+			}),
+		).toBe("Joined");
 		expect(
 			participantStatusText(hackathon("deciding"), "not_this_time", midway),
 		).toBe("Not this time");

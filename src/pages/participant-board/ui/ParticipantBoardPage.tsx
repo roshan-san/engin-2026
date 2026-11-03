@@ -3,6 +3,7 @@ import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 import { useParticipant } from "~/entities/application";
 import { useHackathonThreads } from "~/entities/message";
+import { OfferLine } from "~/features/answer-invite";
 import { DecisionBanner } from "~/features/keep-promise";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
@@ -130,11 +131,18 @@ export function ParticipantBoardPage() {
 				notice={
 					page.myApplication?.decision ? (
 						<DecisionBanner
-							startupName={page.startup.name}
 							application={{
 								...page.myApplication,
 								decision: page.myApplication.decision,
 							}}
+							offer={
+								<OfferLine
+									startupName={page.startup.name}
+									slug={page.startup.slug}
+									offer={page.myApplication.offer}
+									feedback={page.myApplication.feedback}
+								/>
+							}
 						/>
 					) : status.note ? (
 						<p className="border-b border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground md:px-6">

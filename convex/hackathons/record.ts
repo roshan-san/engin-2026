@@ -22,7 +22,8 @@ export function tallyParticipants(
 	const count = (test: (participant: Doc<"applications">) => boolean) =>
 		participants.filter(test).length;
 	return {
-		hires: count((p) => p.decision === "hired"),
+		// Only an accepted Offer is a hire.
+		hires: count((p) => p.joinedAt !== undefined),
 		promisesKept: count((p) => p.promiseKept === true),
 		promisesAnswered: count((p) => p.promiseKept !== undefined),
 		undecided:

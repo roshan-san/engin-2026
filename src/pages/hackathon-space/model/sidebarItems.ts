@@ -26,6 +26,8 @@ export type SidebarParticipant = {
 	readonly reviewCount: number;
 	readonly shortlisted: boolean;
 	readonly decision: "hired" | "not_this_time" | null;
+	/** They took the Offer. */
+	readonly isJoined: boolean;
 	readonly unread: boolean;
 	/** Their Cards, and how many are Done. */
 	readonly progress: { readonly done: number; readonly total: number };
@@ -57,6 +59,7 @@ export function sidebarItems(input: SidebarInput) {
 				reviewCount: reviewsOf(user._id),
 				shortlisted: application.shortlisted,
 				decision: application.decision,
+				isJoined: application.joinedAt !== null,
 				unread: privateThread(user._id)?.unread ?? false,
 				progress: progress ?? { done: 0, total: 0 },
 			}),

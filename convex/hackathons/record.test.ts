@@ -12,7 +12,7 @@ describe("hiring record", () => {
 	it("the hiring record counts promises and hires", async () => {
 		const setup = await setUpStartup(createTest());
 		const { participants } = await decidedHackathon(setup, [
-			{ name: "Ana", decision: "hired" },
+			{ name: "Ana", decision: "hired", joined: true },
 			{ name: "Ben", decision: "not_this_time" },
 		]);
 		for (const participant of participants) {
@@ -33,6 +33,17 @@ describe("hiring record", () => {
 			promisesAnswered: 2,
 			undecided: 0,
 		});
+	});
+
+	it("an Offer not taken isn't a hire", async () => {
+		const setup = await setUpStartup(createTest());
+		await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+
+		const page = await setup.t.query(api.startups.getPublic, {
+			slug: setup.slug,
+		});
+
+		expect(page?.hiringRecord).toMatchObject({ finished: 1, hires: 0 });
 	});
 
 	it("a missed decision shows as undecided", async () => {

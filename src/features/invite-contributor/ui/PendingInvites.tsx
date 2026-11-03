@@ -27,7 +27,7 @@ export function PendingInvites({
 						trailing={
 							<div className="flex items-center gap-3">
 								{invite.fromHackathon ? (
-									<Badge variant="outline">Hired</Badge>
+									<Badge variant="outline">Offer</Badge>
 								) : null}
 								<ConfirmButton
 									label="Revoke"

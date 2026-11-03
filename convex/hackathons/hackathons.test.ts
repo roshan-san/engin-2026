@@ -753,7 +753,7 @@ describe("hiring rows", () => {
 	it("Hiring rows count hires and promises", async () => {
 		const setup = await setUpStartup(createTest());
 		const { participants: decided } = await decidedHackathon(setup, [
-			{ name: "Ana", decision: "hired" },
+			{ name: "Ana", decision: "hired", joined: true },
 			{ name: "Ben", decision: "not_this_time" },
 		]);
 		for (const participant of decided) {
@@ -954,7 +954,7 @@ describe("explore", () => {
 	it("each row carries the hiring record", async () => {
 		const setup = await setUpStartup(createTest());
 		const { hackathonId: finishedId } = await decidedHackathon(setup, [
-			{ name: "Ben", decision: "hired" },
+			{ name: "Ben", decision: "hired", joined: true },
 		]);
 		await closeHackathon(setup, finishedId);
 		await publishedHackathon(setup);

@@ -86,6 +86,8 @@ export const OFFER_TERMS = "Paid internship, ₹20k a month";
 type ParticipantPlan = {
 	name: string;
 	decision?: "hired" | "not_this_time";
+	/** They took the Offer. */
+	joined?: boolean;
 	/** Hired Participants are always shortlisted and walked through. */
 	shortlisted?: boolean;
 };
@@ -127,6 +129,18 @@ export async function decidedHackathon(
 				...(plan.decision === "hired"
 					? { terms: OFFER_TERMS }
 					: { feedback: "Thanks for the work" }),
+			});
+		}
+	}
+	for (const [i, plan] of plans.entries()) {
+		if (plan.joined) {
+			const invites = await accepted[i].as.query(api.invites.listMine, {});
+			const offer = invites.find((invite) => invite.fromHackathon);
+			if (!offer) {
+				throw new Error("No Offer to accept");
+			}
+			await accepted[i].as.mutation(api.invites.accept, {
+				inviteId: offer.inviteId,
 			});
 		}
 	}

@@ -10,14 +10,14 @@ function plural(n: number, word: string): string {
 	return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
-/** "2 hackathons · 1 hire · promises kept 3/3", or null with nothing to show. */
+/** "2 hackathons · 1 joined · promises kept 3/3", or null with nothing to show. */
 export function hiringLine(record: HiringRecord): string | null {
 	if (record.finished === 0 && record.undecided === 0) {
 		return null;
 	}
 	const parts = [plural(record.finished, "hackathon")];
 	if (record.hires > 0) {
-		parts.push(plural(record.hires, "hire"));
+		parts.push(`${record.hires} joined`);
 	}
 	if (record.promisesAnswered > 0) {
 		parts.push(

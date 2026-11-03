@@ -2,11 +2,19 @@
 export function participantOptionLabel(participant: {
 	readonly name: string;
 	readonly decision: "hired" | "not_this_time" | null;
+	/** They took the Offer. */
+	readonly isJoined: boolean;
 	readonly reviewCount: number;
 	readonly unread: boolean;
 }): string {
 	if (participant.decision) {
-		return `${participant.name} · ${participant.decision === "hired" ? "Hired" : "Not this time"}`;
+		const label =
+			participant.decision === "not_this_time"
+				? "Not this time"
+				: participant.isJoined
+					? "Joined"
+					: "Offer";
+		return `${participant.name} · ${label}`;
 	}
 	const signals = [
 		participant.reviewCount > 0 ? `${participant.reviewCount} to review` : null,

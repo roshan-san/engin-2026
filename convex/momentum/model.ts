@@ -21,14 +21,14 @@ export const MOMENTUM = {
 	/** The self-approved credit: a filler week neither lifts nor lowers. */
 	neutralCredit: 0.25,
 	outcomeDays: 365,
-	outcomePoints: { hired: 1, finalist: 0.5, built: 0.2 },
+	outcomePoints: { joined: 1, finalist: 0.5, built: 0.2 },
 	person: { consistency: 0.7, outcomes: 0.3 },
 } as const;
 
 /** Team rows read per startup in one weekly step. */
 const MAX_TEAM = 200;
 
-export type Outcome = "built" | "finalist" | "hired";
+export type Outcome = "built" | "finalist" | "joined";
 
 /** The finished weeks that count, oldest first: at most 12, none before signup. */
 export function countedWeeks(createdAt: number, throughWeek: string): string[] {
@@ -65,17 +65,18 @@ export function consistencyOf(weeks: { active: boolean; credit: number }[]): {
 	};
 }
 
-/** Hired always counts; Finalist and Built need a Done Card to show for it. */
+/** Joined (an Offer they accepted) always counts; Finalist and Built need a Done Card to show for it. */
 export function outcomeOf(
 	a: {
 		status: string;
 		decision?: string;
 		shortlisted: boolean;
+		joinedAt?: number;
 	},
 	hasDoneCard: boolean,
 ): Outcome | null {
 	if (a.status !== "participating") return null;
-	if (a.decision === "hired") return "hired";
+	if (a.decision === "hired" && a.joinedAt !== undefined) return "joined";
 	if (!hasDoneCard) return null;
 	return a.shortlisted ? "finalist" : "built";
 }
@@ -191,10 +192,10 @@ export async function loadOutcomes(
 			if (phase !== "deciding" && phase !== "done") {
 				return [];
 			}
-			// Hired counts without a Done Card, so only read Cards when they can matter.
+			// Joined counts without a Done Card, so only read Cards when they can matter.
 			const outcome = outcomeOf(
 				application,
-				application.decision !== "hired" &&
+				application.joinedAt === undefined &&
 					(await hasDoneCard(ctx, application)),
 			);
 			return outcome ? [{ outcome, hackathon }] : [];

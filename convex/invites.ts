@@ -62,6 +62,7 @@ export const listMine = query({
 							startupName: startup.name,
 							slug: startup.slug,
 							fromHackathon: invite.hackathonId !== undefined,
+							terms: invite.terms ?? null,
 						}
 					: null;
 			}),

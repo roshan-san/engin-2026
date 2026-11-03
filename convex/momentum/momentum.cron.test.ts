@@ -323,7 +323,7 @@ describe("momentum", () => {
 		expect((await startupRow(setup.t, setup.startupId)).provisional).toBe(true);
 	});
 
-	it("a Hired Participant's Momentum counts the outcome", async () => {
+	it("a Joined Builder's Momentum counts the outcome", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
@@ -344,13 +344,8 @@ describe("momentum", () => {
 			decision: "hired",
 			terms: "Paid internship, ₹20k a month",
 		});
-		await setup.t.run(async (ctx) => {
-			await ctx.db.insert("contributors", {
-				startupId: setup.startupId,
-				userId: ana.userId,
-				discipline: "developer",
-			});
-		});
+		const [offer] = await ana.as.query(api.invites.listMine, {});
+		await ana.as.mutation(api.invites.accept, { inviteId: offer.inviteId });
 		await verifyCards(setup, ana, 1);
 		await toNextWeek(setup.t);
 

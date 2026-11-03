@@ -250,7 +250,7 @@ function Timeline({
 		{
 			title: "Decision",
 			when: dates ? `by ${dayLabel(lastDay(dates.decideBy))}` : null,
-			body: "Hired or Not this time. Hired joins the team.",
+			body: "An Offer or Not this time, with a note. Accept the Offer to join the team.",
 		},
 	];
 

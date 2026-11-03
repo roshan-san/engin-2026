@@ -73,13 +73,24 @@ describe("profile record", () => {
 		expect(record?.hackathons).toEqual([]);
 	});
 
-	it("Hired counts without a Done Card", async () => {
+	it("Joined counts without a Done Card", async () => {
+		const setup = await setUpStartup(createTest());
+		await decidedHackathon(setup, [
+			{ name: "Ana", decision: "hired", joined: true },
+		]);
+
+		const record = await recordOf(setup, "ana");
+
+		expect(record?.hackathons).toMatchObject([{ outcome: "joined" }]);
+	});
+
+	it("an Offer not taken, with no Done Card, has no outcome", async () => {
 		const setup = await setUpStartup(createTest());
 		await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
 
 		const record = await recordOf(setup, "ana");
 
-		expect(record?.hackathons).toMatchObject([{ outcome: "hired" }]);
+		expect(record?.hackathons).toEqual([]);
 	});
 
 	it("Not this time with a Done Card shows as Built", async () => {

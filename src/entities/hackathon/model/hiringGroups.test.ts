@@ -86,13 +86,13 @@ describe("row number", () => {
 	});
 
 	it("done shows the outcome", () => {
-		expect(rowNumber(row({ status: "done", hires: 1 }))).toBe("1 hired");
-		expect(rowNumber(row({ status: "done" }))).toBe("No hire");
+		expect(rowNumber(row({ status: "done", hires: 1 }))).toBe("1 joined");
+		expect(rowNumber(row({ status: "done" }))).toBe("Nobody joined");
 		expect(rowNumber(row({ status: "done", undecided: 2 }))).toBe(
 			"2 didn't decide",
 		);
 		expect(rowNumber(row({ status: "done", hires: 1, undecided: 1 }))).toBe(
-			"1 hired · 1 didn't decide",
+			"1 joined · 1 didn't decide",
 		);
 	});
 });

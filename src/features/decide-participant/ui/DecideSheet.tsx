@@ -2,7 +2,7 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { APPLICATION_TEXT } from "@convex/applications/rules";
 import { CheckIcon, StarIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import type { ApplicantRow } from "~/entities/application";
+import { type ApplicantRow, decisionLabel } from "~/entities/application";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";
@@ -26,7 +26,7 @@ import { decideState } from "../model/decideSteps";
 
 type Decision = "hired" | "not_this_time";
 
-/** ★ Shortlist, then the Walkthrough, then Hired or Not this time. */
+/** ★ Shortlist, then the Walkthrough, then an Offer or Not this time. */
 export function DecideSheet({
 	row,
 	hackathon,
@@ -35,16 +35,22 @@ export function DecideSheet({
 	readonly hackathon: Doc<"hackathons">;
 }) {
 	const { application, user } = row;
-	const { shortlist, requestWalkthrough, markWalkthrough, decide } = useDecide(
-		application._id,
-	);
+	const {
+		shortlist,
+		requestWalkthrough,
+		markWalkthrough,
+		decide,
+		resendOffer,
+	} = useDecide(application._id);
 	const [notes, setNotes] = useState("");
 	const [feedback, setFeedback] = useState("");
+	const [terms, setTerms] = useState("");
 	const [confirming, setConfirming] = useState<Decision | null>(null);
 	const state = decideState(application, hackathon, Date.now());
 	const name = user.name ?? user.username ?? "them";
 	const firstName = name.split(/\s+/)[0];
 	const note = feedback.trim();
+	const offerTerms = terms.trim();
 	const inReview = row.progress?.inReview ?? 0;
 	const reviewNote =
 		inReview > 0 && hackathon.status !== "done" ? (
@@ -59,14 +65,29 @@ export function DecideSheet({
 		return (
 			<Section label="Decision" as="h3" className="p-4">
 				<p className="text-sm">
-					<span className="font-medium">
-						{state.decided === "hired" ? "Hired" : "Not this time"}
-					</span>
+					<span className="font-medium">{decisionLabel(application)}</span>
 					{application.decisionMissed
 						? " · Missed the decision deadline"
 						: null}
+					{application.offerTerms ? ` · ${application.offerTerms}` : null}
 					{application.feedback ? ` · ${application.feedback}` : null}
 				</p>
+				{row.offer === "pending" ? (
+					<MentorNote>Waiting for {firstName} to accept.</MentorNote>
+				) : row.offer === "declined" ? (
+					<MentorNote>{firstName} declined the Offer.</MentorNote>
+				) : row.offer === "expired" ? (
+					<div className="flex flex-wrap items-center gap-2">
+						<MentorNote>The Offer expired after 14 days.</MentorNote>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => void resendOffer()}
+						>
+							Resend Offer
+						</Button>
+					</div>
+				) : null}
 				{reviewNote}
 				<WalkthroughNotes application={application} />
 			</Section>
@@ -172,22 +193,32 @@ export function DecideSheet({
 							{reviewNote}
 							<Input
 								aria-label="Note for them"
-								placeholder="One line for them"
+								placeholder="One line for them (needed for Not this time)"
 								value={feedback}
 								maxLength={APPLICATION_TEXT.feedback}
 								onChange={(e) => setFeedback(e.target.value)}
 							/>
+							{state.canHire ? (
+								<Input
+									aria-label="Offer terms"
+									placeholder="Offer terms, one line: role, pay, start"
+									value={terms}
+									maxLength={APPLICATION_TEXT.offerTerms}
+									onChange={(e) => setTerms(e.target.value)}
+								/>
+							) : null}
 							<div className="flex flex-wrap items-center gap-2">
 								<Button
 									size="sm"
-									disabled={!state.canHire}
+									disabled={!state.canHire || !offerTerms}
 									onClick={() => setConfirming("hired")}
 								>
-									Hired
+									Make an Offer
 								</Button>
 								<Button
 									variant="outline"
 									size="sm"
+									disabled={!note}
 									onClick={() => setConfirming("not_this_time")}
 								>
 									Not this time
@@ -217,13 +248,13 @@ export function DecideSheet({
 					<AlertDialogHeader>
 						<AlertDialogTitle>
 							{confirming === "hired"
-								? `Hire ${name}?`
+								? `Make ${name} an Offer?`
 								: `Tell ${name} not this time?`}
 						</AlertDialogTitle>
 						<AlertDialogDescription className="flex flex-col gap-1">
 							<span>
 								{confirming === "hired"
-									? "They get an Invite to join."
+									? `They have 14 days to accept. Terms: “${offerTerms}”`
 									: "They see your note."}
 							</span>
 							<span className="break-words">
@@ -236,12 +267,10 @@ export function DecideSheet({
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={() => {
-								if (confirming) void decide(confirming, feedback);
+								if (confirming) void decide(confirming, feedback, terms);
 							}}
 						>
-							{confirming === "hired"
-								? `Hire ${firstName}`
-								: "Send Not this time"}
+							{confirming === "hired" ? "Send Offer" : "Send Not this time"}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

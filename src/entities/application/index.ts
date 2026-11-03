@@ -1,6 +1,7 @@
 export { useApplicant, useApplicants } from "./api/useApplicants";
 export { type ApplicantRow, sortApplicants } from "./model/applicantSort";
 export { refusalFor, type ViewedApplication } from "./model/applicationRules";
+export { decisionLabel } from "./model/decisionLabel";
 export {
 	participantStatus,
 	participantStatusText,

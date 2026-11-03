@@ -47,6 +47,8 @@ function liveHackathon(title: string, waiting: WaitingReason[]) {
 		startsAt: 0,
 		endsAt: 1,
 		decision: null,
+		isJoined: false,
+		walkthroughRequested: false,
 		waiting,
 	};
 }
@@ -67,6 +69,8 @@ function hackathonRow(id: string, startupName: string) {
 		startsAt: 0,
 		endsAt: 0,
 		decision: null,
+		isJoined: false,
+		walkthroughRequested: false,
 		waiting: [],
 	};
 }

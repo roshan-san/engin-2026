@@ -228,7 +228,11 @@ function ParticipantProgress({
 	if (participant.decision) {
 		return (
 			<span className="text-xs text-muted-foreground">
-				{participant.decision === "hired" ? "Hired" : "Not this time"}
+				{participant.decision === "not_this_time"
+					? "Not this time"
+					: participant.isJoined
+						? "Joined"
+						: "Offer"}
 			</span>
 		);
 	}

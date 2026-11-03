@@ -149,7 +149,12 @@ function YourPlaces({
 									</p>
 								</div>
 								<span className="shrink-0 text-xs text-muted-foreground">
-									{participantStatusText(hackathon, hackathon.decision, now)}
+									{participantStatusText(
+										hackathon,
+										hackathon.decision,
+										now,
+										hackathon,
+									)}
 								</span>
 							</div>
 							<Waiting place={hackathon} />

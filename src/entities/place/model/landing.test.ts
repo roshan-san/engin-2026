@@ -41,6 +41,8 @@ function liveHackathon(id: Id<"hackathons">) {
 		startsAt: 0,
 		endsAt: 1,
 		decision: null,
+		isJoined: false,
+		walkthroughRequested: false,
 		waiting: [],
 	};
 }

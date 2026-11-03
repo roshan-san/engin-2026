@@ -53,7 +53,7 @@ export function HiringPage() {
 					}
 					body={
 						isFounder
-							? "Post a real problem. Up to 10 Builders work it for a week on their own Boards. Hire on what they ship."
+							? "Post a real problem. Up to 10 Builders work it for a week on their own Boards. Make an Offer on what they ship."
 							: null
 					}
 					action={newHackathon}

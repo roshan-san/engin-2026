@@ -4,7 +4,7 @@ import { isThreadOpen } from "@convex/threads/rules";
 import { getRouteApi } from "@tanstack/react-router";
 import { StarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { ApplicantRow } from "~/entities/application";
+import { type ApplicantRow, decisionLabel } from "~/entities/application";
 import { type BoardScope, BoardScopeContext } from "~/entities/card";
 import {
 	DecideSheet,
@@ -167,7 +167,7 @@ function ParticipantHeader({
 			</span>
 			{application.decision ? (
 				<Badge variant="outline" className="text-muted-foreground">
-					{application.decision === "hired" ? "Hired" : "Not this time"}
+					{decisionLabel(application)}
 				</Badge>
 			) : (
 				<Button

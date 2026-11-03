@@ -161,7 +161,7 @@ export function PlaceSwitcher({
 										logoName={hackathon.startupName}
 										logoUrl={hackathon.startupLogoUrl}
 										waiting={hackathon.waiting}
-										who={`${hackathon.startupName} · ${participantStatusText(hackathon, hackathon.decision, Date.now())}`}
+										who={`${hackathon.startupName} · ${participantStatusText(hackathon, hackathon.decision, Date.now(), hackathon)}`}
 										isCurrent={isSamePlace(
 											{
 												kind: "hackathon",

@@ -7,11 +7,11 @@ describe("profileText", () => {
 	it("a Hackathon row names the outcome, job and Startup", () => {
 		expect(
 			hackathonLine({
-				outcome: "hired",
+				outcome: "joined",
 				job: { title: "Frontend" },
 				startup: acme,
 			}),
-		).toBe("Hired · Frontend at Acme");
+		).toBe("Joined · Frontend at Acme");
 	});
 
 	it("Built is the plain outcome", () => {
