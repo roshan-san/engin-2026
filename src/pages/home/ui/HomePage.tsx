@@ -279,8 +279,8 @@ function TwoWaysIn() {
 				<Link to="/onboarding" className={CARD}>
 					<p className="font-medium">I'm a Founder</p>
 					<p className="text-sm text-muted-foreground">
-						Set a goal each Cycle, ship it with your team, and bring builders in
-						through Hackathons.
+						Plan each week with your team on Monday, ship it by Friday, and
+						bring builders in through Hackathons.
 					</p>
 					<span className="mt-auto flex items-center gap-1 text-sm font-medium">
 						Start building <ArrowRight className="size-4" />

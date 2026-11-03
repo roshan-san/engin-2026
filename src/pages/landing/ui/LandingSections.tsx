@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { POST_INTENT_PATH, START_INTENT_PATH } from "~/entities/place";
 import { GoogleButton } from "~/features/sign-in";
 import { BoardMock } from "./BoardMock";
-import { BuildersMock, DoneCardMock, GoalMock } from "./LandingMocks";
+import { BuildersMock, DoneCardMock, WeekMock } from "./LandingMocks";
 import { LandingPanel } from "./LandingPanel";
 import { OpenNow } from "./OpenNow";
 
@@ -12,7 +12,7 @@ type Point = { readonly title: string; readonly body: string };
 const SHIP_AND_TALK = [
 	{
 		title: "What you ship.",
-		body: "One goal a week and the work to reach it.",
+		body: "A week of work, planned together on Monday and shown on Friday.",
 	},
 	{
 		title: "Who you talk to.",
@@ -22,16 +22,16 @@ const SHIP_AND_TALK = [
 
 const WEEK = [
 	{
-		title: "Monday: pick one goal.",
-		body: "What should change for users by Sunday?",
+		title: "Monday: meet and plan.",
+		body: "One call. Everyone puts this week's work on the board.",
 	},
 	{
 		title: "All week: ship it.",
-		body: "Three to five pieces of work, moved across one board.",
+		body: "Each person works their own row. Talk in threads, not meetings.",
 	},
 	{
-		title: "Next Monday: look back.",
-		body: "Did the goal happen? Carry or drop what's left, then pick the next one.",
+		title: "Friday: meet and close.",
+		body: "Approve what got done. Whatever's left ends with the week.",
 	},
 ] as const;
 
@@ -42,7 +42,7 @@ const BELIEFS = [
 	},
 	{
 		title: "No backlog.",
-		body: "Each Monday, carry what still matters and drop the rest.",
+		body: "Unfinished work ends with the week. If it still matters, plan it again on Monday.",
 	},
 	{
 		title: "Done means shipped.",
@@ -173,8 +173,8 @@ export function WeekPanel() {
 		<LandingPanel
 			left={
 				<>
-					<Heading>One goal a week.</Heading>
-					<GoalMock />
+					<Heading>Two meetings a week.</Heading>
+					<WeekMock />
 				</>
 			}
 			right={<NumberedPoints points={WEEK} />}

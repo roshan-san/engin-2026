@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
 
-const GOAL_CARDS = [
-	{ title: "Shorter signup form", status: "Done" },
-	{ title: "Welcome email", status: "Review" },
-	{ title: "First-run checklist", status: "In progress" },
-	{ title: "Sample project", status: "To do" },
+const WEEK_CARDS = [
+	{ person: "Asha", title: "Pricing page", status: "In progress" },
+	{ person: "Ravi", title: "Signup flow", status: "Review" },
+	{ person: "Meera", title: "10 user calls", status: "Done" },
 ] as const;
 
 const BUILDERS = [
@@ -24,23 +23,21 @@ function MockFrame({ children }: { readonly children: ReactNode }) {
 	);
 }
 
-/** A static week: one goal and the Cards working towards it. */
-export function GoalMock() {
+/** A static week: each person's work on one board. */
+export function WeekMock() {
 	return (
 		<MockFrame>
-			<p className="text-xs font-medium text-muted-foreground">
-				This week's goal
-			</p>
-			<p className="mt-1 text-lg font-semibold">
-				New users finish signup without help
-			</p>
-			<ul className="mt-4 flex flex-col divide-y divide-border">
-				{GOAL_CARDS.map((card) => (
+			<p className="text-xs font-medium text-muted-foreground">This week</p>
+			<ul className="mt-2 flex flex-col divide-y divide-border">
+				{WEEK_CARDS.map((card) => (
 					<li
 						key={card.title}
 						className="flex items-baseline justify-between gap-4 py-2.5 text-sm"
 					>
-						<span className="min-w-0">{card.title}</span>
+						<span className="min-w-0">
+							<span className="text-muted-foreground">{card.person} · </span>
+							{card.title}
+						</span>
 						<span className="shrink-0 text-xs text-muted-foreground">
 							{card.status}
 						</span>
