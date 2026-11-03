@@ -1,6 +1,6 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { meetings } from "../cycles/lock";
+import { meetings } from "../cycles/rules";
 import { trustLevel } from "../momentum/rules";
 
 import { startupCategory, startupCity, startupStage } from "./rules";

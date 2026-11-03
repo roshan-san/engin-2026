@@ -1,7 +1,12 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { type BoardState, boardState, cardWeek, type Meetings } from "./lock";
-import { weekOf } from "./rules";
+import {
+	type BoardState,
+	boardState,
+	cardWeek,
+	type Meetings,
+	weekOf,
+} from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
 

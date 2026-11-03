@@ -5,8 +5,7 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
-import { DEFAULT_SLOTS } from "../cycles/lock";
-import { shiftWeek, weekOf } from "../cycles/rules";
+import { DEFAULT_SLOTS, shiftWeek, weekOf } from "../cycles/rules";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
 	addContributor,

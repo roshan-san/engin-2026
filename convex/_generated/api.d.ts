@@ -32,7 +32,6 @@ import type * as contributors_rules from "../contributors/rules.js";
 import type * as contributors_table from "../contributors/table.js";
 import type * as crons from "../crons.js";
 import type * as cycles from "../cycles.js";
-import type * as cycles_lock from "../cycles/lock.js";
 import type * as cycles_model from "../cycles/model.js";
 import type * as cycles_rules from "../cycles/rules.js";
 import type * as cycles_table from "../cycles/table.js";
@@ -117,7 +116,6 @@ declare const fullApi: ApiFromModules<{
   "contributors/table": typeof contributors_table;
   crons: typeof crons;
   cycles: typeof cycles;
-  "cycles/lock": typeof cycles_lock;
   "cycles/model": typeof cycles_model;
   "cycles/rules": typeof cycles_rules;
   "cycles/table": typeof cycles_table;

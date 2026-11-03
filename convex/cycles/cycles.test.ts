@@ -8,8 +8,13 @@ import {
 } from "../startups/startups.setup";
 import { advancePast, createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
-import { DEFAULT_SLOTS } from "./lock";
-import { cycleNumber, shiftWeek, weekOf, weekStart } from "./rules";
+import {
+	cycleNumber,
+	DEFAULT_SLOTS,
+	shiftWeek,
+	weekOf,
+	weekStart,
+} from "./rules";
 
 describe("cycles", () => {
 	it("weeks run Monday to Sunday in IST", () => {

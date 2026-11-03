@@ -5,17 +5,18 @@ import { cycleHeader } from "./activity/model";
 import { endPastCards } from "./cards/model";
 import { MAX_BOARD_CARDS } from "./cards/rules";
 import { MAX_CONTRIBUTORS } from "./contributors/rules";
+import { loadWeekContext, loadWeekRow } from "./cycles/model";
 import {
 	closingOf,
 	firstWeekFor,
 	type Meetings,
 	meetingSlot,
 	openingOf,
+	shiftWeek,
 	slotRefusal,
 	startRefusal,
-} from "./cycles/lock";
-import { loadWeekContext, loadWeekRow } from "./cycles/model";
-import { shiftWeek, weekOf } from "./cycles/rules";
+	weekOf,
+} from "./cycles/rules";
 import { requireUserId } from "./lib/auth";
 import { assertUrl } from "./lib/text";
 import { requireFounder, requireTeam } from "./startups/team";

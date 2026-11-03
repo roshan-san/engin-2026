@@ -10,7 +10,7 @@ import {
 	showsScopeHint,
 	slotRefusal,
 	startRefusal,
-} from "./lock";
+} from "./rules";
 
 /** A time in IST, as UTC ms. */
 const ist = (date: string, time: string) =>
