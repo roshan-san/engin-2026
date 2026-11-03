@@ -14,6 +14,9 @@ importers:
       '@convex-dev/auth':
         specifier: 0.0.95
         version: 0.0.95(@auth/core@0.41.3)(convex@1.46.0(react@19.2.0))(react@19.2.0)
+      '@convex-dev/migrations':
+        specifier: ^0.3.7
+        version: 0.3.7(convex-helpers@0.1.133(convex@1.46.0(react@19.2.0))(prettier@3.9.10)(react@19.2.0)(typescript@6.0.3)(zod@4.6.5))(convex@1.46.0(react@19.2.0))
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -256,6 +259,12 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@convex-dev/migrations@0.3.7':
+    resolution: {integrity: sha512-B5psv+FhfFLu2ttusIMcWiHS2fpxOiqWrvHl9wOjgcCwTy1Lqhvn2rY7LBQ8O6hVF5dPm8uoEbaNKPSHxkiD7A==}
+    peerDependencies:
+      convex: ^1.42.0
+      convex-helpers: ^0.1.115
 
   '@dnd-kit/accessibility@3.1.1':
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -1677,6 +1686,31 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
+  convex-helpers@0.1.133:
+    resolution: {integrity: sha512-No6JKuAOESBsq1RZABU31QwdlfWRNwQKHP0A43u1j+/8Dqt9TJnw7XjkHlHoxRzveVy7PfFV/ZvuKXoh5s8phg==}
+    hasBin: true
+    peerDependencies:
+      '@standard-schema/spec': ^1.0.0
+      convex: ^1.46.0
+      hono: ^4.0.5
+      prettier: ^3.0.0
+      react: ^17.0.2 || ^18.0.0 || ^19.0.0
+      typescript: ^5.5 || ^6.0.0 || ^7.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@standard-schema/spec':
+        optional: true
+      hono:
+        optional: true
+      prettier:
+        optional: true
+      react:
+        optional: true
+      typescript:
+        optional: true
+      zod:
+        optional: true
+
   convex-test@0.0.60:
     resolution: {integrity: sha512-qCAFx+CO6bmpXNc9s1jZvw8NJPS4yM074ib87PUY675FsiaRRW4ALotEB+RbVCYDRMYxh623KMnYZBlrMJIv1Q==}
     peerDependencies:
@@ -2514,6 +2548,11 @@ snapshots:
       server-only: 0.0.1
     optionalDependencies:
       react: 19.2.0
+
+  '@convex-dev/migrations@0.3.7(convex-helpers@0.1.133(convex@1.46.0(react@19.2.0))(prettier@3.9.10)(react@19.2.0)(typescript@6.0.3)(zod@4.6.5))(convex@1.46.0(react@19.2.0))':
+    dependencies:
+      convex: 1.46.0(react@19.2.0)
+      convex-helpers: 0.1.133(convex@1.46.0(react@19.2.0))(prettier@3.9.10)(react@19.2.0)(typescript@6.0.3)(zod@4.6.5)
 
   '@dnd-kit/accessibility@3.1.1(react@19.2.0)':
     dependencies:
@@ -3832,6 +3871,15 @@ snapshots:
       - '@types/react-dom'
 
   convert-source-map@2.0.0: {}
+
+  convex-helpers@0.1.133(convex@1.46.0(react@19.2.0))(prettier@3.9.10)(react@19.2.0)(typescript@6.0.3)(zod@4.6.5):
+    dependencies:
+      convex: 1.46.0(react@19.2.0)
+    optionalDependencies:
+      prettier: 3.9.10
+      react: 19.2.0
+      typescript: 6.0.3
+      zod: 4.6.5
 
   convex-test@0.0.60(convex@1.46.0(react@19.2.0)):
     dependencies:

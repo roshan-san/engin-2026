@@ -60,6 +60,7 @@ import type * as messages from "../messages.js";
 import type * as messages_model from "../messages/model.js";
 import type * as messages_rules from "../messages/rules.js";
 import type * as messages_table from "../messages/table.js";
+import type * as migrations from "../migrations.js";
 import type * as momentum from "../momentum.js";
 import type * as momentum_credit from "../momentum/credit.js";
 import type * as momentum_model from "../momentum/model.js";
@@ -144,6 +145,7 @@ declare const fullApi: ApiFromModules<{
   "messages/model": typeof messages_model;
   "messages/rules": typeof messages_rules;
   "messages/table": typeof messages_table;
+  migrations: typeof migrations;
   momentum: typeof momentum;
   "momentum/credit": typeof momentum_credit;
   "momentum/model": typeof momentum_model;
@@ -198,4 +200,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   dodopayments: import("@dodopayments/convex/_generated/component.js").ComponentApi<"dodopayments">;
+  migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
 };
