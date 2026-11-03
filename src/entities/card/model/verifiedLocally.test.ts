@@ -20,7 +20,7 @@ function aCard(id: string, status: CardView["status"]) {
 			name: null,
 			username: null,
 			image: null,
-			rating: 1000,
+			momentum: 1000,
 		},
 		shipped: null,
 		submittedAt: null,

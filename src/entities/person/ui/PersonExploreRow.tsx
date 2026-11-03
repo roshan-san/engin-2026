@@ -10,7 +10,7 @@ type PersonExploreRowData = FunctionReturnType<
 	typeof api.users.explore
 >[number];
 
-/** One person: who they are, their discipline and Rating. */
+/** One person: who they are, their discipline and Momentum. */
 export function PersonExploreRow({
 	person,
 }: {
@@ -40,8 +40,8 @@ export function PersonExploreRow({
 				<RatingBadge
 					size="sm"
 					inLink
-					rating={person.rating}
-					ratingChange={person.ratingChange}
+					rating={person.momentum}
+					ratingChange={person.momentumChange}
 					isProvisional={person.isProvisional}
 				/>
 			</Link>

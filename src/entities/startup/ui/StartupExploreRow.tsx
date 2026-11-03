@@ -11,7 +11,7 @@ export type StartupExploreRowData = FunctionReturnType<
 	typeof api.startups.explore
 >[number];
 
-/** One Startup: who it is, its Rating and its last 12 weeks. */
+/** One Startup: who it is, its Momentum and its last 12 weeks. */
 export function StartupExploreRow({
 	startup,
 }: {
@@ -54,8 +54,8 @@ export function StartupExploreRow({
 					<RatingBadge
 						size="sm"
 						inLink
-						rating={startup.rating}
-						ratingChange={startup.ratingChange}
+						rating={startup.momentum}
+						ratingChange={startup.momentumChange}
 						isProvisional={startup.isProvisional}
 					/>
 					<RhythmStrip strip={startup.strip} size="fixed" />

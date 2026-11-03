@@ -2,8 +2,8 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 import { WEEK_MS, weekOf } from "./cycles/rules";
-import { rateStartup, rateUser } from "./rating/model";
-import { RATING_PAGE } from "./rating/rules";
+import { scoreStartup, scoreUser } from "./momentum/model";
+import { MOMENTUM_PAGE } from "./momentum/rules";
 
 const pageArgs = {
 	week: v.optional(v.string()),
@@ -11,42 +11,42 @@ const pageArgs = {
 };
 
 /** The weekly run, page by page: every Startup, then every person. */
-export const rateStartups = internalMutation({
+export const scoreStartups = internalMutation({
 	args: pageArgs,
 	handler: async (ctx, args) => {
 		const week = args.week ?? weekOf(Date.now() - WEEK_MS);
 		const page = await ctx.db
 			.query("startups")
-			.paginate({ cursor: args.cursor ?? null, numItems: RATING_PAGE });
+			.paginate({ cursor: args.cursor ?? null, numItems: MOMENTUM_PAGE });
 
 		await Promise.all(
-			page.page.map((startup) => rateStartup(ctx, startup, week)),
+			page.page.map((startup) => scoreStartup(ctx, startup, week)),
 		);
 
 		if (!page.isDone) {
-			await ctx.scheduler.runAfter(0, internal.rating.rateStartups, {
+			await ctx.scheduler.runAfter(0, internal.momentum.scoreStartups, {
 				week,
 				cursor: page.continueCursor,
 			});
 		} else {
-			await ctx.scheduler.runAfter(0, internal.rating.rateUsers, { week });
+			await ctx.scheduler.runAfter(0, internal.momentum.scoreUsers, { week });
 		}
 	},
 });
 
-export const rateUsers = internalMutation({
+export const scoreUsers = internalMutation({
 	args: pageArgs,
 	handler: async (ctx, args) => {
 		const week = args.week ?? weekOf(Date.now() - WEEK_MS);
 		const now = Date.now();
 		const page = await ctx.db
 			.query("users")
-			.paginate({ cursor: args.cursor ?? null, numItems: RATING_PAGE });
+			.paginate({ cursor: args.cursor ?? null, numItems: MOMENTUM_PAGE });
 
-		await Promise.all(page.page.map((user) => rateUser(ctx, user, week, now)));
+		await Promise.all(page.page.map((user) => scoreUser(ctx, user, week, now)));
 
 		if (!page.isDone) {
-			await ctx.scheduler.runAfter(0, internal.rating.rateUsers, {
+			await ctx.scheduler.runAfter(0, internal.momentum.scoreUsers, {
 				week,
 				cursor: page.continueCursor,
 			});

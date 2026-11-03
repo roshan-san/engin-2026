@@ -3,7 +3,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { shiftWeek, weekStart } from "../cycles/rules";
 import { MAX_LISTED_HACKATHONS } from "../hackathons/rules";
 import { slugify } from "../lib/text";
-import { RATING } from "../rating/model";
+import { MOMENTUM } from "../momentum/model";
 import { loadPublicUser } from "../users/model";
 import { MAX_USER_STARTUPS } from "./rules";
 
@@ -75,8 +75,8 @@ export async function toPublicStartup(
 		logo: await loadLogoUrl(ctx, startup),
 		stage: startup.stage,
 		city: startup.city,
-		rating: startup.rating,
-		ratingChange: startup.ratingChange,
+		momentum: startup.momentum,
+		momentumChange: startup.momentumChange,
 		isProvisional: startup.provisional,
 		founder: await loadPublicUser(ctx, startup.founderId),
 	};
@@ -90,9 +90,9 @@ export function buildRhythmStrip(
 	rhythm: number[],
 	endWeek: string,
 ): { week: string; startsAt: number; count: number | null }[] {
-	const firstCounted = RATING.weeks - rhythm.length;
-	return Array.from({ length: RATING.weeks }, (_, i) => {
-		const week = shiftWeek(endWeek, i + 1 - RATING.weeks);
+	const firstCounted = MOMENTUM.weeks - rhythm.length;
+	return Array.from({ length: MOMENTUM.weeks }, (_, i) => {
+		const week = shiftWeek(endWeek, i + 1 - MOMENTUM.weeks);
 		return {
 			week,
 			startsAt: weekStart(week),
@@ -127,11 +127,11 @@ export async function toExploreStartup(
 		oneLiner: startup.oneLiner ?? null,
 		stage: startup.stage,
 		city: startup.city,
-		rating: startup.rating,
-		ratingChange: startup.ratingChange,
+		momentum: startup.momentum,
+		momentumChange: startup.momentumChange,
 		isProvisional: startup.provisional,
 		logoUrl: await loadLogoUrl(ctx, startup),
-		strip: buildRhythmStrip(startup.rhythm, startup.ratedThrough ?? endWeek),
+		strip: buildRhythmStrip(startup.rhythm, startup.scoredThrough ?? endWeek),
 		isHiring: (await loadOpenHackathons(ctx, startup._id)).length > 0,
 	};
 }

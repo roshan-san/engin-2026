@@ -1,10 +1,10 @@
 import { weekStart } from "@convex/cycles/rules";
-import { WEEK_COUNT_CAP } from "@convex/rating/rules";
+import { WEEK_COUNT_CAP } from "@convex/momentum/rules";
 import { describe, expect, it } from "vitest";
 import { ratingChangeLabel, stripLevel, stripTooltip } from "./rating";
 
 describe("rating", () => {
-	it("a Rating change reads as a quiet arrow", () => {
+	it("a Momentum change reads as a quiet arrow", () => {
 		expect(ratingChangeLabel(12)).toEqual({ text: "▲ 12", direction: "up" });
 		expect(ratingChangeLabel(-8)).toEqual({ text: "▼ 8", direction: "down" });
 		expect(ratingChangeLabel(0)).toEqual({ text: "", direction: "flat" });

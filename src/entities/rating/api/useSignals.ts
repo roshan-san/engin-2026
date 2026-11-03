@@ -6,7 +6,7 @@ export type SignalsView = NonNullable<
 	FunctionReturnType<typeof api.activity.getSignals>
 >;
 
-/** A Startup's Rating, parts and rhythm strip; `null` for an unknown slug. */
+/** A Startup's Momentum, parts and rhythm strip; `null` for an unknown slug. */
 export function useSignals(slug: string | undefined) {
 	return useQuery(api.activity.getSignals, slug ? { slug } : "skip");
 }

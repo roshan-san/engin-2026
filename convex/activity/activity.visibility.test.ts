@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { decidedHackathon } from "../applications/applications.setup";
-import { verifyCards } from "../rating/rating.setup";
+import { verifyCards } from "../momentum/momentum.setup";
 import {
 	addContributor,
 	type Setup,
@@ -76,7 +76,7 @@ describe("visibility", () => {
 			slug: setup.slug,
 		});
 
-		expect(signals?.rating).toBe(1000);
+		expect(signals?.momentum).toBe(1000);
 		expect(signals?.isProvisional).toBe(true);
 		expect(signals?.strip).toHaveLength(12);
 		expect(signals?.strip.at(-1)?.count).toBe(2);

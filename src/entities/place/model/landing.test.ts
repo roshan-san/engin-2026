@@ -25,7 +25,7 @@ function startup(slug: string) {
 		name: slug,
 		role: "founder" as const,
 		logoUrl: null,
-		rating: 1000,
+		momentum: 1000,
 		waiting: [],
 	};
 }

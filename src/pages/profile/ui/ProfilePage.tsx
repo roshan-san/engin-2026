@@ -102,10 +102,10 @@ function SignedInProfile({
 					<span
 						className={cn(
 							"text-sm font-semibold tabular-nums",
-							tierText(profile.rating),
+							tierText(profile.momentum),
 						)}
 					>
-						{profile.rating}
+						{profile.momentum}
 					</span>
 				),
 				actions: isMine ? (
@@ -130,8 +130,8 @@ function SignedInProfile({
 
 			<section className="flex flex-col gap-3">
 				<RatingBadge
-					rating={profile.rating}
-					ratingChange={profile.ratingChange}
+					rating={profile.momentum}
+					ratingChange={profile.momentumChange}
 					isProvisional={profile.isProvisional}
 				/>
 				<RatingParts parts={details.parts} />
@@ -211,8 +211,8 @@ function SignedOutProfile({ profile }: { readonly profile: Profile }) {
 					</div>
 				</div>
 				<RatingBadge
-					rating={profile.rating}
-					ratingChange={profile.ratingChange}
+					rating={profile.momentum}
+					ratingChange={profile.momentumChange}
 					isProvisional={profile.isProvisional}
 				/>
 			</header>

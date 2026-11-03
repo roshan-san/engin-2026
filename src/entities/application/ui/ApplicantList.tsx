@@ -53,10 +53,10 @@ export function ApplicantList({
 							<span
 								className={cn(
 									"w-12 shrink-0 text-right text-xs tabular-nums",
-									tierText(user.rating),
+									tierText(user.momentum),
 								)}
 							>
-								{user.rating}
+								{user.momentum}
 							</span>
 						</button>
 					</li>

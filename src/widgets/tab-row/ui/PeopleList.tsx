@@ -16,7 +16,7 @@ import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 
-/** The Founder and Contributors: face, name, team role and Rating. */
+/** The Founder and Contributors: face, name, team role and Momentum. */
 export function PeopleList({
 	startupId,
 	people,
@@ -105,8 +105,8 @@ function PersonRow({
 				<div className="flex items-center gap-3">
 					<RatingBadge
 						size="sm"
-						rating={person.rating}
-						ratingChange={person.ratingChange}
+						rating={person.momentum}
+						ratingChange={person.momentumChange}
 						isProvisional={person.isProvisional}
 					/>
 					{actions}

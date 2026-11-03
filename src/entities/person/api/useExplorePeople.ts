@@ -4,7 +4,7 @@ import { useKept } from "~/shared/lib/useKept";
 import { type PeopleSearch, parsePeopleSearch } from "../model/peopleSearch";
 
 /**
- * People who match the filter, best Rating first. `people` keeps the previous rows
+ * People who match the filter, best Momentum first. `people` keeps the previous rows
  * while a new filter loads (`undefined` only the first time); `isLoading` says they
  * may be out of date.
  */

@@ -114,10 +114,10 @@ function YourPlaces({
 								<span
 									className={cn(
 										"text-sm font-semibold tabular-nums",
-										tierText(startup.rating),
+										tierText(startup.momentum),
 									)}
 								>
-									{startup.rating}
+									{startup.momentum}
 								</span>
 							</div>
 							<Waiting place={startup} />

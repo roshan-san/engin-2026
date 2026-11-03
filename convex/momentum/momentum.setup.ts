@@ -29,8 +29,8 @@ export async function toNextWeek(t: TestConvex): Promise<void> {
 	await advancePast(t, nextMonday() - Date.now() + HOUR);
 }
 
-/** The weekly cron: rates every Startup, then every person, for the week that just ended. */
-export async function runRating(t: TestConvex): Promise<void> {
-	await t.mutation(internal.rating.rateStartups, {});
+/** The weekly cron: scores every Startup, then every person, for the week that just ended. */
+export async function runMomentum(t: TestConvex): Promise<void> {
+	await t.mutation(internal.momentum.scoreStartups, {});
 	await t.finishAllScheduledFunctions(vi.runAllTimers);
 }

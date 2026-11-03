@@ -7,7 +7,7 @@ import {
 } from "../applications/applications.setup";
 import { SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
-import { verifyCards } from "../rating/rating.setup";
+import { verifyCards } from "../momentum/momentum.setup";
 import {
 	addContributor,
 	type Setup,
@@ -24,7 +24,7 @@ const listedIds = async (setup: Setup, discipline?: "designer" | "developer") =>
 async function setProfile(
 	setup: Setup,
 	person: Person,
-	fields: { discipline?: "designer"; rating?: number },
+	fields: { discipline?: "designer"; momentum?: number },
 ) {
 	await setup.t.run((ctx) => ctx.db.patch(person.userId, fields));
 }
@@ -128,14 +128,14 @@ describe("a listed person's discipline", () => {
 });
 
 describe("the People list", () => {
-	it("is best Rating first", async () => {
+	it("is best Momentum first", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		const lee = await addContributor(setup, "Lee");
 		await verifyCards(setup, sam, 1);
 		await verifyCards(setup, lee, 1);
-		await setProfile(setup, sam, { rating: 1100 });
-		await setProfile(setup, lee, { rating: 1300 });
+		await setProfile(setup, sam, { momentum: 1100 });
+		await setProfile(setup, lee, { momentum: 1300 });
 
 		expect(await listedIds(setup)).toEqual([lee.userId, sam.userId]);
 	});

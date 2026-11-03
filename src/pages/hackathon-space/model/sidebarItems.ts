@@ -22,7 +22,7 @@ export type SidebarParticipant = {
 	readonly name: string;
 	readonly image: string | null;
 	readonly username: string | null;
-	readonly rating: number;
+	readonly momentum: number;
 	readonly reviewCount: number;
 	readonly shortlisted: boolean;
 	readonly decision: "hired" | "not_this_time" | null;
@@ -53,7 +53,7 @@ export function sidebarItems(input: SidebarInput) {
 				name: displayName(user),
 				image: user.image,
 				username: user.username,
-				rating: user.rating,
+				momentum: user.momentum,
 				reviewCount: reviewsOf(user._id),
 				shortlisted: application.shortlisted,
 				decision: application.decision,

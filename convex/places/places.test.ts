@@ -75,7 +75,7 @@ describe("groups", () => {
 				name: "Acme",
 				role: "founder",
 				logoUrl: null,
-				rating: 1000,
+				momentum: 1000,
 				waiting: [],
 			},
 			{
@@ -84,7 +84,7 @@ describe("groups", () => {
 				name: "Zeta",
 				role: "contributor",
 				logoUrl: null,
-				rating: 1000,
+				momentum: 1000,
 				waiting: [],
 			},
 		]);

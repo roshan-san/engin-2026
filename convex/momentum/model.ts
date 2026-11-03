@@ -4,9 +4,9 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_USER_APPLICATIONS } from "../applications/rules";
 import { shiftWeek, weekOf } from "../cycles/rules";
 import { MAX_HACKATHON_CARDS, phaseOf } from "../hackathons/rules";
-import { STARTING_RATING, WEEK_COUNT_CAP } from "./rules";
+import { STARTING_MOMENTUM, WEEK_COUNT_CAP } from "./rules";
 
-export const RATING = {
+export const MOMENTUM = {
 	weeks: 12,
 	base: 800,
 	span: 800,
@@ -36,7 +36,7 @@ export type Parts = {
 export function countedWeeks(createdAt: number, throughWeek: string): string[] {
 	const firstWeek = weekOf(createdAt);
 	const weeks: string[] = [];
-	for (let week = throughWeek; weeks.length < RATING.weeks; ) {
+	for (let week = throughWeek; weeks.length < MOMENTUM.weeks; ) {
 		if (week < firstWeek) break;
 		weeks.unshift(week);
 		week = shiftWeek(week, -1);
@@ -45,12 +45,12 @@ export function countedWeeks(createdAt: number, throughWeek: string): string[] {
 }
 
 export function weekVolume(n: number): number {
-	const full = Math.min(n, RATING.volumeCap) / RATING.volumeCap;
+	const full = Math.min(n, MOMENTUM.volumeCap) / MOMENTUM.volumeCap;
 	const extra = Math.min(
-		Math.max(n - RATING.volumeCap, 0),
-		RATING.volumeBonusCap,
+		Math.max(n - MOMENTUM.volumeCap, 0),
+		MOMENTUM.volumeBonusCap,
 	);
-	return full + RATING.volumeBonus * extra;
+	return full + MOMENTUM.volumeBonus * extra;
 }
 
 /** The parts from one verified-Card count per counted week. */
@@ -87,21 +87,21 @@ export function outcomeOf(
 }
 
 export function outcomeScore(outcomes: Outcome[]): number {
-	const sum = outcomes.reduce((s, o) => s + RATING.outcomePoints[o], 0);
+	const sum = outcomes.reduce((s, o) => s + MOMENTUM.outcomePoints[o], 0);
 	return Math.min(sum, 1);
 }
 
 function toTarget(score: number): number {
-	return RATING.base + RATING.span * score;
+	return MOMENTUM.base + MOMENTUM.span * score;
 }
 
 export function startupTarget(parts: Parts): number {
-	const w = RATING.startup;
+	const w = MOMENTUM.startup;
 	return toTarget(w.consistency * parts.consistency + w.volume * parts.volume);
 }
 
 export function personTarget(parts: Parts, outcomes: number): number {
-	const w = RATING.person;
+	const w = MOMENTUM.person;
 	return toTarget(
 		w.consistency * parts.consistency +
 			w.volume * parts.volume +
@@ -110,9 +110,9 @@ export function personTarget(parts: Parts, outcomes: number): number {
 }
 
 /** One week's move toward the target: quick to rise, slow to fall. */
-export function nextRating(rating: number, target: number): number {
-	const step = target > rating ? RATING.riseStep : RATING.fallStep;
-	return Math.round(rating + step * (target - rating));
+export function nextMomentum(momentum: number, target: number): number {
+	const step = target > momentum ? MOMENTUM.riseStep : MOMENTUM.fallStep;
+	return Math.round(momentum + step * (target - momentum));
 }
 
 export function toPartsView(parts: Parts) {
@@ -230,7 +230,7 @@ export function recentOutcomes(
 	outcomes: { outcome: Outcome; hackathon: Doc<"hackathons"> }[],
 	now: number,
 ): Outcome[] {
-	const since = now - RATING.outcomeDays * 24 * 3600_000;
+	const since = now - MOMENTUM.outcomeDays * 24 * 3600_000;
 	return outcomes
 		.filter(({ hackathon }) => hackathon.endsAt >= since)
 		.map(({ outcome }) => outcome);
@@ -260,71 +260,75 @@ async function hasFinishedHackathon(
 	return false;
 }
 
-/** Moves one Startup's Rating for `week`. A rerun of the same week does nothing. */
-export async function rateStartup(
+/** Moves one Startup's Momentum for `week`. A rerun of the same week does nothing. */
+export async function scoreStartup(
 	ctx: MutationCtx,
 	startup: Doc<"startups">,
 	week: string,
 ): Promise<void> {
-	if (startup.ratedThrough !== undefined && startup.ratedThrough >= week) {
+	if (startup.scoredThrough !== undefined && startup.scoredThrough >= week) {
 		return;
 	}
 	const weeks = countedWeeks(startup._creationTime, week);
 	if (weeks.length === 0) {
-		await ctx.db.patch(startup._id, { ratedThrough: week, rhythm: [] });
+		await ctx.db.patch(startup._id, { scoredThrough: week, rhythm: [] });
 		return;
 	}
 	const counts = await loadStartupCounts(ctx, startup._id, weeks);
-	const rating = nextRating(startup.rating, startupTarget(buildParts(counts)));
-	const ratedWeeks = startup.ratedWeeks + (counts.at(-1) ? 1 : 0);
+	const momentum = nextMomentum(
+		startup.momentum,
+		startupTarget(buildParts(counts)),
+	);
+	const scoredWeeks = startup.scoredWeeks + (counts.at(-1) ? 1 : 0);
 	const provisional =
-		ratedWeeks < RATING.provisionalWeeks &&
+		scoredWeeks < MOMENTUM.provisionalWeeks &&
 		!(await hasFinishedHackathon(ctx, startup._id));
 
 	await ctx.db.patch(startup._id, {
-		rating,
-		ratingChange: rating - startup.rating,
-		ratedWeeks,
-		ratedThrough: week,
+		momentum,
+		momentumChange: momentum - startup.momentum,
+		scoredWeeks,
+		scoredThrough: week,
 		provisional,
-		rhythm: counts.slice(-RATING.weeks),
+		rhythm: counts.slice(-MOMENTUM.weeks),
 	});
 }
 
-/** Moves one person's Rating for `week`. A rerun of the same week does nothing. */
-export async function rateUser(
+/** Moves one person's Momentum for `week`. A rerun of the same week does nothing. */
+export async function scoreUser(
 	ctx: MutationCtx,
 	user: Doc<"users">,
 	week: string,
 	now: number,
 ): Promise<void> {
-	if (user.ratedThrough !== undefined && user.ratedThrough >= week) {
+	if (user.scoredThrough !== undefined && user.scoredThrough >= week) {
 		return;
 	}
 	const weeks = countedWeeks(user._creationTime, week);
 	if (weeks.length === 0) {
-		await ctx.db.patch(user._id, { ratedThrough: week });
+		await ctx.db.patch(user._id, { scoredThrough: week });
 		return;
 	}
 	const [counts, outcomes] = await Promise.all([
 		loadPersonCounts(ctx, user._id, weeks),
 		loadOutcomes(ctx, user._id),
 	]);
-	const current = user.rating ?? STARTING_RATING;
-	const rating = nextRating(
+	const current = user.momentum ?? STARTING_MOMENTUM;
+	const momentum = nextMomentum(
 		current,
 		personTarget(
 			buildParts(counts),
 			outcomeScore(recentOutcomes(outcomes, now)),
 		),
 	);
-	const ratedWeeks = (user.ratedWeeks ?? 0) + (counts.at(-1) ? 1 : 0);
+	const scoredWeeks = (user.scoredWeeks ?? 0) + (counts.at(-1) ? 1 : 0);
 
 	await ctx.db.patch(user._id, {
-		rating,
-		ratingChange: rating - current,
-		ratedWeeks,
-		ratedThrough: week,
-		provisional: ratedWeeks < RATING.provisionalWeeks && outcomes.length === 0,
+		momentum,
+		momentumChange: momentum - current,
+		scoredWeeks,
+		scoredThrough: week,
+		provisional:
+			scoredWeeks < MOMENTUM.provisionalWeeks && outcomes.length === 0,
 	});
 }

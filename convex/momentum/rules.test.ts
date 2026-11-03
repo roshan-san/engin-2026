@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { tierOf } from "./rules";
 
 describe("tierOf", () => {
-	it("a Rating under 1000 is Tier 1", () => {
+	it("a Momentum under 1000 is Tier 1", () => {
 		expect(tierOf(0)).toBe(1);
 		expect(tierOf(999)).toBe(1);
 	});
@@ -27,7 +27,7 @@ describe("tierOf", () => {
 		expect(tierOf(2400)).toBe(5);
 	});
 
-	it("a fractional Rating takes the band it falls in", () => {
+	it("a fractional Momentum takes the band it falls in", () => {
 		expect(tierOf(1149.6)).toBe(2);
 	});
 });

@@ -8,7 +8,7 @@ import {
 } from "../applications/applications.setup";
 import { SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
-import { verifyCards } from "../rating/rating.setup";
+import { verifyCards } from "../momentum/momentum.setup";
 import {
 	addContributor,
 	type Setup,
@@ -144,7 +144,7 @@ describe("profile record", () => {
 		});
 	});
 
-	it("signed out, a profile shows only the name, Discipline and Rating", async () => {
+	it("signed out, a profile shows only the name, Discipline and Momentum", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		await sam.as.mutation(api.users.updateProfile, {
@@ -160,7 +160,7 @@ describe("profile record", () => {
 			name: "Sam",
 			username: "sam",
 			discipline: "developer",
-			rating: 1000,
+			momentum: 1000,
 			details: null,
 		});
 		expect(JSON.stringify(profile)).not.toContain("Ships the onboarding flow");

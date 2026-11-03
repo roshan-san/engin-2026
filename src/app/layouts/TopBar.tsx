@@ -8,7 +8,7 @@ import { InviteTray } from "~/widgets/invite-tray";
 import { PlaceSwitcher } from "~/widgets/place-switcher";
 import { TabRow } from "~/widgets/tab-row";
 
-/** The signed-in bar: the logo, the place switcher, Explore, your Invites, your Rating and the account menu; the tab row below. */
+/** The signed-in bar: the logo, the place switcher, Explore, your Invites, your Momentum and the account menu; the tab row below. */
 export function TopBar() {
 	const place = useMatches({ select: placeFromRoute });
 

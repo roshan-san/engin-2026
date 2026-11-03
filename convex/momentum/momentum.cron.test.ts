@@ -15,7 +15,7 @@ import {
 	type TestConvex,
 } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
-import { runRating, toNextWeek, verifyCards } from "./rating.setup";
+import { runMomentum, toNextWeek, verifyCards } from "./momentum.setup";
 
 async function startupRow(t: TestConvex, startupId: Id<"startups">) {
 	const startup = await t.run(async (ctx) => await ctx.db.get(startupId));
@@ -25,7 +25,7 @@ async function startupRow(t: TestConvex, startupId: Id<"startups">) {
 	return startup;
 }
 
-describe("rating", () => {
+describe("momentum", () => {
 	it("a Startup that verifies work every week rises", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
@@ -33,22 +33,22 @@ describe("rating", () => {
 		for (let week = 0; week < 4; week++) {
 			await verifyCards(setup, sam, 5);
 			await toNextWeek(setup.t);
-			await runRating(setup.t);
+			await runMomentum(setup.t);
 		}
 
 		const startup = await startupRow(setup.t, setup.startupId);
-		expect(startup.rating).toBeGreaterThan(1000);
-		expect(startup.ratingChange).toBeGreaterThan(0);
-		expect(startup.ratedWeeks).toBe(4);
+		expect(startup.momentum).toBeGreaterThan(1000);
+		expect(startup.momentumChange).toBeGreaterThan(0);
+		expect(startup.scoredWeeks).toBe(4);
 		expect(startup.provisional).toBe(false);
 	});
 
-	it("a rating run writes the last 12 weeks of rhythm", async () => {
+	it("a momentum run writes the last 12 weeks of rhythm", async () => {
 		const setup = await setUpStartup(createTest());
 		await verifyCards(setup, setup.founder, 2);
 		await toNextWeek(setup.t);
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		const startup = await startupRow(setup.t, setup.startupId);
 		expect(startup.rhythm.at(-1)).toBe(2);
@@ -61,7 +61,7 @@ describe("rating", () => {
 		for (let week = 0; week < 14; week++) {
 			await verifyCards(setup, setup.founder, week === 13 ? 3 : 1);
 			await toNextWeek(setup.t);
-			await runRating(setup.t);
+			await runMomentum(setup.t);
 		}
 
 		const startup = await startupRow(setup.t, setup.startupId);
@@ -70,62 +70,62 @@ describe("rating", () => {
 		expect(startup.rhythm.at(-1)).toBe(3);
 	});
 
-	it("a Startup rated no weeks has an empty rhythm", async () => {
+	it("a Startup scored no weeks has an empty rhythm", async () => {
 		const setup = await setUpStartup(createTest());
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		expect((await startupRow(setup.t, setup.startupId)).rhythm).toEqual([]);
 	});
 
-	it("a quiet week pulls the Rating down slowly", async () => {
+	it("a quiet week pulls the Momentum down slowly", async () => {
 		const setup = await setUpStartup(createTest());
 		await setup.t.run(
-			async (ctx) => await ctx.db.patch(setup.startupId, { rating: 1400 }),
+			async (ctx) => await ctx.db.patch(setup.startupId, { momentum: 1400 }),
 		);
 		await toNextWeek(setup.t);
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		expect(await startupRow(setup.t, setup.startupId)).toMatchObject({
-			rating: 1340,
-			ratingChange: -60,
+			momentum: 1340,
+			momentumChange: -60,
 		});
 	});
 
-	it("rating the same week twice changes nothing", async () => {
+	it("momentum the same week twice changes nothing", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		await verifyCards(setup, sam, 3);
 		await toNextWeek(setup.t);
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 		const first = await startupRow(setup.t, setup.startupId);
 
-		await setup.t.mutation(internal.rating.rateStartups, {
-			week: first.ratedThrough,
+		await setup.t.mutation(internal.momentum.scoreStartups, {
+			week: first.scoredThrough,
 		});
 		await setup.t.finishInProgressScheduledFunctions();
 
 		const second = await startupRow(setup.t, setup.startupId);
-		expect(first.ratedThrough).toBeDefined();
+		expect(first.scoredThrough).toBeDefined();
 		expect(second).toMatchObject({
-			rating: first.rating,
-			ratingChange: first.ratingChange,
-			ratedWeeks: first.ratedWeeks,
+			momentum: first.momentum,
+			momentumChange: first.momentumChange,
+			scoredWeeks: first.scoredWeeks,
 		});
 	});
 
 	it("a Startup created this week waits for its first full week", async () => {
 		const setup = await setUpStartup(createTest());
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		const startup = await startupRow(setup.t, setup.startupId);
-		expect(startup.rating).toBe(1000);
-		expect(startup.ratedThrough).toBeDefined();
+		expect(startup.momentum).toBe(1000);
+		expect(startup.scoredThrough).toBeDefined();
 	});
 
-	it("every Startup is rated across pages", async () => {
+	it("every Startup is scored across pages", async () => {
 		const t = createTest();
 		const startupIds: Id<"startups">[] = [];
 		for (let i = 0; i < 25; i++) {
@@ -143,27 +143,27 @@ describe("rating", () => {
 		}
 		await toNextWeek(t);
 
-		await runRating(t);
+		await runMomentum(t);
 
 		const rows = await Promise.all(startupIds.map((id) => startupRow(t, id)));
-		const weeks = new Set(rows.map((row) => row.ratedThrough));
+		const weeks = new Set(rows.map((row) => row.scoredThrough));
 		expect(weeks.size).toBe(1);
 		expect([...weeks][0]).toBeDefined();
-		expect(rows.every((row) => row.rating > 1000)).toBe(true);
+		expect(rows.every((row) => row.momentum > 1000)).toBe(true);
 	});
 
-	it("people are rated after Startups", async () => {
+	it("people are scored after Startups", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		await verifyCards(setup, sam, 3);
 		await toNextWeek(setup.t);
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		const profile = await setup.t.query(api.users.getRecord, {
 			username: "sam",
 		});
-		expect(profile?.rating).toBeGreaterThan(1000);
+		expect(profile?.momentum).toBeGreaterThan(1000);
 	});
 
 	it("self-verified work never raises a person", async () => {
@@ -171,28 +171,28 @@ describe("rating", () => {
 		await verifyCards(setup, setup.founder, 3);
 		await toNextWeek(setup.t);
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		const founder = await setup.t.query(api.users.getRecord, {
 			username: "fay",
 		});
-		expect(founder?.rating).toBeLessThanOrEqual(1000);
-		expect((await startupRow(setup.t, setup.startupId)).rating).toBeGreaterThan(
-			1000,
-		);
+		expect(founder?.momentum).toBeLessThanOrEqual(1000);
+		expect(
+			(await startupRow(setup.t, setup.startupId)).momentum,
+		).toBeGreaterThan(1000);
 	});
 
-	it("ratedWeeks counts only active weeks", async () => {
+	it("scoredWeeks counts only active weeks", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		await verifyCards(setup, sam, 2);
 		await toNextWeek(setup.t);
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		await toNextWeek(setup.t);
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
-		expect((await startupRow(setup.t, setup.startupId)).ratedWeeks).toBe(1);
+		expect((await startupRow(setup.t, setup.startupId)).scoredWeeks).toBe(1);
 	});
 
 	it("a Hackathon nobody joined leaves a Startup provisional", async () => {
@@ -201,12 +201,12 @@ describe("rating", () => {
 		await advancePast(setup.t, 8 * DAY);
 		await toNextWeek(setup.t);
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		expect((await startupRow(setup.t, setup.startupId)).provisional).toBe(true);
 	});
 
-	it("a Hired Participant's Rating counts the outcome", async () => {
+	it("a Hired Participant's Momentum counts the outcome", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);
 		const [ana] = await participants(setup, hackathonId, ["Ana"]);
@@ -225,11 +225,11 @@ describe("rating", () => {
 		});
 		await toNextWeek(setup.t);
 
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		const profile = await setup.t.query(api.users.getRecord, {
 			username: "ana",
 		});
-		expect(profile).toMatchObject({ rating: 996, isProvisional: false });
+		expect(profile).toMatchObject({ momentum: 996, isProvisional: false });
 	});
 });

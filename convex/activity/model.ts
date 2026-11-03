@@ -16,9 +16,9 @@ import {
 	buildParts,
 	countedWeeks,
 	loadStartupCounts,
-	RATING,
+	MOMENTUM,
 	toPartsView,
-} from "../rating/model";
+} from "../momentum/model";
 import { buildRhythmStrip } from "../startups/model";
 import { loadPublicUser, type PublicUser } from "../users/model";
 import type { activityKind } from "./rules";
@@ -179,8 +179,8 @@ export async function loadCycles(
 }
 
 export type SignalsView = {
-	rating: number;
-	ratingChange: number;
+	momentum: number;
+	momentumChange: number;
 	isProvisional: boolean;
 	parts: ReturnType<typeof toPartsView>;
 	/** 12 weeks ending with this one; `count` is null before signup. */
@@ -188,7 +188,7 @@ export type SignalsView = {
 	verifiedTotal12: number;
 };
 
-/** The Rating, its parts over finished weeks, and the 12-week rhythm strip. */
+/** The Momentum, its parts over finished weeks, and the 12-week rhythm strip. */
 export async function loadSignals(
 	ctx: QueryCtx,
 	startup: Doc<"startups">,
@@ -197,13 +197,13 @@ export async function loadSignals(
 	const thisWeek = weekOf(now);
 	const firstWeek = weekOf(startup._creationTime);
 	// 13 weeks: the strip's 12 plus the one finished week before them that the parts count.
-	const span = Array.from({ length: RATING.weeks + 1 }, (_, i) =>
-		shiftWeek(thisWeek, i - RATING.weeks),
+	const span = Array.from({ length: MOMENTUM.weeks + 1 }, (_, i) =>
+		shiftWeek(thisWeek, i - MOMENTUM.weeks),
 	).filter((week) => week >= firstWeek);
 	const counted = await loadStartupCounts(ctx, startup._id, span);
 	const countOf = new Map(span.map((week, i) => [week, counted[i]]));
 
-	const strip = buildRhythmStrip(counted.slice(-RATING.weeks), thisWeek);
+	const strip = buildRhythmStrip(counted.slice(-MOMENTUM.weeks), thisWeek);
 	const parts = buildParts(
 		countedWeeks(startup._creationTime, shiftWeek(thisWeek, -1)).map(
 			(week) => countOf.get(week) ?? 0,
@@ -211,8 +211,8 @@ export async function loadSignals(
 	);
 
 	return {
-		rating: startup.rating,
-		ratingChange: startup.ratingChange,
+		momentum: startup.momentum,
+		momentumChange: startup.momentumChange,
 		isProvisional: startup.provisional,
 		parts: toPartsView(parts),
 		strip,

@@ -56,7 +56,7 @@ describe("drafts", () => {
 		expect(after).toMatchObject({
 			status: "open",
 			myApplication: null,
-			startup: { name: "Acme", rating: 1000 },
+			startup: { name: "Acme", momentum: 1000 },
 		});
 	});
 
@@ -251,7 +251,7 @@ describe("public page", () => {
 			startup: {
 				name: "Acme",
 				slug: setup.slug,
-				ratingChange: 0,
+				momentumChange: 0,
 				isProvisional: true,
 			},
 		});
@@ -830,8 +830,8 @@ describe("explore", () => {
 				startup: {
 					name: "Acme",
 					slug: "acme",
-					rating: 1000,
-					ratingChange: 0,
+					momentum: 1000,
+					momentumChange: 0,
 					isProvisional: true,
 				},
 			},

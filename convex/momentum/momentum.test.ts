@@ -4,7 +4,7 @@ import { DAY } from "../testing/test.setup";
 import {
 	buildParts,
 	countedWeeks,
-	nextRating,
+	nextMomentum,
 	outcomeOf,
 	outcomeScore,
 	personTarget,
@@ -12,7 +12,7 @@ import {
 	weekVolume,
 } from "./model";
 
-describe("rating math", () => {
+describe("momentum math", () => {
 	it("each Card counts fully up to 5 a week, and barely after", () => {
 		expect(weekVolume(0)).toBe(0);
 		expect(weekVolume(3)).toBe(0.6);
@@ -104,9 +104,9 @@ describe("rating math", () => {
 		}
 	});
 
-	it("the Rating rises faster than it falls", () => {
-		expect(nextRating(1000, 1400)).toBe(1100);
-		expect(nextRating(1000, 800)).toBe(980);
+	it("the Momentum rises faster than it falls", () => {
+		expect(nextMomentum(1000, 1400)).toBe(1100);
+		expect(nextMomentum(1000, 800)).toBe(980);
 	});
 
 	describe("counted weeks", () => {

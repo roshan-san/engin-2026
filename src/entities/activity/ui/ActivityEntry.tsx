@@ -132,7 +132,7 @@ function EntryLine({
 						<span
 							className={cn(
 								"font-medium",
-								entry.actor && tierText(entry.actor.rating),
+								entry.actor && tierText(entry.actor.momentum),
 							)}
 						>
 							{actor}

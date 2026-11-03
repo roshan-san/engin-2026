@@ -268,8 +268,8 @@ export function toExploreHackathon(
 		startup: {
 			name: startup.name,
 			slug: startup.slug,
-			rating: startup.rating,
-			ratingChange: startup.ratingChange,
+			momentum: startup.momentum,
+			momentumChange: startup.momentumChange,
 			isProvisional: startup.provisional,
 			logoUrl,
 		},

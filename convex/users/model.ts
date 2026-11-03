@@ -9,8 +9,8 @@ import {
 	outcomeScore,
 	recentOutcomes,
 	toPartsView,
-} from "../rating/model";
-import { STARTING_RATING } from "../rating/rules";
+} from "../momentum/model";
+import { STARTING_MOMENTUM } from "../momentum/rules";
 import { MAX_PROFILE_ROWS } from "./rules";
 import { buildUniqueUsername } from "./username";
 
@@ -20,7 +20,7 @@ export type PublicUser = {
 	username: string | null;
 	image: string | null;
 	/** Sent with every name, so the client can colour it by Tier. */
-	rating: number;
+	momentum: number;
 };
 
 /** Safe to send to any client, including public pages. Never includes email. */
@@ -30,7 +30,7 @@ export function toPublicUser(user: Doc<"users">): PublicUser {
 		name: user.name ?? null,
 		username: user.username ?? null,
 		image: user.image ?? null,
-		rating: user.rating ?? STARTING_RATING,
+		momentum: user.momentum ?? STARTING_MOMENTUM,
 	};
 }
 
@@ -45,17 +45,17 @@ export async function loadPublicUser(
 	return user ? toPublicUser(user) : null;
 }
 
-/** Set weekly by the Rating run (`rating/model.ts`). */
+/** Set weekly by the Momentum run (`momentum/model.ts`). */
 export function isProvisional(user: Doc<"users">): boolean {
 	return user.provisional ?? true;
 }
 
-/** What anyone, signed out included, sees of a profile: who they are, their Discipline and Rating. Never includes email. */
+/** What anyone, signed out included, sees of a profile: who they are, their Discipline and Momentum. Never includes email. */
 export function toPublicProfile(user: Doc<"users">) {
 	return {
 		...toPublicUser(user),
 		discipline: user.discipline ?? null,
-		ratingChange: user.ratingChange ?? 0,
+		momentumChange: user.momentumChange ?? 0,
 		isProvisional: isProvisional(user),
 	};
 }
@@ -78,7 +78,7 @@ export function toOwnProfile(user: Doc<"users">) {
 
 /**
  * Runs after every sign-in (`convex/auth.ts`). `existingUserId` is null only
- * when the account was just created, which gives it a username and starts its Rating.
+ * when the account was just created, which gives it a username and starts its Momentum.
  */
 export async function onUserSignedIn(
 	ctx: MutationCtx,
@@ -88,15 +88,15 @@ export async function onUserSignedIn(
 		const user = await ctx.db.get(args.userId);
 		await ctx.db.patch(args.userId, {
 			username: await buildUniqueUsername(ctx, user?.name, user?.email),
-			rating: STARTING_RATING,
-			ratingChange: 0,
-			ratedWeeks: 0,
+			momentum: STARTING_MOMENTUM,
+			momentumChange: 0,
+			scoredWeeks: 0,
 			provisional: true,
 		});
 	}
 }
 
-/** The profile's Record: Rating parts, finished Hackathons, and Cards verified by others. */
+/** The profile's Record: Momentum parts, finished Hackathons, and Cards verified by others. */
 export async function loadProfileRecord(
 	ctx: QueryCtx,
 	user: Doc<"users">,

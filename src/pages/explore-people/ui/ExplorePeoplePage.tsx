@@ -15,7 +15,7 @@ import { ExploreLayout } from "~/widgets/explore-layout";
 
 const route = getRouteApi("/_shell/explore/people");
 
-/** People whose work someone else approved, best Rating first, filtered by the URL. */
+/** People whose work someone else approved, best Momentum first, filtered by the URL. */
 export function ExplorePeoplePage() {
 	const search = route.useSearch();
 	const navigate = route.useNavigate();

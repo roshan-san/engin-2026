@@ -164,7 +164,7 @@ function SignedOutPage({ page }: { readonly page: HackathonView }) {
 	);
 }
 
-/** Who's hiring: the Startup, its Rating and how its past Hackathons went. */
+/** Who's hiring: the Startup, its Momentum and how its past Hackathons went. */
 function StartupCard({ page }: { readonly page: HackathonView }) {
 	const hiring = hiringLine(page.hiringRecord);
 
@@ -189,8 +189,8 @@ function StartupCard({ page }: { readonly page: HackathonView }) {
 			</div>
 			<RatingBadge
 				size="sm"
-				rating={page.startup.rating}
-				ratingChange={page.startup.ratingChange}
+				rating={page.startup.momentum}
+				ratingChange={page.startup.momentumChange}
 				isProvisional={page.startup.isProvisional}
 			/>
 			<p className="text-xs text-muted-foreground">

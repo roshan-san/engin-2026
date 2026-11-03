@@ -14,8 +14,8 @@ describe("users", () => {
 		const me = await fay.as.query(api.users.getMe, {});
 
 		expect(me).toMatchObject({
-			rating: 1000,
-			ratingChange: 0,
+			momentum: 1000,
+			momentumChange: 0,
 			isProvisional: true,
 		});
 		expect(me).not.toHaveProperty("isInvestorPro");

@@ -24,7 +24,7 @@ export const getMe = query({
 	},
 });
 
-/** People whose work someone else approved, for anyone: best Rating first, as public profiles. */
+/** People whose work someone else approved, for anyone: best Momentum first, as public profiles. */
 export const explore = query({
 	args: { discipline: v.optional(discipline) },
 	handler: async (ctx, args) => {
@@ -33,12 +33,12 @@ export const explore = query({
 			filter === undefined
 				? ctx.db
 						.query("users")
-						.withIndex("by_approvedWork_and_rating", (q) =>
+						.withIndex("by_approvedWork_and_momentum", (q) =>
 							q.eq("approvedWork", true),
 						)
 				: ctx.db
 						.query("users")
-						.withIndex("by_approvedWork_and_discipline_and_rating", (q) =>
+						.withIndex("by_approvedWork_and_discipline_and_momentum", (q) =>
 							q.eq("approvedWork", true).eq("discipline", filter),
 						);
 		const users = await query.order("desc").take(MAX_EXPLORE_ROWS);
@@ -48,7 +48,7 @@ export const explore = query({
 });
 
 /**
- * A profile, for anyone. Signed out, it's only the name, Discipline and Rating
+ * A profile, for anyone. Signed out, it's only the name, Discipline and Momentum
  * (`details` is null); signed in, `details` adds the bio and the Record.
  */
 export const getRecord = query({

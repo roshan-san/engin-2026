@@ -5,7 +5,7 @@ import { Skeleton } from "~/shared/ui/skeleton";
 import type { SignalsView } from "../api/useSignals";
 import { RecordSignals } from "./RecordSignals";
 
-/** The side panel while no entry is open: the Rating, the rhythm and who sees what. */
+/** The side panel while no entry is open: the Momentum, the rhythm and who sees what. */
 export function RecordPanel({
 	signals,
 }: {

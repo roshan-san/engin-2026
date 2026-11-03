@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
-import { verifyCards } from "../rating/rating.setup";
+import { verifyCards } from "../momentum/momentum.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
@@ -95,7 +95,7 @@ describe("a Contributor's label", () => {
 });
 
 describe("the team", () => {
-	it("people show their Rating", async () => {
+	it("people show their Momentum", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 
@@ -103,9 +103,14 @@ describe("the team", () => {
 			startupId: setup.startupId,
 		});
 
-		expect(team.founder).toMatchObject({ rating: 1000, isProvisional: true });
+		expect(team.founder).toMatchObject({ momentum: 1000, isProvisional: true });
 		expect(team.contributors).toMatchObject([
-			{ _id: sam.userId, rating: 1000, ratingChange: 0, isProvisional: true },
+			{
+				_id: sam.userId,
+				momentum: 1000,
+				momentumChange: 0,
+				isProvisional: true,
+			},
 		]);
 	});
 

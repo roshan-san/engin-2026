@@ -1,4 +1,4 @@
-/** The parts behind a Rating, as plain lines. */
+/** The parts behind a Momentum, as plain lines. */
 export function RatingParts({
 	parts,
 }: {
