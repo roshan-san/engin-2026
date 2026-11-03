@@ -80,7 +80,6 @@ describe("feed", () => {
 			number,
 			startsAt,
 			endsAt: startsAt + WEEK_MS,
-			goal: null,
 			shippedCount: 0,
 			entries: [],
 			...overrides,
@@ -119,15 +118,6 @@ describe("feed", () => {
 			name: "Cycles 3–4",
 			dates: "Sep 28 – Oct 11",
 		});
-	});
-
-	it("a past Cycle with a goal keeps its own row", () => {
-		const items = buildFeed(
-			[cycle("2026-W42", 2), cycle("2026-W41", 1, { goal: "Launch" })],
-			now,
-		);
-
-		expect(items.map((item) => item.kind)).toEqual(["cycle", "cycle"]);
 	});
 
 	it("an open entry is found with its Cycle, or not once it's out of the list", () => {

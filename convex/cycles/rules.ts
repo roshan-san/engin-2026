@@ -43,33 +43,3 @@ export function shiftWeek(week: string, by: number): string {
 export const CYCLES_PAGE = 8;
 export const MAX_LISTED_CYCLES = 104;
 export const MAX_CYCLE_ENTRIES = 100;
-
-/** Longest allowed text per Cycle field. */
-export const CYCLE_TEXT = { goal: 140 };
-
-/** The goal to save from what was typed; `null` when it's blank or unchanged. */
-export function goalToSave(
-	draft: string,
-	current: string | null,
-): string | null {
-	const goal = draft.trim();
-	return goal && goal !== current ? goal : null;
-}
-
-/** Whether last week still needs its Monday review: past the first Cycle, not closed, with something to look at. */
-export function isReviewDue({
-	cycleNumber,
-	isReviewed,
-	hasGoal,
-	unfinishedCount,
-}: {
-	cycleNumber: number;
-	isReviewed: boolean;
-	hasGoal: boolean;
-	unfinishedCount: number;
-}): boolean {
-	if (cycleNumber <= 1 || isReviewed) {
-		return false;
-	}
-	return hasGoal || unfinishedCount > 0;
-}

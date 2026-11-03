@@ -227,27 +227,6 @@ export async function loadUnfinishedCards(
 	return [...todo, ...inProgress];
 }
 
-/** Deletes those of `cardIds` that are this Startup's and unfinished; any other Card stays as it is. */
-export async function dropUnfinishedCards(
-	ctx: MutationCtx,
-	startupId: Id<"startups">,
-	cardIds: Id<"cards">[],
-): Promise<void> {
-	const cards = await Promise.all(
-		[...new Set(cardIds)].map((cardId) => ctx.db.get(cardId)),
-	);
-	for (const card of cards) {
-		if (
-			card &&
-			card.startupId === startupId &&
-			!card.hackathonId &&
-			isUnfinished(card)
-		) {
-			await ctx.db.delete(card._id);
-		}
-	}
-}
-
 /** Open Cards, plus the Cards verified this Cycle, newest first within each column. */
 export async function loadBoardCards(
 	ctx: Ctx,

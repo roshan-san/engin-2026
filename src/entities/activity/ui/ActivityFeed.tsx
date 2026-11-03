@@ -76,11 +76,6 @@ export function ActivityFeed({
 									shipped
 								</span>
 							</div>
-							{cycle.goal ? (
-								<p className="text-sm break-words text-muted-foreground">
-									Goal · <span className="text-foreground">{cycle.goal}</span>
-								</p>
-							) : null}
 						</header>
 						{cycle.entries.length > 0 ? (
 							<ul className="-mx-2">

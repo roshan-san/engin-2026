@@ -37,10 +37,6 @@ async function list(setup: Setup, count?: number) {
 describe("activity", () => {
 	it("Activity groups verified work by Cycle", async () => {
 		const setup = await setUpStartup(createTest());
-		await setup.founder.as.mutation(api.cycles.setGoal, {
-			startupId: setup.startupId,
-			goal: "Get 10 paying users",
-		});
 		const first = await verifiedCard(setup, "Welcome emails");
 		await advancePast(setup.t, 7 * DAY);
 		await verifiedCard(setup, "Pricing page");
@@ -50,13 +46,11 @@ describe("activity", () => {
 		expect(cycles).toHaveLength(2);
 		expect(cycles[0]).toMatchObject({
 			number: 2,
-			goal: null,
 			shippedCount: 1,
 			entries: [{ kind: "card_verified", line: "Pricing page" }],
 		});
 		expect(cycles[1]).toMatchObject({
 			number: 1,
-			goal: "Get 10 paying users",
 			shippedCount: 1,
 			entries: [
 				{

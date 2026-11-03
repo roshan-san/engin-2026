@@ -10,13 +10,9 @@ import {
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
-/** Acme with a goal, one verified Card, a joined Contributor and a hired Participant. */
+/** Acme with one verified Card, a joined Contributor and a hired Participant. */
 async function busyStartup(): Promise<Setup> {
 	const setup = await setUpStartup(createTest());
-	await setup.founder.as.mutation(api.cycles.setGoal, {
-		startupId: setup.startupId,
-		goal: "Get 10 paying users",
-	});
 	const sam = await addContributor(setup, "Sam");
 	await verifyCards(setup, sam, 1);
 	await setup.founder.as.mutation(api.invites.create, {
@@ -43,7 +39,6 @@ describe("visibility", () => {
 
 		expect(page).not.toHaveProperty("full");
 		const cycles = page?.cycles ?? [];
-		expect(cycles.every((cycle) => cycle.goal === null)).toBe(true);
 		expect(cycles.reduce((sum, cycle) => sum + cycle.shippedCount, 0)).toBe(1);
 		const entries = cycles.flatMap((cycle) => cycle.entries);
 		expect(entries.map((entry) => entry.kind).sort()).toEqual([
