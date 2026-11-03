@@ -10,6 +10,7 @@ const startupScope: BoardScope = {
 	role: "founder",
 	phase: null,
 	lock: undefined,
+	planningWeek: undefined,
 };
 
 const participantScope: BoardScope = {

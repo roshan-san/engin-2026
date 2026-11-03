@@ -291,6 +291,8 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 		title: card.title,
 		notes: card.notes,
 		status: card.status,
+		/** The week a Startup Card belongs to; `null` on Hackathon Cards. */
+		week: card.week ?? null,
 		owner,
 		/** What the owner does on this Card, for the proof hint. */
 		discipline,

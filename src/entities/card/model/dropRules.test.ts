@@ -13,6 +13,7 @@ function aCard(status: CardView["status"], ownerId: Id<"users"> = fay) {
 		title: "Write welcome emails",
 		notes: "",
 		status,
+		week: null,
 		owner: {
 			_id: ownerId,
 			name: null,

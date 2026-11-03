@@ -52,7 +52,7 @@ export function MeetingsDialog({
 					<DialogTitle>Weekly meetings</DialogTitle>
 					<DialogDescription>
 						Plan the week on Monday, close it on Friday. The Board is locked
-						between them.
+						between them. Times are in IST.
 					</DialogDescription>
 				</DialogHeader>
 				{/* Remounted on each open, so the form starts from what's saved. */}
@@ -116,7 +116,7 @@ function MeetingsForm() {
 					return (
 						<fieldset key={kind} className="flex flex-col gap-2">
 							<legend className="mb-2 text-sm font-medium">
-								{title} meeting · {dayName}
+								{title} meeting · {dayName}, IST
 							</legend>
 							<div className="flex gap-2">
 								<Select

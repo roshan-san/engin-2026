@@ -15,6 +15,7 @@ function aCard(id: string, status: CardView["status"]) {
 		title: "Write welcome emails",
 		notes: "",
 		status,
+		week: null,
 		owner: {
 			_id: fay,
 			name: null,

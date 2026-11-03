@@ -886,6 +886,13 @@ describe("the week a Card belongs to", () => {
 		]);
 	});
 
+	it("each Card says which week it belongs to", async () => {
+		const setup = await setUpStartup(createTest());
+		await cardOn(setup, setup.founder, "Pricing page");
+
+		expect(await boardOf(setup)).toMatchObject([{ week: weekOf(Date.now()) }]);
+	});
+
 	it("last week's To do doesn't count towards the limit", async () => {
 		const setup = await setUpStartup(createTest());
 		for (let i = 0; i < 20; i++) {
@@ -962,6 +969,18 @@ describe("the locked Board", () => {
 		await setup.founder.as.mutation(api.cards.move, { cardId, to: "todo" });
 
 		expect(await boardOf(setup)).toEqual([]);
+		expect(
+			await setup.founder.as.query(api.cards.get, {
+				startupId: setup.startupId,
+				cardId,
+			}),
+		).toMatchObject({ status: "not_finished" });
+		const { cycles } = await setup.founder.as.query(api.activity.list, {
+			startupId: setup.startupId,
+		});
+		expect(cycles.flatMap((cycle) => cycle.notFinished)).toEqual([
+			"Welcome emails",
+		]);
 		await advancePast(setup.t, 7 * DAY);
 		expect(await boardOf(setup)).toEqual([]);
 	});

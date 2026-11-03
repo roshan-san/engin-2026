@@ -176,14 +176,18 @@ export const move = mutation({
 			args.cardId,
 			userId,
 		);
-		await settleWeek(ctx, startup, card);
+		const week = await settleWeek(ctx, startup, card);
 		requireAllowed(card, { kind: "move", to: args.to }, actor);
 		// A Send back always goes through, so the Founder can empty Review.
 		if (card.status !== "review" && card.status !== args.to) {
 			await requireRoomIn(ctx, card, args.to);
 		}
 
-		await ctx.db.patch(card._id, { status: args.to });
+		// Sent back after its week ended: it ends now, rather than waiting in To do.
+		const ended =
+			week !== null &&
+			isNotFinished({ status: args.to, week: card.week }, week);
+		await ctx.db.patch(card._id, { status: ended ? "not_finished" : args.to });
 		// Only a Send back can empty the Review queue.
 		if (card.status === "review") {
 			await finishAfterReview(ctx, card);
@@ -247,18 +251,19 @@ export const remove = mutation({
 	},
 });
 
-/** Ends last week's unfinished Cards before a Startup Card moves, refusing `card` if its own week is over. */
+/** Ends last week's unfinished Cards before a Startup Card moves, refusing `card` if its own week is over. The current week, or `null` for a Hackathon Card. */
 async function settleWeek(
 	ctx: MutationCtx,
 	startup: Doc<"startups">,
 	card: Doc<"cards">,
-): Promise<void> {
+): Promise<string | null> {
 	if (card.hackathonId) {
-		return;
+		return null;
 	}
 	const { week } = await loadWeekContext(ctx, startup, Date.now());
 	if (isNotFinished(card, week)) {
 		throw new ConvexError(ENDED);
 	}
 	await endPastCards(ctx, startup._id, week);
+	return week;
 }

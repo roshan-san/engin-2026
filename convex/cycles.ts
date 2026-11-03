@@ -91,6 +91,8 @@ export const getCurrent = query({
 						closingLink: meetings.closingLink ?? null,
 					}
 				: null,
+			/** The opening meeting of the week being planned: Start the week waits for its end. */
+			planningOpening: meetings ? openingOf(week, meetings.opening) : null,
 			nextOpening: next?.nextOpening ?? null,
 			nextClosing: next?.nextClosing ?? null,
 			startedAt: row?.startedAt ?? null,

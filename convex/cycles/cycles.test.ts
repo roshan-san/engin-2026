@@ -185,6 +185,49 @@ describe("meetings", () => {
 		expect((await at(ist("2026-06-12", "17:10"))).state).toBe("closing");
 	});
 
+	it("after Monday's meeting the page knows the meeting is over", async () => {
+		const setup = await setUpStartup(createTest());
+		await addContributor(setup, "Sam");
+		await planNextWeek(setup);
+
+		const cycle = await setup.founder.as.query(api.cycles.getCurrent, {
+			startupId: setup.startupId,
+			now: ist(MONDAY, "11:30"),
+		});
+
+		expect(cycle.state).toBe("planning");
+		expect(cycle.planningOpening).toEqual({
+			startsAt: ist(MONDAY, "10:00"),
+			endsAt: ist(MONDAY, "10:45"),
+		});
+	});
+
+	it("a team that was solo for a while doesn't lock until its next closing meeting", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await setup.founder.as.mutation(api.cycles.setMeetings, {
+			startupId: setup.startupId,
+			...DEFAULT_SLOTS,
+		});
+		await setup.founder.as.mutation(api.contributors.remove, {
+			startupId: setup.startupId,
+			userId: sam.userId,
+		});
+		await goTo(setup, ist("2026-06-24", "12:00"));
+		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
+			startupId: setup.startupId,
+			email: "jo@example.com",
+		});
+		const jo = await signUp(setup.t, "Jo");
+		const [invite] = await jo.as.query(api.invites.listMine, {});
+		await jo.as.mutation(api.invites.accept, { inviteId: invite.inviteId });
+
+		expect((await current(setup)).state).toBe("open");
+		await goTo(setup, ist("2026-06-26", "17:10"));
+		expect((await current(setup)).state).toBe("closing");
+	});
+
 	it("only the Founder sees team emails", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");

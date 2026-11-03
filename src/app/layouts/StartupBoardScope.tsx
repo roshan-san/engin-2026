@@ -10,7 +10,9 @@ export function StartupBoardScope({
 	readonly children: React.ReactNode;
 }) {
 	const { startup, userId, role } = useWorkspace();
-	const state = useCycle(startup._id)?.state;
+	const cycle = useCycle(startup._id);
+	const state = cycle?.state;
+	const planningWeek = cycle?.planningWeek;
 	const lock = state === "closing" || state === "planning" ? state : undefined;
 	// A stable value, so every consumer's memos survive a re-render.
 	const scope = useMemo(
@@ -22,8 +24,9 @@ export function StartupBoardScope({
 			role,
 			phase: null,
 			lock,
+			planningWeek,
 		}),
-		[startup._id, startup.slug, userId, role, lock],
+		[startup._id, startup.slug, userId, role, lock, planningWeek],
 	);
 
 	return (
