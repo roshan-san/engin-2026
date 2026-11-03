@@ -1088,3 +1088,125 @@ describe("deciding", () => {
 		await expect(answer).rejects.toThrow("This isn't your application");
 	});
 });
+
+describe("asking", () => {
+	async function asked() {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+		const threadId = await setup.founder.as.mutation(api.applications.ask, {
+			applicationId: ana.applicationId,
+		});
+		return { setup, hackathonId, ana, threadId };
+	}
+
+	it("the Founder asks an Applicant and both can post", async () => {
+		const { setup, hackathonId, ana, threadId } = await asked();
+
+		await setup.founder.as.mutation(api.messages.send, {
+			threadId,
+			body: "What did you build last?",
+		});
+		await ana.as.mutation(api.messages.send, { threadId, body: "A CLI" });
+		const theirs = await ana.as.query(api.threads.list, { hackathonId });
+
+		expect(theirs.map((thread) => thread._id)).toEqual([threadId]);
+		const { messages } = await ana.as.query(api.messages.list, { threadId });
+		expect(messages.map((message) => message.body)).toEqual([
+			"What did you build last?",
+			"A CLI",
+		]);
+	});
+
+	it("asking twice returns the same thread", async () => {
+		const { setup, ana, threadId } = await asked();
+
+		const again = await setup.founder.as.mutation(api.applications.ask, {
+			applicationId: ana.applicationId,
+		});
+
+		expect(again).toBe(threadId);
+	});
+
+	it("an Applicant can't open Everyone", async () => {
+		const { setup, hackathonId, ana } = await asked();
+		const everyone = (
+			await setup.founder.as.query(api.threads.list, { hackathonId })
+		).find((thread) => thread.kind === "everyone");
+		if (!everyone) throw new Error("No Everyone thread");
+
+		await expect(
+			ana.as.query(api.messages.list, { threadId: everyone._id }),
+		).rejects.toThrow("You can't open this thread");
+	});
+
+	it("a declined Applicant reads the thread but can't post", async () => {
+		const { setup, ana, threadId } = await asked();
+		await setup.founder.as.mutation(api.messages.send, {
+			threadId,
+			body: "Thanks for applying",
+		});
+		await setup.founder.as.mutation(api.applications.decline, {
+			applicationId: ana.applicationId,
+		});
+
+		const { messages } = await ana.as.query(api.messages.list, { threadId });
+		expect(messages).toHaveLength(1);
+		await expect(
+			ana.as.mutation(api.messages.send, { threadId, body: "Why?" }),
+		).rejects.toThrow("This conversation is closed");
+		await expect(
+			setup.founder.as.mutation(api.messages.send, { threadId, body: "Hi" }),
+		).rejects.toThrow("This conversation is closed");
+	});
+
+	it("accepting keeps the Ask thread", async () => {
+		const { setup, hackathonId, ana, threadId } = await asked();
+
+		await setup.founder.as.mutation(api.applications.accept, {
+			applicationId: ana.applicationId,
+		});
+
+		const threads = await threadsFor(setup, hackathonId);
+		expect(threads.map((thread) => thread._id)).toEqual([threadId]);
+	});
+
+	it("asking is refused once the Hackathon is done", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		await closeHackathon(setup, hackathonId);
+
+		await expect(
+			setup.founder.as.mutation(api.applications.ask, {
+				applicationId: ana.applicationId,
+			}),
+		).rejects.toThrow("This Hackathon has ended");
+	});
+
+	it("the 91st Ask is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+		await setup.t.run(async (ctx) => {
+			const hackathon = await ctx.db.get(hackathonId);
+			if (!hackathon) throw new Error("No Hackathon");
+			for (let i = 0; i < 90; i++) {
+				const userId = await ctx.db.insert("users", { name: `Asked${i}` });
+				await ctx.db.insert("threads", {
+					startupId: hackathon.startupId,
+					hackathonId,
+					kind: "private",
+					participantId: userId,
+				});
+			}
+		});
+
+		await expect(
+			setup.founder.as.mutation(api.applications.ask, {
+				applicationId: ana.applicationId,
+			}),
+		).rejects.toThrow("Ask up to 90 people");
+	});
+});

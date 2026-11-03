@@ -1,7 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { isParticipant } from "../applications/model";
+import { getApplication } from "../applications/model";
 import { getTeamRole } from "../startups/team";
 import { isThreadOpen } from "./rules";
 
@@ -11,7 +11,7 @@ type ThreadAccess = { thread: Doc<"threads">; isFounder: boolean };
 
 /**
  * The thread when the person may open it, else null. Team: the team.
- * Everyone: the Founder and Participants. Private: the Founder and that Participant.
+ * Everyone: the Founder and Builders. Private: the Founder and that Applicant or Builder.
  */
 export async function getThreadAccess(
 	ctx: Ctx,
@@ -37,9 +37,12 @@ export async function getThreadAccess(
 		return null;
 	}
 
-	return (await isParticipant(ctx, thread.hackathonId, userId))
-		? { thread, isFounder: false }
-		: null;
+	const application = await getApplication(ctx, thread.hackathonId, userId);
+	const allowed =
+		thread.kind === "private"
+			? application !== null
+			: application?.status === "participating";
+	return allowed ? { thread, isFounder: false } : null;
 }
 
 export async function requireThreadAccess(
@@ -55,7 +58,7 @@ export async function requireThreadAccess(
 	return access;
 }
 
-/** Throws once `isThreadOpen` says the thread no longer takes messages. */
+/** Throws once `isThreadOpen` says the thread no longer takes messages, or its Applicant was declined. */
 export async function requireThreadOpen(ctx: Ctx, thread: Doc<"threads">) {
 	if (!thread.hackathonId) {
 		return;
@@ -63,5 +66,15 @@ export async function requireThreadOpen(ctx: Ctx, thread: Doc<"threads">) {
 	const hackathon = await ctx.db.get(thread.hackathonId);
 	if (hackathon && !isThreadOpen(thread.kind, hackathon, Date.now())) {
 		throw new ConvexError("This Hackathon has ended.");
+	}
+	if (thread.kind === "private" && thread.participantId) {
+		const application = await getApplication(
+			ctx,
+			thread.hackathonId,
+			thread.participantId,
+		);
+		if (application?.status === "declined") {
+			throw new ConvexError("This conversation is closed");
+		}
 	}
 }

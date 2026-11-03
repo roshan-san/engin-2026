@@ -3,6 +3,8 @@ import { type Infer, v } from "convex/values";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const MAX_THREADS = 20;
+/** A Hackathon's private threads: its Builders' and the Founder's Asks. */
+export const MAX_PRIVATE_THREADS = 100;
 /** How long after a Hackathon finishes its private threads stay open. */
 export const PRIVATE_THREAD_GRACE_MS = 14 * DAY_MS;
 export const threadKind = v.union(

@@ -132,3 +132,27 @@ describe("the Decide steps", () => {
 		}
 	});
 });
+
+describe("Ask", () => {
+	const ASK: ApplicationAction = { kind: "ask", privateThreads: 0 };
+
+	it("the Founder asks Applicants and Builders until the Hackathon is done", () => {
+		expect(applicationRefusal(applied, "open", ASK)).toBeNull();
+		expect(applicationRefusal(participant, "live", ASK)).toBeNull();
+		expect(applicationRefusal(participant, "done", ASK)).toBe(
+			"This Hackathon has ended",
+		);
+	});
+
+	it("a declined Applicant can't be asked", () => {
+		expect(applicationRefusal(declined, "open", ASK)).toBe(
+			"They're already declined",
+		);
+	});
+
+	it("Ask stops at 90 threads", () => {
+		expect(
+			applicationRefusal(applied, "open", { kind: "ask", privateThreads: 90 }),
+		).toBe("Ask up to 90 people");
+	});
+});

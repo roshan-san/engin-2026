@@ -4,6 +4,7 @@ import { appendActivity } from "./activity/model";
 import {
 	ensurePrivateThread,
 	getApplication,
+	getPrivateThread,
 	loadApplicationsForFounder,
 	loadParticipantProgress,
 	requireApplicationAllowed,
@@ -11,7 +12,7 @@ import {
 	requireOpen,
 	toFounderApplicationView,
 } from "./applications/model";
-import { APPLICATION_TEXT, decision } from "./applications/rules";
+import { APPLICATION_TEXT, decision, MAX_ASKS } from "./applications/rules";
 import { finishIfDecided } from "./hackathons/lifecycle";
 import { loadParticipants, requireHackathonFounder } from "./hackathons/model";
 import { ensureHireInvite } from "./invites/model";
@@ -154,6 +155,43 @@ export const decline = mutation({
 		requireApplicationAllowed(application, hackathon, { kind: "decline" });
 
 		await ctx.db.patch(application._id, { status: "declined" });
+	},
+});
+
+/** Opens the Founder's private thread with an Applicant or Builder, to ask them something. */
+export const ask = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		const existing = await getPrivateThread(
+			ctx,
+			hackathon._id,
+			application.userId,
+		);
+		const privateThreads = existing
+			? 0
+			: (
+					await ctx.db
+						.query("threads")
+						.withIndex("by_hackathon_and_kind", (q) =>
+							q.eq("hackathonId", hackathon._id).eq("kind", "private"),
+						)
+						.take(MAX_ASKS)
+				).length;
+		requireApplicationAllowed(application, hackathon, {
+			kind: "ask",
+			privateThreads,
+		});
+
+		return (
+			existing?._id ??
+			(await ensurePrivateThread(ctx, hackathon, application.userId))
+		);
 	},
 });
 

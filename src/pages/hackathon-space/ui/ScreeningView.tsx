@@ -150,6 +150,7 @@ export function ScreeningView({
 		<ApplicantDetail
 			key={activeId}
 			applicationId={activeId}
+			userId={userId}
 			acceptRefusal={refusalOf(activeId, "accept")}
 			onAccept={() => void act(activeId, accept)}
 			onDecline={() => requestDecline(activeId)}

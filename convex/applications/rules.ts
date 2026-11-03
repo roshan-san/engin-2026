@@ -4,6 +4,7 @@ import {
 	isUnderway,
 	MAX_PARTICIPANTS,
 } from "../hackathons/rules";
+import { MAX_PRIVATE_THREADS } from "../threads/rules";
 
 export type Decision = Infer<typeof decision>;
 
@@ -14,10 +15,14 @@ export type RuledApplication = {
 	decision?: Decision;
 };
 
+/** Ask stops here, so the Builders' own threads always fit in one read. */
+export const MAX_ASKS = MAX_PRIVATE_THREADS - MAX_PARTICIPANTS;
+
 /** What the Founder does to one Application: Screening while Open, then the Decide steps (★, the Walkthrough, the Decision). */
 export type ApplicationAction =
 	| { kind: "accept"; participants: number }
 	| { kind: "decline" }
+	| { kind: "ask"; privateThreads: number }
 	| { kind: "shortlist"; on: boolean }
 	| { kind: "walkthrough" }
 	| { kind: "decide"; decision: Decision };
@@ -52,6 +57,16 @@ export function applicationRefusal(
 			}
 			return application.status === "declined"
 				? "They're already declined"
+				: null;
+		case "ask":
+			if (phase === "done") {
+				return "This Hackathon has ended";
+			}
+			if (application.status === "declined") {
+				return "They're already declined";
+			}
+			return action.privateThreads >= MAX_ASKS
+				? `Ask up to ${MAX_ASKS} people`
 				: null;
 		default:
 			return decideRefusal(application, phase, action);

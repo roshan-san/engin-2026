@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { loadPublicUser } from "../users/model";
 import { getThreadAccess } from "./access";
-import { MAX_THREADS } from "./rules";
+import { MAX_PRIVATE_THREADS, MAX_THREADS } from "./rules";
 
 export async function loadThreadRead(
 	ctx: QueryCtx | MutationCtx,
@@ -75,7 +75,7 @@ export async function loadHackathonThreads(
 		.withIndex("by_hackathon_and_kind", (q) =>
 			q.eq("hackathonId", hackathonId).eq("kind", "private"),
 		)
-		.take(MAX_THREADS);
+		.take(MAX_PRIVATE_THREADS);
 	return [...everyone, ...priv];
 }
 

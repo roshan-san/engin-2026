@@ -47,7 +47,9 @@ describe("applyState", () => {
 describe("copy", () => {
 	it("says where you stand", () => {
 		expect(APPLY_COPY.participating).toBe("You're in.");
-		expect(APPLY_COPY.declined).toBe("Not this time. Thanks for applying.");
+		expect(APPLY_COPY.declined).toBe(
+			"Not selected for this one. Thanks for applying.",
+		);
 	});
 
 	it("names a closed Hackathon", () => {

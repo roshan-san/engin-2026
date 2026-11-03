@@ -28,6 +28,7 @@ import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { TILE, TILE_LINK } from "~/shared/ui/tile";
 import { useDetailPanel } from "~/shared/ui/useDetailPanel";
+import { AskedThread } from "./AskedThread";
 
 const route = getRouteApi("/_shell/hackathons/$id");
 
@@ -257,10 +258,16 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 						The Founder picks up to {MAX_PARTICIPANTS} before it starts on{" "}
 						{dayLabel(page.startsAt)}. You'll see the answer on Home.
 					</p>
+					<AskedThread hackathonId={page._id} isReadOnly={false} />
 				</>
 			);
 		case "declined":
-			return <p className="text-sm">{APPLY_COPY.declined}</p>;
+			return (
+				<>
+					<p className="text-sm">{APPLY_COPY.declined}</p>
+					<AskedThread hackathonId={page._id} isReadOnly />
+				</>
+			);
 		case "closed":
 			return (
 				<>

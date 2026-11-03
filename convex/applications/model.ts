@@ -88,22 +88,31 @@ export function requireApplicationAllowed(
 	}
 }
 
-/** The Founder's private Thread with a Participant, created once. */
+/** The Founder's private Thread with this person on the Hackathon, or null. */
+export async function getPrivateThread(
+	ctx: Ctx,
+	hackathonId: Id<"hackathons">,
+	participantId: Id<"users">,
+): Promise<Doc<"threads"> | null> {
+	return await ctx.db
+		.query("threads")
+		.withIndex("by_hackathon_and_participant", (q) =>
+			q.eq("hackathonId", hackathonId).eq("participantId", participantId),
+		)
+		.first();
+}
+
+/** The Founder's private Thread with an Applicant or Builder, created once. */
 export async function ensurePrivateThread(
 	ctx: MutationCtx,
 	hackathon: Doc<"hackathons">,
 	participantId: Id<"users">,
-): Promise<void> {
-	const existing = await ctx.db
-		.query("threads")
-		.withIndex("by_hackathon_and_participant", (q) =>
-			q.eq("hackathonId", hackathon._id).eq("participantId", participantId),
-		)
-		.first();
+): Promise<Id<"threads">> {
+	const existing = await getPrivateThread(ctx, hackathon._id, participantId);
 	if (existing) {
-		return;
+		return existing._id;
 	}
-	await ctx.db.insert("threads", {
+	return await ctx.db.insert("threads", {
 		startupId: hackathon.startupId,
 		hackathonId: hackathon._id,
 		kind: "private",

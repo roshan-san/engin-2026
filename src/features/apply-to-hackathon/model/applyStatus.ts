@@ -29,7 +29,7 @@ export function applyState(
 export const APPLY_COPY = {
 	applied: "Applied.",
 	participating: "You're in.",
-	declined: "Not this time. Thanks for applying.",
+	declined: "Not selected for this one. Thanks for applying.",
 } as const;
 
 /** What the top bar offers for each state: the panel, the Board, or nothing. */
