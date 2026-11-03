@@ -2,54 +2,73 @@ import { describe, expect, it } from "vitest";
 import { shiftWeek, weekOf, weekStart } from "../cycles/rules";
 import { DAY } from "../testing/test.setup";
 import {
-	buildParts,
+	consistencyOf,
 	countedWeeks,
-	nextRating,
+	nextMomentum,
 	outcomeOf,
 	outcomeScore,
 	personTarget,
-	startupTarget,
-	weekVolume,
+	teamAverage,
 } from "./model";
 
-describe("rating math", () => {
-	it("each Card counts fully up to 5 a week, and barely after", () => {
-		expect(weekVolume(0)).toBe(0);
-		expect(weekVolume(3)).toBe(0.6);
-		expect(weekVolume(5)).toBe(1);
-		expect(weekVolume(10)).toBeCloseTo(1.1);
-		expect(weekVolume(40)).toBeCloseTo(1.2);
+describe("momentum math", () => {
+	it("a startup averages its team by credit, Trust rounded down", () => {
+		expect(
+			teamAverage([
+				{ weight: 1, momentum: 1000, trust: "low" },
+				{ weight: 3, momentum: 1400, trust: "high" },
+			]),
+		).toEqual({ momentum: 1300, trust: "mid", credit: 4 });
+		expect(teamAverage([{ weight: 0, momentum: 1600, trust: "high" }])).toEqual(
+			{ momentum: 1000, trust: "low", credit: 0 },
+		);
 	});
 
-	it("the parts read consistency and volume from weekly counts", () => {
-		const parts = buildParts([0, 2, 0, 6]);
+	it("a week's credit is its best approval, and only active weeks count", () => {
+		const week = (active: boolean, credit: number) => ({ active, credit });
 
-		expect(parts).toMatchObject({
-			active: 2,
-			weeks: 4,
-			consistency: 0.5,
-			perWeek: 2,
-		});
-		expect(parts.volume).toBeCloseTo((0 + 0.4 + 0 + 1.02) / 4);
+		expect(
+			consistencyOf([
+				week(true, 1),
+				week(false, 0),
+				week(true, 0.25),
+				week(true, 1),
+				week(false, 0),
+				week(true, 0.25),
+			]),
+		).toEqual({ consistency: 0.625, active: 4, shipped: 4 });
 	});
 
-	it("no counted weeks gives all-zero parts", () => {
-		expect(buildParts([])).toEqual({
-			active: 0,
-			weeks: 0,
-			consistency: 0,
-			volume: 0,
-			perWeek: 0,
-		});
+	it("under 4 active weeks, the missing ones count as 0.25", () => {
+		expect(
+			consistencyOf([
+				{ active: true, credit: 1 },
+				{ active: false, credit: 0 },
+				{ active: true, credit: 0.25 },
+			]),
+		).toEqual({ consistency: 0.4375, active: 2, shipped: 2 });
+		expect(consistencyOf([{ active: true, credit: 1 }]).consistency).toBe(
+			0.4375,
+		);
+		expect(consistencyOf([{ active: true, credit: 0.25 }]).consistency).toBe(
+			0.25,
+		);
 	});
 
-	it("a Startup that ships 5 every week targets 1600, a silent one 800", () => {
-		expect(startupTarget(buildParts(Array(12).fill(5)))).toBe(1600);
-		expect(startupTarget(buildParts(Array(12).fill(0)))).toBe(800);
+	it("an active week with nothing approved counts as 0", () => {
+		expect(
+			consistencyOf([
+				{ active: true, credit: 1 },
+				{ active: true, credit: 1 },
+				{ active: true, credit: 1 },
+				{ active: true, credit: 0 },
+			]),
+		).toEqual({ consistency: 0.75, active: 4, shipped: 3 });
 	});
 
-	it("a person's target adds Hackathon outcomes at 20%", () => {
-		expect(personTarget(buildParts([]), 1)).toBe(960);
+	it("a steady self-approving Founder targets 1000", () => {
+		expect(personTarget(0.25, 0)).toBe(1000);
+		expect(personTarget(1, 1)).toBe(1660);
 	});
 
 	it("outcomes sum their points and cap at 1", () => {
@@ -104,9 +123,9 @@ describe("rating math", () => {
 		}
 	});
 
-	it("the Rating rises faster than it falls", () => {
-		expect(nextRating(1000, 1400)).toBe(1100);
-		expect(nextRating(1000, 800)).toBe(980);
+	it("the Momentum rises faster than it falls", () => {
+		expect(nextMomentum(1000, 1400)).toBe(1100);
+		expect(nextMomentum(1000, 800)).toBe(980);
 	});
 
 	describe("counted weeks", () => {

@@ -1,7 +1,7 @@
 import { USER_TEXT, usernameProblem } from "@convex/users/rules";
 import { useMatch, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
-import { DISCIPLINE_OPTIONS, useMe } from "~/entities/person";
+import { useMe } from "~/entities/person";
 import {
 	type ProfileDraft,
 	type ProfileSource,
@@ -10,6 +10,7 @@ import {
 	toProfileDraft,
 	useUpdateProfile,
 } from "~/features/edit-profile";
+import { DISCIPLINES } from "~/shared/config/disciplines";
 import {
 	useDiscardGuard,
 	useReportChanged,
@@ -178,7 +179,7 @@ function SettingsForm({
 				</div>
 				<ChipPicker
 					label="Discipline"
-					options={DISCIPLINE_OPTIONS}
+					options={DISCIPLINES}
 					value={draft.discipline}
 					onChange={(discipline) => set("discipline", discipline)}
 				/>

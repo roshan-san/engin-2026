@@ -9,7 +9,7 @@ import {
 	TooltipTrigger,
 } from "./tooltip";
 
-/** "1184 ▲ 12": the Rating in its Tier colour, its last move, and Provisional while it settles. */
+/** "1184 ▲ 12": the Momentum in its Tier colour, its last move, and Provisional while it settles. */
 export function RatingBadge({
 	rating,
 	ratingChange,

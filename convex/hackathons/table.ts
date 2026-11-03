@@ -1,19 +1,19 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
-import {
-	hackathonStatus,
-	hackathonWeeks,
-	jobMode,
-	jobPay,
-	jobRole,
-} from "./rules";
+import { discipline } from "../lib/disciplines";
+import { hackathonStatus, hackathonWeeks, jobMode, jobPay } from "./rules";
 
 export const hackathonsTables = {
 	hackathons: defineTable({
 		startupId: v.id("startups"),
 		status: hackathonStatus,
-		job: v.object({ role: jobRole, pay: jobPay, mode: jobMode }),
+		job: v.object({
+			title: v.string(),
+			discipline,
+			pay: jobPay,
+			mode: jobMode,
+		}),
 		problem: v.string(),
 		weeks: hackathonWeeks,
 		startsAt: v.number(),

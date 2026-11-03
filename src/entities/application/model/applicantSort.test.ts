@@ -13,7 +13,7 @@ function row(
 			_creationTime: at,
 			status,
 		},
-		user: { name, rating },
+		user: { name, momentum: rating },
 	} as ApplicantRow;
 }
 
@@ -36,7 +36,7 @@ describe("sortApplicants", () => {
 		]);
 	});
 
-	it("by Rating, highest first, and a tie goes to the newest", () => {
+	it("by Momentum, highest first, and a tie goes to the newest", () => {
 		expect(names(sortApplicants([ana, ben, cal, dee, eve], "rating"))).toEqual([
 			"ben",
 			"eve",

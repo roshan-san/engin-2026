@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import { decidedHackathon } from "../applications/applications.setup";
-import { verifyCards } from "../rating/rating.setup";
+import { verifyCards } from "../momentum/momentum.setup";
 import {
 	addContributor,
 	type Setup,
@@ -20,6 +20,7 @@ async function busyStartup(): Promise<Setup> {
 	const sam = await addContributor(setup, "Sam");
 	await verifyCards(setup, sam, 1);
 	await setup.founder.as.mutation(api.invites.create, {
+		discipline: "developer",
 		startupId: setup.startupId,
 		email: "jo@example.com",
 	});
@@ -75,7 +76,7 @@ describe("visibility", () => {
 			slug: setup.slug,
 		});
 
-		expect(signals?.rating).toBe(1000);
+		expect(signals?.momentum).toBe(1000);
 		expect(signals?.isProvisional).toBe(true);
 		expect(signals?.strip).toHaveLength(12);
 		expect(signals?.strip.at(-1)?.count).toBe(2);
@@ -85,7 +86,7 @@ describe("visibility", () => {
 		expect(signals?.verifiedTotal12).toBe(2);
 	});
 
-	it("the parts count finished weeks only", async () => {
+	it("signals carry the startup's Trust, Low before any run, and no parts", async () => {
 		const setup = await setUpStartup(createTest());
 		await verifyCards(setup, setup.founder, 3);
 
@@ -93,10 +94,8 @@ describe("visibility", () => {
 			slug: setup.slug,
 		});
 
-		expect(signals?.parts).toEqual({
-			consistency: { active: 0, weeks: 0 },
-			volume: { perWeek: 0 },
-		});
+		expect(signals?.trust).toBe("low");
+		expect(signals).not.toHaveProperty("parts");
 	});
 
 	it("an unknown slug gives null", async () => {

@@ -99,12 +99,14 @@
 											"!@convex/lib/text",
 											"!@convex/lib/returnPath",
 											"!@convex/lib/explore",
+											"!@convex/lib/disciplines",
 											"../**/convex/**",
 											"!../**/convex/_generated/**",
 											"!../**/convex/*/rules",
 											"!../**/convex/lib/text",
 											"!../**/convex/lib/returnPath",
-											"!../**/convex/lib/explore"
+											"!../**/convex/lib/explore",
+											"!../**/convex/lib/disciplines"
 										],
 										"message": "The frontend imports only @convex/_generated, @convex/<module>/rules and pure @convex/lib files."
 									}
@@ -120,7 +122,8 @@
 				"**/convex/*/rules.ts",
 				"**/convex/lib/text.ts",
 				"**/convex/lib/returnPath.ts",
-				"**/convex/lib/explore.ts"
+				"**/convex/lib/explore.ts",
+				"**/convex/lib/disciplines.ts"
 			],
 			"linter": {
 				"rules": {

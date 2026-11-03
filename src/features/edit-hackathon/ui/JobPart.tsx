@@ -1,9 +1,12 @@
-import { MODES, PAYS, ROLES } from "~/shared/config/jobs";
+import { HACKATHON_TEXT } from "@convex/hackathons/rules";
+import { DISCIPLINES } from "~/shared/config/disciplines";
+import { MODES, PAYS } from "~/shared/config/jobs";
 import { ChipPicker } from "~/shared/ui/ChipPicker";
+import { Input } from "~/shared/ui/input";
 import type { HackathonDraft } from "../model/draft";
 import { Field, Part } from "./FormPart";
 
-/** The job: role, pay and where, as chips. */
+/** The job: its title, then discipline, pay and where as chips. */
 export function JobPart({
 	job,
 	onChange,
@@ -13,12 +16,21 @@ export function JobPart({
 }) {
 	return (
 		<Part label="The job">
-			<Field label="Role">
+			<Field label="Title">
+				<Input
+					aria-label="Title"
+					placeholder="Growth lead"
+					maxLength={HACKATHON_TEXT.title}
+					value={job.title}
+					onChange={(event) => onChange({ ...job, title: event.target.value })}
+				/>
+			</Field>
+			<Field label="Discipline">
 				<ChipPicker
-					label="Role"
-					options={ROLES}
-					value={job.role}
-					onChange={(role) => onChange({ ...job, role })}
+					label="Discipline"
+					options={DISCIPLINES}
+					value={job.discipline}
+					onChange={(discipline) => onChange({ ...job, discipline })}
 				/>
 			</Field>
 			<Field label="Pay">

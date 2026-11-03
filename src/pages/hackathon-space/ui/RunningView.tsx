@@ -143,7 +143,7 @@ export function RunningView({
 											<span
 												className={cn(
 													"min-w-0 flex-1 truncate",
-													tierText(participant.rating),
+													tierText(participant.momentum),
 												)}
 											>
 												{participant.name}

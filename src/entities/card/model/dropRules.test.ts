@@ -18,7 +18,7 @@ function aCard(status: CardView["status"], ownerId: Id<"users"> = fay) {
 			name: null,
 			username: null,
 			image: null,
-			rating: 1000,
+			momentum: 1000,
 		},
 		shipped: null,
 		submittedAt: null,
@@ -28,6 +28,7 @@ function aCard(status: CardView["status"], ownerId: Id<"users"> = fay) {
 		notesEditedBy: null,
 		changesAsked: false,
 		selfVerified: false,
+		discipline: null,
 	} satisfies CardView;
 }
 

@@ -123,6 +123,12 @@ function hackathonRefusal(card: RuledCard, actor: CardActor): string | null {
 }
 
 export const MAX_BOARD_CARDS = 200;
+/** How much a startup Board holds. Hackathon Cards are capped by the Hackathon instead. */
+export const CARD_LIMITS = { inProgressPerPerson: 2, todoPerStartup: 20 };
+export const IN_PROGRESS_FULL =
+	"Each person can have 2 Cards In progress. Finish or move one first.";
+export const TODO_FULL = "To do holds 20 Cards. Finish or delete one first.";
+export const NO_OWNER = "Give this Card an owner before moving it In progress.";
 export const MAX_SHIPPED_LINKS = 5;
 export const MAX_SHIPPED_IMAGES = 5;
 export const cardStatus = v.union(

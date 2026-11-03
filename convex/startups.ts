@@ -3,11 +3,12 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { shiftWeek, weekOf } from "./cycles/rules";
+import { participantsGetOf } from "./hackathons/model";
 import { loadHiringRecord } from "./hackathons/record";
 import { requireUserId } from "./lib/auth";
 import { EXPLORE_SCAN, MAX_EXPLORE_ROWS } from "./lib/explore";
 import { assertUrl, limitText, requireLimitedText } from "./lib/text";
-import { STARTING_RATING } from "./rating/rules";
+import { STARTING_MOMENTUM } from "./momentum/rules";
 import {
 	buildUniqueSlug,
 	getStartupBySlug,
@@ -54,13 +55,13 @@ export const getPublic = query({
 				job: h.job,
 				weeks: h.weeks,
 				startsAt: h.startsAt,
-				participantsGet: h.participantsGet ?? null,
+				participantsGet: participantsGetOf(h),
 			})),
 		};
 	},
 });
 
-/** Startups for anyone, highest Rating first, narrowed by the chips. */
+/** Startups for anyone, highest Momentum first, narrowed by the chips. */
 export const explore = query({
 	args: {
 		stage: v.optional(startupStage),
@@ -69,10 +70,10 @@ export const explore = query({
 	handler: async (ctx, args) => {
 		const startups = await ctx.db
 			.query("startups")
-			.withIndex("by_rating")
+			.withIndex("by_momentum")
 			.order("desc")
 			.take(EXPLORE_SCAN);
-		// A Startup not yet rated has its strip end at the last finished week.
+		// A Startup not yet scored has its strip end at the last finished week.
 		const lastWeek = shiftWeek(weekOf(Date.now()), -1);
 
 		return await Promise.all(
@@ -114,9 +115,9 @@ export const create = mutation({
 			stage: args.stage,
 			city: args.city,
 			founderId: userId,
-			rating: STARTING_RATING,
-			ratingChange: 0,
-			ratedWeeks: 0,
+			momentum: STARTING_MOMENTUM,
+			momentumChange: 0,
+			scoredWeeks: 0,
 			provisional: true,
 			rhythm: [],
 		});

@@ -12,6 +12,7 @@ import {
 	loadHackathonCardsInReview,
 	loadParticipants,
 	matchesExplore,
+	participantsGetOf,
 	replaceTemplateCards,
 	requireHackathonFounder,
 	requireValidDraft,
@@ -25,11 +26,11 @@ import {
 } from "./hackathons/record";
 import {
 	hackathonWeeks,
-	jobRole,
 	MAX_LISTED_HACKATHONS,
 	phaseOf,
 } from "./hackathons/rules";
 import { requireUserId } from "./lib/auth";
+import { discipline } from "./lib/disciplines";
 import { MAX_EXPLORE_ROWS } from "./lib/explore";
 import { loadLogoUrl, toPublicStartup } from "./startups/model";
 import { getTeamRole, requireFounder, requireTeam } from "./startups/team";
@@ -134,17 +135,19 @@ export const getPublic = query({
 			endsAt: hackathon.endsAt,
 			decideBy: hackathon.decideBy,
 			finishedAt: hackathon.finishedAt,
-			participantsGet: hackathon.participantsGet ?? null,
+			participantsGet: participantsGetOf(hackathon),
 			status: hackathon.status,
 			startup: {
 				name: publicStartup.name,
 				slug: publicStartup.slug,
 				oneLiner: publicStartup.oneLiner,
 				logo: publicStartup.logo,
-				rating: publicStartup.rating,
-				ratingChange: publicStartup.ratingChange,
+				momentum: publicStartup.momentum,
+				momentumChange: publicStartup.momentumChange,
 				isProvisional: publicStartup.isProvisional,
 			},
+			/** The Founder's Trust, so Builders can judge the promise. */
+			founderTrust: (await ctx.db.get(startup.founderId))?.trust ?? "low",
 			hiringRecord: await loadHiringRecord(ctx, startup._id),
 			applicantCount: hackathon.applicantCount,
 			isTeam: userId
@@ -158,7 +161,7 @@ export const getPublic = query({
 /** Hackathons Participants can still join or that are live now, for anyone. */
 export const explore = query({
 	args: {
-		role: v.optional(jobRole),
+		discipline: v.optional(discipline),
 		weeks: v.optional(hackathonWeeks),
 		paid: v.optional(v.boolean()),
 	},

@@ -60,6 +60,7 @@ describe("groups", () => {
 		await setup.t.run(
 			async (ctx) =>
 				await ctx.db.insert("contributors", {
+					discipline: "developer",
 					startupId: zeta.startupId,
 					userId: setup.founder.userId,
 				}),
@@ -74,7 +75,7 @@ describe("groups", () => {
 				name: "Acme",
 				role: "founder",
 				logoUrl: null,
-				rating: 1000,
+				momentum: 1000,
 				waiting: [],
 			},
 			{
@@ -83,7 +84,7 @@ describe("groups", () => {
 				name: "Zeta",
 				role: "contributor",
 				logoUrl: null,
-				rating: 1000,
+				momentum: 1000,
 				waiting: [],
 			},
 		]);
@@ -99,7 +100,12 @@ describe("groups", () => {
 		expect(places.hackathons).toMatchObject([
 			{
 				hackathonId,
-				job: { role: "frontend", pay: "6_9l", mode: "remote" },
+				job: {
+					title: "Frontend",
+					discipline: "developer",
+					pay: "6_9l",
+					mode: "remote",
+				},
 				startupName: "Acme",
 				startupSlug: setup.slug,
 				startupLogoUrl: null,
@@ -126,7 +132,12 @@ describe("groups", () => {
 		expect(before.applied).toEqual([
 			{
 				hackathonId,
-				job: { role: "frontend", pay: "6_9l", mode: "remote" },
+				job: {
+					title: "Frontend",
+					discipline: "developer",
+					pay: "6_9l",
+					mode: "remote",
+				},
 				startupName: "Acme",
 				startupSlug: setup.slug,
 				startupLogoUrl: null,
@@ -398,7 +409,7 @@ describe("waiting", () => {
 		const places = await placesOf(setup.founder);
 
 		expect(places.startups[0].waiting).toEqual([
-			{ kind: "new_applicants", role: "frontend", count: 2 },
+			{ kind: "new_applicants", title: "Frontend", count: 2 },
 		]);
 	});
 
@@ -436,8 +447,8 @@ describe("waiting", () => {
 		const places = await placesOf(setup.founder);
 
 		expect(places.startups[0].waiting).toEqual([
-			{ kind: "participant_cards_to_review", role: "frontend", count: 1 },
-			{ kind: "participants_to_decide", role: "frontend", count: 1 },
+			{ kind: "participant_cards_to_review", title: "Frontend", count: 1 },
+			{ kind: "participants_to_decide", title: "Frontend", count: 1 },
 		]);
 	});
 

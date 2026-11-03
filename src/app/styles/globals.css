@@ -127,7 +127,7 @@
 	/* The Landing page is the app's dark until the contributor section, the only colour change. */
 	--panel-contributor: #f5b83d;
 
-	/* Rating Tiers (convex/rating/rules.ts): grey, green, blue, violet, amber. Text colours. */
+	/* Rating Tiers (convex/momentum/rules.ts): grey, green, blue, violet, amber. Text colours. */
 	--tier-1: #a1a1aa;
 	--tier-2: #3fb87a;
 	--tier-3: #60a5fa;

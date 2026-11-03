@@ -14,8 +14,8 @@ describe("users", () => {
 		const me = await fay.as.query(api.users.getMe, {});
 
 		expect(me).toMatchObject({
-			rating: 1000,
-			ratingChange: 0,
+			momentum: 1000,
+			momentumChange: 0,
 			isProvisional: true,
 		});
 		expect(me).not.toHaveProperty("isInvestorPro");
@@ -57,6 +57,22 @@ describe("users", () => {
 			bio: "Builds things",
 			discipline: "designer",
 		});
+	});
+
+	it("a profile's discipline comes from the one list", async () => {
+		const t = createTest();
+		const fay = await signUp(t, "Fay");
+
+		await fay.as.mutation(api.users.updateProfile, { discipline: "developer" });
+		const me = await fay.as.query(api.users.getMe, {});
+		expect(me?.discipline).toBe("developer");
+
+		await expect(
+			fay.as.mutation(api.users.updateProfile, {
+				// @ts-expect-error The old value is no longer in the list.
+				discipline: "engineer",
+			}),
+		).rejects.toThrow();
 	});
 
 	it("a person clears their discipline", async () => {

@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon } from "lucide-react";
 import { useParticipant } from "~/entities/application";
-import { roleLabel } from "~/shared/config/jobs";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { ParticipantBrief } from "./ParticipantBrief";
@@ -15,7 +14,7 @@ export function ParticipantBriefPage() {
 			bar={{
 				title: (
 					<h1 className="truncate text-sm">
-						<span className="font-medium">{roleLabel(page.job.role)}</span>
+						<span className="font-medium">{page.job.title}</span>
 						<span className="text-muted-foreground">
 							{" "}
 							· {page.startup.name}

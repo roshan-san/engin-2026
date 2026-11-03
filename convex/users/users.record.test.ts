@@ -8,7 +8,7 @@ import {
 } from "../applications/applications.setup";
 import { SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
-import { verifyCards } from "../rating/rating.setup";
+import { verifyCards } from "../momentum/momentum.setup";
 import {
 	addContributor,
 	type Setup,
@@ -38,7 +38,11 @@ describe("profile record", () => {
 		const zeta = { t: acme.t, founder: zed, startupId, slug };
 		await acme.t.run(
 			async (ctx) =>
-				await ctx.db.insert("contributors", { startupId, userId: sam.userId }),
+				await ctx.db.insert("contributors", {
+					discipline: "developer",
+					startupId,
+					userId: sam.userId,
+				}),
 		);
 		await verifyCards(acme, sam, 3);
 		await verifyCards(zeta, sam, 1);
@@ -103,7 +107,7 @@ describe("profile record", () => {
 		expect(record?.hackathons).toMatchObject([
 			{
 				outcome: "built",
-				job: { role: "frontend" },
+				job: { title: "Frontend" },
 				startup: { name: "Acme", slug: "acme" },
 			},
 		]);
@@ -119,7 +123,7 @@ describe("profile record", () => {
 		const record = await recordOf(setup, "ana");
 
 		expect(record?.hackathons).toEqual([]);
-		expect(record?.parts.outcomes).toBe(0);
+		expect(record?.parts).toBeNull();
 	});
 
 	it("a signed-in person sees the whole Record", async () => {
@@ -130,21 +134,17 @@ describe("profile record", () => {
 
 		expect(sam).toMatchObject({
 			bio: null,
-			parts: {
-				consistency: { active: 0, weeks: 0 },
-				volume: { perWeek: 0 },
-				outcomes: 0,
-			},
+			parts: null,
 			hackathons: [],
 			work: [],
 		});
 	});
 
-	it("signed out, a profile shows only the name, Discipline and Rating", async () => {
+	it("signed out, a profile shows only the name, Discipline and Momentum", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
 		await sam.as.mutation(api.users.updateProfile, {
-			discipline: "engineer",
+			discipline: "developer",
 			bio: "Ships the onboarding flow",
 		});
 
@@ -155,8 +155,8 @@ describe("profile record", () => {
 		expect(profile).toMatchObject({
 			name: "Sam",
 			username: "sam",
-			discipline: "engineer",
-			rating: 1000,
+			discipline: "developer",
+			momentum: 1000,
 			details: null,
 		});
 		expect(JSON.stringify(profile)).not.toContain("Ships the onboarding flow");

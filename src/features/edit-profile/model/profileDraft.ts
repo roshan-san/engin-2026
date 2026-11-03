@@ -1,8 +1,5 @@
-import type { discipline } from "@convex/users/rules";
-import type { Infer } from "convex/values";
+import type { Discipline } from "~/shared/config/disciplines";
 import { changedFields } from "~/shared/lib/changedFields";
-
-type Discipline = Infer<typeof discipline>;
 
 /** The part of `users.getMe` the Settings form edits. */
 export type ProfileSource = {

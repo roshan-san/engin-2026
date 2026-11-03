@@ -49,7 +49,7 @@ describe("record", () => {
 	it("milestones name the job", () => {
 		expect(
 			entrySummary(
-				entry({ kind: "participant_hired", job: { role: "frontend" } }),
+				entry({ kind: "participant_hired", job: { title: "Frontend" } }),
 			),
 		).toEqual({ actor: "Sam", text: "was hired · Frontend" });
 		expect(

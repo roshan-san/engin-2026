@@ -7,17 +7,22 @@ import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
 import { phaseOf } from "../hackathons/rules";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
+import { markActive, recordApproval } from "../momentum/credit";
 import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
 import {
+	CARD_LIMITS,
 	CARD_TEXT,
 	type CardAction,
 	type CardActor,
 	cardRefusal,
+	IN_PROGRESS_FULL,
 	isUnfinished,
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
+	NO_OWNER,
+	TODO_FULL,
 } from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -115,6 +120,46 @@ export async function requireTeamOwner(
 ): Promise<void> {
 	if (!(await getTeamRole(ctx, startupId, ownerId))) {
 		throw new ConvexError("They're not on this Startup's team");
+	}
+}
+
+/**
+ * Throws when a startup Card can't land in `to`: To do is full, the owner already has
+ * 2 In progress, or nobody owns it. Hackathon Cards have no limit.
+ */
+export async function requireRoomIn(
+	ctx: Ctx,
+	card: {
+		startupId: Id<"startups">;
+		hackathonId?: Id<"hackathons">;
+		ownerId?: Id<"users">;
+	},
+	to: "todo" | "in_progress",
+): Promise<void> {
+	if (card.hackathonId) {
+		return;
+	}
+	if (to === "in_progress" && !card.ownerId) {
+		throw new ConvexError(NO_OWNER);
+	}
+	const there = await ctx.db
+		.query("cards")
+		.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
+			q
+				.eq("startupId", card.startupId)
+				.eq("hackathonId", undefined)
+				.eq("status", to),
+		)
+		.take(MAX_BOARD_CARDS);
+	if (to === "todo") {
+		if (there.length >= CARD_LIMITS.todoPerStartup) {
+			throw new ConvexError(TODO_FULL);
+		}
+		return;
+	}
+	const owned = there.filter((other) => other.ownerId === card.ownerId);
+	if (owned.length >= CARD_LIMITS.inProgressPerPerson) {
+		throw new ConvexError(IN_PROGRESS_FULL);
 	}
 }
 
@@ -234,18 +279,22 @@ export async function loadBoardCards(
 export type CardView = Awaited<ReturnType<typeof toCardView>>;
 
 export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
-	const [owner, notesEditedBy, verifiedBy, imageUrls] = await Promise.all([
-		loadPublicUser(ctx, card.ownerId),
-		loadPublicUser(ctx, card.notesEditedBy),
-		loadPublicUser(ctx, card.verifiedBy),
-		loadImageUrls(ctx, card.shipped?.images ?? []),
-	]);
+	const [owner, notesEditedBy, verifiedBy, imageUrls, discipline] =
+		await Promise.all([
+			loadPublicUser(ctx, card.ownerId),
+			loadPublicUser(ctx, card.notesEditedBy),
+			loadPublicUser(ctx, card.verifiedBy),
+			loadImageUrls(ctx, card.shipped?.images ?? []),
+			ownerDiscipline(ctx, card),
+		]);
 	return {
 		_id: card._id,
 		title: card.title,
 		notes: card.notes,
 		status: card.status,
 		owner,
+		/** What the owner does on this Card, for the proof hint. */
+		discipline,
 		shipped: card.shipped ? { ...card.shipped, imageUrls } : null,
 		submittedAt: card.submittedAt ?? null,
 		verifiedAt: card.verifiedAt ?? null,
@@ -258,6 +307,57 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 			card.ownerId !== undefined &&
 			card.verifiedBy === card.ownerId,
 	};
+}
+
+/** Lists a Card's owner on Explore People once, filling a discipline they haven't set so the filter finds them. */
+async function listOwner(
+	ctx: MutationCtx,
+	card: Doc<"cards">,
+	ownerId: Id<"users">,
+): Promise<void> {
+	const owner = await ctx.db.get(ownerId);
+	if (!owner || owner.approvedWork) {
+		return;
+	}
+	await ctx.db.patch(ownerId, {
+		approvedWork: true,
+		discipline: owner.discipline ?? (await roleDiscipline(ctx, card, ownerId)),
+	});
+}
+
+/** What the owner does on this Card: their role on its Hackathon or Startup, else their profile's; null without an owner or either. */
+async function ownerDiscipline(
+	ctx: Ctx,
+	card: Doc<"cards">,
+): Promise<NonNullable<Doc<"users">["discipline"]> | null> {
+	if (!card.ownerId) {
+		return null;
+	}
+	const ownerId = card.ownerId;
+	const role = await roleDiscipline(ctx, card, ownerId);
+	if (role) {
+		return role;
+	}
+	return (await ctx.db.get(ownerId))?.discipline ?? null;
+}
+
+/** What the owner does on this Card's Hackathon or Startup. */
+async function roleDiscipline(
+	ctx: Ctx,
+	card: Doc<"cards">,
+	ownerId: Id<"users">,
+): Promise<Doc<"users">["discipline"]> {
+	if (card.hackathonId) {
+		const hackathon = await ctx.db.get(card.hackathonId);
+		return hackathon?.job.discipline;
+	}
+	const contributor = await ctx.db
+		.query("contributors")
+		.withIndex("by_startup_and_user", (q) =>
+			q.eq("startupId", card.startupId).eq("userId", ownerId),
+		)
+		.unique();
+	return contributor?.discipline;
 }
 
 /** Moves a Card to Done, locking its What shipped, and logs it on the Startup's Activity. The owner verifying their own Card is self-verified. */
@@ -274,6 +374,14 @@ export async function markVerified(
 		verifiedAt: now,
 		verifiedBy: verifierId,
 	});
+	await recordApproval(ctx, card, verifierId, now);
+	if (card.ownerId) {
+		await markActive(ctx, card.ownerId, now);
+	}
+	// Only someone else's approval counts: self-approval would list anyone in a minute.
+	if (card.ownerId && card.ownerId !== verifierId) {
+		await listOwner(ctx, card, card.ownerId);
+	}
 	// Hackathon work is the Participant's, not the Startup's: it stays off the Activity.
 	if (card.hackathonId) {
 		return;

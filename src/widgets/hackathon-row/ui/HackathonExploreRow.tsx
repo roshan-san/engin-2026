@@ -39,8 +39,8 @@ export function HackathonExploreRow({
 							<RatingBadge
 								size="sm"
 								inLink
-								rating={hackathon.startup.rating}
-								ratingChange={hackathon.startup.ratingChange}
+								rating={hackathon.startup.momentum}
+								ratingChange={hackathon.startup.momentumChange}
 								isProvisional={hackathon.startup.isProvisional}
 							/>
 						</div>

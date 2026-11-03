@@ -3,13 +3,14 @@ import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { useRef, useState } from "react";
 import {
-	disciplineLabel,
 	hackathonLine,
 	useMe,
 	useProfile,
 	workLine,
+	YourTrust,
 } from "~/entities/person";
 import { SignInCard } from "~/features/sign-in";
+import { disciplineLabel } from "~/shared/config/disciplines";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
 import { AppPage } from "~/shared/ui/AppPage";
@@ -24,6 +25,7 @@ import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RatingParts } from "~/shared/ui/RatingParts";
 import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
+import { TrustLabel } from "~/shared/ui/TrustLabel";
 import { SettingsSheet } from "~/widgets/account";
 
 const route = getRouteApi("/_shell/u/$username");
@@ -107,10 +109,10 @@ function SignedInProfile({
 					<span
 						className={cn(
 							"text-sm font-semibold tabular-nums",
-							tierText(profile.rating),
+							tierText(profile.momentum),
 						)}
 					>
-						{profile.rating}
+						{profile.momentum}
 					</span>
 				),
 				actions: isMine ? (
@@ -134,12 +136,16 @@ function SignedInProfile({
 			</header>
 
 			<section className="flex flex-col gap-3">
-				<RatingBadge
-					rating={profile.rating}
-					ratingChange={profile.ratingChange}
-					isProvisional={profile.isProvisional}
-				/>
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+					<RatingBadge
+						rating={profile.momentum}
+						ratingChange={profile.momentumChange}
+						isProvisional={profile.isProvisional}
+					/>
+					<TrustLabel trust={profile.trust} />
+				</div>
 				<RatingParts parts={details.parts} />
+				{isMine ? <YourTrust /> : null}
 			</section>
 
 			<Section label="Hackathons">
@@ -215,11 +221,14 @@ function SignedOutProfile({ profile }: { readonly profile: Profile }) {
 						) : null}
 					</div>
 				</div>
-				<RatingBadge
-					rating={profile.rating}
-					ratingChange={profile.ratingChange}
-					isProvisional={profile.isProvisional}
-				/>
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+					<RatingBadge
+						rating={profile.momentum}
+						ratingChange={profile.momentumChange}
+						isProvisional={profile.isProvisional}
+					/>
+					<TrustLabel trust={profile.trust} />
+				</div>
 			</header>
 			<SignInCard>
 				Sign in to see their bio, Hackathons and approved work.

@@ -1,28 +1,23 @@
-/** The parts behind a Rating, as plain lines. */
+/** The parts behind a person's Momentum, as of the last weekly run, as plain lines. */
 export function RatingParts({
 	parts,
 }: {
 	readonly parts: {
-		readonly consistency: { readonly active: number; readonly weeks: number };
-		readonly volume: { readonly perWeek: number };
-		readonly outcomes?: number;
-	};
+		readonly active: number;
+		readonly shipped: number;
+		readonly outcomes: number;
+	} | null;
 }) {
-	const { consistency, volume, outcomes } = parts;
+	if (!parts) {
+		return <p className="text-sm text-muted-foreground">No scored week yet</p>;
+	}
 
 	return (
 		<ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-			{consistency.weeks === 0 ? (
-				<li>No finished week yet</li>
-			) : (
-				<>
-					<li>
-						Active {consistency.active} of {consistency.weeks} weeks
-					</li>
-					<li>{volume.perWeek} approved a week</li>
-				</>
-			)}
-			{outcomes !== undefined ? <li>Hackathons {outcomes}</li> : null}
+			<li>
+				Approved in {parts.shipped} of {parts.active} active weeks
+			</li>
+			<li>Hackathons {parts.outcomes}</li>
 		</ul>
 	);
 }

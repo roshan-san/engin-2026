@@ -33,7 +33,12 @@ export function TeamSection({
 					)}
 				</p>
 			) : null}
-			<PeopleList people={people} canRemove={isFounder} onRemove={remove} />
+			<PeopleList
+				startupId={startupId}
+				people={people}
+				canRemove={isFounder}
+				onRemove={remove}
+			/>
 			{isFounder ? (
 				<>
 					{people && people.contributors.length === 0 ? (

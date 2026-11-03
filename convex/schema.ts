@@ -10,6 +10,7 @@ import { hackathonsTables } from "./hackathons/table";
 import { invitesTables } from "./invites/table";
 import { maintenanceTables } from "./maintenance/table";
 import { messagesTables } from "./messages/table";
+import { momentumTables } from "./momentum/table";
 import { startupsTables } from "./startups/table";
 import { threadsTables } from "./threads/table";
 import { usersTables } from "./users/table";
@@ -36,4 +37,5 @@ export default defineSchema({
 	...messagesTables,
 	...billingTables,
 	...maintenanceTables,
+	...momentumTables,
 });

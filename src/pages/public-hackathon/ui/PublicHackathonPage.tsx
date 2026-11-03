@@ -12,7 +12,6 @@ import {
 	closedLabel,
 } from "~/features/apply-to-hackathon";
 import { GoogleButton, SignInCard } from "~/features/sign-in";
-import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
 import { lastDay } from "~/shared/lib/hackathonDates";
@@ -63,6 +62,7 @@ function postOf(page: HackathonView) {
 		weeks: page.weeks,
 		startsAt: page.startsAt,
 		participantsGet: page.participantsGet,
+		founderTrust: page.founderTrust,
 	};
 }
 
@@ -79,7 +79,7 @@ function SignedInPage({ page }: { readonly page: HackathonView }) {
 			bar={{
 				title: (
 					<p className="truncate text-sm font-medium">
-						{roleLabel(page.job.role)}
+						{page.job.title}
 						<span className="text-muted-foreground">
 							{" "}
 							· {page.startup.name}
@@ -165,7 +165,7 @@ function SignedOutPage({ page }: { readonly page: HackathonView }) {
 	);
 }
 
-/** Who's hiring: the Startup, its Rating and how its past Hackathons went. */
+/** Who's hiring: the Startup, its Momentum and how its past Hackathons went. */
 function StartupCard({ page }: { readonly page: HackathonView }) {
 	const hiring = hiringLine(page.hiringRecord);
 
@@ -190,8 +190,8 @@ function StartupCard({ page }: { readonly page: HackathonView }) {
 			</div>
 			<RatingBadge
 				size="sm"
-				rating={page.startup.rating}
-				ratingChange={page.startup.ratingChange}
+				rating={page.startup.momentum}
+				ratingChange={page.startup.momentumChange}
 				isProvisional={page.startup.isProvisional}
 			/>
 			<p className="text-xs text-muted-foreground">

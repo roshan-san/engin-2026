@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { draftHackathon } from "../hackathons/hackathons.setup";
-import { toNextWeek } from "../rating/rating.setup";
+import { toNextWeek } from "../momentum/momentum.setup";
 import {
 	addContributor,
 	type Setup,

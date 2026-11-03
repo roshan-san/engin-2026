@@ -2,8 +2,9 @@ import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { toTeamPerson } from "./contributors/model";
-import { MAX_CONTRIBUTORS } from "./contributors/rules";
+import { CONTRIBUTOR_TEXT, MAX_CONTRIBUTORS } from "./contributors/rules";
 import { requireUserId } from "./lib/auth";
+import { limitText } from "./lib/text";
 import { requireFounder, requireTeam } from "./startups/team";
 
 export const list = query({
@@ -23,13 +24,43 @@ export const list = query({
 			return user ? toTeamPerson(user) : null;
 		};
 		const contributors = await Promise.all(
-			rows.map((row) => toPerson(row.userId)),
+			rows.map(async (row) => {
+				const person = await toPerson(row.userId);
+				return person
+					? { ...person, discipline: row.discipline, label: row.label ?? null }
+					: null;
+			}),
 		);
 
 		return {
 			founder: await toPerson(startup.founderId),
 			contributors: contributors.filter((person) => person !== null),
 		};
+	},
+});
+
+/** Your own label on a Startup; blank or `null` clears it. Only Contributors have one. */
+export const setMyLabel = mutation({
+	args: { startupId: v.id("startups"), label: v.union(v.string(), v.null()) },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const contributor = await ctx.db
+			.query("contributors")
+			.withIndex("by_startup_and_user", (q) =>
+				q.eq("startupId", args.startupId).eq("userId", userId),
+			)
+			.unique();
+		if (!contributor) {
+			throw new ConvexError("You're not on this startup");
+		}
+		await ctx.db.patch(contributor._id, {
+			label: limitText(
+				args.label ?? undefined,
+				"Label",
+				CONTRIBUTOR_TEXT.label,
+			),
+		});
+		return null;
 	},
 });
 

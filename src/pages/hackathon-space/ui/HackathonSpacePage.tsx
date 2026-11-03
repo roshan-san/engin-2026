@@ -5,7 +5,6 @@ import { useApplicants } from "~/entities/application";
 import { STAGE, stageDate, useSpace } from "~/entities/hackathon";
 import { useWorkspace } from "~/entities/startup";
 import { CopyLinkButton } from "~/features/copy-hackathon-link";
-import { roleLabel } from "~/shared/config/jobs";
 import { AppPage, BackLink } from "~/shared/ui/AppPage";
 import { Badge } from "~/shared/ui/badge";
 import { Button } from "~/shared/ui/button";
@@ -62,7 +61,7 @@ function SpaceBody({
 				),
 				title: (
 					<h1 className="truncate text-sm font-medium">
-						{roleLabel(hackathon.job.role)}
+						{hackathon.job.title}
 					</h1>
 				),
 				badge: (

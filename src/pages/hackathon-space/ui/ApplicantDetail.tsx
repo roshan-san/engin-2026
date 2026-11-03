@@ -12,7 +12,7 @@ import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 
-/** One Applicant: their answer, their Rating and its parts, and what they've done. */
+/** One Applicant: their answer, their Momentum and its parts, and what they've done. */
 export function ApplicantDetail({
 	applicationId,
 	acceptRefusal,
@@ -64,8 +64,8 @@ export function ApplicantDetail({
 
 				<section className="flex flex-col gap-3">
 					<RatingBadge
-						rating={user.rating}
-						ratingChange={user.ratingChange}
+						rating={user.momentum}
+						ratingChange={user.momentumChange}
 						isProvisional={user.isProvisional}
 					/>
 					<RatingParts parts={record.parts} />
