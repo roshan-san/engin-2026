@@ -89,6 +89,7 @@ export async function sendEmail(
 			text,
 			headers: [
 				{ name: "List-Unsubscribe", value: `<${unsubscribeUrl(prefs.token)}>` },
+				{ name: "List-Unsubscribe-Post", value: "List-Unsubscribe=One-Click" },
 			],
 		});
 	}

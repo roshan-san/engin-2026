@@ -104,3 +104,41 @@ describe("email", () => {
 		expect(prefs.optedOut).toBe(false);
 	});
 });
+
+describe("unsubscribe link", () => {
+	async function tokenOf(t: ReturnType<typeof createTest>) {
+		return await t.run(async (ctx) => {
+			await sendEmail(ctx, EMAIL);
+			const [prefs] = await ctx.db.query("emailPrefs").collect();
+			return prefs.token;
+		});
+	}
+	const optedOut = async (t: ReturnType<typeof createTest>) =>
+		(await t.run(async (ctx) => await ctx.db.query("emailPrefs").collect()))[0]
+			.optedOut;
+
+	it("opening the link only asks, so mail scanners can't unsubscribe anyone", async () => {
+		const t = createTest();
+		const token = await tokenOf(t);
+
+		const page = await t.fetch(`/email/unsubscribe?token=${token}`, {
+			method: "GET",
+		});
+
+		expect(page.status).toBe(200);
+		expect(await page.text()).toContain('method="post"');
+		expect(await optedOut(t)).toBe(false);
+	});
+
+	it("posting the link unsubscribes", async () => {
+		const t = createTest();
+		const token = await tokenOf(t);
+
+		const done = await t.fetch(`/email/unsubscribe?token=${token}`, {
+			method: "POST",
+		});
+
+		expect(done.status).toBe(200);
+		expect(await optedOut(t)).toBe(true);
+	});
+});

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
+import { emailNotSelected } from "./email/model";
 import * as reminders from "./email/reminders";
 
 /** The unsubscribe link: opts its address out of every engin email. False for an unknown token. */
@@ -50,6 +51,20 @@ export const mondayReminders = internalMutation({
 			await ctx.scheduler.runAfter(0, internal.email.mondayReminders, {
 				cursor: next,
 			});
+		}
+	},
+});
+
+/** "Not selected for this one" for a batch of Applicants the start passed over. */
+export const notSelected = internalMutation({
+	args: { hackathonId: v.id("hackathons"), userIds: v.array(v.id("users")) },
+	handler: async (ctx, args) => {
+		const hackathon = await ctx.db.get(args.hackathonId);
+		if (!hackathon) {
+			return;
+		}
+		for (const userId of args.userIds) {
+			await emailNotSelected(ctx, hackathon, userId);
 		}
 	},
 });

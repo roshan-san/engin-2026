@@ -5,7 +5,6 @@ import type { MutationCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { releaseIfUnconfirmed } from "../applications/model";
 import { publishBlockFor, publishBlockMessage } from "../billing/rules";
-import { emailNotSelected } from "../email/model";
 import {
 	loadHackathonCardsInReview,
 	loadParticipants,
@@ -14,6 +13,8 @@ import {
 import { MAX_APPLICATIONS } from "./rules";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Not selected emails sent per scheduled batch. */
+const EMAIL_BATCH = 50;
 
 // Every write to a Hackathon's `status` lives here. Explicit return types: this file
 // schedules `internal.hackathons`, whose handlers call back into it, so inference would loop.
@@ -129,12 +130,17 @@ async function declineAppliedBatch(
 			q.eq("hackathonId", hackathonId).eq("status", "applied"),
 		)
 		.take(MAX_APPLICATIONS);
-	const hackathon = await ctx.db.get(hackathonId);
 	for (const application of applied) {
 		await ctx.db.patch(application._id, { status: "declined" });
-		if (hackathon) {
-			await emailNotSelected(ctx, hackathon, application.userId);
-		}
+	}
+	// Emailing up to 500 in this transaction is too much; small batches go out after it.
+	for (let i = 0; i < applied.length; i += EMAIL_BATCH) {
+		await ctx.scheduler.runAfter(0, internal.email.notSelected, {
+			hackathonId,
+			userIds: applied
+				.slice(i, i + EMAIL_BATCH)
+				.map((application) => application.userId),
+		});
 	}
 	if (applied.length === MAX_APPLICATIONS) {
 		await ctx.scheduler.runAfter(0, internal.hackathons.declineApplied, {
