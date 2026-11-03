@@ -82,6 +82,7 @@ describe("feed", () => {
 			endsAt: startsAt + WEEK_MS,
 			shippedCount: 0,
 			entries: [],
+			notFinished: [],
 			...overrides,
 		} as CycleView;
 	}
@@ -118,6 +119,18 @@ describe("feed", () => {
 			name: "Cycles 3–4",
 			dates: "Sep 28 – Oct 11",
 		});
+	});
+
+	it("a past Cycle with Not finished Cards keeps its own row", () => {
+		const items = buildFeed(
+			[
+				cycle("2026-W42", 2),
+				cycle("2026-W41", 1, { notFinished: ["Pricing page"] }),
+			],
+			now,
+		);
+
+		expect(items.map((item) => item.kind)).toEqual(["cycle", "cycle"]);
 	});
 
 	it("an open entry is found with its Cycle, or not once it's out of the list", () => {

@@ -186,3 +186,25 @@ describe("activity", () => {
 		).rejects.toThrow("You're not on this startup");
 	});
 });
+
+describe("Not finished", () => {
+	it("a Cycle lists the Cards it didn't finish, for the team only", async () => {
+		const setup = await setUpStartup(createTest());
+		await cardOn(setup, setup.founder, "Pricing page");
+		await advancePast(setup.t, 2 * DAY);
+		await cardOn(setup, setup.founder, "Signup flow");
+
+		const { cycles } = await list(setup);
+		const page = await setup.t.query(api.activity.listPublic, {
+			slug: setup.slug,
+		});
+
+		expect(cycles.map((cycle) => cycle.notFinished)).toEqual([
+			[],
+			["Pricing page"],
+		]);
+		expect(page?.cycles.every((cycle) => cycle.notFinished.length === 0)).toBe(
+			true,
+		);
+	});
+});
