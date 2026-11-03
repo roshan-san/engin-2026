@@ -2,14 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { SHIPPED } from "../cards/cards.setup";
-import { publishedHackathon } from "../hackathons/hackathons.setup";
+import { nextMonday, publishedHackathon } from "../hackathons/hackathons.setup";
 import { MAX_APPLICATIONS } from "../hackathons/rules";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import { advancePast, createTest, DAY } from "../testing/test.setup";
+import { advancePast, createTest, DAY, HOUR } from "../testing/test.setup";
 import {
 	type Applicant,
 	applicant,
@@ -1484,5 +1484,249 @@ describe("offerState", () => {
 		expect(offerState({ decision: "hired", joinedAt: 1 }, false)).toBe(
 			"joined",
 		);
+	});
+});
+
+describe("confirmation", () => {
+	async function hackathonOf(setup: Setup, hackathonId: Id<"hackathons">) {
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		if (!hackathon) throw new Error("No Hackathon");
+		return hackathon;
+	}
+
+	async function statusOf(setup: Setup, ana: Applicant) {
+		return await setup.t.run(
+			async (ctx) => (await ctx.db.get(ana.applicationId))?.status,
+		);
+	}
+
+	it("accepting sets confirmBy 48 hours out", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup, {
+			startsAt: nextMonday() + 7 * DAY,
+		});
+		const before = Date.now();
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+
+		const page = await ana.as.query(api.hackathons.getPublic, { hackathonId });
+		expect(page?.myApplication).toMatchObject({ confirmed: false });
+		expect(page?.myApplication?.confirmBy).toBeGreaterThanOrEqual(
+			before + 48 * HOUR,
+		);
+	});
+
+	it("accepting the day before the start confirms by the start", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const hackathon = await hackathonOf(setup, hackathonId);
+		await advancePast(setup.t, hackathon.startsAt - Date.now() - DAY);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+
+		const page = await ana.as.query(api.hackathons.getPublic, { hackathonId });
+		expect(page?.myApplication?.confirmBy).toBe(hackathon.startsAt);
+	});
+
+	it("an unconfirmed Builder is released at confirmBy and told", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+
+		await advancePast(setup.t, 49 * HOUR);
+
+		expect(await statusOf(setup, ana)).toBe("declined");
+		const kinds = await setup.t.run(async (ctx) =>
+			(await ctx.db.query("emails").collect()).map((email) => email.kind),
+		);
+		expect(kinds).toContain("place_released");
+	});
+
+	it("a confirmed Builder stays", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+
+		await ana.as.mutation(api.applications.confirm, {
+			applicationId: ana.applicationId,
+		});
+		await advancePast(setup.t, 49 * HOUR);
+
+		expect(await statusOf(setup, ana)).toBe("participating");
+	});
+
+	it("goLive releases the unconfirmed before giving Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+		const [bo] = await participants(setup, hackathonId, ["Bo"]);
+		// As if the release hadn't run yet: due exactly at the start.
+		const { startsAt } = await hackathonOf(setup, hackathonId);
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(ana.applicationId, { confirmBy: startsAt });
+		});
+
+		await startHackathon(setup, hackathonId);
+
+		expect(await statusOf(setup, ana)).toBe("declined");
+		expect(await boardOf(hackathonId, bo)).not.toHaveLength(0);
+	});
+
+	it("a legacy accepted row with no confirmBy stays", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(ana.applicationId, { confirmBy: undefined });
+		});
+
+		await startHackathon(setup, hackathonId);
+
+		expect(await statusOf(setup, ana)).toBe("participating");
+	});
+
+	it("confirming late is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+		await advancePast(setup.t, 49 * HOUR);
+
+		await expect(
+			ana.as.mutation(api.applications.confirm, {
+				applicationId: ana.applicationId,
+			}),
+		).rejects.toThrow("Your place was released");
+	});
+});
+
+describe("withdrawal", () => {
+	it("withdrawing declines you, and the Hackathon finishes on the others' decisions", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana, bo] = await participants(setup, hackathonId, ["Ana", "Bo"]);
+		await startHackathon(setup, hackathonId);
+
+		await ana.as.mutation(api.applications.withdraw, {
+			applicationId: ana.applicationId,
+		});
+		await endHackathon(setup, hackathonId);
+		await setup.founder.as.mutation(api.applications.decide, {
+			applicationId: bo.applicationId,
+			decision: "not_this_time",
+			feedback: "Thanks",
+		});
+
+		const hackathon = await setup.t.run(
+			async (ctx) => await ctx.db.get(hackathonId),
+		);
+		expect(hackathon?.status).toBe("done");
+		const application = await setup.t.run(
+			async (ctx) => await ctx.db.get(ana.applicationId),
+		);
+		expect(application).toMatchObject({ status: "declined" });
+		expect(application?.withdrawnAt).toBeDefined();
+	});
+
+	it("an Applicant can withdraw before the start", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+
+		await ana.as.mutation(api.applications.withdraw, {
+			applicationId: ana.applicationId,
+		});
+
+		const page = await ana.as.query(api.hackathons.getPublic, { hackathonId });
+		expect(page?.myApplication?.status).toBe("declined");
+	});
+
+	it("withdraw is refused once decided", async () => {
+		const setup = await setUpStartup(createTest());
+		const {
+			participants: [ana],
+		} = await decidedHackathon(setup, [
+			{ name: "Ana", decision: "not_this_time" },
+		]);
+
+		await expect(
+			ana.as.mutation(api.applications.withdraw, {
+				applicationId: ana.applicationId,
+			}),
+		).rejects.toThrow("You're already decided");
+	});
+
+	it("only you can withdraw", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+
+		await expect(
+			setup.founder.as.mutation(api.applications.withdraw, {
+				applicationId: ana.applicationId,
+			}),
+		).rejects.toThrow("This isn't your application");
+	});
+});
+
+describe("no-shows", () => {
+	async function live() {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		return { setup, hackathonId, ana };
+	}
+	const remove = (setup: Setup, ana: Applicant) =>
+		setup.founder.as.mutation(api.applications.removeNoShow, {
+			applicationId: ana.applicationId,
+		});
+
+	it("a no-show can be removed from 2 days in, and is told", async () => {
+		const { setup, ana } = await live();
+		await advancePast(setup.t, 2 * DAY);
+
+		await remove(setup, ana);
+
+		const application = await setup.t.run(
+			async (ctx) => await ctx.db.get(ana.applicationId),
+		);
+		expect(application).toMatchObject({ status: "declined" });
+		expect(application?.removedAt).toBeDefined();
+		const kinds = await setup.t.run(async (ctx) =>
+			(await ctx.db.query("emails").collect()).map((email) => email.kind),
+		);
+		expect(kinds).toContain("removed");
+	});
+
+	it("a Builder who moved a Card can't be removed", async () => {
+		const { setup, hackathonId, ana } = await live();
+		const [card] = await boardOf(hackathonId, ana);
+		await ana.as.mutation(api.cards.move, {
+			cardId: card._id,
+			to: "in_progress",
+		});
+		await advancePast(setup.t, 2 * DAY);
+
+		await expect(remove(setup, ana)).rejects.toThrow("They've started");
+	});
+
+	it("removal before 2 days is refused", async () => {
+		const { setup, ana } = await live();
+
+		await expect(remove(setup, ana)).rejects.toThrow("Give them until");
 	});
 });

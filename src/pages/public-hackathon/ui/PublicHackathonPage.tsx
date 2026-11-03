@@ -10,6 +10,7 @@ import {
 	applyPanelTitle,
 	applyState,
 	closedLabel,
+	MyPlace,
 } from "~/features/apply-to-hackathon";
 import { GoogleButton, SignInCard } from "~/features/sign-in";
 import { cn } from "~/shared/lib/cn";
@@ -248,6 +249,13 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 							Open your Board
 						</Link>
 					</Button>
+					{page.myApplication && !page.myApplication.decision ? (
+						<MyPlace
+							applicationId={page.myApplication.applicationId}
+							confirmBy={page.myApplication.confirmBy}
+							isConfirmed={page.myApplication.confirmed}
+						/>
+					) : null}
 				</>
 			);
 		case "applied":
@@ -259,6 +267,13 @@ function ApplyCard({ page }: { readonly page: HackathonView }) {
 						{dayLabel(page.startsAt)}. You'll see the answer on Home.
 					</p>
 					<AskedThread hackathonId={page._id} isReadOnly={false} />
+					{page.myApplication ? (
+						<MyPlace
+							applicationId={page.myApplication.applicationId}
+							confirmBy={null}
+							isConfirmed
+						/>
+					) : null}
 				</>
 			);
 		case "declined":

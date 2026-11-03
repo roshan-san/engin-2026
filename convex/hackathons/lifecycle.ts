@@ -3,6 +3,7 @@ import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
+import { releaseIfUnconfirmed } from "../applications/model";
 import { publishBlockFor, publishBlockMessage } from "../billing/rules";
 import { emailNotSelected } from "../email/model";
 import {
@@ -66,6 +67,9 @@ export async function goLive(
 	}
 
 	await declineAppliedBatch(ctx, hackathon._id);
+	for (const participant of await loadParticipants(ctx, hackathon._id)) {
+		await releaseIfUnconfirmed(ctx, participant, hackathon);
+	}
 
 	const participants = await loadParticipants(ctx, hackathon._id);
 	if (participants.length === 0) {

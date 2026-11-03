@@ -198,3 +198,69 @@ export function resendRefusal(state: OfferState): string | null {
 			return "They declined the Offer";
 	}
 }
+
+const HOUR_MS = 60 * 60 * 1000;
+/** How long an accepted Applicant has to confirm their place. */
+export const CONFIRM_MS = 48 * HOUR_MS;
+/** How long into the Hackathon before a Builder whose Cards haven't moved counts as a no-show. */
+export const NO_SHOW_MS = 48 * HOUR_MS;
+
+/** 48 hours from acceptance, or the start if that's sooner. */
+export function confirmByFor(now: number, startsAt: number): number {
+	return Math.min(now + CONFIRM_MS, startsAt);
+}
+
+/** Accepted, the deadline has passed, and they never confirmed. Rows from before confirmation never are. */
+export function isUnconfirmed(
+	application: {
+		status: string;
+		confirmBy?: number;
+		confirmedAt?: number;
+	},
+	now: number,
+): boolean {
+	return (
+		application.status === "participating" &&
+		application.confirmBy !== undefined &&
+		application.confirmedAt === undefined &&
+		application.confirmBy <= now
+	);
+}
+
+/** Why the Applicant or Builder can't withdraw, or null. */
+export function withdrawRefusal(
+	application: { status: string; decision?: Decision },
+	phase: HackathonPhase,
+): string | null {
+	if (application.decision) {
+		return "You're already decided";
+	}
+	if (phase === "done") {
+		return "This Hackathon has ended";
+	}
+	return application.status === "declined"
+		? "You're not on this Hackathon"
+		: null;
+}
+
+/** Why the Founder can't remove this Builder as a no-show, or null. `startedWork`: a Card of theirs left To do. */
+export function noShowRefusal(
+	application: { status: string; decision?: Decision },
+	hackathon: { phase: HackathonPhase; startsAt: number },
+	now: number,
+	startedWork: boolean,
+): string | null {
+	if (hackathon.phase !== "live" && hackathon.phase !== "deciding") {
+		return "This Hackathon isn't running";
+	}
+	if (application.status !== "participating") {
+		return "They're not a Builder";
+	}
+	if (application.decision) {
+		return "They're already decided";
+	}
+	if (startedWork) {
+		return "They've started";
+	}
+	return now < hackathon.startsAt + NO_SHOW_MS ? "Give them until" : null;
+}

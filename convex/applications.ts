@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { internalMutation, mutation, query } from "./_generated/server";
 import {
 	ensurePrivateThread,
 	getApplication,
@@ -9,26 +10,43 @@ import {
 	loadOfferView,
 	loadParticipantProgress,
 	markJoined,
+	releaseIfUnconfirmed,
 	requireApplicationAllowed,
 	requireApplicationFounder,
 	requireOpen,
+	requireOwnApplication,
 	sendOffer,
 	toFounderApplicationView,
 } from "./applications/model";
 import {
 	APPLICATION_TEXT,
+	confirmByFor,
 	decision,
+	isUnconfirmed,
 	MAX_ASKS,
+	NO_SHOW_MS,
+	noShowRefusal,
 	OLD_OFFER_TERMS,
 	offerState,
 	resendRefusal,
 	WALKTHROUGH_QUESTIONS,
+	withdrawRefusal,
 } from "./applications/rules";
-import { acceptedEmail, notThisTimeEmail } from "./email/copy";
+import {
+	acceptedEmail,
+	emailDay,
+	notThisTimeEmail,
+	removedEmail,
+} from "./email/copy";
 import { emailNotSelected, emailUser, hackathonNames } from "./email/model";
 import { siteUrl } from "./email/rules";
 import { finishIfDecided } from "./hackathons/lifecycle";
-import { loadParticipants, requireHackathonFounder } from "./hackathons/model";
+import {
+	loadHackathonCards,
+	loadParticipants,
+	requireHackathonFounder,
+} from "./hackathons/model";
+import { phaseOf } from "./hackathons/rules";
 import { requireUserId } from "./lib/auth";
 import { limitText, requireLimitedText } from "./lib/text";
 import { postMessage } from "./messages/model";
@@ -156,7 +174,19 @@ export const accept = mutation({
 			participants: participants.length,
 		});
 
-		await ctx.db.patch(application._id, { status: "participating" });
+		const confirmBy = confirmByFor(Date.now(), hackathon.startsAt);
+		await ctx.db.patch(application._id, {
+			status: "participating",
+			confirmBy,
+			confirmedAt: undefined,
+		});
+		await ctx.scheduler.runAt(
+			confirmBy,
+			internal.applications.releaseUnconfirmed,
+			{
+				applicationId: application._id,
+			},
+		);
 		await ensurePrivateThread(ctx, hackathon, application.userId);
 		const names = await hackathonNames(ctx, hackathon);
 		await emailUser(ctx, application.userId, {
@@ -164,7 +194,7 @@ export const accept = mutation({
 			...acceptedEmail({
 				...names,
 				startsAt: hackathon.startsAt,
-				confirmBy: null,
+				confirmBy,
 				url: `${siteUrl()}/hackathons/${hackathon._id}`,
 			}),
 		});
@@ -384,15 +414,124 @@ export const resendOffer = mutation({
 	},
 });
 
+/** An accepted Applicant keeps their place. */
+export const confirm = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const application = await requireOwnApplication(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		if (
+			application.status !== "participating" ||
+			isUnconfirmed(application, Date.now())
+		) {
+			throw new ConvexError("Your place was released");
+		}
+		if (application.confirmedAt === undefined) {
+			await ctx.db.patch(application._id, { confirmedAt: Date.now() });
+		}
+	},
+});
+
+/** At `confirmBy`: releases the place if it wasn't confirmed. */
+export const releaseUnconfirmed = internalMutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const application = await ctx.db.get(args.applicationId);
+		const hackathon =
+			application && (await ctx.db.get(application.hackathonId));
+		if (application && hackathon) {
+			await releaseIfUnconfirmed(ctx, application, hackathon);
+		}
+	},
+});
+
+/** The Applicant or Builder leaves the Hackathon, until they're decided. */
+export const withdraw = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const application = await requireOwnApplication(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		const hackathon = await ctx.db.get(application.hackathonId);
+		if (!hackathon) {
+			throw new ConvexError("Hackathon not found");
+		}
+		const refusal = withdrawRefusal(
+			application,
+			phaseOf(hackathon, Date.now()),
+		);
+		if (refusal) {
+			throw new ConvexError(refusal);
+		}
+		await ctx.db.patch(application._id, {
+			status: "declined",
+			withdrawnAt: Date.now(),
+		});
+		await finishIfDecided(ctx, hackathon);
+	},
+});
+
+/** The Founder removes a Builder whose Cards haven't moved 2 days in. */
+export const removeNoShow = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		const now = Date.now();
+		const cards = await loadHackathonCards(
+			ctx,
+			hackathon._id,
+			application.userId,
+		);
+		const refusal = noShowRefusal(
+			application,
+			{ phase: phaseOf(hackathon, now), startsAt: hackathon.startsAt },
+			now,
+			cards.some((card) => card.status !== "todo"),
+		);
+		if (refusal) {
+			throw new ConvexError(
+				refusal === "Give them until"
+					? `Give them until ${emailDay(hackathon.startsAt + NO_SHOW_MS)}`
+					: refusal,
+			);
+		}
+		await ctx.db.patch(application._id, {
+			status: "declined",
+			removedAt: now,
+		});
+		await emailUser(ctx, application.userId, {
+			kind: "removed",
+			...removedEmail({
+				...(await hackathonNames(ctx, hackathon)),
+				url: `${siteUrl()}/explore/hackathons`,
+			}),
+		});
+		await finishIfDecided(ctx, hackathon);
+	},
+});
+
 /** The Participant says whether the Startup kept what it promised Participants. */
 export const keepPromise = mutation({
 	args: { applicationId: v.id("applications"), kept: v.boolean() },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const application = await ctx.db.get(args.applicationId);
-		if (!application || application.userId !== userId) {
-			throw new ConvexError("This isn't your application");
-		}
+		const application = await requireOwnApplication(
+			ctx,
+			args.applicationId,
+			userId,
+		);
 		if (!application.decision) {
 			throw new ConvexError("Wait for the decision");
 		}

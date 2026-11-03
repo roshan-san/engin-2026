@@ -2,8 +2,8 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
-import { offerEmail } from "../email/copy";
-import { hackathonNames, sendEmail } from "../email/model";
+import { offerEmail, placeReleasedEmail } from "../email/copy";
+import { emailUser, hackathonNames, sendEmail } from "../email/model";
 import { siteUrl } from "../email/rules";
 import {
 	loadHackathonCards,
@@ -20,6 +20,7 @@ import { INVITE_TTL_MS } from "../invites/rules";
 import {
 	type ApplicationAction,
 	applicationRefusal,
+	isUnconfirmed,
 	isWalkthroughRequested,
 	type OfferState,
 	offerState,
@@ -167,11 +168,13 @@ export async function loadParticipantProgress(
 	ctx: Ctx,
 	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
-): Promise<{ done: number; inReview: number; total: number }> {
+): Promise<{ done: number; inReview: number; moved: number; total: number }> {
 	const cards = await loadHackathonCards(ctx, hackathonId, userId);
 	return {
 		done: cards.filter((card) => card.status === "done").length,
 		inReview: cards.filter((card) => card.status === "review").length,
+		/** Cards that left To do: none at all, 2 days in, makes a no-show. */
+		moved: cards.filter((card) => card.status !== "todo").length,
 		total: cards.length,
 	};
 }
@@ -247,6 +250,10 @@ export function toMyApplicationView(
 		decision: application.decision ?? null,
 		feedback: application.feedback ?? null,
 		walkthroughRequested: isWalkthroughRequested(application),
+		confirmBy: application.confirmBy ?? null,
+		confirmed:
+			application.confirmBy === undefined ||
+			application.confirmedAt !== undefined,
 		offer,
 		promiseAnswered: application.promiseKept !== undefined,
 	};
@@ -306,4 +313,37 @@ export async function markJoined(
 		actorId: application.userId,
 		hackathonId: hackathon._id,
 	});
+}
+
+/** Releases a Builder who didn't confirm in time: declined, and told. */
+export async function releaseIfUnconfirmed(
+	ctx: MutationCtx,
+	application: Doc<"applications">,
+	hackathon: Doc<"hackathons">,
+): Promise<boolean> {
+	if (!isUnconfirmed(application, Date.now())) {
+		return false;
+	}
+	await ctx.db.patch(application._id, { status: "declined" });
+	await emailUser(ctx, application.userId, {
+		kind: "place_released",
+		...placeReleasedEmail({
+			...(await hackathonNames(ctx, hackathon)),
+			url: `${siteUrl()}/explore/hackathons`,
+		}),
+	});
+	return true;
+}
+
+/** The person's own application, or throws. */
+export async function requireOwnApplication(
+	ctx: Ctx,
+	applicationId: Id<"applications">,
+	userId: Id<"users">,
+): Promise<Doc<"applications">> {
+	const application = await ctx.db.get(applicationId);
+	if (!application || application.userId !== userId) {
+		throw new ConvexError("This isn't your application");
+	}
+	return application;
 }

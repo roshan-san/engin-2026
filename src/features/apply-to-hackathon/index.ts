@@ -6,3 +6,4 @@ export {
 	closedLabel,
 } from "./model/applyStatus";
 export { ApplyForm } from "./ui/ApplyForm";
+export { MyPlace } from "./ui/MyPlace";

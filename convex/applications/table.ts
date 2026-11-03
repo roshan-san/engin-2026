@@ -24,6 +24,13 @@ export const applicationsTables = {
 		joinedAt: v.optional(v.number()),
 		offerDeclinedAt: v.optional(v.number()),
 		promiseKept: v.optional(v.boolean()),
+		/** An accepted Applicant confirms their place by then, or it's released. */
+		confirmBy: v.optional(v.number()),
+		confirmedAt: v.optional(v.number()),
+		/** Declined because they withdrew themselves. */
+		withdrawnAt: v.optional(v.number()),
+		/** Declined because the Founder removed them as a no-show. */
+		removedAt: v.optional(v.number()),
 	})
 		.index("by_hackathon_and_status", ["hackathonId", "status"])
 		.index("by_hackathon_and_user", ["hackathonId", "userId"])

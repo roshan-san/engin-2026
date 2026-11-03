@@ -12,6 +12,7 @@ export function useDecide(applicationId: Id<"applications">) {
 	const markWalkthroughDone = useMutation(api.applications.markWalkthrough);
 	const decideParticipant = useMutation(api.applications.decide);
 	const resendParticipantOffer = useMutation(api.applications.resendOffer);
+	const removeParticipant = useMutation(api.applications.removeNoShow);
 
 	return {
 		shortlist: (shortlisted: boolean) =>
@@ -39,5 +40,6 @@ export function useDecide(applicationId: Id<"applications">) {
 				}),
 			),
 		resendOffer: () => attempt(() => resendParticipantOffer({ applicationId })),
+		removeNoShow: () => attempt(() => removeParticipant({ applicationId })),
 	};
 }

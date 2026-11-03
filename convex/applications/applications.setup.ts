@@ -21,11 +21,12 @@ export async function applicant(
 	return { ...person, applicationId };
 }
 
-/** Applicants the Founder accepted before the start. */
+/** Applicants the Founder accepted before the start, who confirmed their place unless `confirm` is false. */
 export async function participants(
 	setup: Setup,
 	hackathonId: Id<"hackathons">,
 	names: string[],
+	{ confirm = true }: { confirm?: boolean } = {},
 ): Promise<Applicant[]> {
 	const accepted: Applicant[] = [];
 	for (const name of names) {
@@ -33,6 +34,11 @@ export async function participants(
 		await setup.founder.as.mutation(api.applications.accept, {
 			applicationId: person.applicationId,
 		});
+		if (confirm) {
+			await person.as.mutation(api.applications.confirm, {
+				applicationId: person.applicationId,
+			});
+		}
 		accepted.push(person);
 	}
 	return accepted;

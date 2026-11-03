@@ -1,5 +1,10 @@
 import type { Doc } from "@convex/_generated/dataModel";
-import { APPLICATION_TEXT } from "@convex/applications/rules";
+import {
+	APPLICATION_TEXT,
+	NO_SHOW_MS,
+	noShowRefusal,
+} from "@convex/applications/rules";
+import { phaseOf } from "@convex/hackathons/rules";
 import { CheckIcon, StarIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { type ApplicantRow, decisionLabel } from "~/entities/application";
@@ -41,7 +46,19 @@ export function DecideSheet({
 		markWalkthrough,
 		decide,
 		resendOffer,
+		removeNoShow,
 	} = useDecide(application._id);
+	const now = Date.now();
+	const noShow = noShowRefusal(
+		{
+			status: application.status,
+			decision: application.decision ?? undefined,
+		},
+		{ phase: phaseOf(hackathon, now), startsAt: hackathon.startsAt },
+		now,
+		(row.progress?.moved ?? 0) > 0,
+	);
+	const [isRemoving, setIsRemoving] = useState(false);
 	const [notes, setNotes] = useState("");
 	const [feedback, setFeedback] = useState("");
 	const [terms, setTerms] = useState("");
@@ -237,6 +254,48 @@ export function DecideSheet({
 					)}
 				</Step>
 			</ol>
+
+			{row.progress &&
+			row.progress.moved === 0 &&
+			phaseOf(hackathon, now) !== "done" ? (
+				<div className="mt-6 flex flex-col gap-1.5 border-t border-border pt-4">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="self-start text-muted-foreground"
+						disabled={noShow !== null}
+						onClick={() => setIsRemoving(true)}
+					>
+						Remove as a no-show
+					</Button>
+					<MentorNote>
+						{noShow === "Give them until"
+							? `None of their Cards has moved. You can remove them from ${dayLabel(hackathon.startsAt + NO_SHOW_MS)}.`
+							: "None of their Cards has moved in 2 days. They're told by email."}
+					</MentorNote>
+				</div>
+			) : null}
+
+			<AlertDialog open={isRemoving} onOpenChange={setIsRemoving}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Remove {name}?</AlertDialogTitle>
+						<AlertDialogDescription>
+							They stop being a Builder and get an email saying why. This can't
+							be changed.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							variant="destructive"
+							onClick={() => void removeNoShow()}
+						>
+							Remove
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
 			<AlertDialog
 				open={confirming !== null}
