@@ -99,6 +99,7 @@ function ParticipantTabs({ hackathonId }: { readonly hackathonId: string }) {
 				page,
 				page.myApplication?.decision ?? null,
 				Date.now(),
+				{ walkthroughRequested: page.myApplication?.walkthroughRequested },
 			)
 		: null;
 

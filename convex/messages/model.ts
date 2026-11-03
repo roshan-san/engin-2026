@@ -1,8 +1,9 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { loadImageUrls } from "../files/model";
 import { limitText } from "../lib/text";
+import { markThreadRead } from "../threads/model";
 import { loadPublicUser, type PublicUser } from "../users/model";
 import {
 	MAX_MESSAGE_IMAGES,
@@ -26,6 +27,24 @@ export function parseMessage(
 		throw new ConvexError("Write something or add an image");
 	}
 	return { body: text, images: attached };
+}
+
+/** Posts a message and marks the thread read by its author. The caller checks access. */
+export async function postMessage(
+	ctx: MutationCtx,
+	threadId: Id<"threads">,
+	authorId: Id<"users">,
+	message: { body: string; images: Id<"_storage">[] },
+): Promise<void> {
+	await ctx.db.insert("messages", {
+		threadId,
+		authorId,
+		body: message.body,
+		images: message.images,
+		pinned: false,
+	});
+	await ctx.db.patch(threadId, { lastMessageAt: Date.now() });
+	await markThreadRead(ctx, threadId, authorId);
 }
 
 /** The latest messages in a thread, oldest first. */

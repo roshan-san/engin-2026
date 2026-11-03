@@ -10,6 +10,8 @@ export const applicationsTables = {
 		answer: v.string(),
 		status: applicationStatus,
 		shortlisted: v.boolean(),
+		/** When the Founder posted the Walkthrough questions. */
+		walkthroughRequestedAt: v.optional(v.number()),
 		walkthroughAt: v.optional(v.number()),
 		walkthroughNotes: v.optional(v.string()),
 		decision: v.optional(decision),

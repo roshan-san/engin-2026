@@ -12,12 +12,18 @@ import {
 	requireOpen,
 	toFounderApplicationView,
 } from "./applications/model";
-import { APPLICATION_TEXT, decision, MAX_ASKS } from "./applications/rules";
+import {
+	APPLICATION_TEXT,
+	decision,
+	MAX_ASKS,
+	WALKTHROUGH_QUESTIONS,
+} from "./applications/rules";
 import { finishIfDecided } from "./hackathons/lifecycle";
 import { loadParticipants, requireHackathonFounder } from "./hackathons/model";
 import { ensureHireInvite } from "./invites/model";
 import { requireUserId } from "./lib/auth";
 import { limitText, requireLimitedText } from "./lib/text";
+import { postMessage } from "./messages/model";
 import { getTeamRole } from "./startups/team";
 import {
 	isProvisional,
@@ -210,6 +216,33 @@ export const shortlist = mutation({
 		});
 
 		await ctx.db.patch(application._id, { shortlisted: args.shortlisted });
+	},
+});
+
+/** Posts the Walkthrough questions in the private thread. The Builder replies there; the call happens outside engin. */
+export const requestWalkthrough = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		requireApplicationAllowed(application, hackathon, {
+			kind: "requestWalkthrough",
+		});
+
+		const threadId = await ensurePrivateThread(
+			ctx,
+			hackathon,
+			application.userId,
+		);
+		await postMessage(ctx, threadId, userId, {
+			body: WALKTHROUGH_QUESTIONS,
+			images: [],
+		});
+		await ctx.db.patch(application._id, { walkthroughRequestedAt: Date.now() });
 	},
 });
 

@@ -3,15 +3,20 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { attempt } from "~/shared/lib/errors";
 
-/** ★ Shortlist, Walkthrough done, then Hired or Not this time. Failures are toasted and resolve `false`. */
+/** ★ Shortlist, request the Walkthrough, mark it done, then Hired or Not this time. Failures are toasted and resolve `false`. */
 export function useDecide(applicationId: Id<"applications">) {
 	const shortlistParticipant = useMutation(api.applications.shortlist);
+	const requestParticipantWalkthrough = useMutation(
+		api.applications.requestWalkthrough,
+	);
 	const markWalkthroughDone = useMutation(api.applications.markWalkthrough);
 	const decideParticipant = useMutation(api.applications.decide);
 
 	return {
 		shortlist: (shortlisted: boolean) =>
 			attempt(() => shortlistParticipant({ applicationId, shortlisted })),
+		requestWalkthrough: () =>
+			attempt(() => requestParticipantWalkthrough({ applicationId })),
 		markWalkthrough: (notes: string) =>
 			attempt(() =>
 				markWalkthroughDone({

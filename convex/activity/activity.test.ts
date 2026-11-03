@@ -151,6 +151,9 @@ describe("activity", () => {
 			applicationId: ana.applicationId,
 			shortlisted: true,
 		});
+		await setup.founder.as.mutation(api.applications.requestWalkthrough, {
+			applicationId: ana.applicationId,
+		});
 		await setup.founder.as.mutation(api.applications.markWalkthrough, {
 			applicationId: ana.applicationId,
 		});

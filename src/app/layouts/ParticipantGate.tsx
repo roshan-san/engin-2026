@@ -40,6 +40,7 @@ function Provided({
 		page,
 		page.myApplication?.decision ?? null,
 		Date.now(),
+		{ walkthroughRequested: page.myApplication?.walkthroughRequested },
 	);
 	const phase = phaseOf(page, Date.now());
 	const scope = useMemo<BoardScope>(

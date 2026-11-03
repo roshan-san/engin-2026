@@ -108,6 +108,9 @@ export async function decidedHackathon(
 			});
 		}
 		if (plan.decision === "hired") {
+			await setup.founder.as.mutation(api.applications.requestWalkthrough, {
+				applicationId: accepted[i].applicationId,
+			});
 			await setup.founder.as.mutation(api.applications.markWalkthrough, {
 				applicationId: accepted[i].applicationId,
 			});

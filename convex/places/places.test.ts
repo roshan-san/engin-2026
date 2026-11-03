@@ -393,7 +393,10 @@ describe("waiting", () => {
 		const setup = await setUpStartup(createTest());
 		const {
 			participants: [ana],
-		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+		} = await decidedHackathon(setup, [
+			// An Offer would also post the Walkthrough questions, an unread message.
+			{ name: "Ana", decision: "not_this_time" },
+		]);
 
 		const places = await placesOf(ana);
 

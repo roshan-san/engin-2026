@@ -6,9 +6,9 @@ import {
 	loadLatestMessages,
 	loadPinnedMessages,
 	parseMessage,
+	postMessage,
 } from "./messages/model";
 import { requireThreadAccess, requireThreadOpen } from "./threads/access";
-import { markThreadRead } from "./threads/model";
 
 export const list = query({
 	args: { threadId: v.id("threads") },
@@ -35,17 +35,12 @@ export const send = mutation({
 		const userId = await requireUserId(ctx);
 		const { thread } = await requireThreadAccess(ctx, args.threadId, userId);
 		await requireThreadOpen(ctx, thread);
-		const { body, images } = parseMessage(args.body, args.images);
-
-		await ctx.db.insert("messages", {
-			threadId: args.threadId,
-			authorId: userId,
-			body,
-			images,
-			pinned: false,
-		});
-		await ctx.db.patch(args.threadId, { lastMessageAt: Date.now() });
-		await markThreadRead(ctx, args.threadId, userId);
+		await postMessage(
+			ctx,
+			args.threadId,
+			userId,
+			parseMessage(args.body, args.images),
+		);
 	},
 });
 

@@ -14,8 +14,13 @@ export function participantStatus(
 	hackathon: { status: HackathonPhase; startsAt: number; endsAt: number },
 	decision: "hired" | "not_this_time" | null,
 	now: number,
+	standing: { readonly walkthroughRequested?: boolean } = {},
 ): ParticipantStatus {
 	const phase = phaseOf(hackathon, now);
+	const walkthroughNote =
+		standing.walkthroughRequested && !decision
+			? "The Founder asked for a Walkthrough. Reply in your Founder thread."
+			: null;
 	if (phase === "draft" || phase === "open") {
 		return {
 			line: `Starts ${dayLabel(hackathon.startsAt)}`,
@@ -25,11 +30,14 @@ export function participantStatus(
 	if (phase === "live") {
 		return {
 			line: `Ends ${dayLabel(lastDay(hackathon.endsAt))}`,
-			note: null,
+			note: walkthroughNote,
 		};
 	}
 	if (decision) {
 		return { line: "Ended", note: null };
+	}
+	if (walkthroughNote && hackathon.status !== "done") {
+		return { line: "Ended", note: walkthroughNote };
 	}
 	return {
 		line: "Ended",
@@ -45,9 +53,11 @@ export function participantStatusText(
 	hackathon: { status: HackathonPhase; startsAt: number; endsAt: number },
 	decision: "hired" | "not_this_time" | null,
 	now: number,
+	standing: { readonly walkthroughRequested?: boolean } = {},
 ): string {
 	if (decision === "hired") return "Hired";
 	if (decision === "not_this_time") return "Not this time";
+	if (standing.walkthroughRequested) return "Walkthrough";
 	const { line } = participantStatus(hackathon, decision, now);
 	if (line !== "Ended") return line;
 	return hackathon.status === "done" ? "Closed" : "Deciding";

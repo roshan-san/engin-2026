@@ -35,7 +35,9 @@ export function DecideSheet({
 	readonly hackathon: Doc<"hackathons">;
 }) {
 	const { application, user } = row;
-	const { shortlist, markWalkthrough, decide } = useDecide(application._id);
+	const { shortlist, requestWalkthrough, markWalkthrough, decide } = useDecide(
+		application._id,
+	);
 	const [notes, setNotes] = useState("");
 	const [feedback, setFeedback] = useState("");
 	const [confirming, setConfirming] = useState<Decision | null>(null);
@@ -76,6 +78,9 @@ export function DecideSheet({
 		: application.shortlisted
 			? "current"
 			: "later";
+	const isRequested =
+		application.walkthroughRequestedAt !== null ||
+		application.walkthroughAt !== null;
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
@@ -107,10 +112,26 @@ export function DecideSheet({
 				<Step number={2} title="Walkthrough" state={walkthroughStep}>
 					{application.walkthroughAt !== null ? (
 						<WalkthroughNotes application={application} />
+					) : application.shortlisted && !isRequested ? (
+						<>
+							<MentorNote>
+								Posts three questions in your thread with {firstName}. They
+								reply there, and you hold the call outside engin.
+							</MentorNote>
+							<Button
+								variant="outline"
+								size="sm"
+								className="self-start"
+								disabled={!state.canRequestWalkthrough}
+								onClick={() => void requestWalkthrough()}
+							>
+								Request Walkthrough
+							</Button>
+						</>
 					) : application.shortlisted ? (
 						<>
 							<MentorNote>
-								Send a call link in the thread. Notes are private.
+								Requested. Send a call link in the thread. Notes are private.
 							</MentorNote>
 							<Textarea
 								aria-label="Walkthrough notes"

@@ -18,6 +18,7 @@ import {
 	participants,
 	startHackathon,
 } from "./applications.setup";
+import { WALKTHROUGH_QUESTIONS } from "./rules";
 
 async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
 	return await participant.as.query(api.cards.listParticipantBoard, {
@@ -572,6 +573,9 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.shortlist, {
 			applicationId: participant.applicationId,
 			shortlisted: true,
+		});
+		await setup.founder.as.mutation(api.applications.requestWalkthrough, {
+			applicationId: participant.applicationId,
 		});
 		await setup.founder.as.mutation(api.applications.markWalkthrough, {
 			applicationId: participant.applicationId,
@@ -1208,5 +1212,67 @@ describe("asking", () => {
 				applicationId: ana.applicationId,
 			}),
 		).rejects.toThrow("Ask up to 90 people");
+	});
+});
+
+describe("walkthrough request", () => {
+	async function starredBuilder() {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		await setup.founder.as.mutation(api.applications.shortlist, {
+			applicationId: ana.applicationId,
+			shortlisted: true,
+		});
+		return { setup, hackathonId, ana };
+	}
+
+	it("requesting posts the questions as the Founder in the private thread", async () => {
+		const { setup, hackathonId, ana } = await starredBuilder();
+
+		await setup.founder.as.mutation(api.applications.requestWalkthrough, {
+			applicationId: ana.applicationId,
+		});
+
+		const [thread] = await threadsFor(setup, hackathonId);
+		const { messages } = await ana.as.query(api.messages.list, {
+			threadId: thread._id,
+		});
+		expect(messages.at(-1)).toMatchObject({
+			body: WALKTHROUGH_QUESTIONS,
+			author: { _id: setup.founder.userId },
+		});
+		const theirs = await ana.as.query(api.threads.list, { hackathonId });
+		expect(theirs.find((t) => t.kind === "private")?.unread).toBe(true);
+	});
+
+	it("the Builder sees Walkthrough but not the ★", async () => {
+		const { setup, hackathonId, ana } = await starredBuilder();
+		const before = await ana.as.query(api.hackathons.getPublic, {
+			hackathonId,
+		});
+		await setup.founder.as.mutation(api.applications.requestWalkthrough, {
+			applicationId: ana.applicationId,
+		});
+
+		const after = await ana.as.query(api.hackathons.getPublic, {
+			hackathonId,
+		});
+
+		expect(before?.myApplication?.walkthroughRequested).toBe(false);
+		expect(after?.myApplication?.walkthroughRequested).toBe(true);
+		expect(after?.myApplication).not.toHaveProperty("shortlisted");
+		expect(after?.myApplication).not.toHaveProperty("walkthroughNotes");
+	});
+
+	it("the Walkthrough is done only after the request", async () => {
+		const { setup, ana } = await starredBuilder();
+
+		const mark = setup.founder.as.mutation(api.applications.markWalkthrough, {
+			applicationId: ana.applicationId,
+		});
+
+		await expect(mark).rejects.toThrow("Request the Walkthrough first");
 	});
 });

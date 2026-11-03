@@ -4,6 +4,7 @@ import { refusalFor, type ViewedApplication } from "~/entities/application";
 
 export type DecideState = {
 	readonly canShortlist: boolean;
+	readonly canRequestWalkthrough: boolean;
 	readonly canWalkthrough: boolean;
 	readonly canDecide: boolean;
 	readonly canHire: boolean;
@@ -27,6 +28,7 @@ export function decideState(
 	return {
 		canShortlist:
 			refusal({ kind: "shortlist", on: !application.shortlisted }) === null,
+		canRequestWalkthrough: refusal({ kind: "requestWalkthrough" }) === null,
 		canWalkthrough: refusal({ kind: "walkthrough" }) === null,
 		canDecide,
 		canHire: hireRefusal === null,

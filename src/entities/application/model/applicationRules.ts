@@ -9,6 +9,7 @@ import { type HackathonPhase, phaseOf } from "@convex/hackathons/rules";
 export type ViewedApplication = {
 	readonly status: "applied" | "declined" | "participating";
 	readonly shortlisted: boolean;
+	readonly walkthroughRequestedAt: number | null;
 	readonly walkthroughAt: number | null;
 	readonly decision: Decision | null;
 };
@@ -24,6 +25,7 @@ export function refusalFor(
 		{
 			status: application.status,
 			shortlisted: application.shortlisted,
+			walkthroughRequestedAt: application.walkthroughRequestedAt ?? undefined,
 			walkthroughAt: application.walkthroughAt ?? undefined,
 			decision: application.decision ?? undefined,
 		},

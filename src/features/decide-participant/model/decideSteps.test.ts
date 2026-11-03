@@ -6,16 +6,31 @@ const deciding = { status: "deciding" as const, endsAt };
 const shortlisted = {
 	status: "participating" as const,
 	shortlisted: true,
+	walkthroughRequestedAt: 400,
 	walkthroughAt: null,
 	decision: null,
 };
 
 describe("decideState", () => {
+	it("starred but not requested, the request opens and the done step waits", () => {
+		const state = decideState(
+			{ ...shortlisted, walkthroughRequestedAt: null },
+			{ status: "live", endsAt },
+			0,
+		);
+
+		expect(state).toMatchObject({
+			canRequestWalkthrough: true,
+			canWalkthrough: false,
+		});
+	});
+
 	it("while live, the steps are open but the decision isn't, and nothing hints", () => {
 		const state = decideState(shortlisted, { status: "live", endsAt }, 0);
 
 		expect(state).toMatchObject({
-			canShortlist: true,
+			// Requested, so the ★ stays.
+			canShortlist: false,
 			canWalkthrough: true,
 			canDecide: false,
 			hireHint: null,

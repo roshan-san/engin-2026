@@ -13,17 +13,22 @@ const participant: RuledApplication = {
 	shortlisted: false,
 };
 const starred: RuledApplication = { ...participant, shortlisted: true };
-const walkedThrough: RuledApplication = { ...starred, walkthroughAt: 500 };
+const requested: RuledApplication = { ...starred, walkthroughRequestedAt: 400 };
+const walkedThrough: RuledApplication = {
+	...requested,
+	walkthroughAt: 500,
+};
 
 const ACCEPT: ApplicationAction = { kind: "accept", participants: 0 };
 const DECLINE: ApplicationAction = { kind: "decline" };
 const STAR: ApplicationAction = { kind: "shortlist", on: true };
 const UNSTAR: ApplicationAction = { kind: "shortlist", on: false };
 const WALKTHROUGH: ApplicationAction = { kind: "walkthrough" };
+const REQUEST: ApplicationAction = { kind: "requestWalkthrough" };
 const HIRE: ApplicationAction = { kind: "decide", decision: "hired" };
 const PASS: ApplicationAction = { kind: "decide", decision: "not_this_time" };
 
-const DECIDE_STEPS = [STAR, UNSTAR, WALKTHROUGH, HIRE, PASS];
+const DECIDE_STEPS = [STAR, UNSTAR, REQUEST, WALKTHROUGH, HIRE, PASS];
 const AFTER_OPEN: HackathonPhase[] = ["live", "deciding", "done"];
 
 describe("Screening", () => {
@@ -92,7 +97,7 @@ describe("the Decide steps", () => {
 
 	it("while Live, the Founder shortlists and walks through, but doesn't decide", () => {
 		expect(applicationRefusal(participant, "live", STAR)).toBeNull();
-		expect(applicationRefusal(starred, "live", WALKTHROUGH)).toBeNull();
+		expect(applicationRefusal(requested, "live", WALKTHROUGH)).toBeNull();
 		expect(applicationRefusal(walkedThrough, "live", PASS)).toBe(
 			"Decide after the Hackathon ends",
 		);
@@ -107,6 +112,38 @@ describe("the Decide steps", () => {
 		);
 	});
 
+	it("requesting the Walkthrough needs the ★, and happens once", () => {
+		expect(applicationRefusal(participant, "live", REQUEST)).toBe(
+			"Shortlist them first",
+		);
+		expect(applicationRefusal(starred, "live", REQUEST)).toBeNull();
+		expect(applicationRefusal(requested, "live", REQUEST)).toBe(
+			"The Walkthrough is requested",
+		);
+	});
+
+	it("the Walkthrough is done only after it's requested", () => {
+		expect(applicationRefusal(starred, "live", WALKTHROUGH)).toBe(
+			"Request the Walkthrough first",
+		);
+	});
+
+	it("the ★ stays once the Walkthrough is requested", () => {
+		expect(applicationRefusal(requested, "live", UNSTAR)).toBe(
+			"The Walkthrough is requested",
+		);
+	});
+
+	it("an old row walked through without a request counts as requested", () => {
+		const old: RuledApplication = { ...starred, walkthroughAt: 500 };
+		expect(applicationRefusal(old, "live", REQUEST)).toBe(
+			"The Walkthrough is done",
+		);
+		expect(applicationRefusal(old, "live", UNSTAR)).toBe(
+			"The Walkthrough is done",
+		);
+	});
+
 	it("the ★ comes off until the Walkthrough, then stays", () => {
 		expect(applicationRefusal(starred, "live", UNSTAR)).toBeNull();
 		expect(applicationRefusal(walkedThrough, "live", UNSTAR)).toBe(
@@ -116,7 +153,7 @@ describe("the Decide steps", () => {
 
 	it("while Deciding, Not this time is open to anyone, Hired only after the Walkthrough", () => {
 		expect(applicationRefusal(participant, "deciding", PASS)).toBeNull();
-		expect(applicationRefusal(starred, "deciding", HIRE)).toBe(
+		expect(applicationRefusal(requested, "deciding", HIRE)).toBe(
 			"Do the Walkthrough first",
 		);
 		expect(applicationRefusal(walkedThrough, "deciding", HIRE)).toBeNull();

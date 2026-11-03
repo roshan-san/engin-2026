@@ -50,6 +50,22 @@ describe("participantStatus", () => {
 	});
 });
 
+describe("participantStatus with a Walkthrough", () => {
+	it("a requested Walkthrough points to the Founder thread until the decision", () => {
+		const live = {
+			status: "live" as const,
+			startsAt: ist(19),
+			endsAt: ist(26),
+		};
+		expect(
+			participantStatus(live, null, ist(21), { walkthroughRequested: true })
+				.note,
+		).toBe(
+			"The Founder asked for a Walkthrough. Reply in your Founder thread.",
+		);
+	});
+});
+
 describe("participantStatusText", () => {
 	const hackathon = (status: "open" | "live" | "deciding" | "done") => ({
 		status,
@@ -64,6 +80,19 @@ describe("participantStatusText", () => {
 		);
 		expect(
 			participantStatusText(hackathon("deciding"), "not_this_time", midway),
+		).toBe("Not this time");
+	});
+
+	it("a requested Walkthrough shows until the decision", () => {
+		expect(
+			participantStatusText(hackathon("deciding"), null, midway, {
+				walkthroughRequested: true,
+			}),
+		).toBe("Walkthrough");
+		expect(
+			participantStatusText(hackathon("deciding"), "not_this_time", midway, {
+				walkthroughRequested: true,
+			}),
 		).toBe("Not this time");
 	});
 

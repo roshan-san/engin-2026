@@ -7,7 +7,11 @@ import {
 	requireHackathonFounder,
 } from "../hackathons/model";
 import { MAX_APPLICATIONS, phaseOf } from "../hackathons/rules";
-import { type ApplicationAction, applicationRefusal } from "./rules";
+import {
+	type ApplicationAction,
+	applicationRefusal,
+	isWalkthroughRequested,
+} from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
 
@@ -170,6 +174,7 @@ export function toFounderApplicationView(application: Doc<"applications">) {
 		answer: application.answer,
 		status: application.status,
 		shortlisted: application.shortlisted,
+		walkthroughRequestedAt: application.walkthroughRequestedAt ?? null,
 		walkthroughAt: application.walkthroughAt ?? null,
 		walkthroughNotes: application.walkthroughNotes ?? null,
 		decision: application.decision ?? null,
@@ -185,6 +190,7 @@ export function toMyApplicationView(application: Doc<"applications">) {
 		status: application.status,
 		decision: application.decision ?? null,
 		feedback: application.feedback ?? null,
+		walkthroughRequested: isWalkthroughRequested(application),
 		promiseAnswered: application.promiseKept !== undefined,
 	};
 }
