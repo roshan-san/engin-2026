@@ -68,7 +68,7 @@ export const getRecord = query({
 			details: viewerId
 				? {
 						...toProfileAbout(user),
-						...(await loadProfileRecord(ctx, user, Date.now())),
+						...(await loadProfileRecord(ctx, user)),
 					}
 				: null,
 		};

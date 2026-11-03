@@ -1,15 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { shiftWeek, weekOf } from "../cycles/rules";
-import {
-	buildParts,
-	countedWeeks,
-	loadOutcomes,
-	loadPersonCounts,
-	outcomeScore,
-	recentOutcomes,
-	toPartsView,
-} from "../momentum/model";
+import { loadOutcomes } from "../momentum/model";
 import { STARTING_MOMENTUM } from "../momentum/rules";
 import { MAX_PROFILE_ROWS } from "./rules";
 import { buildUniqueUsername } from "./username";
@@ -96,15 +87,29 @@ export async function onUserSignedIn(
 	}
 }
 
-/** The profile's Record: Momentum parts, finished Hackathons, and Cards verified by others. */
-export async function loadProfileRecord(
+/** The parts behind a person's Momentum, as of the last weekly run; null before their first scored week. */
+export async function loadLastParts(
 	ctx: QueryCtx,
-	user: Doc<"users">,
-	now: number,
-) {
-	const weeks = countedWeeks(user._creationTime, shiftWeek(weekOf(now), -1));
-	const [weekCounts, outcomes, rows] = await Promise.all([
-		loadPersonCounts(ctx, user._id, weeks),
+	userId: Id<"users">,
+): Promise<{ active: number; shipped: number; outcomes: number } | null> {
+	const event = await ctx.db
+		.query("scoreEvents")
+		.withIndex("by_user_and_week", (q) => q.eq("userId", userId))
+		.order("desc")
+		.first();
+	return event
+		? {
+				active: event.activeWeeks ?? 0,
+				shipped: event.shippedWeeks ?? 0,
+				outcomes: event.outcomes ?? 0,
+			}
+		: null;
+}
+
+/** The profile's Record: Momentum parts as of the last run, finished Hackathons, and Cards verified by others. */
+export async function loadProfileRecord(ctx: QueryCtx, user: Doc<"users">) {
+	const [parts, outcomes, rows] = await Promise.all([
+		loadLastParts(ctx, user._id),
 		loadOutcomes(ctx, user._id),
 		ctx.db
 			.query("activity")
@@ -117,7 +122,6 @@ export async function loadProfileRecord(
 			.order("desc")
 			.take(MAX_PROFILE_ROWS),
 	]);
-	const parts = buildParts(weekCounts);
 	const capped = rows.length === MAX_PROFILE_ROWS;
 	const counts = new Map<Id<"startups">, number>();
 	for (const row of rows) {
@@ -160,11 +164,7 @@ export async function loadProfileRecord(
 	});
 
 	return {
-		parts: {
-			...toPartsView(parts),
-			outcomes:
-				Math.round(outcomeScore(recentOutcomes(outcomes, now)) * 100) / 100,
-		},
+		parts,
 		hackathons,
 		work,
 	};

@@ -3,6 +3,7 @@ import { shiftWeek, weekOf, weekStart } from "../cycles/rules";
 import { DAY } from "../testing/test.setup";
 import {
 	buildParts,
+	consistencyOf,
 	countedWeeks,
 	nextMomentum,
 	outcomeOf,
@@ -48,8 +49,51 @@ describe("momentum math", () => {
 		expect(startupTarget(buildParts(Array(12).fill(0)))).toBe(800);
 	});
 
-	it("a person's target adds Hackathon outcomes at 20%", () => {
-		expect(personTarget(buildParts([]), 1)).toBe(960);
+	it("a week's credit is its best approval, and only active weeks count", () => {
+		const week = (active: boolean, credit: number) => ({ active, credit });
+
+		expect(
+			consistencyOf([
+				week(true, 1),
+				week(false, 0),
+				week(true, 0.25),
+				week(true, 1),
+				week(false, 0),
+				week(true, 0.25),
+			]),
+		).toEqual({ consistency: 0.625, active: 4, shipped: 4 });
+	});
+
+	it("under 4 active weeks, the missing ones count as 0.25", () => {
+		expect(
+			consistencyOf([
+				{ active: true, credit: 1 },
+				{ active: false, credit: 0 },
+				{ active: true, credit: 0.25 },
+			]),
+		).toEqual({ consistency: 0.4375, active: 2, shipped: 2 });
+		expect(consistencyOf([{ active: true, credit: 1 }]).consistency).toBe(
+			0.4375,
+		);
+		expect(consistencyOf([{ active: true, credit: 0.25 }]).consistency).toBe(
+			0.25,
+		);
+	});
+
+	it("an active week with nothing approved counts as 0", () => {
+		expect(
+			consistencyOf([
+				{ active: true, credit: 1 },
+				{ active: true, credit: 1 },
+				{ active: true, credit: 1 },
+				{ active: true, credit: 0 },
+			]),
+		).toEqual({ consistency: 0.75, active: 4, shipped: 3 });
+	});
+
+	it("a steady self-approving Founder targets 1000", () => {
+		expect(personTarget(0.25, 0)).toBe(1000);
+		expect(personTarget(1, 1)).toBe(1660);
 	});
 
 	it("outcomes sum their points and cap at 1", () => {

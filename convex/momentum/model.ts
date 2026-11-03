@@ -4,11 +4,13 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { MAX_USER_APPLICATIONS } from "../applications/rules";
 import { shiftWeek, weekOf } from "../cycles/rules";
 import { MAX_HACKATHON_CARDS, phaseOf } from "../hackathons/rules";
+import { loadCredits } from "./credit";
 import { STARTING_MOMENTUM, WEEK_COUNT_CAP } from "./rules";
 
 export const MOMENTUM = {
 	weeks: 12,
-	base: 800,
+	/** 860 so a steady self-approving Founder (credit 0.25) holds the starting 1000. */
+	base: 860,
 	span: 800,
 	riseStep: 0.25,
 	fallStep: 0.1,
@@ -16,10 +18,14 @@ export const MOMENTUM = {
 	volumeBonus: 0.02,
 	volumeBonusCap: 10,
 	provisionalWeeks: 4,
+	/** Below this many active weeks, the missing ones count as `neutralCredit`. */
+	minWeeks: 4,
+	/** The self-approved credit: a filler week neither lifts nor lowers. */
+	neutralCredit: 0.25,
 	outcomeDays: 365,
 	outcomePoints: { hired: 1, finalist: 0.5, built: 0.2 },
 	startup: { consistency: 0.6, volume: 0.4 },
-	person: { consistency: 0.5, volume: 0.3, outcomes: 0.2 },
+	person: { consistency: 0.7, outcomes: 0.3 },
 } as const;
 
 export type Outcome = "built" | "finalist" | "hired";
@@ -71,6 +77,29 @@ export function buildParts(counts: number[]): Parts {
 	};
 }
 
+/**
+ * A person's Consistency over the counted weeks: the summed credit of their active
+ * weeks over at least 4, the missing ones filled at the neutral 0.25. A week's credit
+ * is its best single approval, so one approver can give full credit.
+ */
+export function consistencyOf(weeks: { active: boolean; credit: number }[]): {
+	consistency: number;
+	active: number;
+	shipped: number;
+} {
+	const active = weeks.filter((week) => week.active);
+	const shipped = active.filter((week) => week.credit > 0).length;
+	const sum = active.reduce((total, week) => total + week.credit, 0);
+	const fillers = Math.max(MOMENTUM.minWeeks - active.length, 0);
+	return {
+		consistency:
+			(sum + fillers * MOMENTUM.neutralCredit) /
+			Math.max(active.length, MOMENTUM.minWeeks),
+		active: active.length,
+		shipped,
+	};
+}
+
 /** Hired always counts; Finalist and Built need a Done Card to show for it. */
 export function outcomeOf(
 	a: {
@@ -91,22 +120,23 @@ export function outcomeScore(outcomes: Outcome[]): number {
 	return Math.min(sum, 1);
 }
 
-function toTarget(score: number): number {
-	return MOMENTUM.base + MOMENTUM.span * score;
+/** Rounded to cents, so 0.7 × 0.25 lands on 1000 and not 999.99. */
+function toTarget(score: number, base: number = MOMENTUM.base): number {
+	return Math.round((base + MOMENTUM.span * score) * 100) / 100;
 }
 
+/** The startup formula until startups weigh their team (its own base of 800). */
 export function startupTarget(parts: Parts): number {
 	const w = MOMENTUM.startup;
-	return toTarget(w.consistency * parts.consistency + w.volume * parts.volume);
+	return toTarget(
+		w.consistency * parts.consistency + w.volume * parts.volume,
+		800,
+	);
 }
 
-export function personTarget(parts: Parts, outcomes: number): number {
+export function personTarget(consistency: number, outcomes: number): number {
 	const w = MOMENTUM.person;
-	return toTarget(
-		w.consistency * parts.consistency +
-			w.volume * parts.volume +
-			w.outcomes * outcomes,
-	);
+	return toTarget(w.consistency * consistency + w.outcomes * outcomes);
 }
 
 /** One week's move toward the target: quick to rise, slow to fall. */
@@ -140,31 +170,6 @@ export async function loadStartupCounts(
 							q
 								.eq("startupId", startupId)
 								.eq("kind", "card_verified")
-								.eq("week", week),
-						)
-						.take(WEEK_COUNT_CAP)
-				).length,
-		),
-	);
-}
-
-/** A person's Cards verified by someone else per week, across every Startup. */
-export async function loadPersonCounts(
-	ctx: QueryCtx,
-	userId: Id<"users">,
-	weeks: string[],
-): Promise<number[]> {
-	return await Promise.all(
-		weeks.map(
-			async (week) =>
-				(
-					await ctx.db
-						.query("activity")
-						.withIndex("by_actor_and_kind_and_selfVerified_and_week", (q) =>
-							q
-								.eq("actorId", userId)
-								.eq("kind", "card_verified")
-								.eq("selfVerified", false)
 								.eq("week", week),
 						)
 						.take(WEEK_COUNT_CAP)
@@ -294,7 +299,11 @@ export async function scoreStartup(
 	});
 }
 
-/** Moves one person's Momentum for `week`. A rerun of the same week does nothing. */
+/**
+ * Moves one person's Momentum for `week` and records the step in `scoreEvents`.
+ * Momentum moves only in a week they were active, so a break never lowers it.
+ * A rerun of the same week does nothing.
+ */
 export async function scoreUser(
 	ctx: MutationCtx,
 	user: Doc<"users">,
@@ -309,20 +318,46 @@ export async function scoreUser(
 		await ctx.db.patch(user._id, { scoredThrough: week });
 		return;
 	}
-	const [counts, outcomes] = await Promise.all([
-		loadPersonCounts(ctx, user._id, weeks),
+	const [credits, activeRows, outcomes] = await Promise.all([
+		loadCredits(ctx, user._id, { fromWeek: weeks[0] }),
+		ctx.db
+			.query("activeWeeks")
+			.withIndex("by_user_and_week", (q) =>
+				q.eq("userId", user._id).gte("week", weeks[0]).lte("week", week),
+			)
+			.take(MOMENTUM.weeks),
 		loadOutcomes(ctx, user._id),
 	]);
-	const current = user.momentum ?? STARTING_MOMENTUM;
-	const momentum = nextMomentum(
-		current,
-		personTarget(
-			buildParts(counts),
-			outcomeScore(recentOutcomes(outcomes, now)),
-		),
-	);
-	const scoredWeeks = (user.scoredWeeks ?? 0) + (counts.at(-1) ? 1 : 0);
+	const active = new Set(activeRows.map((row) => row.week));
+	const best = new Map<string, number>();
+	for (const row of credits) {
+		best.set(row.week, Math.max(best.get(row.week) ?? 0, row.credit));
+	}
+	const weekRows = weeks.map((w) => ({
+		active: active.has(w),
+		credit: best.get(w) ?? 0,
+	}));
+	const parts = consistencyOf(weekRows);
+	const outcomeValue = outcomeScore(recentOutcomes(outcomes, now));
+	const thisWeek = weekRows[weekRows.length - 1];
 
+	const current = user.momentum ?? STARTING_MOMENTUM;
+	const momentum = thisWeek.active
+		? nextMomentum(current, personTarget(parts.consistency, outcomeValue))
+		: current;
+	const scoredWeeks = (user.scoredWeeks ?? 0) + (thisWeek.credit > 0 ? 1 : 0);
+
+	await ctx.db.insert("scoreEvents", {
+		userId: user._id,
+		week,
+		momentum,
+		trust: user.trust ?? "low",
+		activeWeeks: parts.active,
+		shippedWeeks: parts.shipped,
+		consistency: parts.consistency,
+		outcomes: Math.round(outcomeValue * 100) / 100,
+		credit: thisWeek.credit,
+	});
 	await ctx.db.patch(user._id, {
 		momentum,
 		momentumChange: momentum - current,

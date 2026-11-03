@@ -123,7 +123,7 @@ describe("profile record", () => {
 		const record = await recordOf(setup, "ana");
 
 		expect(record?.hackathons).toEqual([]);
-		expect(record?.parts.outcomes).toBe(0);
+		expect(record?.parts).toBeNull();
 	});
 
 	it("a signed-in person sees the whole Record", async () => {
@@ -134,11 +134,7 @@ describe("profile record", () => {
 
 		expect(sam).toMatchObject({
 			bio: null,
-			parts: {
-				consistency: { active: 0, weeks: 0 },
-				volume: { perWeek: 0 },
-				outcomes: 0,
-			},
+			parts: null,
 			hackathons: [],
 			work: [],
 		});

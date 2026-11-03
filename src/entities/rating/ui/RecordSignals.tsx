@@ -1,13 +1,12 @@
 import { cn } from "~/shared/lib/cn";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
-import { RatingParts } from "~/shared/ui/RatingParts";
 import { RhythmStrip, StripLegend } from "~/shared/ui/RhythmStrip";
 import type { SignalsView } from "../api/useSignals";
 
 const LABEL = "text-xs leading-5 font-semibold text-muted-foreground";
 
 /**
- * The Momentum and its parts, then the 12-week rhythm strip. `row` sets them
+ * The Momentum, then the 12-week rhythm strip. `row` sets them
  * side by side; `stack` puts one above the other for a side panel.
  */
 export function RecordSignals({
@@ -33,7 +32,6 @@ export function RecordSignals({
 					ratingChange={signals.momentumChange}
 					isProvisional={signals.isProvisional}
 				/>
-				<RatingParts parts={signals.parts} />
 			</div>
 			<div className="flex flex-col gap-2">
 				<div className="flex h-5 items-center justify-between gap-3">

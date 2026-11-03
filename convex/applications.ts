@@ -81,7 +81,7 @@ export const getApplicant = query({
 		return {
 			application: toFounderApplicationView(application),
 			user: toPublicProfile(user),
-			record: await loadProfileRecord(ctx, user, Date.now()),
+			record: await loadProfileRecord(ctx, user),
 		};
 	},
 });

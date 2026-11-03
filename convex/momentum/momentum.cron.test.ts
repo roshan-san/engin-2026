@@ -6,6 +6,7 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
+import { cardOn } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import { addContributor, setUpStartup } from "../startups/startups.setup";
 import {
@@ -16,6 +17,10 @@ import {
 } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { runMomentum, toNextWeek, verifyCards } from "./momentum.setup";
+
+async function momentumOf(t: TestConvex, userId: Id<"users">) {
+	return (await t.run(async (ctx) => await ctx.db.get(userId)))?.momentum;
+}
 
 async function startupRow(t: TestConvex, startupId: Id<"startups">) {
 	const startup = await t.run(async (ctx) => await ctx.db.get(startupId));
@@ -155,6 +160,9 @@ describe("momentum", () => {
 	it("people are scored after Startups", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.founder.userId, { trust: "high" });
+		});
 		await verifyCards(setup, sam, 3);
 		await toNextWeek(setup.t);
 
@@ -166,20 +174,115 @@ describe("momentum", () => {
 		expect(profile?.momentum).toBeGreaterThan(1000);
 	});
 
-	it("self-verified work never raises a person", async () => {
+	it("a new self-approving Founder holds 1000 from week one", async () => {
 		const setup = await setUpStartup(createTest());
-		await verifyCards(setup, setup.founder, 3);
-		await toNextWeek(setup.t);
+		for (let week = 0; week < 3; week++) {
+			await verifyCards(setup, setup.founder, 1);
+			await toNextWeek(setup.t);
+			await runMomentum(setup.t);
+			expect(await momentumOf(setup.t, setup.founder.userId)).toBe(1000);
+		}
+	});
 
+	it("a break doesn't lower Momentum", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.founder.userId, { trust: "high" });
+		});
+		for (let week = 0; week < 3; week++) {
+			await verifyCards(setup, sam, 1);
+			await toNextWeek(setup.t);
+			await runMomentum(setup.t);
+		}
+		const before = await momentumOf(setup.t, sam.userId);
+		expect(before).toBeGreaterThan(1000);
+
+		for (let week = 0; week < 4; week++) {
+			await toNextWeek(setup.t);
+			await runMomentum(setup.t);
+		}
+
+		expect(await momentumOf(setup.t, sam.userId)).toBe(before);
+	});
+
+	it("a planning week doesn't lower Momentum", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.founder.userId, { trust: "high" });
+		});
+		await verifyCards(setup, sam, 1);
+		await toNextWeek(setup.t);
+		await runMomentum(setup.t);
+		const before = await momentumOf(setup.t, sam.userId);
+
+		const cardId = await cardOn(setup, sam, "Plan next");
+		await sam.as.mutation(api.cards.move, { cardId, to: "in_progress" });
+		await toNextWeek(setup.t);
 		await runMomentum(setup.t);
 
-		const founder = await setup.t.query(api.users.getRecord, {
-			username: "fay",
+		expect(await momentumOf(setup.t, sam.userId)).toBe(before);
+	});
+
+	it("a rerun of the same week changes nothing", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await verifyCards(setup, sam, 1);
+		await toNextWeek(setup.t);
+		await runMomentum(setup.t);
+		const first = await setup.t.run(
+			async (ctx) => await ctx.db.get(sam.userId),
+		);
+
+		await setup.t.mutation(internal.momentum.scoreUsers, {
+			week: first?.scoredThrough,
 		});
-		expect(founder?.momentum).toBeLessThanOrEqual(1000);
-		expect(
-			(await startupRow(setup.t, setup.startupId)).momentum,
-		).toBeGreaterThan(1000);
+		await setup.t.finishInProgressScheduledFunctions();
+
+		const events = await setup.t.run(
+			async (ctx) =>
+				await ctx.db
+					.query("scoreEvents")
+					.withIndex("by_user_and_week", (q) => q.eq("userId", sam.userId))
+					.collect(),
+		);
+		expect(events).toHaveLength(1);
+		expect(await momentumOf(setup.t, sam.userId)).toBe(first?.momentum);
+	});
+
+	it("the profile shows last run's parts, not today's", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await verifyCards(setup, sam, 1);
+		await toNextWeek(setup.t);
+		await runMomentum(setup.t);
+		const before = await sam.as.query(api.users.getRecord, {
+			username: "sam",
+		});
+
+		await verifyCards(setup, sam, 2);
+
+		const after = await sam.as.query(api.users.getRecord, {
+			username: "sam",
+		});
+		expect(before?.details?.parts).toEqual({
+			active: 1,
+			shipped: 1,
+			outcomes: 0,
+		});
+		expect(after?.details?.parts).toEqual(before?.details?.parts);
+	});
+
+	it("before any scored week, the profile has no parts", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+
+		const profile = await sam.as.query(api.users.getRecord, {
+			username: "sam",
+		});
+
+		expect(profile?.details?.parts).toBeNull();
 	});
 
 	it("scoredWeeks counts only active weeks", async () => {
@@ -223,6 +326,14 @@ describe("momentum", () => {
 			applicationId: ana.applicationId,
 			decision: "hired",
 		});
+		await setup.t.run(async (ctx) => {
+			await ctx.db.insert("contributors", {
+				startupId: setup.startupId,
+				userId: ana.userId,
+				discipline: "developer",
+			});
+		});
+		await verifyCards(setup, ana, 1);
 		await toNextWeek(setup.t);
 
 		await runMomentum(setup.t);
@@ -230,6 +341,7 @@ describe("momentum", () => {
 		const profile = await setup.t.query(api.users.getRecord, {
 			username: "ana",
 		});
-		expect(profile).toMatchObject({ momentum: 996, isProvisional: false });
+		// Credit 0.25 alone holds 1000; the Hire lifts the target to 1240.
+		expect(profile).toMatchObject({ momentum: 1060, isProvisional: false });
 	});
 });
