@@ -9,6 +9,7 @@ import {
 	requireAllowed,
 	requireCardAccess,
 	requireParticipantBoardAccess,
+	requireRoomIn,
 	requireTeamOwner,
 	toCardView,
 } from "./cards/model";
@@ -101,6 +102,7 @@ export const create = mutation({
 		const title = normalizeTitle(args.title);
 		const ownerId = args.ownerId ?? userId;
 		await requireTeamOwner(ctx, args.startupId, ownerId);
+		await requireRoomIn(ctx, { startupId: args.startupId, ownerId }, "todo");
 
 		return await ctx.db.insert("cards", {
 			startupId: args.startupId,
@@ -131,6 +133,13 @@ export const update = mutation({
 		if (args.ownerId !== undefined) {
 			requireAllowed(card, { kind: "reassign" }, actor);
 			await requireTeamOwner(ctx, card.startupId, args.ownerId);
+			if (card.status === "in_progress" && args.ownerId !== card.ownerId) {
+				await requireRoomIn(
+					ctx,
+					{ ...card, ownerId: args.ownerId },
+					"in_progress",
+				);
+			}
 			patch.ownerId = args.ownerId;
 		}
 		if (args.notes !== undefined) {
@@ -155,6 +164,10 @@ export const move = mutation({
 		const userId = await requireUserId(ctx);
 		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
 		requireAllowed(card, { kind: "move", to: args.to }, actor);
+		// A Send back always goes through, so the Founder can empty Review.
+		if (card.status !== "review" && card.status !== args.to) {
+			await requireRoomIn(ctx, card, args.to);
+		}
 
 		await ctx.db.patch(card._id, { status: args.to });
 		// Only a Send back can empty the Review queue.

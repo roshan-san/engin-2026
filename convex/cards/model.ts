@@ -10,14 +10,18 @@ import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
 import {
+	CARD_LIMITS,
 	CARD_TEXT,
 	type CardAction,
 	type CardActor,
 	cardRefusal,
+	IN_PROGRESS_FULL,
 	isUnfinished,
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
 	MAX_SHIPPED_LINKS,
+	NO_OWNER,
+	TODO_FULL,
 } from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -115,6 +119,46 @@ export async function requireTeamOwner(
 ): Promise<void> {
 	if (!(await getTeamRole(ctx, startupId, ownerId))) {
 		throw new ConvexError("They're not on this Startup's team");
+	}
+}
+
+/**
+ * Throws when a startup Card can't land in `to`: To do is full, the owner already has
+ * 2 In progress, or nobody owns it. Hackathon Cards have no limit.
+ */
+export async function requireRoomIn(
+	ctx: Ctx,
+	card: {
+		startupId: Id<"startups">;
+		hackathonId?: Id<"hackathons">;
+		ownerId?: Id<"users">;
+	},
+	to: "todo" | "in_progress",
+): Promise<void> {
+	if (card.hackathonId) {
+		return;
+	}
+	if (to === "in_progress" && !card.ownerId) {
+		throw new ConvexError(NO_OWNER);
+	}
+	const there = await ctx.db
+		.query("cards")
+		.withIndex("by_startup_and_hackathon_and_status_and_verifiedAt", (q) =>
+			q
+				.eq("startupId", card.startupId)
+				.eq("hackathonId", undefined)
+				.eq("status", to),
+		)
+		.take(MAX_BOARD_CARDS);
+	if (to === "todo") {
+		if (there.length >= CARD_LIMITS.todoPerStartup) {
+			throw new ConvexError(TODO_FULL);
+		}
+		return;
+	}
+	const owned = there.filter((other) => other.ownerId === card.ownerId);
+	if (owned.length >= CARD_LIMITS.inProgressPerPerson) {
+		throw new ConvexError(IN_PROGRESS_FULL);
 	}
 }
 
