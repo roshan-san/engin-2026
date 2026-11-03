@@ -20,6 +20,8 @@ export const hackathonsTables = {
 		endsAt: v.number(),
 		/** endsAt + 7 days. */
 		decideBy: v.number(),
+		/** How many Applicants the Founder's daily digest has counted. */
+		applicantsEmailed: v.optional(v.number()),
 		/** When it became `done`. Unset on Hackathons finished before this field existed. */
 		finishedAt: v.optional(v.number()),
 		participantsGet: v.optional(v.string()),

@@ -13,6 +13,8 @@ import {
 } from "./model";
 import { MAX_APPLICATIONS } from "./rules";
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 // Every write to a Hackathon's `status` lives here. Explicit return types: this file
 // schedules `internal.hackathons`, whose handlers call back into it, so inference would loop.
 
@@ -52,6 +54,17 @@ export async function publish(
 	await ctx.scheduler.runAt(
 		hackathon.decideBy,
 		internal.hackathons.closeDeciding,
+		{ hackathonId: hackathon._id },
+	);
+	const dayBefore = (at: number) => Math.max(at - DAY_MS, Date.now());
+	await ctx.scheduler.runAt(
+		dayBefore(hackathon.startsAt),
+		internal.email.remindStart,
+		{ hackathonId: hackathon._id },
+	);
+	await ctx.scheduler.runAt(
+		dayBefore(hackathon.decideBy),
+		internal.email.remindDecision,
 		{ hackathonId: hackathon._id },
 	);
 }

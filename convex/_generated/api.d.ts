@@ -38,6 +38,7 @@ import type * as cycles_table from "../cycles/table.js";
 import type * as email from "../email.js";
 import type * as email_copy from "../email/copy.js";
 import type * as email_model from "../email/model.js";
+import type * as email_reminders from "../email/reminders.js";
 import type * as email_rules from "../email/rules.js";
 import type * as email_table from "../email/table.js";
 import type * as files from "../files.js";
@@ -128,6 +129,7 @@ declare const fullApi: ApiFromModules<{
   email: typeof email;
   "email/copy": typeof email_copy;
   "email/model": typeof email_model;
+  "email/reminders": typeof email_reminders;
   "email/rules": typeof email_rules;
   "email/table": typeof email_table;
   files: typeof files;
