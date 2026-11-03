@@ -17,7 +17,7 @@ export function StartWeekBar() {
 	const setOff = useSetOff(startup._id);
 	const now = useMinute();
 
-	if (!cycle || cycle.state !== "planning" || !team || !cards) {
+	if (cycle?.state !== "planning" || !team || !cards) {
 		return null;
 	}
 
