@@ -545,7 +545,12 @@ describe("live", () => {
 
 		const progressOf = (userId: Id<"users">) =>
 			rows.find((row) => row.user._id === userId)?.progress;
-		expect(progressOf(ana.userId)).toEqual({ done: 1, inReview: 0, total: 3 });
+		expect(progressOf(ana.userId)).toEqual({
+			done: 1,
+			inReview: 0,
+			moved: 1,
+			total: 3,
+		});
 		expect(rows.filter((row) => row.progress?.done === 0)).toHaveLength(1);
 	});
 
@@ -739,6 +744,7 @@ describe("deciding", () => {
 		expect(rows.find((row) => row.user._id === ana.userId)?.progress).toEqual({
 			done: 0,
 			inReview: 1,
+			moved: 1,
 			total: 3,
 		});
 	});
