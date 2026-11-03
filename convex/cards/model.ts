@@ -17,6 +17,7 @@ import {
 	type CardActor,
 	cardRefusal,
 	IN_PROGRESS_FULL,
+	isNotFinished,
 	isUnfinished,
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
@@ -227,11 +228,25 @@ export async function loadUnfinishedCards(
 	return [...todo, ...inProgress];
 }
 
-/** Open Cards, plus the Cards verified this Cycle, newest first within each column. */
+/** Marks the Startup's Cards left unfinished before `week` as Not finished. */
+export async function endPastCards(
+	ctx: MutationCtx,
+	startupId: Id<"startups">,
+	week: string,
+): Promise<void> {
+	for (const card of await loadUnfinishedCards(ctx, startupId)) {
+		if (isNotFinished(card, week)) {
+			await ctx.db.patch(card._id, { status: "not_finished" });
+		}
+	}
+}
+
+/** Open Cards of `week` (and any still in Review), plus the Cards verified this Cycle, newest first within each column. */
 export async function loadBoardCards(
 	ctx: Ctx,
 	startupId: Id<"startups">,
 	now: number,
+	week: string,
 ): Promise<Doc<"cards">[]> {
 	const thisWeek = weekStart(weekOf(now));
 	const verifiedThisWeek = ctx.db
@@ -252,7 +267,9 @@ export async function loadBoardCards(
 		loadOpenCards(ctx, startupId, "review"),
 		verifiedThisWeek,
 	]);
-	return [...todo, ...inProgress, ...review, ...done];
+	return [...todo, ...inProgress, ...review, ...done].filter(
+		(card) => !isNotFinished(card, week),
+	);
 }
 
 export type CardView = Awaited<ReturnType<typeof toCardView>>;

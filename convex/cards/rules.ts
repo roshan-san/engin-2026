@@ -12,7 +12,7 @@ export type CardActor = {
 };
 
 export type RuledCard = {
-	status: "todo" | "in_progress" | "review" | "done";
+	status: "todo" | "in_progress" | "review" | "done" | "not_finished";
 	ownerId?: Id<"users">;
 };
 
@@ -27,6 +27,7 @@ export type CardAction =
 	| { kind: "editNotes" };
 
 const VERIFIED = "This Card is approved, so only its notes can change";
+export const ENDED = "This Card's week has ended";
 const STAYS_WITH_PARTICIPANT = "Hackathon Cards stay with their Builder";
 
 /** Why `actor` may not do `action` to `card`, in words to show; `null` when they may. */
@@ -40,6 +41,9 @@ export function cardRefusal(
 		return locked;
 	}
 	const isHackathonCard = actor.phase !== null;
+	if (card.status === "not_finished" && action.kind !== "editNotes") {
+		return ENDED;
+	}
 	switch (action.kind) {
 		case "editNotes":
 			return null;
@@ -94,6 +98,17 @@ export function isUnfinished(card: RuledCard): boolean {
 	return card.status === "todo" || card.status === "in_progress";
 }
 
+/** A Startup Card left unfinished in an earlier week, or already marked so. */
+export function isNotFinished(
+	card: { status: RuledCard["status"]; week?: string },
+	currentWeek: string,
+): boolean {
+	if (card.status === "not_finished") {
+		return true;
+	}
+	return isUnfinished(card) && (card.week ?? "") < currentWeek;
+}
+
 /** Where a submitted Card lands: the Founder's own goes straight to Done, self-verified. */
 export function submitLandsIn(
 	card: RuledCard,
@@ -137,6 +152,8 @@ export const cardStatus = v.union(
 	/** Submitted, waiting for the Founder to verify. */
 	v.literal("review"),
 	v.literal("done"),
+	/** Not done when its week ended; it never returns to the Board. */
+	v.literal("not_finished"),
 );
 /** What shipped: the line, proof links and images a Contributor submits. */
 export const shipped = v.object({

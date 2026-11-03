@@ -1,5 +1,6 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
+import { meetings } from "../cycles/lock";
 import { trustLevel } from "../momentum/rules";
 
 import { startupCategory, startupCity, startupStage } from "./rules";
@@ -27,6 +28,8 @@ export const startupsTables = {
 		trust: v.optional(trustLevel),
 		/** Verified Cards per finished week, oldest first: at most 12, none before the Startup existed. */
 		rhythm: v.array(v.number()),
+		/** The team's opening and closing meetings; absent until the Founder sets them. */
+		meetings: v.optional(meetings),
 	})
 		.index("by_slug", ["slug"])
 		.index("by_momentum", ["momentum"])

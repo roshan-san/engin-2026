@@ -5,6 +5,7 @@ import {
 	type CardAction,
 	type CardActor,
 	cardRefusal,
+	isNotFinished,
 	type RuledCard,
 	submitLandsIn,
 } from "./rules";
@@ -194,5 +195,33 @@ describe("submitLandsIn", () => {
 		expect(submitLandsIn(card("in_progress"), participant("live"))).toBe(
 			"review",
 		);
+	});
+});
+
+describe("a Card whose week has ended", () => {
+	const ENDED = "This Card's week has ended";
+
+	it("only takes notes", () => {
+		for (const action of [MOVE, SUBMIT, DELETE, RETITLE, REASSIGN]) {
+			expect(cardRefusal(card("not_finished"), action, founder)).toBe(ENDED);
+		}
+		expect(cardRefusal(card("not_finished"), EDIT_NOTES, founder)).toBeNull();
+	});
+
+	it("is an unfinished Card from an earlier week", () => {
+		expect(
+			isNotFinished({ status: "todo", week: "2026-W44" }, "2026-W45"),
+		).toBe(true);
+		expect(
+			isNotFinished({ status: "in_progress", week: "2026-W44" }, "2026-W45"),
+		).toBe(true);
+		expect(
+			isNotFinished({ status: "todo", week: "2026-W45" }, "2026-W45"),
+		).toBe(false);
+		expect(
+			isNotFinished({ status: "review", week: "2026-W44" }, "2026-W45"),
+		).toBe(false);
+		expect(isNotFinished({ status: "todo" }, "2026-W45")).toBe(true);
+		expect(isNotFinished({ status: "not_finished" }, "2026-W45")).toBe(true);
 	});
 });
