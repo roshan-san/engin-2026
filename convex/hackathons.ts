@@ -146,6 +146,8 @@ export const getPublic = query({
 				momentumChange: publicStartup.momentumChange,
 				isProvisional: publicStartup.isProvisional,
 			},
+			/** The Founder's Trust, so Builders can judge the promise. */
+			founderTrust: (await ctx.db.get(startup.founderId))?.trust ?? "low",
 			hiringRecord: await loadHiringRecord(ctx, startup._id),
 			applicantCount: hackathon.applicantCount,
 			isTeam: userId

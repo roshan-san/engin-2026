@@ -86,7 +86,7 @@ describe("visibility", () => {
 		expect(signals?.verifiedTotal12).toBe(2);
 	});
 
-	it("the parts count finished weeks only", async () => {
+	it("signals carry the startup's Trust, Low before any run, and no parts", async () => {
 		const setup = await setUpStartup(createTest());
 		await verifyCards(setup, setup.founder, 3);
 
@@ -94,10 +94,8 @@ describe("visibility", () => {
 			slug: setup.slug,
 		});
 
-		expect(signals?.parts).toEqual({
-			consistency: { active: 0, weeks: 0 },
-			volume: { perWeek: 0 },
-		});
+		expect(signals?.trust).toBe("low");
+		expect(signals).not.toHaveProperty("parts");
 	});
 
 	it("an unknown slug gives null", async () => {

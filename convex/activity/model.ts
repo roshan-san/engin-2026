@@ -12,13 +12,7 @@ import {
 	weekStart,
 } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
-import {
-	buildParts,
-	countedWeeks,
-	loadStartupCounts,
-	MOMENTUM,
-	toPartsView,
-} from "../momentum/model";
+import { loadStartupCounts, MOMENTUM } from "../momentum/model";
 import { buildRhythmStrip } from "../startups/model";
 import { loadPublicUser, type PublicUser } from "../users/model";
 import type { activityKind } from "./rules";
@@ -182,13 +176,13 @@ export type SignalsView = {
 	momentum: number;
 	momentumChange: number;
 	isProvisional: boolean;
-	parts: ReturnType<typeof toPartsView>;
+	trust: "low" | "mid" | "high";
 	/** 12 weeks ending with this one; `count` is null before signup. */
 	strip: { week: string; startsAt: number; count: number | null }[];
 	verifiedTotal12: number;
 };
 
-/** The Momentum, its parts over finished weeks, and the 12-week rhythm strip. */
+/** The Momentum and Trust, and the 12-week rhythm strip. */
 export async function loadSignals(
 	ctx: QueryCtx,
 	startup: Doc<"startups">,
@@ -196,25 +190,19 @@ export async function loadSignals(
 ): Promise<SignalsView> {
 	const thisWeek = weekOf(now);
 	const firstWeek = weekOf(startup._creationTime);
-	// 13 weeks: the strip's 12 plus the one finished week before them that the parts count.
-	const span = Array.from({ length: MOMENTUM.weeks + 1 }, (_, i) =>
-		shiftWeek(thisWeek, i - MOMENTUM.weeks),
+	const span = Array.from({ length: MOMENTUM.weeks }, (_, i) =>
+		shiftWeek(thisWeek, i + 1 - MOMENTUM.weeks),
 	).filter((week) => week >= firstWeek);
-	const counted = await loadStartupCounts(ctx, startup._id, span);
-	const countOf = new Map(span.map((week, i) => [week, counted[i]]));
-
-	const strip = buildRhythmStrip(counted.slice(-MOMENTUM.weeks), thisWeek);
-	const parts = buildParts(
-		countedWeeks(startup._creationTime, shiftWeek(thisWeek, -1)).map(
-			(week) => countOf.get(week) ?? 0,
-		),
+	const strip = buildRhythmStrip(
+		await loadStartupCounts(ctx, startup._id, span),
+		thisWeek,
 	);
 
 	return {
 		momentum: startup.momentum,
 		momentumChange: startup.momentumChange,
 		isProvisional: startup.provisional,
-		parts: toPartsView(parts),
+		trust: startup.trust ?? "low",
 		strip,
 		verifiedTotal12: strip.reduce((sum, cell) => sum + (cell.count ?? 0), 0),
 	};

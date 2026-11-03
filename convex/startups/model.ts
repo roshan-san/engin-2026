@@ -78,6 +78,7 @@ export async function toPublicStartup(
 		momentum: startup.momentum,
 		momentumChange: startup.momentumChange,
 		isProvisional: startup.provisional,
+		trust: startup.trust ?? "low",
 		founder: await loadPublicUser(ctx, startup.founderId),
 	};
 }
@@ -130,6 +131,7 @@ export async function toExploreStartup(
 		momentum: startup.momentum,
 		momentumChange: startup.momentumChange,
 		isProvisional: startup.provisional,
+		trust: startup.trust ?? "low",
 		logoUrl: await loadLogoUrl(ctx, startup),
 		strip: buildRhythmStrip(startup.rhythm, startup.scoredThrough ?? endWeek),
 		isHiring: (await loadOpenHackathons(ctx, startup._id)).length > 0,

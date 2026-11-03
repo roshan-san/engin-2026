@@ -5,7 +5,7 @@ import { MAX_USER_APPLICATIONS } from "../applications/rules";
 import { shiftWeek, weekOf } from "../cycles/rules";
 import { MAX_HACKATHON_CARDS, phaseOf } from "../hackathons/rules";
 import { loadCredits } from "./credit";
-import { STARTING_MOMENTUM, WEEK_COUNT_CAP } from "./rules";
+import { STARTING_MOMENTUM, type Trust, WEEK_COUNT_CAP } from "./rules";
 import { loadTrustInputs, NO_PROGRESS, nextTrust } from "./trust";
 
 export const MOMENTUM = {
@@ -15,9 +15,6 @@ export const MOMENTUM = {
 	span: 800,
 	riseStep: 0.25,
 	fallStep: 0.1,
-	volumeCap: 5,
-	volumeBonus: 0.02,
-	volumeBonusCap: 10,
 	provisionalWeeks: 4,
 	/** Below this many active weeks, the missing ones count as `neutralCredit`. */
 	minWeeks: 4,
@@ -25,19 +22,13 @@ export const MOMENTUM = {
 	neutralCredit: 0.25,
 	outcomeDays: 365,
 	outcomePoints: { hired: 1, finalist: 0.5, built: 0.2 },
-	startup: { consistency: 0.6, volume: 0.4 },
 	person: { consistency: 0.7, outcomes: 0.3 },
 } as const;
 
-export type Outcome = "built" | "finalist" | "hired";
+/** Team rows read per startup in one weekly step. */
+const MAX_TEAM = 200;
 
-export type Parts = {
-	consistency: number;
-	volume: number;
-	active: number;
-	weeks: number;
-	perWeek: number;
-};
+export type Outcome = "built" | "finalist" | "hired";
 
 /** The finished weeks that count, oldest first: at most 12, none before signup. */
 export function countedWeeks(createdAt: number, throughWeek: string): string[] {
@@ -49,33 +40,6 @@ export function countedWeeks(createdAt: number, throughWeek: string): string[] {
 		week = shiftWeek(week, -1);
 	}
 	return weeks;
-}
-
-export function weekVolume(n: number): number {
-	const full = Math.min(n, MOMENTUM.volumeCap) / MOMENTUM.volumeCap;
-	const extra = Math.min(
-		Math.max(n - MOMENTUM.volumeCap, 0),
-		MOMENTUM.volumeBonusCap,
-	);
-	return full + MOMENTUM.volumeBonus * extra;
-}
-
-/** The parts from one verified-Card count per counted week. */
-export function buildParts(counts: number[]): Parts {
-	const weeks = counts.length;
-	if (weeks === 0) {
-		return { consistency: 0, volume: 0, active: 0, weeks: 0, perWeek: 0 };
-	}
-	const active = counts.filter((n) => n > 0).length;
-	const volume = counts.reduce((sum, n) => sum + weekVolume(n), 0) / weeks;
-	const total = counts.reduce((sum, n) => sum + n, 0);
-	return {
-		consistency: active / weeks,
-		volume,
-		active,
-		weeks,
-		perWeek: Math.round((total / weeks) * 10) / 10,
-	};
 }
 
 /**
@@ -122,17 +86,8 @@ export function outcomeScore(outcomes: Outcome[]): number {
 }
 
 /** Rounded to cents, so 0.7 × 0.25 lands on 1000 and not 999.99. */
-function toTarget(score: number, base: number = MOMENTUM.base): number {
-	return Math.round((base + MOMENTUM.span * score) * 100) / 100;
-}
-
-/** The startup formula until startups weigh their team (its own base of 800). */
-export function startupTarget(parts: Parts): number {
-	const w = MOMENTUM.startup;
-	return toTarget(
-		w.consistency * parts.consistency + w.volume * parts.volume,
-		800,
-	);
+function toTarget(score: number): number {
+	return Math.round((MOMENTUM.base + MOMENTUM.span * score) * 100) / 100;
 }
 
 export function personTarget(consistency: number, outcomes: number): number {
@@ -146,10 +101,29 @@ export function nextMomentum(momentum: number, target: number): number {
 	return Math.round(momentum + step * (target - momentum));
 }
 
-export function toPartsView(parts: Parts) {
+const TRUST_LEVELS: Trust[] = ["low", "mid", "high"];
+
+/**
+ * A startup's Momentum and Trust: its team's, weighted by the credit each earned there.
+ * Trust averages the levels (Low 0, Mid 1, High 2), rounded down. No credit: 1000 at Low.
+ */
+export function teamAverage(
+	members: { weight: number; momentum: number; trust: Trust }[],
+): { momentum: number; trust: Trust; credit: number } {
+	const credit = members.reduce((sum, m) => sum + m.weight, 0);
+	if (credit === 0) {
+		return { momentum: STARTING_MOMENTUM, trust: "low", credit: 0 };
+	}
+	const weighted = (value: (m: (typeof members)[number]) => number) =>
+		members.reduce((sum, m) => sum + m.weight * value(m), 0) / credit;
+	// The small nudge keeps a float like 0.9999999 from rounding a level down.
+	const level = Math.floor(
+		weighted((m) => TRUST_LEVELS.indexOf(m.trust)) + 1e-9,
+	);
 	return {
-		consistency: { active: parts.active, weeks: parts.weeks },
-		volume: { perWeek: parts.perWeek },
+		momentum: Math.round(weighted((m) => m.momentum)),
+		trust: TRUST_LEVELS[level],
+		credit: Math.round(credit * 100) / 100,
 	};
 }
 
@@ -266,7 +240,23 @@ async function hasFinishedHackathon(
 	return false;
 }
 
-/** Moves one Startup's Momentum for `week`. A rerun of the same week does nothing. */
+/** The Founder and current Contributors. Hackathon Builders aren't team. */
+async function loadTeamIds(
+	ctx: QueryCtx,
+	startup: Doc<"startups">,
+): Promise<Id<"users">[]> {
+	const contributors = await ctx.db
+		.query("contributors")
+		.withIndex("by_startup_and_user", (q) => q.eq("startupId", startup._id))
+		.take(MAX_TEAM);
+	return [startup.founderId, ...contributors.map((row) => row.userId)];
+}
+
+/**
+ * Sets one Startup's Momentum and Trust for `week` from its team, weighting each
+ * person by the approval credit they earned there over the last 12 weeks, and
+ * records the step in `scoreEvents`. Run after people. A rerun of the same week does nothing.
+ */
 export async function scoreStartup(
 	ctx: MutationCtx,
 	startup: Doc<"startups">,
@@ -276,23 +266,44 @@ export async function scoreStartup(
 		return;
 	}
 	const weeks = countedWeeks(startup._creationTime, week);
-	if (weeks.length === 0) {
-		await ctx.db.patch(startup._id, { scoredThrough: week, rhythm: [] });
-		return;
-	}
-	const counts = await loadStartupCounts(ctx, startup._id, weeks);
-	const momentum = nextMomentum(
-		startup.momentum,
-		startupTarget(buildParts(counts)),
-	);
+	const fromWeek = shiftWeek(week, 1 - MOMENTUM.weeks);
+	const [counts, members] = await Promise.all([
+		loadStartupCounts(ctx, startup._id, weeks),
+		loadTeamIds(ctx, startup).then((ids) =>
+			Promise.all(
+				ids.map(async (userId) => {
+					const [user, credits] = await Promise.all([
+						ctx.db.get(userId),
+						loadCredits(ctx, userId, { fromWeek, startupId: startup._id }),
+					]);
+					return {
+						weight: credits
+							.filter((row) => row.week <= week && !row.hackathonId)
+							.reduce((sum, row) => sum + row.credit, 0),
+						momentum: user?.momentum ?? STARTING_MOMENTUM,
+						trust: user?.trust ?? "low",
+					};
+				}),
+			),
+		),
+	]);
+	const { momentum, trust, credit } = teamAverage(members);
 	const scoredWeeks = startup.scoredWeeks + (counts.at(-1) ? 1 : 0);
 	const provisional =
 		scoredWeeks < MOMENTUM.provisionalWeeks &&
 		!(await hasFinishedHackathon(ctx, startup._id));
 
+	await ctx.db.insert("scoreEvents", {
+		startupId: startup._id,
+		week,
+		momentum,
+		trust,
+		credit,
+	});
 	await ctx.db.patch(startup._id, {
 		momentum,
 		momentumChange: momentum - startup.momentum,
+		trust,
 		scoredWeeks,
 		scoredThrough: week,
 		provisional,

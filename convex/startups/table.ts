@@ -1,5 +1,6 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
+import { trustLevel } from "../momentum/rules";
 
 import { startupCategory, startupCity, startupStage } from "./rules";
 
@@ -22,6 +23,8 @@ export const startupsTables = {
 		/** The week key last scored, so a rerun skips the row. */
 		scoredThrough: v.optional(v.string()),
 		provisional: v.boolean(),
+		/** The team's Trust, credit-weighted; absent reads as Low. Set by the weekly run. */
+		trust: v.optional(trustLevel),
 		/** Verified Cards per finished week, oldest first: at most 12, none before the Startup existed. */
 		rhythm: v.array(v.number()),
 	})
