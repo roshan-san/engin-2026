@@ -225,3 +225,32 @@ describe("a Card whose week has ended", () => {
 		expect(isNotFinished({ status: "not_finished" }, "2026-W45")).toBe(true);
 	});
 });
+
+describe("the locked Board", () => {
+	const PLANNING = "The Board opens after Monday's meeting";
+	const CLOSING = "The Board is locked for the closing meeting";
+	const planning: CardActor = { ...contributor, lock: "planning" };
+
+	it("nobody moves or submits", () => {
+		expect(cardRefusal(card("todo"), MOVE, planning)).toBe(PLANNING);
+		expect(cardRefusal(card("in_progress"), SUBMIT, planning)).toBe(PLANNING);
+		expect(
+			cardRefusal(card("todo"), MOVE, { ...contributor, lock: "closing" }),
+		).toBe(CLOSING);
+		expect(
+			cardRefusal(card("todo", sam), MOVE, { ...founder, lock: "closing" }),
+		).toBe(CLOSING);
+	});
+
+	it("the Founder still approves and sends back", () => {
+		const closing: CardActor = { ...founder, lock: "closing" };
+		expect(cardRefusal(card("review"), SEND_BACK, closing)).toBeNull();
+		expect(cardRefusal(card("review"), VERIFY, closing)).toBeNull();
+	});
+
+	it("Cards can still be retitled, deleted and noted", () => {
+		for (const action of [RETITLE, DELETE, EDIT_NOTES]) {
+			expect(cardRefusal(card("todo"), action, planning)).toBeNull();
+		}
+	});
+});

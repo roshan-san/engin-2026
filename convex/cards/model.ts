@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { getHackathonRole } from "../applications/model";
+import { loadWeekContext } from "../cycles/model";
 import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
 import { phaseOf } from "../hackathons/rules";
@@ -51,7 +52,9 @@ export async function requireCardAccess(
 	}
 	if (!card.hackathonId) {
 		const { startup, role } = await requireTeam(ctx, card.startupId, userId);
-		return { card, startup, actor: { userId, role, phase: null } };
+		const { state } = await loadWeekContext(ctx, startup, Date.now());
+		const lock = state === "open" ? undefined : state;
+		return { card, startup, actor: { userId, role, phase: null, lock } };
 	}
 	const [hackathon, startup] = await Promise.all([
 		ctx.db.get(card.hackathonId),

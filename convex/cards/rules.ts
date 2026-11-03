@@ -9,7 +9,14 @@ export type CardActor = {
 	userId: Id<"users">;
 	role: CardRole;
 	phase: HackathonPhase | null;
+	/** Set on a Startup Card while the team's Board is locked. */
+	lock?: "closing" | "planning";
 };
+
+export const LOCKED = {
+	closing: "The Board is locked for the closing meeting",
+	planning: "The Board opens after Monday's meeting",
+} as const;
 
 export type RuledCard = {
 	status: "todo" | "in_progress" | "review" | "done" | "not_finished";
@@ -43,6 +50,16 @@ export function cardRefusal(
 	const isHackathonCard = actor.phase !== null;
 	if (card.status === "not_finished" && action.kind !== "editNotes") {
 		return ENDED;
+	}
+	const isSendBack =
+		action.kind === "move" &&
+		card.status === "review" &&
+		actor.role === "founder";
+	if (
+		actor.lock &&
+		(action.kind === "submit" || (action.kind === "move" && !isSendBack))
+	) {
+		return LOCKED[actor.lock];
 	}
 	switch (action.kind) {
 		case "editNotes":

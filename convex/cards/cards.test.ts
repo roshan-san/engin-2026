@@ -5,7 +5,8 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
-import { weekOf } from "../cycles/rules";
+import { DEFAULT_SLOTS } from "../cycles/lock";
+import { shiftWeek, weekOf } from "../cycles/rules";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
 	addContributor,
@@ -910,5 +911,79 @@ describe("the week a Card belongs to", () => {
 		]);
 		await setup.founder.as.mutation(api.cards.verify, { cardId });
 		expect((await cardDoc(setup, cardId))?.status).toBe("done");
+	});
+});
+
+describe("the locked Board", () => {
+	const PLANNING = "The Board opens after Monday's meeting";
+
+	/** Meetings from this week on: the test clock is a Saturday, so the Board is locked for planning. */
+	async function lockBoard(setup: Setup) {
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.startupId, {
+				meetings: {
+					...DEFAULT_SLOTS,
+					firstWeek: weekOf(Date.now()),
+					invited: [],
+				},
+			});
+		});
+	}
+
+	it("nobody moves a Card while the Board is locked", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await lockBoard(setup);
+
+		const cardId = await cardOn(setup, sam, "Welcome emails");
+
+		await expect(
+			sam.as.mutation(api.cards.move, { cardId, to: "in_progress" }),
+		).rejects.toThrow(PLANNING);
+	});
+
+	it("a Card added at the weekend is for next week", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await lockBoard(setup);
+
+		const cardId = await cardOn(setup, sam, "Welcome emails");
+
+		const card = await setup.t.run(async (ctx) => await ctx.db.get(cardId));
+		expect(card?.week).toBe(shiftWeek(weekOf(Date.now()), 1));
+	});
+
+	it("a Card sent back during the lock is Not finished", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const cardId = await cardOn(setup, sam, "Welcome emails");
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
+		await lockBoard(setup);
+
+		await setup.founder.as.mutation(api.cards.move, { cardId, to: "todo" });
+
+		expect(await boardOf(setup)).toEqual([]);
+		await advancePast(setup.t, 7 * DAY);
+		expect(await boardOf(setup)).toEqual([]);
+	});
+
+	it("Hackathon Cards ignore the lock", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [builder] = await participants(setup, hackathonId, ["Bea"]);
+		await startHackathon(setup, hackathonId);
+		await addContributor(setup, "Sam");
+		await lockBoard(setup);
+		const [card] = await builder.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: builder.userId,
+		});
+
+		await expect(
+			builder.as.mutation(api.cards.move, {
+				cardId: card._id,
+				to: "in_progress",
+			}),
+		).resolves.toBeNull();
 	});
 });
