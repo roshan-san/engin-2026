@@ -30,6 +30,7 @@ function aCard(id: string, status: CardView["status"]) {
 		notesEditedBy: null,
 		changesAsked: false,
 		selfVerified: false,
+		discipline: null,
 	} satisfies CardView;
 }
 

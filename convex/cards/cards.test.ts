@@ -804,3 +804,56 @@ describe("Board limits", () => {
 		expect(after.every((card) => card.status === "in_progress")).toBe(true);
 	});
 });
+
+describe("proof hints", () => {
+	it("a Card's view carries the owner's discipline on it", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await setup.t.run(async (ctx) => {
+			const row = await ctx.db
+				.query("contributors")
+				.withIndex("by_startup_and_user", (q) =>
+					q.eq("startupId", setup.startupId).eq("userId", sam.userId),
+				)
+				.unique();
+			if (row) await ctx.db.patch(row._id, { discipline: "developer" });
+		});
+		await cardOn(setup, sam, "Ship the API");
+
+		expect(await boardOf(setup, sam)).toMatchObject([
+			{ discipline: "developer" },
+		]);
+	});
+
+	it("a Builder's Card carries the Hackathon's discipline", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup, {
+			job: {
+				title: "Brand",
+				discipline: "designer",
+				pay: "6_9l",
+				mode: "remote",
+			},
+		});
+		const [builder] = await participants(setup, hackathonId, ["Bea"]);
+		await startHackathon(setup, hackathonId);
+
+		const cards = await builder.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: builder.userId,
+		});
+
+		expect(cards[0]).toMatchObject({ discipline: "designer" });
+	});
+
+	it("with no team role, the owner's profile discipline is used, else none", async () => {
+		const setup = await setUpStartup(createTest());
+		await cardOn(setup, setup.founder, "Plan launch");
+		expect(await boardOf(setup)).toMatchObject([{ discipline: null }]);
+
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.founder.userId, { discipline: "sales" });
+		});
+		expect(await boardOf(setup)).toMatchObject([{ discipline: "sales" }]);
+	});
+});

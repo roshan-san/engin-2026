@@ -278,18 +278,22 @@ export async function loadBoardCards(
 export type CardView = Awaited<ReturnType<typeof toCardView>>;
 
 export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
-	const [owner, notesEditedBy, verifiedBy, imageUrls] = await Promise.all([
-		loadPublicUser(ctx, card.ownerId),
-		loadPublicUser(ctx, card.notesEditedBy),
-		loadPublicUser(ctx, card.verifiedBy),
-		loadImageUrls(ctx, card.shipped?.images ?? []),
-	]);
+	const [owner, notesEditedBy, verifiedBy, imageUrls, discipline] =
+		await Promise.all([
+			loadPublicUser(ctx, card.ownerId),
+			loadPublicUser(ctx, card.notesEditedBy),
+			loadPublicUser(ctx, card.verifiedBy),
+			loadImageUrls(ctx, card.shipped?.images ?? []),
+			ownerDiscipline(ctx, card),
+		]);
 	return {
 		_id: card._id,
 		title: card.title,
 		notes: card.notes,
 		status: card.status,
 		owner,
+		/** What the owner does on this Card, for the proof hint. */
+		discipline,
 		shipped: card.shipped ? { ...card.shipped, imageUrls } : null,
 		submittedAt: card.submittedAt ?? null,
 		verifiedAt: card.verifiedAt ?? null,
@@ -320,9 +324,25 @@ async function listOwner(
 	});
 }
 
+/** What the owner does on this Card: their role on its Hackathon or Startup, else their profile's; null without an owner or either. */
+async function ownerDiscipline(
+	ctx: Ctx,
+	card: Doc<"cards">,
+): Promise<NonNullable<Doc<"users">["discipline"]> | null> {
+	if (!card.ownerId) {
+		return null;
+	}
+	const ownerId = card.ownerId;
+	const role = await roleDiscipline(ctx, card, ownerId);
+	if (role) {
+		return role;
+	}
+	return (await ctx.db.get(ownerId))?.discipline ?? null;
+}
+
 /** What the owner does on this Card's Hackathon or Startup. */
 async function roleDiscipline(
-	ctx: MutationCtx,
+	ctx: Ctx,
 	card: Doc<"cards">,
 	ownerId: Id<"users">,
 ): Promise<Doc<"users">["discipline"]> {

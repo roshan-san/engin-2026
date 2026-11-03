@@ -67,6 +67,14 @@ export const jobMode = v.union(
 /** How long a Hackathon runs, in weeks. */
 export const hackathonWeeks = v.union(v.literal(1), v.literal(2));
 
+/** What Builders get when nothing is on offer. A Hackathon saved before the choice was required reads as this too. */
+export const NOTHING = "Nothing";
+
+/** Whether Builders get something: a value is set and it isn't "Nothing". */
+export function isPaid(participantsGet: string | undefined): boolean {
+	return participantsGet !== undefined && participantsGet !== NOTHING;
+}
+
 /** Longest allowed text per Hackathon field. */
 export const HACKATHON_TEXT = {
 	title: 60,

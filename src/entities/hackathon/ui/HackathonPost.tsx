@@ -1,4 +1,8 @@
-import { hackathonDates, MAX_PARTICIPANTS } from "@convex/hackathons/rules";
+import {
+	hackathonDates,
+	MAX_PARTICIPANTS,
+	NOTHING,
+} from "@convex/hackathons/rules";
 import type { ReactNode } from "react";
 import { type Discipline, disciplineLabel } from "~/shared/config/disciplines";
 import { type JobMode, type JobPay, MODES, PAYS } from "~/shared/config/jobs";
@@ -91,7 +95,11 @@ export function HackathonPost({
 							<Badge variant="secondary">{fact}</Badge>
 						</li>
 					))}
-					{post.participantsGet ? (
+					{post.participantsGet === NOTHING ? (
+						<li>
+							<Badge variant="secondary">Builders get {NOTHING}</Badge>
+						</li>
+					) : post.participantsGet ? (
 						<li>
 							<Badge variant="status" tone="success">
 								Builders get {post.participantsGet}

@@ -36,19 +36,18 @@ export function emptyDraft(now: number): HackathonDraft {
 		problem: "",
 		weeks: 1,
 		startsAt: startOptions(now)[0].startsAt,
-		participantsGet: { choice: "Nothing", custom: "" },
+		participantsGet: { choice: "", custom: "" },
 		cards: [],
 	};
 }
 
-/** What's stored for a "What Participants get" pick: nothing, a chip's label, or the custom line. */
+/** What's stored for a "What Builders get" pick: a chip's label ("Nothing" included) or the custom line; undefined until there's a choice. */
 export function toParticipantsGet(
 	choice: string,
 	custom: string,
 ): string | undefined {
-	if (choice === "Nothing") return undefined;
 	if (choice === "Custom") return custom.trim() || undefined;
-	return choice;
+	return choice || undefined;
 }
 
 export function fromParticipantsGet(value: string | null): {
@@ -76,8 +75,10 @@ export function missingParts(draft: HackathonDraft): string[] {
 			? `at least ${MIN_HACKATHON_CARDS} Cards`
 			: null,
 		draft.startsAt === null ? "a start" : null,
-		draft.participantsGet.choice === "Custom" &&
-		!draft.participantsGet.custom.trim()
+		toParticipantsGet(
+			draft.participantsGet.choice,
+			draft.participantsGet.custom,
+		) === undefined
 			? "what Builders get"
 			: null,
 	].filter((part) => part !== null);
@@ -99,16 +100,20 @@ export function toDraftArgs(draft: HackathonDraft) {
 	) {
 		throw new Error("Finish the form first");
 	}
+	const participantsGet = toParticipantsGet(
+		draft.participantsGet.choice,
+		draft.participantsGet.custom,
+	);
+	if (participantsGet === undefined) {
+		throw new Error("Finish the form first");
+	}
 	const job: Job = { title: title.trim(), discipline, pay, mode };
 	return {
 		job,
 		problem: draft.problem.trim(),
 		weeks: draft.weeks,
 		startsAt: draft.startsAt,
-		participantsGet: toParticipantsGet(
-			draft.participantsGet.choice,
-			draft.participantsGet.custom,
-		),
+		participantsGet,
 		cards: draft.cards.map((card) => ({
 			title: card.title.trim(),
 			notes: card.notes.trim() || undefined,

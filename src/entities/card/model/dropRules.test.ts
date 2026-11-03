@@ -28,6 +28,7 @@ function aCard(status: CardView["status"], ownerId: Id<"users"> = fay) {
 		notesEditedBy: null,
 		changesAsked: false,
 		selfVerified: false,
+		discipline: null,
 	} satisfies CardView;
 }
 

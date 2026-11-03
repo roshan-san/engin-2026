@@ -12,6 +12,7 @@ import {
 	loadHackathonCardsInReview,
 	loadParticipants,
 	matchesExplore,
+	participantsGetOf,
 	replaceTemplateCards,
 	requireHackathonFounder,
 	requireValidDraft,
@@ -134,7 +135,7 @@ export const getPublic = query({
 			endsAt: hackathon.endsAt,
 			decideBy: hackathon.decideBy,
 			finishedAt: hackathon.finishedAt,
-			participantsGet: hackathon.participantsGet ?? null,
+			participantsGet: participantsGetOf(hackathon),
 			status: hackathon.status,
 			startup: {
 				name: publicStartup.name,

@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { shiftWeek, weekOf } from "./cycles/rules";
+import { participantsGetOf } from "./hackathons/model";
 import { loadHiringRecord } from "./hackathons/record";
 import { requireUserId } from "./lib/auth";
 import { EXPLORE_SCAN, MAX_EXPLORE_ROWS } from "./lib/explore";
@@ -54,7 +55,7 @@ export const getPublic = query({
 				job: h.job,
 				weeks: h.weeks,
 				startsAt: h.startsAt,
-				participantsGet: h.participantsGet ?? null,
+				participantsGet: participantsGetOf(h),
 			})),
 		};
 	},

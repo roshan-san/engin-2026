@@ -23,6 +23,7 @@ import { Input } from "~/shared/ui/input";
 import { MentorNote } from "~/shared/ui/MentorNote";
 import { Spinner } from "~/shared/ui/spinner";
 import { useSubmit } from "../api/useSubmit";
+import { proofHint } from "../model/proofHint";
 import { parseLink, shipMissing } from "../model/shipReady";
 
 /** What shipped: a line plus proof. The Card moves only once this is submitted. */
@@ -134,6 +135,7 @@ export function ShipDialog({
 				</div>
 
 				<div className="flex flex-col gap-2">
+					<MentorNote>{proofHint(card.discipline)}</MentorNote>
 					{links.length > 0 ? (
 						<div className="flex flex-wrap gap-1.5">
 							{links.map((link) => (

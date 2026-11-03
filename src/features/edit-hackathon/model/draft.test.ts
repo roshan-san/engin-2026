@@ -10,8 +10,21 @@ import {
 } from "./draft";
 
 describe("what Participants get", () => {
-	it("Nothing stores nothing", () => {
-		expect(toParticipantsGet("Nothing", "")).toBeUndefined();
+	it("What Builders get starts unpicked and blocks saving", () => {
+		const draft = emptyDraft(Date.now());
+
+		expect(draft.participantsGet.choice).toBe("");
+		expect(missingParts(draft)).toContain("what Builders get");
+		expect(
+			missingParts({
+				...draft,
+				participantsGet: { choice: "Nothing", custom: "" },
+			}),
+		).not.toContain("what Builders get");
+	});
+
+	it("Nothing is stored as Nothing", () => {
+		expect(toParticipantsGet("Nothing", "")).toBe("Nothing");
 	});
 
 	it("Custom stores the trimmed text", () => {
@@ -26,7 +39,7 @@ describe("what Participants get", () => {
 	});
 
 	it("reads back as the chip, or as Custom", () => {
-		expect(fromParticipantsGet(null)).toEqual({
+		expect(fromParticipantsGet("Nothing")).toEqual({
 			choice: "Nothing",
 			custom: "",
 		});
@@ -51,6 +64,7 @@ describe("isDraftReady", () => {
 			mode: "remote",
 		},
 		problem: "Signups drop off",
+		participantsGet: { choice: "Nothing", custom: "" },
 		cards: [
 			draftCard("Fix signup"),
 			draftCard("Add onboarding"),
@@ -58,7 +72,7 @@ describe("isDraftReady", () => {
 		],
 	};
 
-	it("needs the job, the problem, 3 titled Cards and a start", () => {
+	it("needs the job, the problem, 3 titled Cards, a start and what Builders get", () => {
 		expect(isDraftReady(ready)).toBe(true);
 		expect(
 			isDraftReady({ ...ready, job: { ...ready.job, discipline: null } }),
@@ -74,11 +88,14 @@ describe("isDraftReady", () => {
 			}),
 		).toBe(false);
 		expect(isDraftReady({ ...ready, startsAt: null })).toBe(false);
+		expect(
+			isDraftReady({ ...ready, participantsGet: { choice: "", custom: "" } }),
+		).toBe(false);
 	});
 });
 
 describe("missingParts", () => {
-	it("a new draft still needs the job, the problem and its Cards", () => {
+	it("a new draft still needs the job, the problem, its Cards and what Builders get", () => {
 		expect(missingParts(emptyDraft(Date.now()))).toEqual([
 			"a title",
 			"a discipline",
@@ -86,6 +103,7 @@ describe("missingParts", () => {
 			"where",
 			"the problem",
 			"at least 3 Cards",
+			"what Builders get",
 		]);
 	});
 
@@ -109,6 +127,7 @@ describe("missingParts", () => {
 				mode: "remote",
 			},
 			problem: "Signup drops people",
+			participantsGet: { choice: "Nothing", custom: "" },
 			cards: [draftCard("A"), draftCard("B"), draftCard(" ")],
 		};
 

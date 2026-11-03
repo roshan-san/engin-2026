@@ -13,11 +13,13 @@ import type { HiringRecord } from "./record";
 import {
 	HACKATHON_TEXT,
 	hackathonDates,
+	isPaid,
 	jobMode,
 	jobPay,
 	MAX_HACKATHON_CARDS,
 	MAX_PARTICIPANTS,
 	MIN_HACKATHON_CARDS,
+	NOTHING,
 	RUNNING,
 } from "./rules";
 
@@ -32,7 +34,7 @@ export const draftArgs = {
 	problem: v.string(),
 	weeks: v.number(),
 	startsAt: v.number(),
-	participantsGet: v.optional(v.string()),
+	participantsGet: v.string(),
 	cards: v.array(
 		v.object({ title: v.string(), notes: v.optional(v.string()) }),
 	),
@@ -43,7 +45,7 @@ type DraftInput = {
 	problem: string;
 	weeks: number;
 	startsAt: number;
-	participantsGet?: string;
+	participantsGet: string;
 	cards: { title: string; notes?: string }[];
 };
 
@@ -81,16 +83,29 @@ export function requireValidDraft(input: DraftInput, now: number) {
 		weeks,
 		startsAt: input.startsAt,
 		...hackathonDates(input.startsAt, weeks),
-		participantsGet: limitText(
-			input.participantsGet,
-			"What Builders get",
-			HACKATHON_TEXT.participantsGet,
-		),
+		participantsGet: requireParticipantsGet(input.participantsGet),
 		cards: input.cards.map((card) => ({
 			title: requireLimitedText(card.title, "Card title", CARD_TEXT.title),
 			notes: limitText(card.notes, "Notes", CARD_TEXT.notes) ?? "",
 		})),
 	};
+}
+
+/** What Builders get, trimmed: a required choice, "Nothing" included. */
+function requireParticipantsGet(value: string): string {
+	if (!value.trim()) {
+		throw new ConvexError("Pick what Builders get");
+	}
+	return requireLimitedText(
+		value,
+		"What Builders get",
+		HACKATHON_TEXT.participantsGet,
+	);
+}
+
+/** What Builders get, as shown: a Hackathon saved before the choice was required reads as "Nothing". */
+export function participantsGetOf(hackathon: Doc<"hackathons">): string {
+	return hackathon.participantsGet ?? NOTHING;
 }
 
 /** The Hackathon, once the person is confirmed as its Startup's Founder. */
@@ -236,7 +251,7 @@ export function matchesExplore(
 		(filters.discipline === undefined ||
 			hackathon.job.discipline === filters.discipline) &&
 		(filters.weeks === undefined || hackathon.weeks === filters.weeks) &&
-		(filters.paid !== true || hackathon.participantsGet !== undefined)
+		(filters.paid !== true || isPaid(hackathon.participantsGet))
 	);
 }
 
@@ -264,7 +279,7 @@ export function toExploreHackathon(
 		job: hackathon.job,
 		weeks: hackathon.weeks,
 		startsAt: hackathon.startsAt,
-		participantsGet: hackathon.participantsGet ?? null,
+		participantsGet: participantsGetOf(hackathon),
 		startup: {
 			name: startup.name,
 			slug: startup.slug,

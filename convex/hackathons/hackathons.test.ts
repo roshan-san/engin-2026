@@ -922,7 +922,7 @@ describe("explore", () => {
 				pay: "equity",
 				mode: "remote",
 			},
-			participantsGet: undefined,
+			participantsGet: "Nothing",
 		});
 		const backendId = await publishedHackathon(setup, {
 			job: {
@@ -964,5 +964,50 @@ describe("explore", () => {
 		for (const row of rows) {
 			expect(row.hiringRecord).toMatchObject({ finished: 1, hires: 1 });
 		}
+	});
+});
+
+describe("what Builders get", () => {
+	it("Nothing is stored and shown", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup, {
+			participantsGet: "Nothing",
+		});
+
+		const page = await setup.t.query(api.hackathons.getPublic, {
+			hackathonId,
+		});
+		const [row] = await setup.t.query(api.hackathons.explore, {});
+
+		expect(page?.participantsGet).toBe("Nothing");
+		expect(row?.participantsGet).toBe("Nothing");
+		expect(await setup.t.query(api.hackathons.explore, { paid: true })).toEqual(
+			[],
+		);
+	});
+
+	it("an old Hackathon with no value reads as Nothing", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(hackathonId, { participantsGet: undefined });
+		});
+
+		const page = await setup.t.query(api.hackathons.getPublic, {
+			hackathonId,
+		});
+
+		expect(page?.participantsGet).toBe("Nothing");
+		expect(await setup.t.query(api.hackathons.explore, { paid: true })).toEqual(
+			[],
+		);
+	});
+
+	it("a draft can't be saved without a choice", async () => {
+		const setup = await setUpStartup(createTest());
+
+		await expect(
+			draftHackathon(setup, { participantsGet: "  " }),
+		).rejects.toThrow("Pick what Builders get");
 	});
 });
