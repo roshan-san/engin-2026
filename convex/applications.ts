@@ -24,6 +24,9 @@ import {
 	resendRefusal,
 	WALKTHROUGH_QUESTIONS,
 } from "./applications/rules";
+import { acceptedEmail, notThisTimeEmail } from "./email/copy";
+import { emailNotSelected, emailUser, hackathonNames } from "./email/model";
+import { siteUrl } from "./email/rules";
 import { finishIfDecided } from "./hackathons/lifecycle";
 import { loadParticipants, requireHackathonFounder } from "./hackathons/model";
 import { requireUserId } from "./lib/auth";
@@ -155,6 +158,16 @@ export const accept = mutation({
 
 		await ctx.db.patch(application._id, { status: "participating" });
 		await ensurePrivateThread(ctx, hackathon, application.userId);
+		const names = await hackathonNames(ctx, hackathon);
+		await emailUser(ctx, application.userId, {
+			kind: "accepted",
+			...acceptedEmail({
+				...names,
+				startsAt: hackathon.startsAt,
+				confirmBy: null,
+				url: `${siteUrl()}/hackathons/${hackathon._id}`,
+			}),
+		});
 	},
 });
 
@@ -170,6 +183,7 @@ export const decline = mutation({
 		requireApplicationAllowed(application, hackathon, { kind: "decline" });
 
 		await ctx.db.patch(application._id, { status: "declined" });
+		await emailNotSelected(ctx, hackathon, application.userId);
 	},
 });
 
@@ -310,6 +324,14 @@ export const decide = mutation({
 			await ctx.db.patch(application._id, {
 				decision: args.decision,
 				feedback,
+			});
+			await emailUser(ctx, application.userId, {
+				kind: "not_this_time",
+				...notThisTimeEmail({
+					...(await hackathonNames(ctx, hackathon)),
+					note: feedback ?? "",
+					url: `${siteUrl()}/h/${hackathon._id}`,
+				}),
 			});
 		} else {
 			const terms = limitText(

@@ -17,6 +17,9 @@ import {
 } from "./cards/model";
 import { ENDED, isNotFinished, shipped, submitLandsIn } from "./cards/rules";
 import { loadWeekContext } from "./cycles/model";
+import { cardSentBackEmail } from "./email/copy";
+import { emailUser } from "./email/model";
+import { siteUrl } from "./email/rules";
 import { finishAfterReview } from "./hackathons/lifecycle";
 import {
 	loadHackathonCards,
@@ -191,6 +194,18 @@ export const move = mutation({
 		// Only a Send back can empty the Review queue.
 		if (card.status === "review") {
 			await finishAfterReview(ctx, card);
+			if (card.ownerId && card.ownerId !== userId) {
+				await emailUser(ctx, card.ownerId, {
+					kind: "card_sent_back",
+					...cardSentBackEmail({
+						cardTitle: card.title,
+						startupName: startup.name,
+						url: card.hackathonId
+							? `${siteUrl()}/h/${card.hackathonId}`
+							: `${siteUrl()}/s/${startup.slug}/cycle`,
+					}),
+				});
+			}
 		}
 	},
 });

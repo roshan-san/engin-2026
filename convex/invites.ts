@@ -4,6 +4,9 @@ import { type MutationCtx, mutation, query } from "./_generated/server";
 import { appendActivity } from "./activity/model";
 import { getApplication, markJoined } from "./applications/model";
 import { firstWeekFor } from "./cycles/rules";
+import { teamInviteEmail } from "./email/copy";
+import { sendEmail } from "./email/model";
+import { siteUrl } from "./email/rules";
 import {
 	createInvite,
 	loadOpenInvitesTo,
@@ -75,13 +78,24 @@ export const create = mutation({
 	args: { startupId: v.id("startups"), email: v.string(), discipline },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireFounder(ctx, args.startupId, userId);
-		return await createInvite(ctx, {
+		const startup = await requireFounder(ctx, args.startupId, userId);
+		const inviteId = await createInvite(ctx, {
 			startupId: args.startupId,
 			email: args.email,
 			invitedBy: userId,
 			discipline: args.discipline,
 		});
+		const inviter = await ctx.db.get(userId);
+		await sendEmail(ctx, {
+			to: args.email,
+			kind: "team_invite",
+			...teamInviteEmail({
+				startupName: startup.name,
+				inviterName: inviter?.name ?? "The Founder",
+				url: `${siteUrl()}/home`,
+			}),
+		});
+		return inviteId;
 	},
 });
 

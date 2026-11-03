@@ -1,9 +1,10 @@
 import { Resend } from "@convex-dev/resend";
 import { components } from "../_generated/api";
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { normalizeEmail } from "../invites/model";
-import { type EmailKind, unsubscribeUrl, withFooter } from "./rules";
+import { notSelectedEmail } from "./copy";
+import { type EmailKind, siteUrl, unsubscribeUrl, withFooter } from "./rules";
 
 export type Email = {
 	to: string;
@@ -100,4 +101,46 @@ export async function sendEmail(
 		status: live ? "queued" : "logged",
 	});
 	return "sent";
+}
+
+/** `sendEmail` to a user's sign-in address; skipped when they have none. */
+export async function emailUser(
+	ctx: MutationCtx,
+	userId: Id<"users">,
+	email: Omit<Email, "to">,
+): Promise<"sent" | "skipped"> {
+	const user = await ctx.db.get(userId);
+	if (!user?.email) {
+		return "skipped";
+	}
+	return await sendEmail(ctx, { ...email, to: user.email });
+}
+
+/** The names a Hackathon email needs. */
+export async function hackathonNames(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+): Promise<{ startupName: string; jobTitle: string; slug: string }> {
+	const startup = await ctx.db.get(hackathon.startupId);
+	return {
+		startupName: startup?.name ?? "A startup",
+		jobTitle: hackathon.job.title,
+		slug: startup?.slug ?? "",
+	};
+}
+
+/** "Not selected for this one", for an Applicant the Founder declined or the start passed over. */
+export async function emailNotSelected(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+	userId: Id<"users">,
+): Promise<void> {
+	await emailUser(ctx, userId, {
+		kind: "not_selected",
+		dedupeKey: `not_selected:${hackathon._id}:${userId}`,
+		...notSelectedEmail({
+			...(await hackathonNames(ctx, hackathon)),
+			url: `${siteUrl()}/explore/hackathons`,
+		}),
+	});
 }

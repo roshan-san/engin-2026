@@ -1,6 +1,9 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { threadMessageEmail } from "../email/copy";
+import { emailUser, hackathonNames } from "../email/model";
+import { siteUrl } from "../email/rules";
 import { loadImageUrls } from "../files/model";
 import { limitText } from "../lib/text";
 import { markThreadRead } from "../threads/model";
@@ -140,4 +143,45 @@ export async function buildMessageViews(
 		}),
 	);
 	return views.flat();
+}
+
+/**
+ * After a Hackathon is done, nobody watches its space, so a private message also goes
+ * by email to the other person: the Builder's to the Founder, the Founder's to the Builder.
+ */
+export async function emailLateMessage(
+	ctx: MutationCtx,
+	thread: Doc<"threads">,
+	authorId: Id<"users">,
+	body: string,
+): Promise<void> {
+	if (
+		thread.kind !== "private" ||
+		!thread.hackathonId ||
+		!thread.participantId
+	) {
+		return;
+	}
+	const hackathon = await ctx.db.get(thread.hackathonId);
+	const startup = await ctx.db.get(thread.startupId);
+	if (hackathon?.status !== "done" || !startup) {
+		return;
+	}
+	const toFounder = authorId !== startup.founderId;
+	const recipient = toFounder ? startup.founderId : thread.participantId;
+	if (recipient === authorId) {
+		return;
+	}
+	const author = await ctx.db.get(authorId);
+	await emailUser(ctx, recipient, {
+		kind: "thread_message",
+		...threadMessageEmail({
+			...(await hackathonNames(ctx, hackathon)),
+			fromName: author?.name ?? "Someone",
+			body: body || "(an image)",
+			url: toFounder
+				? `${siteUrl()}/s/${startup.slug}/hiring/${hackathon._id}`
+				: `${siteUrl()}/h/${hackathon._id}?panel=founder`,
+		}),
+	});
 }

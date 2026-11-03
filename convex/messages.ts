@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 import {
 	buildMessageViews,
+	emailLateMessage,
 	loadLatestMessages,
 	loadPinnedMessages,
 	parseMessage,
@@ -35,12 +36,9 @@ export const send = mutation({
 		const userId = await requireUserId(ctx);
 		const { thread } = await requireThreadAccess(ctx, args.threadId, userId);
 		await requireThreadOpen(ctx, thread);
-		await postMessage(
-			ctx,
-			args.threadId,
-			userId,
-			parseMessage(args.body, args.images),
-		);
+		const message = parseMessage(args.body, args.images);
+		await postMessage(ctx, args.threadId, userId, message);
+		await emailLateMessage(ctx, thread, userId, message.body);
 	},
 });
 

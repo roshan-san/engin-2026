@@ -4,6 +4,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { publishBlockFor, publishBlockMessage } from "../billing/rules";
+import { emailNotSelected } from "../email/model";
 import {
 	loadHackathonCardsInReview,
 	loadParticipants,
@@ -111,8 +112,12 @@ async function declineAppliedBatch(
 			q.eq("hackathonId", hackathonId).eq("status", "applied"),
 		)
 		.take(MAX_APPLICATIONS);
+	const hackathon = await ctx.db.get(hackathonId);
 	for (const application of applied) {
 		await ctx.db.patch(application._id, { status: "declined" });
+		if (hackathon) {
+			await emailNotSelected(ctx, hackathon, application.userId);
+		}
 	}
 	if (applied.length === MAX_APPLICATIONS) {
 		await ctx.scheduler.runAfter(0, internal.hackathons.declineApplied, {

@@ -2,6 +2,9 @@ import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
+import { offerEmail } from "../email/copy";
+import { hackathonNames, sendEmail } from "../email/model";
+import { siteUrl } from "../email/rules";
 import {
 	loadHackathonCards,
 	loadParticipants,
@@ -13,6 +16,7 @@ import {
 	loadOpenInvitesTo,
 	normalizeEmail,
 } from "../invites/model";
+import { INVITE_TTL_MS } from "../invites/rules";
 import {
 	type ApplicationAction,
 	applicationRefusal,
@@ -260,7 +264,7 @@ export async function sendOffer(
 	if (!participant?.email) {
 		throw new ConvexError("This Builder has no email to invite");
 	}
-	return await ensureHireInvite(ctx, {
+	const sent = await ensureHireInvite(ctx, {
 		startupId: hackathon.startupId,
 		userId: participant._id,
 		email: participant.email,
@@ -269,6 +273,19 @@ export async function sendOffer(
 		job: hackathon.job,
 		terms,
 	});
+	if (sent === "invited") {
+		await sendEmail(ctx, {
+			to: participant.email,
+			kind: "offer",
+			...offerEmail({
+				...(await hackathonNames(ctx, hackathon)),
+				terms,
+				expiresAt: Date.now() + INVITE_TTL_MS,
+				url: `${siteUrl()}/h/${hackathon._id}`,
+			}),
+		});
+	}
+	return sent;
 }
 
 /** They accepted the Offer: Joined, once, logged on the startup's Record. */
