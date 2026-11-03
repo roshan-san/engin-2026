@@ -10,7 +10,6 @@ import {
 	reasonLine,
 	usePlaces,
 } from "~/entities/place";
-import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { tierText } from "~/shared/lib/tierText";
 import { AppPage } from "~/shared/ui/AppPage";
@@ -115,10 +114,10 @@ function YourPlaces({
 								<span
 									className={cn(
 										"text-sm font-semibold tabular-nums",
-										tierText(startup.rating),
+										tierText(startup.momentum),
 									)}
 								>
-									{startup.rating}
+									{startup.momentum}
 								</span>
 							</div>
 							<Waiting place={startup} />
@@ -144,9 +143,7 @@ function YourPlaces({
 									size={40}
 								/>
 								<div className="min-w-0 flex-1">
-									<p className="truncate font-medium">
-										{roleLabel(hackathon.job.role)}
-									</p>
+									<p className="truncate font-medium">{hackathon.job.title}</p>
 									<p className="truncate text-xs text-muted-foreground">
 										{hackathon.startupName}
 									</p>
@@ -178,7 +175,7 @@ function Applications({ applied }: { readonly applied: Places["applied"] }) {
 								url={hackathon.startupLogoUrl}
 							/>
 						}
-						title={`${roleLabel(hackathon.job.role)} · ${hackathon.startupName}`}
+						title={`${hackathon.job.title} · ${hackathon.startupName}`}
 						trailing={
 							hackathon.status === "applied" ? "Applied" : "Not this time"
 						}
@@ -221,7 +218,7 @@ function Waiting({
 		<ul className="flex flex-col gap-1">
 			{place.waiting.map((reason, index) => (
 				<li
-					// Two same-role Hackathons can produce identical lines, so the index keeps keys unique.
+					// Two same-title Hackathons can produce identical lines, so the index keeps keys unique.
 					// biome-ignore lint/suspicious/noArrayIndexKey: the list is static between renders
 					key={`${reason.kind}-${index}`}
 					className="flex items-center gap-2 text-sm"

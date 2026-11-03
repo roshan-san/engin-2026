@@ -19,7 +19,6 @@ import {
 	placeHint,
 	usePlaces,
 } from "~/entities/place";
-import { roleLabel } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import {
 	DropdownMenu,
@@ -158,7 +157,7 @@ export function PlaceSwitcher({
 											to: "/h/$id",
 											params: { id: hackathon.hackathonId },
 										}}
-										name={roleLabel(hackathon.job.role)}
+										name={hackathon.job.title}
 										logoName={hackathon.startupName}
 										logoUrl={hackathon.startupLogoUrl}
 										waiting={hackathon.waiting}

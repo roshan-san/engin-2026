@@ -52,16 +52,6 @@ export const hackathonStatus = v.union(
 	v.literal("deciding"),
 	v.literal("done"),
 );
-export const jobRole = v.union(
-	v.literal("frontend"),
-	v.literal("backend"),
-	v.literal("fullstack"),
-	v.literal("designer"),
-	v.literal("marketing"),
-	v.literal("sales"),
-	v.literal("ops"),
-	v.literal("other"),
-);
 export const jobPay = v.union(
 	v.literal("3_6l"),
 	v.literal("6_9l"),
@@ -77,7 +67,19 @@ export const jobMode = v.union(
 /** How long a Hackathon runs, in weeks. */
 export const hackathonWeeks = v.union(v.literal(1), v.literal(2));
 
+/** What Builders get when nothing is on offer. A Hackathon saved before the choice was required reads as this too. */
+export const NOTHING = "Nothing";
+
+/** Whether Builders get something: a value is set and it isn't "Nothing". */
+export function isPaid(participantsGet: string | undefined): boolean {
+	return participantsGet !== undefined && participantsGet !== NOTHING;
+}
+
 /** Longest allowed text per Hackathon field. */
-export const HACKATHON_TEXT = { participantsGet: 140, problem: 2000 };
+export const HACKATHON_TEXT = {
+	title: 60,
+	participantsGet: 140,
+	problem: 2000,
+};
 
 export const MAX_APPLICATIONS = 500;

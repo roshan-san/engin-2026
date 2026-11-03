@@ -1,6 +1,6 @@
 import { phaseOf } from "@convex/hackathons/rules";
 import { Link } from "@tanstack/react-router";
-import { roleLabel, termsLine } from "~/shared/config/jobs";
+import { termsLine } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { Badge } from "~/shared/ui/badge";
 import {
@@ -31,9 +31,7 @@ export function HackathonRow({
 	const content = (
 		<>
 			<div className="min-w-0">
-				<div className="truncate text-sm font-medium">
-					{roleLabel(row.job.role)}
-				</div>
+				<div className="truncate text-sm font-medium">{row.job.title}</div>
 				<div className="mt-0.5 truncate text-xs text-muted-foreground">
 					{termsLine(row.job)} · {row.weeks === 1 ? "1 week" : "2 weeks"}
 				</div>

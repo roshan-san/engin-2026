@@ -1,5 +1,3 @@
-import { v } from "convex/values";
-
 export const RESERVED_USERNAMES = new Set([
 	"app",
 	"admin",
@@ -53,14 +51,5 @@ export function usernameProblem(value: string): string | null {
 export const MIN_USERNAME_LENGTH = 3;
 /** Verified Cards read for a profile; more shows as "500+". */
 export const MAX_PROFILE_ROWS = 500;
-export const discipline = v.union(
-	v.literal("engineer"),
-	v.literal("designer"),
-	v.literal("marketing"),
-	v.literal("sales"),
-	v.literal("ops"),
-	v.literal("other"),
-);
-
 /** Longest allowed text per profile field. */
 export const USER_TEXT = { bio: 280, username: 20 };

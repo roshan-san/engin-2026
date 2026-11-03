@@ -19,7 +19,14 @@ export function ParticipantsGetPart({
 	readonly onChange: (value: HackathonDraft["participantsGet"]) => void;
 }) {
 	return (
-		<Part label="What Builders get" note="Even ₹1,000 brings better Builders.">
+		<Part
+			label="What Builders get"
+			note={
+				value.choice === "Nothing"
+					? "With nothing on offer, expect fewer and less experienced Builders."
+					: "Even ₹1,000 brings better Builders."
+			}
+		>
 			<ChipPicker
 				label="What Builders get"
 				options={PARTICIPANTS_GET_CHIPS}

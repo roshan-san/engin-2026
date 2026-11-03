@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import {
+	participants,
+	startHackathon,
+} from "../applications/applications.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
 	addContributor,
@@ -428,7 +432,12 @@ describe("locks", () => {
 			const hackathonId = await ctx.db.insert("hackathons", {
 				startupId: setup.startupId,
 				status: "draft",
-				job: { role: "frontend", pay: "unpaid", mode: "remote" },
+				job: {
+					title: "Frontend",
+					discipline: "developer",
+					pay: "unpaid",
+					mode: "remote",
+				},
 				problem: "Grow signups",
 				weeks: 1,
 				startsAt: 0,
@@ -594,7 +603,12 @@ describe("card view", () => {
 				await ctx.db.insert("hackathons", {
 					startupId: setup.startupId,
 					status: "draft",
-					job: { role: "frontend", pay: "unpaid", mode: "remote" },
+					job: {
+						title: "Frontend",
+						discipline: "developer",
+						pay: "unpaid",
+						mode: "remote",
+					},
 					problem: "Grow signups",
 					weeks: 1,
 					startsAt: 0,
@@ -636,7 +650,12 @@ describe("card view", () => {
 			const hackathonId = await ctx.db.insert("hackathons", {
 				startupId: setup.startupId,
 				status: "draft",
-				job: { role: "frontend", pay: "unpaid", mode: "remote" },
+				job: {
+					title: "Frontend",
+					discipline: "developer",
+					pay: "unpaid",
+					mode: "remote",
+				},
 				problem: "Grow signups",
 				weeks: 1,
 				startsAt: 0,
@@ -659,5 +678,182 @@ describe("card view", () => {
 		});
 
 		expect(card).toBeNull();
+	});
+});
+
+describe("Board limits", () => {
+	const IN_PROGRESS_FULL =
+		"Each person can have 2 Cards In progress. Finish or move one first.";
+	const TODO_FULL = "To do holds 20 Cards. Finish or delete one first.";
+
+	async function inProgress(
+		setup: Setup,
+		who: Setup["founder"],
+		title: string,
+	) {
+		const cardId = await cardOn(setup, who, title);
+		await who.as.mutation(api.cards.move, { cardId, to: "in_progress" });
+		return cardId;
+	}
+
+	it("a third Card In progress for one person is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		await inProgress(setup, setup.founder, "One");
+		await inProgress(setup, setup.founder, "Two");
+		const third = await cardOn(setup, setup.founder, "Three");
+
+		await expect(
+			setup.founder.as.mutation(api.cards.move, {
+				cardId: third,
+				to: "in_progress",
+			}),
+		).rejects.toThrow(IN_PROGRESS_FULL);
+	});
+
+	it("another person's In progress Cards don't count", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await inProgress(setup, setup.founder, "One");
+		await inProgress(setup, setup.founder, "Two");
+
+		await expect(inProgress(setup, sam, "Sam's")).resolves.toBeDefined();
+	});
+
+	it("a 21st Card in To do is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		const working = await inProgress(setup, setup.founder, "Working");
+		for (let i = 0; i < 20; i++) {
+			await cardOn(setup, setup.founder, `Card ${i}`);
+		}
+
+		await expect(cardOn(setup, setup.founder, "One too many")).rejects.toThrow(
+			TODO_FULL,
+		);
+		await expect(
+			setup.founder.as.mutation(api.cards.move, {
+				cardId: working,
+				to: "todo",
+			}),
+		).rejects.toThrow(TODO_FULL);
+	});
+
+	it("reassigning an In progress Card to someone with 2 is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await inProgress(setup, sam, "One");
+		await inProgress(setup, sam, "Two");
+		const mine = await inProgress(setup, setup.founder, "Mine");
+
+		await expect(
+			setup.founder.as.mutation(api.cards.update, {
+				cardId: mine,
+				ownerId: sam.userId,
+			}),
+		).rejects.toThrow(IN_PROGRESS_FULL);
+	});
+
+	it("an unowned Card can't go In progress", async () => {
+		const setup = await setUpStartup(createTest());
+		const cardId = await cardOn(setup, setup.founder, "Nobody's");
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(cardId, { ownerId: undefined });
+		});
+
+		await expect(
+			setup.founder.as.mutation(api.cards.move, { cardId, to: "in_progress" }),
+		).rejects.toThrow("Give this Card an owner before moving it In progress.");
+	});
+
+	it("a Send back ignores the limits", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const sent = await inProgress(setup, sam, "Sent");
+		await sam.as.mutation(api.cards.submit, { cardId: sent, shipped: SHIPPED });
+		await inProgress(setup, sam, "One");
+		await inProgress(setup, sam, "Two");
+
+		await expect(
+			setup.founder.as.mutation(api.cards.move, {
+				cardId: sent,
+				to: "in_progress",
+			}),
+		).resolves.toBeNull();
+	});
+
+	it("Hackathon Cards have no limit", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [builder] = await participants(setup, hackathonId, ["Bea"]);
+		await startHackathon(setup, hackathonId);
+		const cards = await builder.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: builder.userId,
+		});
+		expect(cards.length).toBeGreaterThanOrEqual(3);
+
+		for (const card of cards) {
+			await builder.as.mutation(api.cards.move, {
+				cardId: card._id,
+				to: "in_progress",
+			});
+		}
+		const after = await builder.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: builder.userId,
+		});
+		expect(after.every((card) => card.status === "in_progress")).toBe(true);
+	});
+});
+
+describe("proof hints", () => {
+	it("a Card's view carries the owner's discipline on it", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await setup.t.run(async (ctx) => {
+			const row = await ctx.db
+				.query("contributors")
+				.withIndex("by_startup_and_user", (q) =>
+					q.eq("startupId", setup.startupId).eq("userId", sam.userId),
+				)
+				.unique();
+			if (row) await ctx.db.patch(row._id, { discipline: "developer" });
+		});
+		await cardOn(setup, sam, "Ship the API");
+
+		expect(await boardOf(setup, sam)).toMatchObject([
+			{ discipline: "developer" },
+		]);
+	});
+
+	it("a Builder's Card carries the Hackathon's discipline", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup, {
+			job: {
+				title: "Brand",
+				discipline: "designer",
+				pay: "6_9l",
+				mode: "remote",
+			},
+		});
+		const [builder] = await participants(setup, hackathonId, ["Bea"]);
+		await startHackathon(setup, hackathonId);
+
+		const cards = await builder.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: builder.userId,
+		});
+
+		expect(cards[0]).toMatchObject({ discipline: "designer" });
+	});
+
+	it("with no team role, the owner's profile discipline is used, else none", async () => {
+		const setup = await setUpStartup(createTest());
+		await cardOn(setup, setup.founder, "Plan launch");
+		expect(await boardOf(setup)).toMatchObject([{ discipline: null }]);
+
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.founder.userId, { discipline: "sales" });
+		});
+		expect(await boardOf(setup)).toMatchObject([{ discipline: "sales" }]);
 	});
 });

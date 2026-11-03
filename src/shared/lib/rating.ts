@@ -1,10 +1,10 @@
 import type { api } from "@convex/_generated/api";
 import { WEEK_MS } from "@convex/cycles/rules";
-import { WEEK_COUNT_CAP } from "@convex/rating/rules";
+import { WEEK_COUNT_CAP } from "@convex/momentum/rules";
 import type { FunctionReturnType } from "convex/server";
 import { dateRange } from "./dates";
 
-/** One week of the 12-week strip under a Rating. */
+/** One week of the 12-week strip under a Momentum. */
 export type StripCell = NonNullable<
 	FunctionReturnType<typeof api.activity.getSignals>
 >["strip"][number];

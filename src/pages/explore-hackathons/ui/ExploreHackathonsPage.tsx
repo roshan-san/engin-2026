@@ -3,7 +3,7 @@ import {
 	parseHackathonSearch,
 	useExploreHackathons,
 } from "~/entities/hackathon";
-import { ROLES } from "~/shared/config/jobs";
+import { DISCIPLINES } from "~/shared/config/disciplines";
 import { hasFilters } from "~/shared/lib/search";
 import { EmptyState } from "~/shared/ui/EmptyState";
 import { FilterChips } from "~/shared/ui/FilterChips";
@@ -42,10 +42,10 @@ export function ExploreHackathonsPage() {
 			filters={
 				<>
 					<FilterChips
-						label="Job"
-						options={ROLES}
-						value={search.role}
-						onChange={(role) => setFilter({ role })}
+						label="Discipline"
+						options={DISCIPLINES}
+						value={search.discipline}
+						onChange={(discipline) => setFilter({ discipline })}
 					/>
 					<FilterChips
 						label="Length"

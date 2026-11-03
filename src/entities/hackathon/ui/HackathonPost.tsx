@@ -1,23 +1,24 @@
-import { hackathonDates, MAX_PARTICIPANTS } from "@convex/hackathons/rules";
-import type { ReactNode } from "react";
 import {
-	type JobMode,
-	type JobPay,
-	type JobRole,
-	MODES,
-	PAYS,
-	ROLES,
-} from "~/shared/config/jobs";
+	hackathonDates,
+	MAX_PARTICIPANTS,
+	NOTHING,
+} from "@convex/hackathons/rules";
+import type { Trust } from "@convex/momentum/rules";
+import type { ReactNode } from "react";
+import { type Discipline, disciplineLabel } from "~/shared/config/disciplines";
+import { type JobMode, type JobPay, MODES, PAYS } from "~/shared/config/jobs";
 import { cn } from "~/shared/lib/cn";
 import { dayLabel } from "~/shared/lib/dates";
 import { buildDaysLabel, lastDay } from "~/shared/lib/hackathonDates";
 import { Badge } from "~/shared/ui/badge";
 import { Section } from "~/shared/ui/Section";
+import { TrustLabel } from "~/shared/ui/TrustLabel";
 
 export type PostView = {
 	readonly startupName: string;
 	readonly job: {
-		readonly role: JobRole | null;
+		readonly title: string;
+		readonly discipline: Discipline | null;
 		readonly pay: JobPay | null;
 		readonly mode: JobMode | null;
 	};
@@ -27,6 +28,8 @@ export type PostView = {
 	readonly weeks: 1 | 2;
 	readonly startsAt: number | null;
 	readonly participantsGet: string | null;
+	/** The Founder's Trust, so Builders can judge the promise; left out of a draft's preview. */
+	readonly founderTrust?: Trust;
 };
 
 function labelOf<T extends string>(
@@ -58,8 +61,9 @@ export function HackathonPost({
 	/** Shown over the faded brief for a signed-out visitor. */
 	readonly signIn?: ReactNode;
 }) {
-	const role = labelOf(ROLES, post.job.role);
+	const title = post.job.title.trim();
 	const facts = [
+		post.job.discipline ? disciplineLabel(post.job.discipline) : null,
 		labelOf(PAYS, post.job.pay),
 		labelOf(MODES, post.job.mode),
 		post.startsAt === null
@@ -82,12 +86,18 @@ export function HackathonPost({
 			<header className="flex flex-col gap-3">
 				<p className="text-sm text-muted-foreground">
 					{post.startupName} is hiring
+					{post.founderTrust ? (
+						<>
+							{" · "}
+							<TrustLabel label="Founder's Trust" trust={post.founderTrust} />
+						</>
+					) : null}
 				</p>
 				{/* A preview sits under its page's own h1. */}
 				<Title
 					className={cn("font-semibold", isPage ? "text-3xl" : "text-2xl")}
 				>
-					{role ?? <Unwritten>The role</Unwritten>}
+					{title || <Unwritten>The title</Unwritten>}
 				</Title>
 				<ul className="flex flex-wrap gap-2">
 					{facts.map((fact) => (
@@ -95,7 +105,11 @@ export function HackathonPost({
 							<Badge variant="secondary">{fact}</Badge>
 						</li>
 					))}
-					{post.participantsGet ? (
+					{post.participantsGet === NOTHING ? (
+						<li>
+							<Badge variant="secondary">Builders get {NOTHING}</Badge>
+						</li>
+					) : post.participantsGet ? (
 						<li>
 							<Badge variant="status" tone="success">
 								Builders get {post.participantsGet}

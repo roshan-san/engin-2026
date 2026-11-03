@@ -66,7 +66,7 @@ async function hackathonReasons(
 	hackathon: Doc<"hackathons">,
 	userId: Id<"users">,
 ): Promise<WaitingReason[]> {
-	const role = hackathon.job.role;
+	const title = hackathon.job.title;
 	const reasons: WaitingReason[] = [];
 	const phase = phaseOf(hackathon, Date.now());
 	if (phase === "open") {
@@ -77,13 +77,13 @@ async function hackathonReasons(
 			)
 			.take(MAX_APPLICATIONS);
 		if (applied.length > 0) {
-			reasons.push({ kind: "new_applicants", role, count: applied.length });
+			reasons.push({ kind: "new_applicants", title, count: applied.length });
 		}
 	}
 	if (isUnderway(phase)) {
 		const count = (await loadHackathonCardsInReview(ctx, hackathon._id)).length;
 		if (count > 0) {
-			reasons.push({ kind: "participant_cards_to_review", role, count });
+			reasons.push({ kind: "participant_cards_to_review", title, count });
 		}
 	}
 	if (phase === "live") {
@@ -94,7 +94,7 @@ async function hackathonReasons(
 				userId,
 			)
 		) {
-			reasons.push({ kind: "hackathon_unread", role });
+			reasons.push({ kind: "hackathon_unread", title });
 		}
 	}
 	if (phase === "deciding") {
@@ -103,7 +103,7 @@ async function hackathonReasons(
 			(application) => application.decision === undefined,
 		).length;
 		if (count > 0) {
-			reasons.push({ kind: "participants_to_decide", role, count });
+			reasons.push({ kind: "participants_to_decide", title, count });
 		}
 	}
 	return reasons;

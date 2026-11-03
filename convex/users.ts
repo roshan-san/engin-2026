@@ -3,14 +3,17 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
+import { discipline } from "./lib/disciplines";
+import { MAX_EXPLORE_ROWS } from "./lib/explore";
 import { limitText } from "./lib/text";
+import { NO_PROGRESS } from "./momentum/trust";
 import {
 	loadProfileRecord,
 	toOwnProfile,
 	toProfileAbout,
 	toPublicProfile,
 } from "./users/model";
-import { discipline, normalizeUsername, USER_TEXT } from "./users/rules";
+import { normalizeUsername, USER_TEXT } from "./users/rules";
 import { requireUsername } from "./users/username";
 
 export const getMe = query({
@@ -22,8 +25,48 @@ export const getMe = query({
 	},
 });
 
+/** Your own Trust, with how far you are along each rule; null signed out. Nobody else sees the progress. */
+export const myTrust = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await getAuthUserId(ctx);
+		const user = userId ? await ctx.db.get(userId) : null;
+		if (!user) {
+			return null;
+		}
+		return {
+			trust: user.trust ?? "low",
+			held: user.trustHeld === true,
+			progress: user.trustProgress ?? NO_PROGRESS,
+		};
+	},
+});
+
+/** People whose work someone else approved, for anyone: best Momentum first, as public profiles. */
+export const explore = query({
+	args: { discipline: v.optional(discipline) },
+	handler: async (ctx, args) => {
+		const filter = args.discipline;
+		const query =
+			filter === undefined
+				? ctx.db
+						.query("users")
+						.withIndex("by_approvedWork_and_momentum", (q) =>
+							q.eq("approvedWork", true),
+						)
+				: ctx.db
+						.query("users")
+						.withIndex("by_approvedWork_and_discipline_and_momentum", (q) =>
+							q.eq("approvedWork", true).eq("discipline", filter),
+						);
+		const users = await query.order("desc").take(MAX_EXPLORE_ROWS);
+		// No username means no page to link to.
+		return users.filter((user) => user.username).map(toPublicProfile);
+	},
+});
+
 /**
- * A profile, for anyone. Signed out, it's only the name, Discipline and Rating
+ * A profile, for anyone. Signed out, it's only the name, Discipline and Momentum
  * (`details` is null); signed in, `details` adds the bio and the Record.
  */
 export const getRecord = query({
@@ -43,7 +86,7 @@ export const getRecord = query({
 			details: viewerId
 				? {
 						...toProfileAbout(user),
-						...(await loadProfileRecord(ctx, user, Date.now())),
+						...(await loadProfileRecord(ctx, user)),
 					}
 				: null,
 		};

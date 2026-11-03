@@ -2,7 +2,7 @@ import { cn } from "~/shared/lib/cn";
 import { displayName } from "~/shared/lib/displayName";
 import { tierText } from "~/shared/lib/tierText";
 
-/** A person's name in their Rating's Tier colour; "Someone" when there's nobody. */
+/** A person's name in their Momentum's Tier colour; "Someone" when there's nobody. */
 export function PersonName({
 	person,
 	className,
@@ -10,12 +10,12 @@ export function PersonName({
 	readonly person: {
 		name: string | null;
 		username: string | null;
-		rating: number;
+		momentum: number;
 	} | null;
 	readonly className?: string;
 }) {
 	return (
-		<span className={cn(person && tierText(person.rating), className)}>
+		<span className={cn(person && tierText(person.momentum), className)}>
 			{displayName(person)}
 		</span>
 	);

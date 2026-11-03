@@ -1,34 +1,11 @@
-import type { discipline } from "@convex/users/rules";
-import type { Infer } from "convex/values";
-import { type JobRole, roleLabel } from "~/shared/config/jobs";
-
-type Discipline = Infer<typeof discipline>;
 type Outcome = "built" | "finalist" | "hired";
 type StartupRef = { readonly name: string; readonly slug: string };
-
-const DISCIPLINES: Record<Discipline, string> = {
-	engineer: "Engineer",
-	designer: "Designer",
-	marketing: "Marketing",
-	sales: "Sales",
-	ops: "Ops",
-	other: "Other",
-};
 
 const OUTCOMES = {
 	built: "Built",
 	finalist: "Finalist",
 	hired: "Hired",
 } as const satisfies Record<Outcome, string>;
-
-/** Every discipline as a chip, in the order shown. */
-export const DISCIPLINE_OPTIONS = (
-	Object.entries(DISCIPLINES) as [Discipline, string][]
-).map(([value, label]) => ({ value, label }));
-
-export function disciplineLabel(d: Discipline): string {
-	return DISCIPLINES[d];
-}
 
 export function outcomeLabel<O extends Outcome>(o: O): (typeof OUTCOMES)[O] {
 	return OUTCOMES[o];
@@ -37,10 +14,10 @@ export function outcomeLabel<O extends Outcome>(o: O): (typeof OUTCOMES)[O] {
 /** "Hired · Frontend at Acme". */
 export function hackathonLine(h: {
 	readonly outcome: Outcome;
-	readonly job: { readonly role: JobRole };
+	readonly job: { readonly title: string };
 	readonly startup: StartupRef;
 }): string {
-	return `${outcomeLabel(h.outcome)} · ${roleLabel(h.job.role)} at ${h.startup.name}`;
+	return `${outcomeLabel(h.outcome)} · ${h.job.title} at ${h.startup.name}`;
 }
 
 /** "38 cards at Acme", or "500+ cards at Acme" past the read cap. */

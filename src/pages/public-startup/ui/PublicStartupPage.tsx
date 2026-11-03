@@ -23,7 +23,7 @@ import { TILE, TILE_LINK } from "~/shared/ui/tile";
 
 const route = getRouteApi("/_shell/startups/$slug");
 
-/** A Startup's public Record: who they are, their Rating, hiring and Cycles. */
+/** A Startup's public Record: who they are, their Momentum, hiring and Cycles. */
 export function PublicStartupPage() {
 	const { slug } = route.useParams();
 	const startup = usePublicStartup(slug);

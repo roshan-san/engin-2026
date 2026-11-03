@@ -4,7 +4,6 @@ import { ArrowUpRightIcon } from "lucide-react";
 import { useParticipant } from "~/entities/application";
 import { useHackathonThreads } from "~/entities/message";
 import { DecisionBanner } from "~/features/keep-promise";
-import { roleLabel } from "~/shared/config/jobs";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
@@ -102,7 +101,7 @@ export function ParticipantBoardPage() {
 				bar={{
 					title: (
 						<h1 className="flex min-w-0 items-baseline gap-1.5 truncate text-sm">
-							<span className="font-medium">{roleLabel(page.job.role)}</span>
+							<span className="font-medium">{page.job.title}</span>
 							<span aria-hidden className="text-muted-foreground">
 								·
 							</span>

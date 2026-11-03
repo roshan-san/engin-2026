@@ -142,7 +142,7 @@ export function ParticipantView({
 	);
 }
 
-/** Who this Board belongs to: their Rating, how far they've got, and ★. */
+/** Who this Board belongs to: their Momentum, how far they've got, and ★. */
 function ParticipantHeader({
 	row,
 	hackathon,
@@ -161,7 +161,8 @@ function ParticipantHeader({
 				<PersonName person={user} />
 			</h2>
 			<span className="hidden shrink-0 text-xs text-muted-foreground tabular-nums sm:inline">
-				Rating <span className={tierText(user.rating)}>{user.rating}</span>
+				Momentum{" "}
+				<span className={tierText(user.momentum)}>{user.momentum}</span>
 				{progress ? ` · ${progress.done} of ${progress.total} done` : null}
 			</span>
 			{application.decision ? (

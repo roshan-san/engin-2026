@@ -465,7 +465,12 @@ describe("card mentions", () => {
 			const hackathonId = await ctx.db.insert("hackathons", {
 				startupId: setup.startupId,
 				status: "draft",
-				job: { role: "frontend", pay: "unpaid", mode: "remote" },
+				job: {
+					title: "Frontend",
+					discipline: "developer",
+					pay: "unpaid",
+					mode: "remote",
+				},
 				problem: "Grow signups",
 				weeks: 1,
 				startsAt: 0,

@@ -81,7 +81,7 @@ export const getApplicant = query({
 		return {
 			application: toFounderApplicationView(application),
 			user: toPublicProfile(user),
-			record: await loadProfileRecord(ctx, user, Date.now()),
+			record: await loadProfileRecord(ctx, user),
 		};
 	},
 });
@@ -234,6 +234,7 @@ export const decide = mutation({
 				email: participant.email,
 				invitedBy: userId,
 				hackathonId: hackathon._id,
+				job: hackathon.job,
 			});
 			await appendActivity(ctx, {
 				startupId: hackathon.startupId,

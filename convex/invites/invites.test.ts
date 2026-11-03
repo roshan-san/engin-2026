@@ -13,6 +13,7 @@ describe("invites", () => {
 		const sam = await signUp(t, "Sam");
 
 		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "Sam@Example.com",
 		});
@@ -45,6 +46,7 @@ describe("invites", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const inviteId = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "sam@example.com",
 		});
@@ -60,6 +62,7 @@ describe("invites", () => {
 		const setup = await setUpStartup(t);
 		const sam = await signUp(t, "Sam");
 		const inviteId = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "sam@example.com",
 		});
@@ -79,6 +82,7 @@ describe("invites", () => {
 
 		await expect(
 			sam.as.mutation(api.invites.create, {
+				discipline: "developer",
 				startupId: setup.startupId,
 				email: "lee@example.com",
 			}),
@@ -123,6 +127,7 @@ describe("invites", () => {
 	it("the Founder lists pending Invites", async () => {
 		const setup = await setUpStartup(createTest());
 		const inviteId = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "Sam@Example.com",
 		});
@@ -144,6 +149,7 @@ describe("invites", () => {
 	it("a revoked Invite isn't listed", async () => {
 		const setup = await setUpStartup(createTest());
 		const inviteId = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "sam@example.com",
 		});
@@ -160,6 +166,7 @@ describe("invites", () => {
 	it("an expired Invite isn't listed", async () => {
 		const setup = await setUpStartup(createTest());
 		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "lee@example.com",
 		});
@@ -185,6 +192,7 @@ describe("invites", () => {
 		await t.run(async (ctx) => {
 			for (let i = 0; i < MAX_INVITES; i++) {
 				await ctx.db.insert("invites", {
+					discipline: "developer",
 					startupId: otherStartupId,
 					email: "sam@example.com",
 					invitedBy: gus.userId,
@@ -192,6 +200,7 @@ describe("invites", () => {
 					expiresAt: Date.now() - 1,
 				});
 				await ctx.db.insert("invites", {
+					discipline: "developer",
 					startupId: setup.startupId,
 					email: `old${i}@example.com`,
 					invitedBy: setup.founder.userId,
@@ -202,6 +211,7 @@ describe("invites", () => {
 		});
 
 		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "sam@example.com",
 		});
@@ -221,6 +231,7 @@ describe("invites", () => {
 		const setup = await setUpStartup(createTest());
 		await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
 		await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "lee@example.com",
 		});
@@ -257,14 +268,39 @@ describe("invites", () => {
 		).rejects.toThrow("The Founder can't be removed");
 	});
 
+	it("a Contributor joins with the discipline they were invited as", async () => {
+		const t = createTest();
+		const setup = await setUpStartup(t);
+		const sam = await signUp(t, "Sam");
+		const inviteId = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "sales",
+			startupId: setup.startupId,
+			email: "sam@example.com",
+		});
+
+		await sam.as.mutation(api.invites.accept, { inviteId });
+
+		const team = await sam.as.query(api.contributors.list, {
+			startupId: setup.startupId,
+		});
+		expect(team.contributors).toMatchObject([
+			{ _id: sam.userId, discipline: "sales", label: null },
+		]);
+	});
+
 	it("inviting someone already on the team or already invited is refused", async () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		await addContributor(setup, "Sam");
-		const invite = { startupId: setup.startupId, email: "lee@example.com" };
+		const invite = {
+			startupId: setup.startupId,
+			email: "lee@example.com",
+			discipline: "developer" as const,
+		};
 
 		await expect(
 			setup.founder.as.mutation(api.invites.create, {
+				discipline: "developer",
 				startupId: setup.startupId,
 				email: "SAM@example.com",
 			}),
@@ -283,6 +319,7 @@ describe("invites", () => {
 		const setup = await setUpStartup(t);
 		const sam = await signUp(t, "Sam");
 		const declined = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "sam@example.com",
 		});
@@ -291,6 +328,7 @@ describe("invites", () => {
 		});
 		const lee = await signUp(t, "Lee");
 		const revoked = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "lee@example.com",
 		});
@@ -310,6 +348,7 @@ describe("invites", () => {
 		const t = createTest();
 		const setup = await setUpStartup(t);
 		const inviteId = await setup.founder.as.mutation(api.invites.create, {
+			discipline: "developer",
 			startupId: setup.startupId,
 			email: "sam@example.com",
 		});

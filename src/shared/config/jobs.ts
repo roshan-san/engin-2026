@@ -1,22 +1,16 @@
-import type { jobMode, jobPay, jobRole } from "@convex/hackathons/rules";
+import type { jobMode, jobPay } from "@convex/hackathons/rules";
 import type { Infer } from "convex/values";
+import type { Discipline } from "./disciplines";
 
 type Chip<T extends string> = { readonly value: T; readonly label: string };
-export type JobRole = Infer<typeof jobRole>;
 export type JobPay = Infer<typeof jobPay>;
 export type JobMode = Infer<typeof jobMode>;
-export type Job = { role: JobRole; pay: JobPay; mode: JobMode };
-
-export const ROLES: readonly Chip<JobRole>[] = [
-	{ value: "frontend", label: "Frontend" },
-	{ value: "backend", label: "Backend" },
-	{ value: "fullstack", label: "Full-stack" },
-	{ value: "designer", label: "Designer" },
-	{ value: "marketing", label: "Marketing" },
-	{ value: "sales", label: "Sales" },
-	{ value: "ops", label: "Ops" },
-	{ value: "other", label: "Other" },
-];
+export type Job = {
+	title: string;
+	discipline: Discipline;
+	pay: JobPay;
+	mode: JobMode;
+};
 
 export const PAYS: readonly Chip<JobPay>[] = [
 	{ value: "3_6l", label: "₹3–6 L" },
@@ -36,20 +30,14 @@ function labelOf<T extends string>(chips: readonly Chip<T>[], value: T) {
 	return chips.find((chip) => chip.value === value)?.label ?? value;
 }
 
-export function roleLabel(role: JobRole): string {
-	return labelOf(ROLES, role);
-}
-
-/** "₹6–9 L · Remote": the job's terms, without the role. */
+/** "₹6–9 L · Remote": the job's terms, without the title. */
 export function termsLine(job: Job): string {
 	return `${labelOf(PAYS, job.pay)} · ${labelOf(MODES, job.mode)}`;
 }
 
-/** "Frontend · ₹6–9 L · Remote" */
+/** "Growth lead · ₹6–9 L · Remote" */
 export function jobLine(job: Job): string {
-	return [
-		labelOf(ROLES, job.role),
-		labelOf(PAYS, job.pay),
-		labelOf(MODES, job.mode),
-	].join(" · ");
+	return [job.title, labelOf(PAYS, job.pay), labelOf(MODES, job.mode)].join(
+		" · ",
+	);
 }

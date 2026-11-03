@@ -1,6 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
+import { discipline } from "../lib/disciplines";
 import { inviteStatus } from "./rules";
 
 export const invitesTables = {
@@ -8,6 +9,9 @@ export const invitesTables = {
 		startupId: v.id("startups"),
 		email: v.string(),
 		invitedBy: v.id("users"),
+		/** The team role they join with. */
+		discipline,
+		label: v.optional(v.string()),
 		status: inviteStatus,
 		expiresAt: v.number(),
 		/** Set when the Invite brings a hired Participant onto the Startup. */

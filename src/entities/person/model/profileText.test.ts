@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	disciplineLabel,
-	hackathonLine,
-	outcomeLabel,
-	workLine,
-} from "./profileText";
+import { hackathonLine, outcomeLabel, workLine } from "./profileText";
 
 const acme = { name: "Acme", slug: "acme" };
 
@@ -13,7 +8,7 @@ describe("profileText", () => {
 		expect(
 			hackathonLine({
 				outcome: "hired",
-				job: { role: "frontend" },
+				job: { title: "Frontend" },
 				startup: acme,
 			}),
 		).toBe("Hired · Frontend at Acme");
@@ -33,9 +28,5 @@ describe("profileText", () => {
 		expect(workLine({ startup: acme, count: 500, capped: true })).toBe(
 			"500+ cards at Acme",
 		);
-	});
-
-	it("a discipline reads as its label", () => {
-		expect(disciplineLabel("engineer")).toBe("Engineer");
 	});
 });

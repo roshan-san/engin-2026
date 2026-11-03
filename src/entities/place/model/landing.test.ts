@@ -11,7 +11,12 @@ import type { Places } from "./places";
 
 const startupId = "startup" as Id<"startups">;
 const hackathonId = "hackathon" as Id<"hackathons">;
-const job = { role: "frontend", pay: "equity", mode: "remote" } as const;
+const job = {
+	title: "Frontend",
+	discipline: "developer",
+	pay: "equity",
+	mode: "remote",
+} as const;
 
 function startup(slug: string) {
 	return {
@@ -20,7 +25,7 @@ function startup(slug: string) {
 		name: slug,
 		role: "founder" as const,
 		logoUrl: null,
-		rating: 1000,
+		momentum: 1000,
 		waiting: [],
 	};
 }

@@ -7,7 +7,7 @@ export type ApplicantRow = FunctionReturnType<
 
 const GROUP = { participating: 0, applied: 1, declined: 2, left: 2 } as const;
 
-/** Participants first, then Applicants, then the rest; newest first or by Rating. */
+/** Participants first, then Applicants, then the rest; newest first or by Momentum. */
 export function sortApplicants(
 	rows: ApplicantRow[],
 	by: "newest" | "rating",
@@ -15,7 +15,7 @@ export function sortApplicants(
 	return [...rows].sort(
 		(a, b) =>
 			GROUP[a.application.status] - GROUP[b.application.status] ||
-			(by === "rating" ? b.user.rating - a.user.rating : 0) ||
+			(by === "rating" ? b.user.momentum - a.user.momentum : 0) ||
 			b.application._creationTime - a.application._creationTime,
 	);
 }

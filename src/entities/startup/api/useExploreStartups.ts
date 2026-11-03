@@ -4,7 +4,7 @@ import { useKept } from "~/shared/lib/useKept";
 import { parseStartupSearch, type StartupSearch } from "../model/startupSearch";
 
 /**
- * Startups that match the filters, best Rating first. `startups` keeps the previous
+ * Startups that match the filters, best Momentum first. `startups` keeps the previous
  * rows while a new filter loads (`undefined` only the first time); `isLoading` says
  * they may be out of date.
  */

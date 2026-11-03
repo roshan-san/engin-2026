@@ -5,6 +5,7 @@ import { loadPlan, planViewFor } from "../billing/model";
 import { MAX_OPEN_HACKATHONS, PLANS, type PlanView } from "../billing/rules";
 import { CARD_TEXT } from "../cards/rules";
 import { weekOf, weekStart } from "../cycles/rules";
+import { discipline } from "../lib/disciplines";
 import { limitText, requireLimitedText } from "../lib/text";
 import { loadFoundedStartups } from "../startups/model";
 import { requireFounder } from "../startups/team";
@@ -12,22 +13,28 @@ import type { HiringRecord } from "./record";
 import {
 	HACKATHON_TEXT,
 	hackathonDates,
+	isPaid,
 	jobMode,
 	jobPay,
-	jobRole,
 	MAX_HACKATHON_CARDS,
 	MAX_PARTICIPANTS,
 	MIN_HACKATHON_CARDS,
+	NOTHING,
 	RUNNING,
 } from "./rules";
 
 /** What a Founder fills in to draft a Hackathon. */
 export const draftArgs = {
-	job: v.object({ role: jobRole, pay: jobPay, mode: jobMode }),
+	job: v.object({
+		title: v.string(),
+		discipline,
+		pay: jobPay,
+		mode: jobMode,
+	}),
 	problem: v.string(),
 	weeks: v.number(),
 	startsAt: v.number(),
-	participantsGet: v.optional(v.string()),
+	participantsGet: v.string(),
 	cards: v.array(
 		v.object({ title: v.string(), notes: v.optional(v.string()) }),
 	),
@@ -38,7 +45,7 @@ type DraftInput = {
 	problem: string;
 	weeks: number;
 	startsAt: number;
-	participantsGet?: string;
+	participantsGet: string;
 	cards: { title: string; notes?: string }[];
 };
 
@@ -64,7 +71,10 @@ export function requireValidDraft(input: DraftInput, now: number) {
 	}
 
 	return {
-		job: input.job,
+		job: {
+			...input.job,
+			title: requireLimitedText(input.job.title, "Title", HACKATHON_TEXT.title),
+		},
 		problem: requireLimitedText(
 			input.problem,
 			"Problem",
@@ -73,16 +83,29 @@ export function requireValidDraft(input: DraftInput, now: number) {
 		weeks,
 		startsAt: input.startsAt,
 		...hackathonDates(input.startsAt, weeks),
-		participantsGet: limitText(
-			input.participantsGet,
-			"What Builders get",
-			HACKATHON_TEXT.participantsGet,
-		),
+		participantsGet: requireParticipantsGet(input.participantsGet),
 		cards: input.cards.map((card) => ({
 			title: requireLimitedText(card.title, "Card title", CARD_TEXT.title),
 			notes: limitText(card.notes, "Notes", CARD_TEXT.notes) ?? "",
 		})),
 	};
+}
+
+/** What Builders get, trimmed: a required choice, "Nothing" included. */
+function requireParticipantsGet(value: string): string {
+	if (!value.trim()) {
+		throw new ConvexError("Pick what Builders get");
+	}
+	return requireLimitedText(
+		value,
+		"What Builders get",
+		HACKATHON_TEXT.participantsGet,
+	);
+}
+
+/** What Builders get, as shown: a Hackathon saved before the choice was required reads as "Nothing". */
+export function participantsGetOf(hackathon: Doc<"hackathons">): string {
+	return hackathon.participantsGet ?? NOTHING;
 }
 
 /** The Hackathon, once the person is confirmed as its Startup's Founder. */
@@ -219,15 +242,16 @@ export async function copyTemplateCardsTo(
 export function matchesExplore(
 	hackathon: Doc<"hackathons">,
 	filters: {
-		role?: Doc<"hackathons">["job"]["role"];
+		discipline?: Doc<"hackathons">["job"]["discipline"];
 		weeks?: 1 | 2;
 		paid?: boolean;
 	},
 ): boolean {
 	return (
-		(filters.role === undefined || hackathon.job.role === filters.role) &&
+		(filters.discipline === undefined ||
+			hackathon.job.discipline === filters.discipline) &&
 		(filters.weeks === undefined || hackathon.weeks === filters.weeks) &&
-		(filters.paid !== true || hackathon.participantsGet !== undefined)
+		(filters.paid !== true || isPaid(hackathon.participantsGet))
 	);
 }
 
@@ -255,12 +279,12 @@ export function toExploreHackathon(
 		job: hackathon.job,
 		weeks: hackathon.weeks,
 		startsAt: hackathon.startsAt,
-		participantsGet: hackathon.participantsGet ?? null,
+		participantsGet: participantsGetOf(hackathon),
 		startup: {
 			name: startup.name,
 			slug: startup.slug,
-			rating: startup.rating,
-			ratingChange: startup.ratingChange,
+			momentum: startup.momentum,
+			momentumChange: startup.momentumChange,
 			isProvisional: startup.provisional,
 			logoUrl,
 		},

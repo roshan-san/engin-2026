@@ -11,7 +11,12 @@ import {
 function row(overrides: Partial<HiringRow>): HiringRow {
 	return {
 		_id: "h1" as HiringRow["_id"],
-		job: { role: "frontend", pay: "6_9l", mode: "remote" },
+		job: {
+			title: "Frontend",
+			discipline: "developer",
+			pay: "6_9l",
+			mode: "remote",
+		},
 		status: "open",
 		weeks: 1,
 		startsAt: 0,

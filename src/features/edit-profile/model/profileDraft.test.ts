@@ -23,12 +23,12 @@ describe("profile settings draft", () => {
 		const draft = {
 			...toProfileDraft(me),
 			bio: "Designs things",
-			discipline: "engineer" as const,
+			discipline: "developer" as const,
 		};
 
 		expect(toProfileArgs(draft, me)).toEqual({
 			bio: "Designs things",
-			discipline: "engineer",
+			discipline: "developer",
 		});
 	});
 

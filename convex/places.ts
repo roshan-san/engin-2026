@@ -37,7 +37,7 @@ export const list = query({
 					name: startup.name,
 					role,
 					logoUrl: await loadLogoUrl(ctx, startup),
-					rating: startup.rating,
+					momentum: startup.momentum,
 					waiting: await startupReasons(
 						ctx,
 						startup._id,

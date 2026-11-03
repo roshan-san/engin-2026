@@ -4,4 +4,5 @@ export {
 	type TeamPerson,
 	useTeamPeople,
 } from "./api/useTeamPeople";
+export { teamRoleLine } from "./model/teamRoleLine";
 export { teamSummary } from "./model/teamSummary";

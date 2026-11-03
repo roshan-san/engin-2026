@@ -5,7 +5,11 @@ import {
 	draftHackathon,
 	publishedHackathon,
 } from "../hackathons/hackathons.setup";
-import { runRating, toNextWeek, verifyCards } from "../rating/rating.setup";
+import {
+	runMomentum,
+	toNextWeek,
+	verifyCards,
+} from "../momentum/momentum.setup";
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { MAX_USER_STARTUPS } from "./rules";
@@ -28,8 +32,8 @@ describe("startups", () => {
 		});
 		expect(workspace?.role).toBe("founder");
 		expect(workspace?.startup).toMatchObject({
-			rating: 1000,
-			ratingChange: 0,
+			momentum: 1000,
+			momentumChange: 0,
 			founderId: founder.userId,
 		});
 	});
@@ -103,7 +107,7 @@ describe("startups", () => {
 		});
 
 		expect(workspace).toBeNull();
-		expect(page).toMatchObject({ name: "Acme", rating: 1000 });
+		expect(page).toMatchObject({ name: "Acme", momentum: 1000 });
 		expect(page).not.toHaveProperty("founderId");
 	});
 
@@ -210,9 +214,9 @@ describe("startups", () => {
 					stage: "idea",
 					city: "pune",
 					founderId: fay.userId,
-					rating: 1000,
-					ratingChange: 0,
-					ratedWeeks: 0,
+					momentum: 1000,
+					momentumChange: 0,
+					scoredWeeks: 0,
 					provisional: true,
 					rhythm: [],
 				});
@@ -261,23 +265,23 @@ describe("explore", () => {
 				oneLiner: null,
 				stage: "building",
 				city: "bengaluru",
-				rating: 1000,
-				ratingChange: 0,
+				momentum: 1000,
+				momentumChange: 0,
 				isProvisional: true,
 				logoUrl: null,
 			},
 		]);
 	});
 
-	it("Startups come highest Rating first", async () => {
+	it("Startups come highest Momentum first", async () => {
 		const t = createTest();
 		const low = await secondStartup(t, { name: "Low" });
 		const high = await secondStartup(t, { name: "High" });
 		const middle = await secondStartup(t, { name: "Middle" });
 		await t.run(async (ctx) => {
-			await ctx.db.patch(low.startupId, { rating: 900 });
-			await ctx.db.patch(high.startupId, { rating: 1300 });
-			await ctx.db.patch(middle.startupId, { rating: 1100 });
+			await ctx.db.patch(low.startupId, { momentum: 900 });
+			await ctx.db.patch(high.startupId, { momentum: 1300 });
+			await ctx.db.patch(middle.startupId, { momentum: 1100 });
 		});
 
 		const rows = await t.query(api.startups.explore, {});
@@ -335,7 +339,7 @@ describe("explore", () => {
 		expect(after[0].isHiring).toBe(true);
 	});
 
-	it("a Startup never rated shows twelve empty weeks", async () => {
+	it("a Startup never scored shows twelve empty weeks", async () => {
 		const t = createTest();
 		await setUpStartup(t);
 
@@ -346,11 +350,11 @@ describe("explore", () => {
 		expect(new Set(row.strip.map((cell) => cell.week)).size).toBe(12);
 	});
 
-	it("a rated Startup shows its counts at the end of the strip", async () => {
+	it("a scored Startup shows its counts at the end of the strip", async () => {
 		const setup = await setUpStartup(createTest());
 		await verifyCards(setup, setup.founder, 2);
 		await toNextWeek(setup.t);
-		await runRating(setup.t);
+		await runMomentum(setup.t);
 
 		const [row] = await setup.t.query(api.startups.explore, {});
 

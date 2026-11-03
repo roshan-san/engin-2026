@@ -1,6 +1,5 @@
 import type { api } from "@convex/_generated/api";
 import type { FunctionReturnType } from "convex/server";
-import { roleLabel } from "~/shared/config/jobs";
 import { dateRange } from "~/shared/lib/dates";
 import { displayName } from "~/shared/lib/displayName";
 
@@ -14,7 +13,7 @@ export function entrySummary(entry: EntryView): {
 	text: string;
 } {
 	const actor = displayName(entry.actor);
-	const job = entry.job ? roleLabel(entry.job.role) : "a job";
+	const job = entry.job ? entry.job.title : "a job";
 	switch (entry.kind) {
 		case "card_verified":
 			return { actor, text: entry.line ?? "Shipped a Card" };

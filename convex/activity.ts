@@ -20,7 +20,7 @@ export const list = query({
 	},
 });
 
-/** The Rating and rhythm anyone may see. */
+/** The Momentum and rhythm anyone may see. */
 export const getSignals = query({
 	args: { slug: v.string() },
 	handler: async (ctx, args) => {

@@ -6,7 +6,7 @@ import { HackathonExploreRow } from "~/widgets/hackathon-row";
 
 const SKELETON_ROWS = ["a", "b", "c"] as const;
 
-/** Holds the space of a Hackathon row while the list loads, so Pricing doesn't jump. */
+/** Holds the space of a Hackathon row while the list loads, so the panel doesn't jump. */
 function OpenNowSkeleton() {
 	return SKELETON_ROWS.map((key) => (
 		<li key={key} className="flex items-start gap-3 px-2 py-4" aria-hidden>
@@ -29,7 +29,8 @@ export function OpenNow() {
 	}
 
 	return (
-		<section className="flex flex-col gap-4">
+		// Its own dark block: the rows' muted text doesn't read on the panel's colour.
+		<section className="flex flex-col gap-4 rounded-xl bg-background p-4 text-foreground">
 			<div className="flex items-baseline justify-between">
 				<h2 className="text-2xl font-semibold">Open now</h2>
 				<Link

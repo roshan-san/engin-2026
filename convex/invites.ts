@@ -9,6 +9,7 @@ import {
 } from "./invites/model";
 import { MAX_INVITES } from "./invites/rules";
 import { requireUserId } from "./lib/auth";
+import { discipline } from "./lib/disciplines";
 import { getTeamRole, requireFounder } from "./startups/team";
 
 /** The Founder's pending, unexpired Invites for the Startup. */
@@ -67,7 +68,7 @@ export const listMine = query({
 });
 
 export const create = mutation({
-	args: { startupId: v.id("startups"), email: v.string() },
+	args: { startupId: v.id("startups"), email: v.string(), discipline },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		await requireFounder(ctx, args.startupId, userId);
@@ -75,6 +76,7 @@ export const create = mutation({
 			startupId: args.startupId,
 			email: args.email,
 			invitedBy: userId,
+			discipline: args.discipline,
 		});
 	},
 });
@@ -107,6 +109,8 @@ export const accept = mutation({
 		await ctx.db.insert("contributors", {
 			startupId: invite.startupId,
 			userId,
+			discipline: invite.discipline,
+			label: invite.label,
 		});
 		await ctx.db.patch(invite._id, { status: "accepted" });
 		await appendActivity(ctx, {
