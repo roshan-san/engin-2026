@@ -6,6 +6,7 @@ import { billingTables } from "./billing/table";
 import { cardsTables } from "./cards/table";
 import { contributorsTables } from "./contributors/table";
 import { cyclesTables } from "./cycles/table";
+import { emailTables } from "./email/table";
 import { hackathonsTables } from "./hackathons/table";
 import { invitesTables } from "./invites/table";
 import { maintenanceTables } from "./maintenance/table";
@@ -38,4 +39,5 @@ export default defineSchema({
 	...billingTables,
 	...maintenanceTables,
 	...momentumTables,
+	...emailTables,
 });

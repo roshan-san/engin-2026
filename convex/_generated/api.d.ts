@@ -35,6 +35,10 @@ import type * as cycles from "../cycles.js";
 import type * as cycles_model from "../cycles/model.js";
 import type * as cycles_rules from "../cycles/rules.js";
 import type * as cycles_table from "../cycles/table.js";
+import type * as email from "../email.js";
+import type * as email_model from "../email/model.js";
+import type * as email_rules from "../email/rules.js";
+import type * as email_table from "../email/table.js";
 import type * as files from "../files.js";
 import type * as files_model from "../files/model.js";
 import type * as hackathons from "../hackathons.js";
@@ -120,6 +124,10 @@ declare const fullApi: ApiFromModules<{
   "cycles/model": typeof cycles_model;
   "cycles/rules": typeof cycles_rules;
   "cycles/table": typeof cycles_table;
+  email: typeof email;
+  "email/model": typeof email_model;
+  "email/rules": typeof email_rules;
+  "email/table": typeof email_table;
   files: typeof files;
   "files/model": typeof files_model;
   hackathons: typeof hackathons;
@@ -201,4 +209,5 @@ export declare const internal: FilterApi<
 export declare const components: {
   dodopayments: import("@dodopayments/convex/_generated/component.js").ComponentApi<"dodopayments">;
   migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
+  resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
 };

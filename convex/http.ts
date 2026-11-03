@@ -8,6 +8,7 @@ import {
 	httpRouter,
 } from "convex/server";
 import { internal } from "./_generated/api";
+import { httpAction } from "./_generated/server";
 import { auth } from "./auth";
 
 const http = httpRouter();
@@ -48,6 +49,28 @@ http.route({
 		onSubscriptionExpired: syncFromDodo,
 		onSubscriptionPlanChanged: syncFromDodo,
 		onSubscriptionUpdated: syncFromDodo,
+	}),
+});
+
+/** The link at the foot of every email. GET, so it works from any mail app. */
+http.route({
+	path: "/email/unsubscribe",
+	method: "GET",
+	handler: httpAction(async (ctx, request) => {
+		const token = new URL(request.url).searchParams.get("token") ?? "";
+		const done = token
+			? await ctx.runMutation(internal.email.unsubscribe, { token })
+			: false;
+		const message = done
+			? "You're unsubscribed. engin won't email this address again."
+			: "This unsubscribe link isn't valid.";
+		return new Response(
+			`<!doctype html><meta charset="utf-8"><title>engin</title><p style="font-family:system-ui;padding:2rem">${message}</p>`,
+			{
+				status: done ? 200 : 400,
+				headers: { "Content-Type": "text/html; charset=utf-8" },
+			},
+		);
 	}),
 });
 

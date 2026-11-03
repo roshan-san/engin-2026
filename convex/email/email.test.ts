@@ -1,0 +1,106 @@
+import { describe, expect, it } from "vitest";
+import { internal } from "../_generated/api";
+import { createTest } from "../testing/test.setup";
+import { sendEmail } from "./model";
+
+const EMAIL = {
+	to: "ana@example.com",
+	kind: "accepted" as const,
+	subject: "You're in",
+	text: "See you Monday.",
+};
+
+describe("email", () => {
+	it("an email is logged with an unsubscribe link", async () => {
+		const t = createTest();
+
+		const result = await t.run(async (ctx) => {
+			const sent = await sendEmail(ctx, EMAIL);
+			const logged = await ctx.db.query("emails").collect();
+			const prefs = await ctx.db.query("emailPrefs").collect();
+			return { sent, logged, prefs };
+		});
+
+		expect(result.sent).toBe("sent");
+		expect(result.logged).toMatchObject([
+			{ to: "ana@example.com", kind: "accepted", subject: "You're in" },
+		]);
+		expect(result.logged[0].text).toContain(
+			`/email/unsubscribe?token=${result.prefs[0].token}`,
+		);
+	});
+
+	it("an opted-out address gets nothing", async () => {
+		const t = createTest();
+		await t.run(async (ctx) => {
+			await ctx.db.insert("emailPrefs", {
+				email: "ana@example.com",
+				token: "tok",
+				optedOut: true,
+			});
+		});
+
+		const sent = await t.run(async (ctx) => await sendEmail(ctx, EMAIL));
+
+		expect(sent).toBe("skipped");
+		const logged = await t.run(
+			async (ctx) => await ctx.db.query("emails").collect(),
+		);
+		expect(logged).toEqual([]);
+	});
+
+	it("the same dedupeKey sends once", async () => {
+		const t = createTest();
+
+		const results = await t.run(async (ctx) => [
+			await sendEmail(ctx, { ...EMAIL, dedupeKey: "start:h1:ana" }),
+			await sendEmail(ctx, { ...EMAIL, dedupeKey: "start:h1:ana" }),
+		]);
+
+		expect(results).toEqual(["sent", "skipped"]);
+	});
+
+	it("addresses are matched without case or spaces", async () => {
+		const t = createTest();
+
+		await t.run(async (ctx) => {
+			await sendEmail(ctx, EMAIL);
+			await sendEmail(ctx, { ...EMAIL, to: " Ana@Example.com " });
+		});
+
+		const prefs = await t.run(
+			async (ctx) => await ctx.db.query("emailPrefs").collect(),
+		);
+		expect(prefs).toHaveLength(1);
+	});
+
+	it("unsubscribe with the token opts out", async () => {
+		const t = createTest();
+		const token = await t.run(async (ctx) => {
+			await sendEmail(ctx, EMAIL);
+			const [prefs] = await ctx.db.query("emailPrefs").collect();
+			return prefs.token;
+		});
+
+		const done = await t.mutation(internal.email.unsubscribe, { token });
+		const again = await t.run(async (ctx) => await sendEmail(ctx, EMAIL));
+
+		expect(done).toBe(true);
+		expect(again).toBe("skipped");
+	});
+
+	it("unsubscribe with a bad token changes nothing", async () => {
+		const t = createTest();
+		await t.run(async (ctx) => await sendEmail(ctx, EMAIL));
+
+		const done = await t.mutation(internal.email.unsubscribe, {
+			token: "nope",
+		});
+
+		expect(done).toBe(false);
+		const [prefs] = await t.run(
+			async (ctx) => await ctx.db.query("emailPrefs").collect(),
+		);
+		expect(prefs.optedOut).toBe(false);
+	});
+});
