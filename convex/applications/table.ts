@@ -18,6 +18,11 @@ export const applicationsTables = {
 		/** The Founder didn't decide by `decideBy`, so the deadline gave Not this time. */
 		decisionMissed: v.optional(v.boolean()),
 		feedback: v.optional(v.string()),
+		/** The Offer's one line of terms. `decision: "hired"` means an Offer was made. */
+		offerTerms: v.optional(v.string()),
+		/** When they accepted the Offer and joined the startup. Only this counts as Joined. */
+		joinedAt: v.optional(v.number()),
+		offerDeclinedAt: v.optional(v.number()),
 		promiseKept: v.optional(v.boolean()),
 	})
 		.index("by_hackathon_and_status", ["hackathonId", "status"])

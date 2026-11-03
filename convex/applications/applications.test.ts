@@ -9,16 +9,18 @@ import {
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import { createTest } from "../testing/test.setup";
+import { advancePast, createTest, DAY } from "../testing/test.setup";
 import {
 	type Applicant,
 	applicant,
 	closeHackathon,
+	decidedHackathon,
 	endHackathon,
+	OFFER_TERMS,
 	participants,
 	startHackathon,
 } from "./applications.setup";
-import { WALKTHROUGH_QUESTIONS } from "./rules";
+import { offerState, WALKTHROUGH_QUESTIONS } from "./rules";
 
 async function boardOf(hackathonId: Id<"hackathons">, participant: Applicant) {
 	return await participant.as.query(api.cards.listParticipantBoard, {
@@ -630,6 +632,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		await closeHackathon(setup, hackathonId);
@@ -676,6 +679,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 		const waiting = await statusOf(setup, hackathonId);
 		await setup.founder.as.mutation(api.cards.verify, { cardId });
@@ -689,6 +693,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		await setup.founder.as.mutation(api.cards.move, {
@@ -712,6 +717,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		await closeHackathon(setup, hackathonId);
@@ -746,6 +752,7 @@ describe("deciding", () => {
 		const decide = setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		await expect(decide).rejects.toThrow("Decide after the Hackathon ends");
@@ -774,6 +781,7 @@ describe("deciding", () => {
 				applicationId: ana.applicationId,
 				decision: "hired",
 				feedback: "Great work",
+				terms: "Paid internship, ₹20k a month",
 			});
 
 		await expect(hire()).rejects.toThrow("Do the Walkthrough first");
@@ -784,7 +792,8 @@ describe("deciding", () => {
 		expect(invites).toMatchObject([
 			{ startupName: "Acme", fromHackathon: true },
 		]);
-		expect(await activityKinds(setup)).toContain("participant_hired");
+		// Logged when they join, not when the Offer goes out.
+		expect(await activityKinds(setup)).not.toContain("participant_hired");
 	});
 
 	it("a hire joins with the Hackathon's discipline and title", async () => {
@@ -796,6 +805,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
+			terms: "Paid internship, ₹20k a month",
 		});
 
 		const [invite] = await ana.as.query(api.invites.listMine, {});
@@ -823,6 +833,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
+			terms: "Paid internship, ₹20k a month",
 		});
 
 		const [invite] = await ana.as.query(api.invites.listMine, {});
@@ -851,6 +862,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
+			terms: "Paid internship, ₹20k a month",
 		});
 
 		const invites = await ana.as.query(api.invites.listMine, {});
@@ -880,6 +892,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
+			terms: "Paid internship, ₹20k a month",
 		});
 
 		const list = await setup.founder.as.query(
@@ -887,6 +900,8 @@ describe("deciding", () => {
 			{ hackathonId },
 		);
 		expect(list[0].application).toMatchObject({ decision: "hired" });
+		// Already on the team, so the Offer is Joined at once.
+		expect(list[0].application.joinedAt).not.toBeNull();
 		expect(await ana.as.query(api.invites.listMine, {})).toEqual([]);
 		expect(await activityKinds(setup)).toContain("participant_hired");
 	});
@@ -900,6 +915,7 @@ describe("deciding", () => {
 			setup.founder.as.mutation(api.applications.decide, {
 				applicationId: ana.applicationId,
 				decision: "not_this_time",
+				feedback: "Thanks for the work",
 			});
 
 		await decide();
@@ -919,6 +935,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		const unstar = setup.founder.as.mutation(api.applications.shortlist, {
@@ -974,6 +991,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
+			terms: "Paid internship, ₹20k a month",
 		});
 		const halfway = await setup.t.query(api.hackathons.getPublic, {
 			hackathonId,
@@ -1007,6 +1025,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 		await answer();
 
@@ -1059,6 +1078,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 		await ana.as.mutation(api.applications.keepPromise, {
 			applicationId: ana.applicationId,
@@ -1082,6 +1102,7 @@ describe("deciding", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		const answer = setup.founder.as.mutation(api.applications.keepPromise, {
@@ -1274,5 +1295,194 @@ describe("walkthrough request", () => {
 		});
 
 		await expect(mark).rejects.toThrow("Request the Walkthrough first");
+	});
+});
+
+describe("offer", () => {
+	async function offered() {
+		const setup = await setUpStartup(createTest());
+		const {
+			hackathonId,
+			participants: [ana],
+		} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+		return { setup, hackathonId, ana };
+	}
+
+	async function applicationOf(setup: Setup, ana: Applicant) {
+		const application = await setup.t.run(
+			async (ctx) => await ctx.db.get(ana.applicationId),
+		);
+		if (!application) throw new Error("No application");
+		return application;
+	}
+
+	async function offerOf(ana: Applicant, hackathonId: Id<"hackathons">) {
+		const page = await ana.as.query(api.hackathons.getPublic, { hackathonId });
+		return page?.myApplication?.offer;
+	}
+
+	async function ended() {
+		const setup = await setUpStartup(createTest());
+		const {
+			hackathonId,
+			participants: [ana],
+		} = await decidedHackathon(setup, [{ name: "Ana", shortlisted: true }]);
+		return { setup, hackathonId, ana };
+	}
+
+	it("an Offer needs terms", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+		await setup.founder.as.mutation(api.applications.shortlist, {
+			applicationId: ana.applicationId,
+			shortlisted: true,
+		});
+		await setup.founder.as.mutation(api.applications.requestWalkthrough, {
+			applicationId: ana.applicationId,
+		});
+		await setup.founder.as.mutation(api.applications.markWalkthrough, {
+			applicationId: ana.applicationId,
+		});
+		await endHackathon(setup, hackathonId);
+
+		const offer = setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "hired",
+			terms: "  ",
+		});
+
+		await expect(offer).rejects.toThrow("Add the Offer terms");
+	});
+
+	it("Not this time needs a note", async () => {
+		const { setup, ana } = await ended();
+
+		const pass = setup.founder.as.mutation(api.applications.decide, {
+			applicationId: ana.applicationId,
+			decision: "not_this_time",
+		});
+
+		await expect(pass).rejects.toThrow("Add a note for them");
+	});
+
+	it("an Offer invites with its terms, and isn't Joined yet", async () => {
+		const { setup, hackathonId, ana } = await offered();
+
+		const application = await applicationOf(setup, ana);
+		expect(application.offerTerms).toBe(OFFER_TERMS);
+		expect(application.joinedAt).toBeUndefined();
+		expect(await offerOf(ana, hackathonId)).toMatchObject({
+			state: "pending",
+			terms: OFFER_TERMS,
+		});
+		expect(await activityKinds(setup)).not.toContain("participant_hired");
+	});
+
+	it("accepting the Offer is Joined", async () => {
+		const { setup, hackathonId, ana } = await offered();
+		const offer = await offerOf(ana, hackathonId);
+		if (!offer?.inviteId) throw new Error("No Offer");
+
+		await ana.as.mutation(api.invites.accept, { inviteId: offer.inviteId });
+
+		expect((await applicationOf(setup, ana)).joinedAt).toBeDefined();
+		expect(await offerOf(ana, hackathonId)).toMatchObject({ state: "joined" });
+		const kinds = await activityKinds(setup);
+		expect(kinds.filter((kind) => kind === "participant_hired")).toHaveLength(
+			1,
+		);
+	});
+
+	it("declining the Offer", async () => {
+		const { setup, hackathonId, ana } = await offered();
+		const offer = await offerOf(ana, hackathonId);
+		if (!offer?.inviteId) throw new Error("No Offer");
+
+		await ana.as.mutation(api.invites.decline, { inviteId: offer.inviteId });
+
+		expect((await applicationOf(setup, ana)).offerDeclinedAt).toBeDefined();
+		expect(await offerOf(ana, hackathonId)).toMatchObject({
+			state: "declined",
+			inviteId: null,
+		});
+	});
+
+	it("an expired Offer can be resent with the same terms", async () => {
+		const { setup, hackathonId, ana } = await offered();
+		await advancePast(setup.t, 15 * DAY);
+		expect(await offerOf(ana, hackathonId)).toMatchObject({ state: "expired" });
+
+		await setup.founder.as.mutation(api.applications.resendOffer, {
+			applicationId: ana.applicationId,
+		});
+
+		expect(await offerOf(ana, hackathonId)).toMatchObject({
+			state: "pending",
+			terms: OFFER_TERMS,
+		});
+	});
+
+	it("resend is refused while open, after Joined and after declined", async () => {
+		const resend = (setup: Setup, ana: Applicant) =>
+			setup.founder.as.mutation(api.applications.resendOffer, {
+				applicationId: ana.applicationId,
+			});
+
+		const open = await offered();
+		await expect(resend(open.setup, open.ana)).rejects.toThrow(
+			"The Offer is still open",
+		);
+
+		const joined = await offered();
+		const toJoin = await offerOf(joined.ana, joined.hackathonId);
+		if (!toJoin?.inviteId) throw new Error("No Offer");
+		await joined.ana.as.mutation(api.invites.accept, {
+			inviteId: toJoin.inviteId,
+		});
+		await expect(resend(joined.setup, joined.ana)).rejects.toThrow(
+			"They've joined",
+		);
+
+		const declined = await offered();
+		const toDecline = await offerOf(declined.ana, declined.hackathonId);
+		if (!toDecline?.inviteId) throw new Error("No Offer");
+		await declined.ana.as.mutation(api.invites.decline, {
+			inviteId: toDecline.inviteId,
+		});
+		await expect(resend(declined.setup, declined.ana)).rejects.toThrow(
+			"They declined the Offer",
+		);
+	});
+
+	it("only Offers can be resent", async () => {
+		const setup = await setUpStartup(createTest());
+		const {
+			participants: [ana],
+		} = await decidedHackathon(setup, [
+			{ name: "Ana", decision: "not_this_time" },
+		]);
+
+		await expect(
+			setup.founder.as.mutation(api.applications.resendOffer, {
+				applicationId: ana.applicationId,
+			}),
+		).rejects.toThrow("There's no Offer to resend");
+	});
+});
+
+describe("offerState", () => {
+	it("reads each state", () => {
+		expect(offerState({}, false)).toBe("none");
+		expect(offerState({ decision: "not_this_time" }, false)).toBe("none");
+		expect(offerState({ decision: "hired" }, true)).toBe("pending");
+		expect(offerState({ decision: "hired" }, false)).toBe("expired");
+		expect(offerState({ decision: "hired", offerDeclinedAt: 1 }, false)).toBe(
+			"declined",
+		);
+		expect(offerState({ decision: "hired", joinedAt: 1 }, false)).toBe(
+			"joined",
+		);
 	});
 });

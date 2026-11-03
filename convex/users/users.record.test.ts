@@ -100,6 +100,7 @@ describe("profile record", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		const record = await recordOf(setup, "ana");

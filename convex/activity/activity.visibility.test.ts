@@ -10,7 +10,7 @@ import {
 import { createTest } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 
-/** Acme with one verified Card, a joined Contributor and a hired Participant. */
+/** Acme with one verified Card, a joined Contributor and a Builder who took the Offer. */
 async function busyStartup(): Promise<Setup> {
 	const setup = await setUpStartup(createTest());
 	const sam = await addContributor(setup, "Sam");
@@ -25,7 +25,11 @@ async function busyStartup(): Promise<Setup> {
 	await jo.as.mutation(api.invites.accept, {
 		inviteId: invite.inviteId,
 	});
-	await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+	const {
+		participants: [ana],
+	} = await decidedHackathon(setup, [{ name: "Ana", decision: "hired" }]);
+	const [offer] = await ana.as.query(api.invites.listMine, {});
+	await ana.as.mutation(api.invites.accept, { inviteId: offer.inviteId });
 	return setup;
 }
 

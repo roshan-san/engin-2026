@@ -159,5 +159,42 @@ export const decision = v.union(v.literal("hired"), v.literal("not_this_time"));
 export const APPLICATION_TEXT = {
 	answer: 1000,
 	feedback: 280,
+	offerTerms: 140,
 	walkthroughNotes: 2000,
 };
+
+/** Terms for an Offer made before Offers had terms, when it's resent. */
+export const OLD_OFFER_TERMS = "An Offer to join the team";
+
+export type OfferState = "none" | "pending" | "expired" | "declined" | "joined";
+
+/** Where an Offer stands. A revoked Offer Invite reads as expired, so it can be resent. */
+export function offerState(
+	application: {
+		decision?: Decision;
+		joinedAt?: number;
+		offerDeclinedAt?: number;
+	},
+	hasOpenInvite: boolean,
+): OfferState {
+	if (application.decision !== "hired") return "none";
+	if (application.joinedAt !== undefined) return "joined";
+	if (application.offerDeclinedAt !== undefined) return "declined";
+	return hasOpenInvite ? "pending" : "expired";
+}
+
+/** Why the Founder can't resend this Offer, or null. */
+export function resendRefusal(state: OfferState): string | null {
+	switch (state) {
+		case "expired":
+			return null;
+		case "none":
+			return "There's no Offer to resend";
+		case "pending":
+			return "The Offer is still open";
+		case "joined":
+			return "They've joined";
+		case "declined":
+			return "They declined the Offer";
+	}
+}

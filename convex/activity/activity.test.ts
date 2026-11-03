@@ -161,7 +161,10 @@ describe("activity", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
+			terms: "Paid internship, ₹20k a month",
 		});
+		const [invite] = await ana.as.query(api.invites.listMine, {});
+		await ana.as.mutation(api.invites.accept, { inviteId: invite.inviteId });
 
 		const { cycles } = await list(setup);
 

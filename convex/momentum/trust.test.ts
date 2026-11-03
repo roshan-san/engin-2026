@@ -200,6 +200,7 @@ async function finishedHackathon(
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: builder.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 		await builder.as.mutation(api.applications.keepPromise, {
 			applicationId: builder.applicationId,

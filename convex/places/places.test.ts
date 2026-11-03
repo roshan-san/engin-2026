@@ -354,6 +354,7 @@ describe("waiting", () => {
 			await setup.founder.as.mutation(api.applications.decide, {
 				applicationId: participant.applicationId,
 				decision: "not_this_time",
+				feedback: "Thanks for the work",
 			});
 		}
 		const decided = await placesOf(setup.founder);

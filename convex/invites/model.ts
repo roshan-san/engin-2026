@@ -22,6 +22,7 @@ export async function createInvite(
 		discipline: Doc<"invites">["discipline"];
 		label?: string;
 		hackathonId?: Id<"hackathons">;
+		terms?: string;
 	},
 ): Promise<Id<"invites">> {
 	const email = normalizeEmail(args.email);
@@ -50,12 +51,14 @@ export async function createInvite(
 		status: "pending",
 		expiresAt: Date.now() + INVITE_TTL_MS,
 		hackathonId: args.hackathonId,
+		terms: args.terms,
 	});
 }
 
 /**
- * The Invite a Hackathon hire sends. Never throws for someone already on the
- * Startup (no Invite) or already invited (their open Invite now carries the Hackathon).
+ * The Invite a Hackathon Offer sends. Never throws for someone already on the
+ * Startup (no Invite, and `"on_team"`) or already invited (their open Invite now
+ * carries the Hackathon and its terms).
  */
 export async function ensureHireInvite(
 	ctx: MutationCtx,
@@ -66,10 +69,11 @@ export async function ensureHireInvite(
 		invitedBy: Id<"users">;
 		hackathonId: Id<"hackathons">;
 		job: Doc<"hackathons">["job"];
+		terms: string;
 	},
-): Promise<void> {
+): Promise<"on_team" | "invited"> {
 	if (await getTeamRole(ctx, args.startupId, args.userId)) {
-		return;
+		return "on_team";
 	}
 	const open = await loadOpenInvite(
 		ctx,
@@ -81,8 +85,9 @@ export async function ensureHireInvite(
 			hackathonId: args.hackathonId,
 			discipline: args.job.discipline,
 			label: args.job.title,
+			terms: args.terms,
 		});
-		return;
+		return "invited";
 	}
 	await createInvite(ctx, {
 		startupId: args.startupId,
@@ -91,7 +96,9 @@ export async function ensureHireInvite(
 		discipline: args.job.discipline,
 		label: args.job.title,
 		hackathonId: args.hackathonId,
+		terms: args.terms,
 	});
+	return "invited";
 }
 
 /** The pending, unexpired Invites for this normalised email. */

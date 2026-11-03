@@ -520,6 +520,7 @@ describe("publishing needs Pro", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ben._id,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 		await publish(setup, fifthId);
 
@@ -741,6 +742,7 @@ describe("the decision deadline", () => {
 		const decide = setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ben.applicationId,
 			decision: "not_this_time",
+			feedback: "Thanks for the work",
 		});
 
 		await expect(decide).rejects.toThrow("This Hackathon has ended");

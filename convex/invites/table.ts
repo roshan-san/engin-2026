@@ -16,6 +16,8 @@ export const invitesTables = {
 		expiresAt: v.number(),
 		/** Set when the Invite brings a hired Participant onto the Startup. */
 		hackathonId: v.optional(v.id("hackathons")),
+		/** A Hackathon Offer's one line of terms. */
+		terms: v.optional(v.string()),
 	})
 		.index("by_startup_and_status_and_expiresAt", [
 			"startupId",

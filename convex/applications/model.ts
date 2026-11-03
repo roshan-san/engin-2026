@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { appendActivity } from "../activity/model";
 import {
 	loadHackathonCards,
 	loadParticipants,
@@ -8,9 +9,16 @@ import {
 } from "../hackathons/model";
 import { MAX_APPLICATIONS, phaseOf } from "../hackathons/rules";
 import {
+	ensureHireInvite,
+	loadOpenInvitesTo,
+	normalizeEmail,
+} from "../invites/model";
+import {
 	type ApplicationAction,
 	applicationRefusal,
 	isWalkthroughRequested,
+	type OfferState,
+	offerState,
 } from "./rules";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -180,17 +188,105 @@ export function toFounderApplicationView(application: Doc<"applications">) {
 		decision: application.decision ?? null,
 		decisionMissed: application.decisionMissed ?? false,
 		feedback: application.feedback ?? null,
+		offerTerms: application.offerTerms ?? null,
+		joinedAt: application.joinedAt ?? null,
 	};
 }
 
-/** What the Participant sees of their own application: the decision, the Founder's note, and whether they've answered the promise question. */
-export function toMyApplicationView(application: Doc<"applications">) {
+/** The open Invite that carries this application's Offer, or null once it's taken, declined or expired. */
+export async function loadOfferInvite(
+	ctx: Ctx,
+	application: Doc<"applications">,
+): Promise<Doc<"invites"> | null> {
+	if (application.decision !== "hired") {
+		return null;
+	}
+	const user = await ctx.db.get(application.userId);
+	if (!user?.email) {
+		return null;
+	}
+	const open = await loadOpenInvitesTo(ctx, normalizeEmail(user.email));
+	return (
+		open.find((invite) => invite.hackathonId === application.hackathonId) ??
+		null
+	);
+}
+
+export type OfferView = {
+	state: OfferState;
+	terms: string | null;
+	inviteId: Id<"invites"> | null;
+};
+
+/** Where the application's Offer stands, with the Invite to answer while it's open. */
+export async function loadOfferView(
+	ctx: Ctx,
+	application: Doc<"applications">,
+): Promise<OfferView> {
+	const invite = await loadOfferInvite(ctx, application);
+	const state = offerState(application, invite !== null);
+	return {
+		state,
+		terms: application.offerTerms ?? null,
+		inviteId: state === "pending" && invite ? invite._id : null,
+	};
+}
+
+/** What the Participant sees of their own application: the decision, the Founder's note, the Offer, and whether they've answered the promise question. */
+export function toMyApplicationView(
+	application: Doc<"applications">,
+	offer: OfferView,
+) {
 	return {
 		applicationId: application._id,
 		status: application.status,
 		decision: application.decision ?? null,
 		feedback: application.feedback ?? null,
 		walkthroughRequested: isWalkthroughRequested(application),
+		offer,
 		promiseAnswered: application.promiseKept !== undefined,
 	};
+}
+
+/** Sends the Offer as a hire Invite carrying its terms. `"on_team"` when they're already on the startup. */
+export async function sendOffer(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+	application: Doc<"applications">,
+	founderId: Id<"users">,
+	terms: string,
+): Promise<"on_team" | "invited"> {
+	const participant = await ctx.db.get(application.userId);
+	if (!participant?.email) {
+		throw new ConvexError("This Builder has no email to invite");
+	}
+	return await ensureHireInvite(ctx, {
+		startupId: hackathon.startupId,
+		userId: participant._id,
+		email: participant.email,
+		invitedBy: founderId,
+		hackathonId: hackathon._id,
+		job: hackathon.job,
+		terms,
+	});
+}
+
+/** They accepted the Offer: Joined, once, logged on the startup's Record. */
+export async function markJoined(
+	ctx: MutationCtx,
+	application: Doc<"applications">,
+	hackathon: Doc<"hackathons">,
+): Promise<void> {
+	if (application.joinedAt !== undefined) {
+		return;
+	}
+	const now = Date.now();
+	await ctx.db.patch(application._id, { joinedAt: now });
+	await appendActivity(ctx, {
+		startupId: hackathon.startupId,
+		kind: "participant_hired",
+		at: now,
+		actorId: application.userId,
+		hackathonId: hackathon._id,
+	});
 }

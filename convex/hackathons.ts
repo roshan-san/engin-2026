@@ -2,7 +2,11 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { getApplication, toMyApplicationView } from "./applications/model";
+import {
+	getApplication,
+	loadOfferView,
+	toMyApplicationView,
+} from "./applications/model";
 import * as lifecycle from "./hackathons/lifecycle";
 import {
 	copyTemplateCardsTo,
@@ -153,7 +157,12 @@ export const getPublic = query({
 			isTeam: userId
 				? (await getTeamRole(ctx, startup._id, userId)) !== null
 				: false,
-			myApplication: application ? toMyApplicationView(application) : null,
+			myApplication: application
+				? toMyApplicationView(
+						application,
+						await loadOfferView(ctx, application),
+					)
+				: null,
 		};
 	},
 });

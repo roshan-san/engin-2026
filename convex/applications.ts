@@ -1,26 +1,30 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { appendActivity } from "./activity/model";
 import {
 	ensurePrivateThread,
 	getApplication,
 	getPrivateThread,
 	loadApplicationsForFounder,
+	loadOfferInvite,
 	loadParticipantProgress,
+	markJoined,
 	requireApplicationAllowed,
 	requireApplicationFounder,
 	requireOpen,
+	sendOffer,
 	toFounderApplicationView,
 } from "./applications/model";
 import {
 	APPLICATION_TEXT,
 	decision,
 	MAX_ASKS,
+	OLD_OFFER_TERMS,
+	offerState,
+	resendRefusal,
 	WALKTHROUGH_QUESTIONS,
 } from "./applications/rules";
 import { finishIfDecided } from "./hackathons/lifecycle";
 import { loadParticipants, requireHackathonFounder } from "./hackathons/model";
-import { ensureHireInvite } from "./invites/model";
 import { requireUserId } from "./lib/auth";
 import { limitText, requireLimitedText } from "./lib/text";
 import { postMessage } from "./messages/model";
@@ -269,11 +273,13 @@ export const markWalkthrough = mutation({
 	},
 });
 
+/** An Offer (`hired`, with terms) or Not this time (with a note). Joined comes later, when they accept. */
 export const decide = mutation({
 	args: {
 		applicationId: v.id("applications"),
 		decision,
 		feedback: v.optional(v.string()),
+		terms: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
@@ -286,36 +292,68 @@ export const decide = mutation({
 			kind: "decide",
 			decision: args.decision,
 		});
-		const now = Date.now();
 		const feedback = limitText(
 			args.feedback,
 			"Feedback",
 			APPLICATION_TEXT.feedback,
 		);
+		if (args.decision === "not_this_time" && !feedback) {
+			throw new ConvexError("Add a note for them");
+		}
 
-		await ctx.db.patch(application._id, { decision: args.decision, feedback });
-		if (args.decision === "hired") {
-			const participant = await ctx.db.get(application.userId);
-			if (!participant?.email) {
-				throw new ConvexError("This Builder has no email to invite");
+		if (args.decision === "not_this_time") {
+			await ctx.db.patch(application._id, {
+				decision: args.decision,
+				feedback,
+			});
+		} else {
+			const terms = limitText(
+				args.terms,
+				"Offer terms",
+				APPLICATION_TEXT.offerTerms,
+			);
+			if (!terms) {
+				throw new ConvexError("Add the Offer terms");
 			}
-			await ensureHireInvite(ctx, {
-				startupId: hackathon.startupId,
-				userId: participant._id,
-				email: participant.email,
-				invitedBy: userId,
-				hackathonId: hackathon._id,
-				job: hackathon.job,
+			await ctx.db.patch(application._id, {
+				decision: args.decision,
+				feedback,
+				offerTerms: terms,
 			});
-			await appendActivity(ctx, {
-				startupId: hackathon.startupId,
-				kind: "participant_hired",
-				at: now,
-				actorId: application.userId,
-				hackathonId: hackathon._id,
-			});
+			const sent = await sendOffer(ctx, hackathon, application, userId, terms);
+			if (sent === "on_team") {
+				await markJoined(ctx, application, hackathon);
+			}
 		}
 		await finishIfDecided(ctx, hackathon);
+	},
+});
+
+/** Sends a fresh Offer, with the same terms, once the last one expired. */
+export const resendOffer = mutation({
+	args: { applicationId: v.id("applications") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const { application, hackathon } = await requireApplicationFounder(
+			ctx,
+			args.applicationId,
+			userId,
+		);
+		const invite = await loadOfferInvite(ctx, application);
+		const refusal = resendRefusal(offerState(application, invite !== null));
+		if (refusal) {
+			throw new ConvexError(refusal);
+		}
+		const sent = await sendOffer(
+			ctx,
+			hackathon,
+			application,
+			userId,
+			application.offerTerms ?? OLD_OFFER_TERMS,
+		);
+		if (sent === "on_team") {
+			await markJoined(ctx, application, hackathon);
+		}
 	},
 });
 

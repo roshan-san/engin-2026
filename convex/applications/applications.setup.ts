@@ -81,6 +81,8 @@ export async function closeHackathon(
 	await advancePast(setup.t, hackathon.decideBy - Date.now() + HOUR);
 }
 
+export const OFFER_TERMS = "Paid internship, ₹20k a month";
+
 type ParticipantPlan = {
 	name: string;
 	decision?: "hired" | "not_this_time";
@@ -122,6 +124,9 @@ export async function decidedHackathon(
 			await setup.founder.as.mutation(api.applications.decide, {
 				applicationId: accepted[i].applicationId,
 				decision: plan.decision,
+				...(plan.decision === "hired"
+					? { terms: OFFER_TERMS }
+					: { feedback: "Thanks for the work" }),
 			});
 		}
 	}

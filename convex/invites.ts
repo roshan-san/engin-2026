@@ -1,7 +1,8 @@
 import { ConvexError, v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { type MutationCtx, mutation, query } from "./_generated/server";
 import { appendActivity } from "./activity/model";
+import { getApplication, markJoined } from "./applications/model";
 import { firstWeekFor } from "./cycles/rules";
 import {
 	createInvite,
@@ -122,6 +123,10 @@ export const accept = mutation({
 			at: Date.now(),
 			actorId: userId,
 		});
+		const offer = await loadOfferApplication(ctx, invite, userId);
+		if (offer) {
+			await markJoined(ctx, offer.application, offer.hackathon);
+		}
 	},
 });
 
@@ -131,8 +136,32 @@ export const decline = mutation({
 		const userId = await requireUserId(ctx);
 		const invite = await requireOpenInviteFor(ctx, args.inviteId, userId);
 		await ctx.db.patch(invite._id, { status: "declined" });
+		const offer = await loadOfferApplication(ctx, invite, userId);
+		if (offer) {
+			await ctx.db.patch(offer.application._id, {
+				offerDeclinedAt: Date.now(),
+			});
+		}
 	},
 });
+
+/** The Offer an Invite carries: the application it was made on, and its Hackathon. */
+async function loadOfferApplication(
+	ctx: MutationCtx,
+	invite: Doc<"invites">,
+	userId: Id<"users">,
+) {
+	if (!invite.hackathonId) {
+		return null;
+	}
+	const [application, hackathon] = await Promise.all([
+		getApplication(ctx, invite.hackathonId, userId),
+		ctx.db.get(invite.hackathonId),
+	]);
+	return application?.decision === "hired" && hackathon
+		? { application, hackathon }
+		: null;
+}
 
 /**
  * A team growing back from one person starts its meetings afresh: the Board stays

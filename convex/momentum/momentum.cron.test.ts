@@ -342,6 +342,7 @@ describe("momentum", () => {
 		await setup.founder.as.mutation(api.applications.decide, {
 			applicationId: ana.applicationId,
 			decision: "hired",
+			terms: "Paid internship, ₹20k a month",
 		});
 		await setup.t.run(async (ctx) => {
 			await ctx.db.insert("contributors", {
