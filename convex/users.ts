@@ -6,6 +6,7 @@ import { requireUserId } from "./lib/auth";
 import { discipline } from "./lib/disciplines";
 import { MAX_EXPLORE_ROWS } from "./lib/explore";
 import { limitText } from "./lib/text";
+import { NO_PROGRESS } from "./momentum/trust";
 import {
 	loadProfileRecord,
 	toOwnProfile,
@@ -21,6 +22,23 @@ export const getMe = query({
 		const userId = await getAuthUserId(ctx);
 		const user = userId ? await ctx.db.get(userId) : null;
 		return user ? toOwnProfile(user) : null;
+	},
+});
+
+/** Your own Trust, with how far you are along each rule; null signed out. Nobody else sees the progress. */
+export const myTrust = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await getAuthUserId(ctx);
+		const user = userId ? await ctx.db.get(userId) : null;
+		if (!user) {
+			return null;
+		}
+		return {
+			trust: user.trust ?? "low",
+			held: user.trustHeld === true,
+			progress: user.trustProgress ?? NO_PROGRESS,
+		};
 	},
 });
 

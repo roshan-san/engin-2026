@@ -6,6 +6,7 @@ import { shiftWeek, weekOf } from "../cycles/rules";
 import { MAX_HACKATHON_CARDS, phaseOf } from "../hackathons/rules";
 import { loadCredits } from "./credit";
 import { STARTING_MOMENTUM, WEEK_COUNT_CAP } from "./rules";
+import { loadTrustInputs, NO_PROGRESS, nextTrust } from "./trust";
 
 export const MOMENTUM = {
 	weeks: 12,
@@ -318,7 +319,7 @@ export async function scoreUser(
 		await ctx.db.patch(user._id, { scoredThrough: week });
 		return;
 	}
-	const [credits, activeRows, outcomes] = await Promise.all([
+	const [credits, activeRows, outcomes, trustInputs] = await Promise.all([
 		loadCredits(ctx, user._id, { fromWeek: weeks[0] }),
 		ctx.db
 			.query("activeWeeks")
@@ -327,6 +328,7 @@ export async function scoreUser(
 			)
 			.take(MOMENTUM.weeks),
 		loadOutcomes(ctx, user._id),
+		loadTrustInputs(ctx, user),
 	]);
 	const active = new Set(activeRows.map((row) => row.week));
 	const best = new Map<string, number>();
@@ -346,12 +348,23 @@ export async function scoreUser(
 		? nextMomentum(current, personTarget(parts.consistency, outcomeValue))
 		: current;
 	const scoredWeeks = (user.scoredWeeks ?? 0) + (thisWeek.credit > 0 ? 1 : 0);
+	const trust = nextTrust({
+		current: user.trust ?? "low",
+		held: user.trustHeld === true,
+		since: user.trustSince,
+		countsFrom: user.trustCountsFrom,
+		week,
+		lastOutsideWeek: trustInputs.lastOutsideWeek,
+		progress: trustInputs.progress,
+	});
+	// A fall restarts the count, so the progress shown restarts too.
+	const fell = trust.countsFrom !== user.trustCountsFrom;
 
 	await ctx.db.insert("scoreEvents", {
 		userId: user._id,
 		week,
 		momentum,
-		trust: user.trust ?? "low",
+		trust: trust.trust,
 		activeWeeks: parts.active,
 		shippedWeeks: parts.shipped,
 		consistency: parts.consistency,
@@ -365,5 +378,9 @@ export async function scoreUser(
 		scoredThrough: week,
 		provisional:
 			scoredWeeks < MOMENTUM.provisionalWeeks && outcomes.length === 0,
+		trust: trust.trust,
+		trustSince: trust.since,
+		trustCountsFrom: trust.countsFrom,
+		trustProgress: fell ? NO_PROGRESS : trustInputs.progress,
 	});
 }

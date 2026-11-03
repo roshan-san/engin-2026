@@ -48,6 +48,7 @@ export function toPublicProfile(user: Doc<"users">) {
 		discipline: user.discipline ?? null,
 		momentumChange: user.momentumChange ?? 0,
 		isProvisional: isProvisional(user),
+		trust: user.trust ?? "low",
 	};
 }
 

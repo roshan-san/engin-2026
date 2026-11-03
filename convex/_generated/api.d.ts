@@ -65,6 +65,7 @@ import type * as momentum_credit from "../momentum/credit.js";
 import type * as momentum_model from "../momentum/model.js";
 import type * as momentum_rules from "../momentum/rules.js";
 import type * as momentum_table from "../momentum/table.js";
+import type * as momentum_trust from "../momentum/trust.js";
 import type * as places from "../places.js";
 import type * as places_model from "../places/model.js";
 import type * as places_rules from "../places/rules.js";
@@ -148,6 +149,7 @@ declare const fullApi: ApiFromModules<{
   "momentum/model": typeof momentum_model;
   "momentum/rules": typeof momentum_rules;
   "momentum/table": typeof momentum_table;
+  "momentum/trust": typeof momentum_trust;
   places: typeof places;
   "places/model": typeof places_model;
   "places/rules": typeof places_rules;
