@@ -7,6 +7,7 @@ import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
 import { phaseOf } from "../hackathons/rules";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
+import { markActive, recordApproval } from "../momentum/credit";
 import { getTeamRole, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
 import {
@@ -373,6 +374,10 @@ export async function markVerified(
 		verifiedAt: now,
 		verifiedBy: verifierId,
 	});
+	await recordApproval(ctx, card, verifierId, now);
+	if (card.ownerId) {
+		await markActive(ctx, card.ownerId, now);
+	}
 	// Only someone else's approval counts: self-approval would list anyone in a minute.
 	if (card.ownerId && card.ownerId !== verifierId) {
 		await listOwner(ctx, card, card.ownerId);

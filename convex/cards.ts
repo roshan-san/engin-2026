@@ -21,6 +21,7 @@ import {
 	requireHackathonFounder,
 } from "./hackathons/model";
 import { requireUserId } from "./lib/auth";
+import { markActive } from "./momentum/credit";
 import { requireTeam } from "./startups/team";
 
 export const listBoard = query({
@@ -186,6 +187,9 @@ export const submit = mutation({
 		const proof = parseShipped(args.shipped);
 
 		const now = Date.now();
+		if (card.ownerId === userId) {
+			await markActive(ctx, userId, now);
+		}
 		if (submitLandsIn(card, actor) === "done") {
 			await ctx.db.patch(card._id, { submittedAt: now });
 			await markVerified(ctx, card, proof, userId, now);

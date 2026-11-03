@@ -6,14 +6,38 @@ import type { Setup } from "../startups/startups.setup";
 import { advancePast, HOUR, type TestConvex } from "../testing/test.setup";
 import type { Person } from "../users/users.setup";
 
-/** n Cards owned by `person`, submitted and verified by the Founder (Self-verified when `person` is the Founder). */
+/** n Cards owned by `person`, submitted and verified by the Founder (Self-verified when `person` is the Founder), 11 minutes after they were made so they earn credit. */
 export async function verifyCards(
 	setup: Setup,
 	person: Person,
 	n: number,
 ): Promise<void> {
+	await approveCards(setup, person, n, 11 * 60_000);
+}
+
+/** As `verifyCards`, approved the moment they're made, so they earn nothing. */
+export async function verifyCardsNow(
+	setup: Setup,
+	person: Person,
+	n: number,
+): Promise<void> {
+	await approveCards(setup, person, n, 0);
+}
+
+async function approveCards(
+	setup: Setup,
+	person: Person,
+	n: number,
+	wait: number,
+): Promise<void> {
+	const cardIds = [];
 	for (let i = 0; i < n; i++) {
-		const cardId = await cardOn(setup, person, `Card ${i + 1}`);
+		cardIds.push(await cardOn(setup, person, `Card ${i + 1}`));
+	}
+	if (wait > 0) {
+		await advancePast(setup.t, wait);
+	}
+	for (const [i, cardId] of cardIds.entries()) {
 		await person.as.mutation(api.cards.submit, {
 			cardId,
 			shipped: { ...SHIPPED, line: `Shipped ${i + 1}` },
