@@ -1,6 +1,7 @@
 import { getRouteApi } from "@tanstack/react-router";
 import { useTeamThread } from "~/entities/message";
 import { useWorkspace } from "~/entities/startup";
+import { StartWeekBar } from "~/features/start-week";
 import { AppPage } from "~/shared/ui/AppPage";
 import { Button } from "~/shared/ui/button";
 import { DetailPanel } from "~/shared/ui/DetailPanel";
@@ -9,6 +10,7 @@ import { useDetailPanel } from "~/shared/ui/useDetailPanel";
 import { Board, CardBoard, OpenCardPanel } from "~/widgets/card-board";
 import { TeamPanel } from "~/widgets/chat-panel";
 import { CycleHeader } from "./CycleHeader";
+import { MeetingsNotice } from "./MeetingsNotice";
 
 const cycleRoute = getRouteApi("/_shell/_authed/s/$slug/cycle");
 
@@ -30,6 +32,12 @@ export function StartupCyclePage() {
 		<CardBoard cardId={cardId} onCardChange={setCard}>
 			<AppPage
 				width="full"
+				notice={
+					<>
+						<MeetingsNotice />
+						<StartWeekBar />
+					</>
+				}
 				bar={{
 					title: <CycleHeader />,
 					actions: (

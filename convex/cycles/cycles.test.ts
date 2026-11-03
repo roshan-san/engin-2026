@@ -161,6 +161,30 @@ describe("meetings", () => {
 		).rejects.toThrow("Pick a time on the quarter hour");
 	});
 
+	it("the page passes its own clock, so the lock shows on time", async () => {
+		const setup = await setUpStartup(createTest());
+		await addContributor(setup, "Sam");
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.startupId, {
+				meetings: {
+					...DEFAULT_SLOTS,
+					firstWeek: weekOf(Date.now()),
+					invited: [],
+				},
+			});
+		});
+
+		const at = (now: number) =>
+			setup.founder.as.query(api.cycles.getCurrent, {
+				startupId: setup.startupId,
+				now,
+			});
+
+		expect((await at(ist(MONDAY, "10:30"))).state).toBe("planning");
+		expect((await at(ist(MONDAY, "10:30"))).showsScopeHint).toBe(true);
+		expect((await at(ist("2026-06-12", "17:10"))).state).toBe("closing");
+	});
+
 	it("only the Founder sees team emails", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await addContributor(setup, "Sam");

@@ -9,6 +9,7 @@ const startupScope: BoardScope = {
 	userId: "u1" as Id<"users">,
 	role: "founder",
 	phase: null,
+	lock: undefined,
 };
 
 const participantScope: BoardScope = {

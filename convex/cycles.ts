@@ -13,6 +13,7 @@ import {
 	meetingSlot,
 	openingOf,
 	shiftWeek,
+	showsScopeHint,
 	slotRefusal,
 	startRefusal,
 	weekOf,
@@ -56,13 +57,14 @@ function nextMeetings(now: number, meetings: Meetings, week: string) {
 	return { nextOpening: opening, nextClosing: closing };
 }
 
+/** The Cycle as of `now`: the page passes its clock, to the minute, so the lock shows on time. Mutations use the server's. */
 export const getCurrent = query({
-	args: { startupId: v.id("startups") },
+	args: { startupId: v.id("startups"), now: v.optional(v.number()) },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
 		const { startup, role } = await requireTeam(ctx, args.startupId, userId);
 
-		const now = Date.now();
+		const now = args.now ?? Date.now();
 		const { meetings, isSolo, week, state, row } = await loadWeekContext(
 			ctx,
 			startup,
@@ -92,6 +94,7 @@ export const getCurrent = query({
 			nextOpening: next?.nextOpening ?? null,
 			nextClosing: next?.nextClosing ?? null,
 			startedAt: row?.startedAt ?? null,
+			showsScopeHint: showsScopeHint(now, meetings, isSolo),
 			offUserIds: row?.offUserIds ?? [],
 			/** Founder only: every team email, for the calendar invite. */
 			guests: emails,

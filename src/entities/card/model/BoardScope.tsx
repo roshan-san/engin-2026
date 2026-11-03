@@ -14,6 +14,8 @@ export type BoardScope =
 			readonly userId: Id<"users">;
 			readonly role: "founder" | "contributor";
 			readonly phase: null;
+			/** Set while the team's Board is locked between its meetings. */
+			readonly lock: "closing" | "planning" | undefined;
 	  }
 	| {
 			readonly kind: "participant";

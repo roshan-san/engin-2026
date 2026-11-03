@@ -76,3 +76,14 @@ describe("dropRefusal", () => {
 		expect(dropRefusal(aCard("todo"), "todo", owner)).toBeNull();
 	});
 });
+
+describe("the locked Board", () => {
+	it("refuses a drop with the lock's reason, but the Founder can still send back", () => {
+		expect(
+			dropRefusal(aCard("todo"), "in_progress", { ...owner, lock: "planning" }),
+		).toBe("The Board opens after Monday's meeting");
+		expect(
+			dropAction(aCard("review"), "todo", { ...founder, lock: "closing" }),
+		).toBe("move");
+	});
+});
