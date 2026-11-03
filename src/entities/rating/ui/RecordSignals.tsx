@@ -1,6 +1,7 @@
 import { cn } from "~/shared/lib/cn";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RhythmStrip, StripLegend } from "~/shared/ui/RhythmStrip";
+import { TrustLabel } from "~/shared/ui/TrustLabel";
 import type { SignalsView } from "../api/useSignals";
 
 const LABEL = "text-xs leading-5 font-semibold text-muted-foreground";
@@ -32,6 +33,7 @@ export function RecordSignals({
 					ratingChange={signals.momentumChange}
 					isProvisional={signals.isProvisional}
 				/>
+				<TrustLabel trust={signals.trust} />
 			</div>
 			<div className="flex flex-col gap-2">
 				<div className="flex h-5 items-center justify-between gap-3">

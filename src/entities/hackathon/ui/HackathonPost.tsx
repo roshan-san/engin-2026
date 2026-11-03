@@ -3,6 +3,7 @@ import {
 	MAX_PARTICIPANTS,
 	NOTHING,
 } from "@convex/hackathons/rules";
+import type { Trust } from "@convex/momentum/rules";
 import type { ReactNode } from "react";
 import { type Discipline, disciplineLabel } from "~/shared/config/disciplines";
 import { type JobMode, type JobPay, MODES, PAYS } from "~/shared/config/jobs";
@@ -11,6 +12,7 @@ import { dayLabel } from "~/shared/lib/dates";
 import { buildDaysLabel, lastDay } from "~/shared/lib/hackathonDates";
 import { Badge } from "~/shared/ui/badge";
 import { Section } from "~/shared/ui/Section";
+import { TrustLabel } from "~/shared/ui/TrustLabel";
 
 export type PostView = {
 	readonly startupName: string;
@@ -26,6 +28,8 @@ export type PostView = {
 	readonly weeks: 1 | 2;
 	readonly startsAt: number | null;
 	readonly participantsGet: string | null;
+	/** The Founder's Trust, so Builders can judge the promise; left out of a draft's preview. */
+	readonly founderTrust?: Trust;
 };
 
 function labelOf<T extends string>(
@@ -82,6 +86,12 @@ export function HackathonPost({
 			<header className="flex flex-col gap-3">
 				<p className="text-sm text-muted-foreground">
 					{post.startupName} is hiring
+					{post.founderTrust ? (
+						<>
+							{" · "}
+							<TrustLabel label="Founder's Trust" trust={post.founderTrust} />
+						</>
+					) : null}
 				</p>
 				{/* A preview sits under its page's own h1. */}
 				<Title

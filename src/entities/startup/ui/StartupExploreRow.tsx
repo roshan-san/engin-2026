@@ -5,6 +5,7 @@ import { Badge } from "~/shared/ui/badge";
 import { PlaceLogo } from "~/shared/ui/PlaceLogo";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RhythmStrip } from "~/shared/ui/RhythmStrip";
+import { TrustLabel } from "~/shared/ui/TrustLabel";
 import { startupChipLabels } from "../config/startupChips";
 
 export type StartupExploreRowData = FunctionReturnType<
@@ -51,13 +52,16 @@ export function StartupExploreRow({
 					</div>
 				</div>
 				<div className="flex shrink-0 items-center justify-between gap-6 sm:justify-end">
-					<RatingBadge
-						size="sm"
-						inLink
-						rating={startup.momentum}
-						ratingChange={startup.momentumChange}
-						isProvisional={startup.isProvisional}
-					/>
+					<div className="flex flex-col gap-0.5">
+						<RatingBadge
+							size="sm"
+							inLink
+							rating={startup.momentum}
+							ratingChange={startup.momentumChange}
+							isProvisional={startup.isProvisional}
+						/>
+						<TrustLabel trust={startup.trust} className="text-xs" />
+					</div>
 					<RhythmStrip strip={startup.strip} size="fixed" />
 				</div>
 			</Link>

@@ -2,7 +2,13 @@ import type { api } from "@convex/_generated/api";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import type { FunctionReturnType } from "convex/server";
 import { useRef, useState } from "react";
-import { hackathonLine, useMe, useProfile, workLine } from "~/entities/person";
+import {
+	hackathonLine,
+	useMe,
+	useProfile,
+	workLine,
+	YourTrust,
+} from "~/entities/person";
 import { SignInCard } from "~/features/sign-in";
 import { disciplineLabel } from "~/shared/config/disciplines";
 import { cn } from "~/shared/lib/cn";
@@ -19,6 +25,7 @@ import { RatingBadge } from "~/shared/ui/RatingBadge";
 import { RatingParts } from "~/shared/ui/RatingParts";
 import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
+import { TrustLabel } from "~/shared/ui/TrustLabel";
 import { SettingsSheet } from "~/widgets/account";
 
 const route = getRouteApi("/_shell/u/$username");
@@ -129,12 +136,16 @@ function SignedInProfile({
 			</header>
 
 			<section className="flex flex-col gap-3">
-				<RatingBadge
-					rating={profile.momentum}
-					ratingChange={profile.momentumChange}
-					isProvisional={profile.isProvisional}
-				/>
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+					<RatingBadge
+						rating={profile.momentum}
+						ratingChange={profile.momentumChange}
+						isProvisional={profile.isProvisional}
+					/>
+					<TrustLabel trust={profile.trust} />
+				</div>
 				<RatingParts parts={details.parts} />
+				{isMine ? <YourTrust /> : null}
 			</section>
 
 			<Section label="Hackathons">
@@ -210,11 +221,14 @@ function SignedOutProfile({ profile }: { readonly profile: Profile }) {
 						) : null}
 					</div>
 				</div>
-				<RatingBadge
-					rating={profile.momentum}
-					ratingChange={profile.momentumChange}
-					isProvisional={profile.isProvisional}
-				/>
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+					<RatingBadge
+						rating={profile.momentum}
+						ratingChange={profile.momentumChange}
+						isProvisional={profile.isProvisional}
+					/>
+					<TrustLabel trust={profile.trust} />
+				</div>
 			</header>
 			<SignInCard>
 				Sign in to see their bio, Hackathons and approved work.

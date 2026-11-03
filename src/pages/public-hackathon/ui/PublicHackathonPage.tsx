@@ -62,6 +62,7 @@ function postOf(page: HackathonView) {
 		weeks: page.weeks,
 		startsAt: page.startsAt,
 		participantsGet: page.participantsGet,
+		founderTrust: page.founderTrust,
 	};
 }
 

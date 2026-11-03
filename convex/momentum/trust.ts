@@ -7,7 +7,7 @@ import {
 	MAX_HACKATHON_CARDS,
 	MAX_PARTICIPANTS,
 } from "../hackathons/rules";
-import { loadFoundedStartups } from "../startups/model";
+import { MAX_USER_STARTUPS } from "../startups/rules";
 import { type Credit, loadCredits } from "./credit";
 import { TRUST_RULES, type Trust } from "./rules";
 
@@ -181,7 +181,11 @@ async function hasKeptHackathon(
 	userId: Id<"users">,
 	countsFrom?: string,
 ): Promise<boolean> {
-	for (const startup of await loadFoundedStartups(ctx, userId)) {
+	const founded = await ctx.db
+		.query("startups")
+		.withIndex("by_founder", (q) => q.eq("founderId", userId))
+		.take(MAX_USER_STARTUPS);
+	for (const startup of founded) {
 		const done = await ctx.db
 			.query("hackathons")
 			.withIndex("by_startup_and_status", (q) =>

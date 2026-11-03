@@ -5,6 +5,7 @@ import { disciplineLabel } from "~/shared/config/disciplines";
 import { PersonAvatar } from "~/shared/ui/PersonAvatar";
 import { PersonName } from "~/shared/ui/PersonName";
 import { RatingBadge } from "~/shared/ui/RatingBadge";
+import { TrustLabel } from "~/shared/ui/TrustLabel";
 
 type PersonExploreRowData = FunctionReturnType<
 	typeof api.users.explore
@@ -37,13 +38,16 @@ export function PersonExploreRow({
 						) : null}
 					</div>
 				</div>
-				<RatingBadge
-					size="sm"
-					inLink
-					rating={person.momentum}
-					ratingChange={person.momentumChange}
-					isProvisional={person.isProvisional}
-				/>
+				<div className="flex shrink-0 flex-col items-end gap-0.5">
+					<RatingBadge
+						size="sm"
+						inLink
+						rating={person.momentum}
+						ratingChange={person.momentumChange}
+						isProvisional={person.isProvisional}
+					/>
+					<TrustLabel trust={person.trust} className="text-xs" />
+				</div>
 			</Link>
 		</li>
 	);
