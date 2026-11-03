@@ -13,6 +13,7 @@ function aCard(status: CardView["status"], ownerId: Id<"users"> = fay) {
 		title: "Write welcome emails",
 		notes: "",
 		status,
+		week: null,
 		owner: {
 			_id: ownerId,
 			name: null,
@@ -74,5 +75,16 @@ describe("dropRefusal", () => {
 	it("is silent for allowed drops and drops where the Card already is", () => {
 		expect(dropRefusal(aCard("in_progress"), "review", owner)).toBeNull();
 		expect(dropRefusal(aCard("todo"), "todo", owner)).toBeNull();
+	});
+});
+
+describe("the locked Board", () => {
+	it("refuses a drop with the lock's reason, but the Founder can still send back", () => {
+		expect(
+			dropRefusal(aCard("todo"), "in_progress", { ...owner, lock: "planning" }),
+		).toBe("The Board opens after Monday's meeting");
+		expect(
+			dropAction(aCard("review"), "todo", { ...founder, lock: "closing" }),
+		).toBe("move");
 	});
 });

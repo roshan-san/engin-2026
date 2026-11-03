@@ -55,7 +55,11 @@ export function CardFacts({
 		<dl className="-mt-2 grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-x-2 gap-y-1 text-sm">
 			<dt className="text-muted-foreground">Column</dt>
 			<dd className="flex min-w-0 items-center gap-2">
-				{columns.length < 2 ? (
+				{card.status === "not_finished" ? (
+					<span className="flex h-8 items-center px-2 text-muted-foreground">
+						Not finished
+					</span>
+				) : columns.length < 2 ? (
 					<span className="flex h-8 items-center gap-2 px-2">
 						<ColumnIcon column={card.status} />
 						{current?.label}

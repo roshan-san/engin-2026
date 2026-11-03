@@ -1,63 +1,60 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { requireLimitedText } from "../lib/text";
-import { CYCLE_TEXT } from "./rules";
+import {
+	type BoardState,
+	boardState,
+	cardWeek,
+	type Meetings,
+	weekOf,
+} from "./rules";
 
-export async function loadGoalRow(
-	ctx: QueryCtx | MutationCtx,
+type Ctx = QueryCtx | MutationCtx;
+
+export type WeekContext = {
+	meetings: Meetings | undefined;
+	isSolo: boolean;
+	/** The week new Cards join, and the one being planned while locked. */
+	week: string;
+	state: BoardState;
+	/** The `cycleWeeks` row for `week`, if any. */
+	row: Doc<"cycleWeeks"> | null;
+};
+
+export async function loadWeekRow(
+	ctx: Ctx,
 	startupId: Id<"startups">,
 	week: string,
-): Promise<Doc<"cycleGoals"> | null> {
+): Promise<Doc<"cycleWeeks"> | null> {
 	return await ctx.db
-		.query("cycleGoals")
+		.query("cycleWeeks")
 		.withIndex("by_startup_and_week", (q) =>
 			q.eq("startupId", startupId).eq("week", week),
 		)
+		.unique();
+}
+
+/** Where the Startup's week stands at `now`: which week Cards join, and whether the Board is locked. */
+export async function loadWeekContext(
+	ctx: Ctx,
+	startup: Doc<"startups">,
+	now: number,
+): Promise<WeekContext> {
+	const contributor = await ctx.db
+		.query("contributors")
+		.withIndex("by_startup_and_user", (q) => q.eq("startupId", startup._id))
 		.first();
-}
-
-/** The Founder's goal for the week, or null when none is set. */
-export async function loadGoal(
-	ctx: QueryCtx | MutationCtx,
-	startupId: Id<"startups">,
-	week: string,
-): Promise<string | null> {
-	return (await loadGoalRow(ctx, startupId, week))?.goal ?? null;
-}
-
-/** Sets the week's goal; a blank goal clears it. */
-export async function saveGoal(
-	ctx: MutationCtx,
-	startupId: Id<"startups">,
-	week: string,
-	goal: string,
-): Promise<void> {
-	const existing = await loadGoalRow(ctx, startupId, week);
-	if (!goal.trim()) {
-		if (existing) {
-			await ctx.db.delete(existing._id);
-		}
-		return;
-	}
-	const text = requireLimitedText(goal, "Goal", CYCLE_TEXT.goal);
-	if (existing) {
-		await ctx.db.patch(existing._id, { goal: text });
-		return;
-	}
-	await ctx.db.insert("cycleGoals", { startupId, week, goal: text });
-}
-
-/** Marks the week reviewed, making its row if it never had a goal. */
-export async function closeCycle(
-	ctx: MutationCtx,
-	existing: Doc<"cycleGoals"> | null,
-	startupId: Id<"startups">,
-	week: string,
-	{ goalMet, now }: { goalMet: boolean | undefined; now: number },
-): Promise<void> {
-	if (existing) {
-		await ctx.db.patch(existing._id, { goalMet, reviewedAt: now });
-		return;
-	}
-	await ctx.db.insert("cycleGoals", { startupId, week, reviewedAt: now });
+	const isSolo = contributor === null;
+	const meetings = startup.meetings;
+	const week = cardWeek(now, meetings, isSolo);
+	const row = await loadWeekRow(ctx, startup._id, week);
+	const thisWeek = weekOf(now);
+	const thisWeekRow =
+		thisWeek === week ? row : await loadWeekRow(ctx, startup._id, thisWeek);
+	const state = boardState({
+		now,
+		meetings,
+		isSolo,
+		startedWeek: thisWeekRow?.startedAt !== undefined,
+	});
+	return { meetings, isSolo, week, state, row };
 }

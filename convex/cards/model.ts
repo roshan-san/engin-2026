@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { getHackathonRole } from "../applications/model";
+import { loadWeekContext } from "../cycles/model";
 import { weekOf, weekStart } from "../cycles/rules";
 import { loadImageUrls } from "../files/model";
 import { phaseOf } from "../hackathons/rules";
@@ -17,6 +18,7 @@ import {
 	type CardActor,
 	cardRefusal,
 	IN_PROGRESS_FULL,
+	isNotFinished,
 	isUnfinished,
 	MAX_BOARD_CARDS,
 	MAX_SHIPPED_IMAGES,
@@ -50,7 +52,9 @@ export async function requireCardAccess(
 	}
 	if (!card.hackathonId) {
 		const { startup, role } = await requireTeam(ctx, card.startupId, userId);
-		return { card, startup, actor: { userId, role, phase: null } };
+		const { state } = await loadWeekContext(ctx, startup, Date.now());
+		const lock = state === "open" ? undefined : state;
+		return { card, startup, actor: { userId, role, phase: null, lock } };
 	}
 	const [hackathon, startup] = await Promise.all([
 		ctx.db.get(card.hackathonId),
@@ -227,32 +231,25 @@ export async function loadUnfinishedCards(
 	return [...todo, ...inProgress];
 }
 
-/** Deletes those of `cardIds` that are this Startup's and unfinished; any other Card stays as it is. */
-export async function dropUnfinishedCards(
+/** Marks the Startup's Cards left unfinished before `week` as Not finished. */
+export async function endPastCards(
 	ctx: MutationCtx,
 	startupId: Id<"startups">,
-	cardIds: Id<"cards">[],
+	week: string,
 ): Promise<void> {
-	const cards = await Promise.all(
-		[...new Set(cardIds)].map((cardId) => ctx.db.get(cardId)),
-	);
-	for (const card of cards) {
-		if (
-			card &&
-			card.startupId === startupId &&
-			!card.hackathonId &&
-			isUnfinished(card)
-		) {
-			await ctx.db.delete(card._id);
+	for (const card of await loadUnfinishedCards(ctx, startupId)) {
+		if (isNotFinished(card, week)) {
+			await ctx.db.patch(card._id, { status: "not_finished" });
 		}
 	}
 }
 
-/** Open Cards, plus the Cards verified this Cycle, newest first within each column. */
+/** Open Cards of `week` (and any still in Review), plus the Cards verified this Cycle, newest first within each column. */
 export async function loadBoardCards(
 	ctx: Ctx,
 	startupId: Id<"startups">,
 	now: number,
+	week: string,
 ): Promise<Doc<"cards">[]> {
 	const thisWeek = weekStart(weekOf(now));
 	const verifiedThisWeek = ctx.db
@@ -273,7 +270,9 @@ export async function loadBoardCards(
 		loadOpenCards(ctx, startupId, "review"),
 		verifiedThisWeek,
 	]);
-	return [...todo, ...inProgress, ...review, ...done];
+	return [...todo, ...inProgress, ...review, ...done].filter(
+		(card) => !isNotFinished(card, week),
+	);
 }
 
 export type CardView = Awaited<ReturnType<typeof toCardView>>;
@@ -292,6 +291,8 @@ export async function toCardView(ctx: Ctx, card: Doc<"cards">) {
 		title: card.title,
 		notes: card.notes,
 		status: card.status,
+		/** The week a Startup Card belongs to; `null` on Hackathon Cards. */
+		week: card.week ?? null,
 		owner,
 		/** What the owner does on this Card, for the proof hint. */
 		discipline,

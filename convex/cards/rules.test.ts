@@ -5,6 +5,7 @@ import {
 	type CardAction,
 	type CardActor,
 	cardRefusal,
+	isNotFinished,
 	type RuledCard,
 	submitLandsIn,
 } from "./rules";
@@ -194,5 +195,62 @@ describe("submitLandsIn", () => {
 		expect(submitLandsIn(card("in_progress"), participant("live"))).toBe(
 			"review",
 		);
+	});
+});
+
+describe("a Card whose week has ended", () => {
+	const ENDED = "This Card's week has ended";
+
+	it("only takes notes", () => {
+		for (const action of [MOVE, SUBMIT, DELETE, RETITLE, REASSIGN]) {
+			expect(cardRefusal(card("not_finished"), action, founder)).toBe(ENDED);
+		}
+		expect(cardRefusal(card("not_finished"), EDIT_NOTES, founder)).toBeNull();
+	});
+
+	it("is an unfinished Card from an earlier week", () => {
+		expect(
+			isNotFinished({ status: "todo", week: "2026-W44" }, "2026-W45"),
+		).toBe(true);
+		expect(
+			isNotFinished({ status: "in_progress", week: "2026-W44" }, "2026-W45"),
+		).toBe(true);
+		expect(
+			isNotFinished({ status: "todo", week: "2026-W45" }, "2026-W45"),
+		).toBe(false);
+		expect(
+			isNotFinished({ status: "review", week: "2026-W44" }, "2026-W45"),
+		).toBe(false);
+		expect(isNotFinished({ status: "todo" }, "2026-W45")).toBe(true);
+		expect(isNotFinished({ status: "not_finished" }, "2026-W45")).toBe(true);
+	});
+});
+
+describe("the locked Board", () => {
+	const PLANNING = "The Board opens after Monday's meeting";
+	const CLOSING = "The Board is locked for the closing meeting";
+	const planning: CardActor = { ...contributor, lock: "planning" };
+
+	it("nobody moves or submits", () => {
+		expect(cardRefusal(card("todo"), MOVE, planning)).toBe(PLANNING);
+		expect(cardRefusal(card("in_progress"), SUBMIT, planning)).toBe(PLANNING);
+		expect(
+			cardRefusal(card("todo"), MOVE, { ...contributor, lock: "closing" }),
+		).toBe(CLOSING);
+		expect(
+			cardRefusal(card("todo", sam), MOVE, { ...founder, lock: "closing" }),
+		).toBe(CLOSING);
+	});
+
+	it("the Founder still approves and sends back", () => {
+		const closing: CardActor = { ...founder, lock: "closing" };
+		expect(cardRefusal(card("review"), SEND_BACK, closing)).toBeNull();
+		expect(cardRefusal(card("review"), VERIFY, closing)).toBeNull();
+	});
+
+	it("Cards can still be retitled, deleted and noted", () => {
+		for (const action of [RETITLE, DELETE, EDIT_NOTES]) {
+			expect(cardRefusal(card("todo"), action, planning)).toBeNull();
+		}
 	});
 });

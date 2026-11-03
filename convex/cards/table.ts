@@ -18,6 +18,8 @@ export const cardsTables = {
 		submittedAt: v.optional(v.number()),
 		verifiedAt: v.optional(v.number()),
 		verifiedBy: v.optional(v.id("users")),
+		/** The week a Startup Card belongs to (ISO key). Hackathon Cards have none. */
+		week: v.optional(v.string()),
 	})
 		// Open Cards have no `verifiedAt`, so the prefix serves them too.
 		.index("by_startup_and_hackathon_and_status_and_verifiedAt", [
@@ -27,5 +29,6 @@ export const cardsTables = {
 			"verifiedAt",
 		])
 		.index("by_hackathon_and_owner", ["hackathonId", "ownerId"])
-		.index("by_hackathon_and_status", ["hackathonId", "status"]),
+		.index("by_hackathon_and_status", ["hackathonId", "status"])
+		.index("by_startup_and_week", ["startupId", "week"]),
 };

@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import { type MutationCtx, mutation, query } from "./_generated/server";
 import { appendActivity } from "./activity/model";
+import { firstWeekFor } from "./cycles/rules";
 import {
 	createInvite,
 	loadOpenInvitesTo,
@@ -106,6 +108,7 @@ export const accept = mutation({
 			throw new ConvexError("Already on this startup");
 		}
 
+		await restartMeetingsIfSolo(ctx, invite.startupId);
 		await ctx.db.insert("contributors", {
 			startupId: invite.startupId,
 			userId,
@@ -130,3 +133,30 @@ export const decline = mutation({
 		await ctx.db.patch(invite._id, { status: "declined" });
 	},
 });
+
+/**
+ * A team growing back from one person starts its meetings afresh: the Board stays
+ * open until the next closing meeting, as when meetings are first saved.
+ */
+async function restartMeetingsIfSolo(
+	ctx: MutationCtx,
+	startupId: Id<"startups">,
+): Promise<void> {
+	const startup = await ctx.db.get(startupId);
+	if (!startup?.meetings) {
+		return;
+	}
+	const contributor = await ctx.db
+		.query("contributors")
+		.withIndex("by_startup_and_user", (q) => q.eq("startupId", startupId))
+		.first();
+	if (contributor) {
+		return;
+	}
+	await ctx.db.patch(startupId, {
+		meetings: {
+			...startup.meetings,
+			firstWeek: firstWeekFor(Date.now(), undefined, startup.meetings),
+		},
+	});
+}

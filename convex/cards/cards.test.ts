@@ -5,13 +5,14 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
+import { DEFAULT_SLOTS, shiftWeek, weekOf } from "../cycles/rules";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
 	addContributor,
 	type Setup,
 	setUpStartup,
 } from "../startups/startups.setup";
-import { createTest } from "../testing/test.setup";
+import { advancePast, createTest, DAY } from "../testing/test.setup";
 import { signUp } from "../users/users.setup";
 import { cardOn, SHIPPED } from "./cards.setup";
 import { MAX_BOARD_CARDS } from "./rules";
@@ -855,5 +856,152 @@ describe("proof hints", () => {
 			await ctx.db.patch(setup.founder.userId, { discipline: "sales" });
 		});
 		expect(await boardOf(setup)).toMatchObject([{ discipline: "sales" }]);
+	});
+});
+
+describe("the week a Card belongs to", () => {
+	async function cardDoc(setup: Setup, cardId: Id<"cards">) {
+		return await setup.t.run(async (ctx) => await ctx.db.get(cardId));
+	}
+
+	it("a new Card joins this week", async () => {
+		const setup = await setUpStartup(createTest());
+
+		const cardId = await cardOn(setup, setup.founder, "Pricing page");
+
+		expect((await cardDoc(setup, cardId))?.week).toBe(weekOf(Date.now()));
+	});
+
+	it("a Card not done by the week's end is Not finished", async () => {
+		const setup = await setUpStartup(createTest());
+		const old = await cardOn(setup, setup.founder, "Pricing page");
+		await advancePast(setup.t, 2 * DAY);
+
+		expect(await boardOf(setup)).toEqual([]);
+		await cardOn(setup, setup.founder, "Signup flow");
+
+		expect((await cardDoc(setup, old))?.status).toBe("not_finished");
+		expect((await boardOf(setup)).map((card) => card.title)).toEqual([
+			"Signup flow",
+		]);
+	});
+
+	it("each Card says which week it belongs to", async () => {
+		const setup = await setUpStartup(createTest());
+		await cardOn(setup, setup.founder, "Pricing page");
+
+		expect(await boardOf(setup)).toMatchObject([{ week: weekOf(Date.now()) }]);
+	});
+
+	it("last week's To do doesn't count towards the limit", async () => {
+		const setup = await setUpStartup(createTest());
+		for (let i = 0; i < 20; i++) {
+			await cardOn(setup, setup.founder, `Card ${i}`);
+		}
+		await advancePast(setup.t, 2 * DAY);
+
+		await expect(
+			cardOn(setup, setup.founder, "New week"),
+		).resolves.toBeDefined();
+	});
+
+	it("a Card in Review stays on the Board after the week ends", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const cardId = await cardOn(setup, sam, "Welcome emails");
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
+		await advancePast(setup.t, 2 * DAY);
+
+		expect(await boardOf(setup)).toMatchObject([
+			{ title: "Welcome emails", status: "review" },
+		]);
+		await setup.founder.as.mutation(api.cards.verify, { cardId });
+		expect((await cardDoc(setup, cardId))?.status).toBe("done");
+	});
+});
+
+describe("the locked Board", () => {
+	const PLANNING = "The Board opens after Monday's meeting";
+
+	/** Meetings from this week on: the test clock is a Saturday, so the Board is locked for planning. */
+	async function lockBoard(setup: Setup) {
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(setup.startupId, {
+				meetings: {
+					...DEFAULT_SLOTS,
+					firstWeek: weekOf(Date.now()),
+					invited: [],
+				},
+			});
+		});
+	}
+
+	it("nobody moves a Card while the Board is locked", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await lockBoard(setup);
+
+		const cardId = await cardOn(setup, sam, "Welcome emails");
+
+		await expect(
+			sam.as.mutation(api.cards.move, { cardId, to: "in_progress" }),
+		).rejects.toThrow(PLANNING);
+	});
+
+	it("a Card added at the weekend is for next week", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await lockBoard(setup);
+
+		const cardId = await cardOn(setup, sam, "Welcome emails");
+
+		const card = await setup.t.run(async (ctx) => await ctx.db.get(cardId));
+		expect(card?.week).toBe(shiftWeek(weekOf(Date.now()), 1));
+	});
+
+	it("a Card sent back during the lock is Not finished", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		const cardId = await cardOn(setup, sam, "Welcome emails");
+		await sam.as.mutation(api.cards.submit, { cardId, shipped: SHIPPED });
+		await lockBoard(setup);
+
+		await setup.founder.as.mutation(api.cards.move, { cardId, to: "todo" });
+
+		expect(await boardOf(setup)).toEqual([]);
+		expect(
+			await setup.founder.as.query(api.cards.get, {
+				startupId: setup.startupId,
+				cardId,
+			}),
+		).toMatchObject({ status: "not_finished" });
+		const { cycles } = await setup.founder.as.query(api.activity.list, {
+			startupId: setup.startupId,
+		});
+		expect(cycles.flatMap((cycle) => cycle.notFinished)).toEqual([
+			"Welcome emails",
+		]);
+		await advancePast(setup.t, 7 * DAY);
+		expect(await boardOf(setup)).toEqual([]);
+	});
+
+	it("Hackathon Cards ignore the lock", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const [builder] = await participants(setup, hackathonId, ["Bea"]);
+		await startHackathon(setup, hackathonId);
+		await addContributor(setup, "Sam");
+		await lockBoard(setup);
+		const [card] = await builder.as.query(api.cards.listParticipantBoard, {
+			hackathonId,
+			participantId: builder.userId,
+		});
+
+		await expect(
+			builder.as.mutation(api.cards.move, {
+				cardId: card._id,
+				to: "in_progress",
+			}),
+		).resolves.toBeNull();
 	});
 });

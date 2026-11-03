@@ -2,6 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { OptimisticLocalStore } from "convex/browser";
 import { useQuery } from "convex/react";
 import { type BoardScope, boardQuery } from "../model/BoardScope";
+import { hideEndedCards } from "../model/endedCards";
 import type { CardView } from "../model/types";
 
 /** Rewrites the scope's cached Cards, for optimistic updates. */
@@ -35,5 +36,8 @@ export function useBoardCards(scope: BoardScope): CardView[] | undefined {
 		api.cards.listParticipantBoard,
 		query.kind === "participant" ? query.args : "skip",
 	);
-	return query.kind === "startup" ? startupCards : participantCards;
+	if (scope.kind === "startup") {
+		return startupCards && hideEndedCards(startupCards, scope.planningWeek);
+	}
+	return participantCards;
 }

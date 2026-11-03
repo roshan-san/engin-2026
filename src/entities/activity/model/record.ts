@@ -53,7 +53,7 @@ export type FeedItem =
 
 /**
  * The feed's rows, newest first. A run of finished Cycles with nothing in
- * them (no goal, nothing shipped) folds into one quiet row.
+ * them (nothing shipped or left unfinished) folds into one quiet row.
  */
 export function buildFeed(cycles: CycleView[], now: number): FeedItem[] {
 	const items: FeedItem[] = [];
@@ -63,7 +63,7 @@ export function buildFeed(cycles: CycleView[], now: number): FeedItem[] {
 			!isCurrent &&
 			cycle.shippedCount === 0 &&
 			cycle.entries.length === 0 &&
-			!cycle.goal;
+			cycle.notFinished.length === 0;
 		const last = items.at(-1);
 		if (isQuiet && last?.kind === "quiet") {
 			items[items.length - 1] = { ...last, oldest: cycle };

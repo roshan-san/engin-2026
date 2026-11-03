@@ -80,9 +80,9 @@ describe("feed", () => {
 			number,
 			startsAt,
 			endsAt: startsAt + WEEK_MS,
-			goal: null,
 			shippedCount: 0,
 			entries: [],
+			notFinished: [],
 			...overrides,
 		} as CycleView;
 	}
@@ -121,9 +121,12 @@ describe("feed", () => {
 		});
 	});
 
-	it("a past Cycle with a goal keeps its own row", () => {
+	it("a past Cycle with Not finished Cards keeps its own row", () => {
 		const items = buildFeed(
-			[cycle("2026-W42", 2), cycle("2026-W41", 1, { goal: "Launch" })],
+			[
+				cycle("2026-W42", 2),
+				cycle("2026-W41", 1, { notFinished: ["Pricing page"] }),
+			],
 			now,
 		);
 

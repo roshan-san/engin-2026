@@ -15,6 +15,7 @@ export function ThreadPanel({
 	userId,
 	placeholder,
 	emptyNote,
+	hint,
 	mentions,
 	canPin = false,
 	isReadOnly = false,
@@ -28,6 +29,8 @@ export function ThreadPanel({
 	/** The composer's placeholder: "Message Team". */
 	readonly placeholder: string;
 	readonly emptyNote: string;
+	/** A muted line above the composer. */
+	readonly hint?: string;
 	/** Team threads: `#` mentions this Startup's Board Cards. */
 	readonly mentions?: {
 		readonly startupId: Id<"startups">;
@@ -94,11 +97,18 @@ export function ThreadPanel({
 							This Hackathon has ended. Chat is read-only.
 						</p>
 					) : (
-						<Composer
-							onSend={send}
-							placeholder={placeholder}
-							mentionStartupId={mentions?.startupId}
-						/>
+						<>
+							{hint ? (
+								<p className="shrink-0 px-4 pb-1 text-sm text-muted-foreground">
+									{hint}
+								</p>
+							) : null}
+							<Composer
+								onSend={send}
+								placeholder={placeholder}
+								mentionStartupId={mentions?.startupId}
+							/>
+						</>
 					)}
 				</>
 			) : (

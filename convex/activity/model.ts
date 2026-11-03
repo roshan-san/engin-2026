@@ -1,7 +1,6 @@
 import type { Infer } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { loadGoal } from "../cycles/model";
 import {
 	cycleNumber,
 	MAX_CYCLE_ENTRIES,
@@ -60,9 +59,10 @@ export type CycleView = {
 	number: number;
 	startsAt: number;
 	endsAt: number;
-	goal: string | null;
 	shippedCount: number;
 	entries: EntryView[];
+	/** Titles of the week's Cards left unfinished; empty for the public. */
+	notFinished: string[];
 };
 
 /** Milestones are all the public sees of a Cycle, besides its count. */
@@ -135,14 +135,26 @@ async function loadCycle(
 	const shown = masked
 		? rows.filter((row) => MILESTONES.includes(row.kind))
 		: rows;
+	const notFinished = masked
+		? []
+		: (
+				await ctx.db
+					.query("cards")
+					.withIndex("by_startup_and_week", (q) =>
+						q.eq("startupId", startup._id).eq("week", week),
+					)
+					.take(MAX_CYCLE_ENTRIES)
+			)
+				.filter((card) => card.status === "not_finished")
+				.map((card) => card.title);
 
 	return {
 		...cycleHeader(startup, week),
-		goal: masked ? null : await loadGoal(ctx, startup._id, week),
 		shippedCount: rows.filter((row) => row.kind === "card_verified").length,
 		entries: await Promise.all(
 			shown.map((row) => toEntryView(ctx, row, masked)),
 		),
+		notFinished,
 	};
 }
 

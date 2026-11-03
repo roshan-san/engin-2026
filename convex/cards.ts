@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
+import { type MutationCtx, mutation, query } from "./_generated/server";
 import {
+	endPastCards,
 	loadBoardCards,
 	markVerified,
 	normalizeNotes,
@@ -13,7 +15,8 @@ import {
 	requireTeamOwner,
 	toCardView,
 } from "./cards/model";
-import { shipped, submitLandsIn } from "./cards/rules";
+import { ENDED, isNotFinished, shipped, submitLandsIn } from "./cards/rules";
+import { loadWeekContext } from "./cycles/model";
 import { finishAfterReview } from "./hackathons/lifecycle";
 import {
 	loadHackathonCards,
@@ -28,9 +31,11 @@ export const listBoard = query({
 	args: { startupId: v.id("startups") },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireTeam(ctx, args.startupId, userId);
+		const { startup } = await requireTeam(ctx, args.startupId, userId);
 
-		const cards = await loadBoardCards(ctx, args.startupId, Date.now());
+		const now = Date.now();
+		const { week } = await loadWeekContext(ctx, startup, now);
+		const cards = await loadBoardCards(ctx, args.startupId, now, week);
 		return await Promise.all(cards.map((card) => toCardView(ctx, card)));
 	},
 });
@@ -99,10 +104,12 @@ export const create = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		await requireTeam(ctx, args.startupId, userId);
+		const { startup } = await requireTeam(ctx, args.startupId, userId);
 		const title = normalizeTitle(args.title);
 		const ownerId = args.ownerId ?? userId;
 		await requireTeamOwner(ctx, args.startupId, ownerId);
+		const { week } = await loadWeekContext(ctx, startup, Date.now());
+		await endPastCards(ctx, args.startupId, week);
 		await requireRoomIn(ctx, { startupId: args.startupId, ownerId }, "todo");
 
 		return await ctx.db.insert("cards", {
@@ -111,6 +118,7 @@ export const create = mutation({
 			title,
 			notes: "",
 			status: "todo",
+			week,
 		});
 	},
 });
@@ -163,14 +171,23 @@ export const move = mutation({
 	},
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
+		const { card, startup, actor } = await requireCardAccess(
+			ctx,
+			args.cardId,
+			userId,
+		);
+		const week = await settleWeek(ctx, startup, card);
 		requireAllowed(card, { kind: "move", to: args.to }, actor);
 		// A Send back always goes through, so the Founder can empty Review.
 		if (card.status !== "review" && card.status !== args.to) {
 			await requireRoomIn(ctx, card, args.to);
 		}
 
-		await ctx.db.patch(card._id, { status: args.to });
+		// Sent back after its week ended: it ends now, rather than waiting in To do.
+		const ended =
+			week !== null &&
+			isNotFinished({ status: args.to, week: card.week }, week);
+		await ctx.db.patch(card._id, { status: ended ? "not_finished" : args.to });
 		// Only a Send back can empty the Review queue.
 		if (card.status === "review") {
 			await finishAfterReview(ctx, card);
@@ -182,7 +199,12 @@ export const submit = mutation({
 	args: { cardId: v.id("cards"), shipped },
 	handler: async (ctx, args) => {
 		const userId = await requireUserId(ctx);
-		const { card, actor } = await requireCardAccess(ctx, args.cardId, userId);
+		const { card, startup, actor } = await requireCardAccess(
+			ctx,
+			args.cardId,
+			userId,
+		);
+		await settleWeek(ctx, startup, card);
 		requireAllowed(card, { kind: "submit" }, actor);
 		const proof = parseShipped(args.shipped);
 
@@ -228,3 +250,20 @@ export const remove = mutation({
 		await ctx.db.delete(card._id);
 	},
 });
+
+/** Ends last week's unfinished Cards before a Startup Card moves, refusing `card` if its own week is over. The current week, or `null` for a Hackathon Card. */
+async function settleWeek(
+	ctx: MutationCtx,
+	startup: Doc<"startups">,
+	card: Doc<"cards">,
+): Promise<string | null> {
+	if (card.hackathonId) {
+		return null;
+	}
+	const { week } = await loadWeekContext(ctx, startup, Date.now());
+	if (isNotFinished(card, week)) {
+		throw new ConvexError(ENDED);
+	}
+	await endPastCards(ctx, startup._id, week);
+	return week;
+}

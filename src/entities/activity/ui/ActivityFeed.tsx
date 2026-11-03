@@ -76,12 +76,21 @@ export function ActivityFeed({
 									shipped
 								</span>
 							</div>
-							{cycle.goal ? (
-								<p className="text-sm break-words text-muted-foreground">
-									Goal · <span className="text-foreground">{cycle.goal}</span>
-								</p>
-							) : null}
 						</header>
+						{cycle.notFinished.length > 0 ? (
+							<div className="text-sm text-muted-foreground">
+								<p className="font-medium">Not finished</p>
+								<ul className="mt-1 flex flex-col gap-0.5">
+									{cycle.notFinished.map((title, index) => (
+										// Titles can repeat, so the index keeps keys unique.
+										// biome-ignore lint/suspicious/noArrayIndexKey: the list never reorders
+										<li key={index} className="break-words">
+											{title}
+										</li>
+									))}
+								</ul>
+							</div>
+						) : null}
 						{cycle.entries.length > 0 ? (
 							<ul className="-mx-2">
 								{cycle.entries.map((entry) => (
