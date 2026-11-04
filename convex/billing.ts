@@ -17,6 +17,7 @@ import { planKey } from "./billing/rules";
 import { loadPlanView } from "./hackathons/model";
 import { requireUserId } from "./lib/auth";
 import { isSafeReturnPath } from "./lib/returnPath";
+import { requireFounder } from "./startups/team";
 
 /** Every Dodo subscription webhook lands here. */
 export const sync = internalMutation({
@@ -41,6 +42,20 @@ export const paymentIssue = query({
 	handler: async (ctx) => {
 		const userId = await requireUserId(ctx);
 		return await hasPaymentIssue(ctx, userId);
+	},
+});
+
+/** The plan a Startup publishes on: always its Founder's, so a Co-founder sees the same. */
+export const forStartup = query({
+	args: { startupId: v.id("startups") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const startup = await requireFounder(ctx, args.startupId, userId);
+		const [plan, paymentIssue] = await Promise.all([
+			loadPlanView(ctx, startup.founderId),
+			hasPaymentIssue(ctx, startup.founderId),
+		]);
+		return { plan, hasPaymentIssue: paymentIssue };
 	},
 });
 

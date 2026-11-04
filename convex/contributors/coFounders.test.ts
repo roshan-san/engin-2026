@@ -5,6 +5,7 @@ import {
 	participants,
 	startHackathon,
 } from "../applications/applications.setup";
+import { givePro } from "../billing/billing.setup";
 import { cardOn, SHIPPED } from "../cards/cards.setup";
 import { publishedHackathon } from "../hackathons/hackathons.setup";
 import {
@@ -177,6 +178,25 @@ describe("Co-founders", () => {
 			async (ctx) => await ctx.db.get(ana.applicationId),
 		);
 		expect(application?.decision).toBe("not_this_time");
+	});
+
+	it("a Co-founder sees the Founder's plan for publishing, not their own", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await coFounder(setup, "Sam");
+		const lee = await addContributor(setup, "Lee");
+		await givePro(setup.t, setup.founder, "monthly");
+
+		const billing = await sam.as.query(api.billing.forStartup, {
+			startupId: setup.startupId,
+		});
+		expect(billing).toMatchObject({
+			plan: { plan: "monthly", hackathonsLeft: 1 },
+			hasPaymentIssue: false,
+		});
+		expect(await sam.as.query(api.billing.mine, {})).toBeNull();
+		await expect(
+			lee.as.query(api.billing.forStartup, { startupId: setup.startupId }),
+		).rejects.toThrow("Only the Founder can do this");
 	});
 
 	it("both Founders hear about new Applicants", async () => {

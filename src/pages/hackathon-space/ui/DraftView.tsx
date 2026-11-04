@@ -2,7 +2,7 @@ import type { Doc } from "@convex/_generated/dataModel";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { draftPublish, usePaymentIssue, usePlan } from "~/entities/plan";
+import { draftPublish, useStartupPlan } from "~/entities/plan";
 import { useWorkspace } from "~/entities/startup";
 import { copyHackathonLink } from "~/features/copy-hackathon-link";
 import {
@@ -22,7 +22,7 @@ import { Spinner } from "~/shared/ui/spinner";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
-/** A draft: edit it, save it, or publish it. Publishing saves first; without Pro it opens the plans. */
+/** A draft: edit it, save it, or publish it. Publishing saves first; without Pro it opens the plans for the Founder. */
 export function DraftView({
 	hackathon,
 	cards,
@@ -30,11 +30,13 @@ export function DraftView({
 	readonly hackathon: Doc<"hackathons">;
 	readonly cards: Doc<"cards">[];
 }) {
-	const { startup } = useWorkspace();
+	const { startup, isOwner } = useWorkspace();
 	const { checkout } = route.useSearch();
 	const { update, publish } = useHackathonForm();
-	const plan = usePlan();
-	const hasPaymentIssue = usePaymentIssue();
+	// Publishing always uses the Founder's plan, also for a Co-founder.
+	const billing = useStartupPlan(startup._id);
+	const plan = billing?.plan;
+	const hasPaymentIssue = billing?.hasPaymentIssue;
 	const { openPortal, isOpening } = usePortal();
 	const [isPlansOpen, setPlansOpen] = useState(false);
 	const [initial] = useState<HackathonDraft>(() => ({
@@ -49,6 +51,7 @@ export function DraftView({
 		plan,
 		hasPaymentIssue,
 		isBackFromCheckout: checkout === "done",
+		isOwner,
 	});
 
 	return (
