@@ -137,3 +137,60 @@ describe("the team", () => {
 		).resolves.toMatchObject({ founder: { _id: setup.founder.userId } });
 	});
 });
+
+describe("leave", () => {
+	it("a Contributor leaves and loses the team's pages", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+
+		await sam.as.mutation(api.contributors.leave, {
+			startupId: setup.startupId,
+		});
+
+		await expect(
+			sam.as.query(api.contributors.list, { startupId: setup.startupId }),
+		).rejects.toThrow();
+		const team = await setup.founder.as.query(api.contributors.list, {
+			startupId: setup.startupId,
+		});
+		expect(team.contributors).toEqual([]);
+	});
+
+	it("a Co-founder can leave", async () => {
+		const setup = await setUpStartup(createTest());
+		const sam = await addContributor(setup, "Sam");
+		await setup.founder.as.mutation(api.contributors.setCoFounder, {
+			startupId: setup.startupId,
+			userId: sam.userId,
+			isFounder: true,
+		});
+
+		await sam.as.mutation(api.contributors.leave, {
+			startupId: setup.startupId,
+		});
+
+		const team = await setup.founder.as.query(api.contributors.list, {
+			startupId: setup.startupId,
+		});
+		expect(team.contributors).toEqual([]);
+	});
+
+	it("the Founder can't leave", async () => {
+		const setup = await setUpStartup(createTest());
+
+		await expect(
+			setup.founder.as.mutation(api.contributors.leave, {
+				startupId: setup.startupId,
+			}),
+		).rejects.toThrow("The Founder can't leave");
+	});
+
+	it("someone not on the team can't leave", async () => {
+		const setup = await setUpStartup(createTest());
+		const wes = await signUp(setup.t, "Wes");
+
+		await expect(
+			wes.as.mutation(api.contributors.leave, { startupId: setup.startupId }),
+		).rejects.toThrow("You're not on this startup");
+	});
+});
