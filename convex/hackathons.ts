@@ -267,7 +267,13 @@ export const update = mutation({
 			args.hackathonId,
 			userId,
 		);
-		if (hackathon.status !== "draft") {
+		// A published post can change until someone applies; `applicantCount` never goes down.
+		if (hackathon.status === "open" && hackathon.applicantCount > 0) {
+			throw new ConvexError(
+				"Someone has applied, so the post can't change now.",
+			);
+		}
+		if (hackathon.status !== "draft" && hackathon.status !== "open") {
 			throw new ConvexError("Only drafts can be edited");
 		}
 		const { cards, ...draft } = requireValidDraft(args, Date.now());
@@ -275,6 +281,12 @@ export const update = mutation({
 		// A patch with `undefined` removes the field, so clearing it works.
 		await ctx.db.patch(hackathon._id, draft);
 		await replaceTemplateCards(ctx, hackathon, cards);
+		if (
+			hackathon.status === "open" &&
+			(draft.startsAt !== hackathon.startsAt || draft.weeks !== hackathon.weeks)
+		) {
+			await lifecycle.scheduleSteps(ctx, { ...hackathon, ...draft });
+		}
 	},
 });
 

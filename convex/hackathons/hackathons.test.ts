@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
+	applicant,
 	closeHackathon,
 	decidedHackathon,
 	endHackathon,
@@ -24,7 +25,7 @@ import {
 	publishedHackathon,
 } from "./hackathons.setup";
 import { finishIfDecided } from "./lifecycle";
-import { MAX_LISTED_HACKATHONS } from "./rules";
+import { firstStarts, MAX_LISTED_HACKATHONS } from "./rules";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {
@@ -143,18 +144,6 @@ describe("drafts", () => {
 		const { hackathon, cards } = await spaceOf(setup, hackathonId);
 		expect(hackathon.problem).toBe("New problem");
 		expect(cards.map((card) => card.title)).toEqual(["One", "Two", "Three"]);
-	});
-
-	it("a published Hackathon can't be edited", async () => {
-		const setup = await setUpStartup(createTest());
-		const hackathonId = await publishedHackathon(setup);
-
-		const edit = setup.founder.as.mutation(api.hackathons.update, {
-			hackathonId,
-			...hackathonInput(),
-		});
-
-		await expect(edit).rejects.toThrow("Only drafts can be edited");
 	});
 
 	it("the Founder space is for the Founder only", async () => {
@@ -1117,5 +1106,138 @@ describe("the plan's allowance", () => {
 		const { hackathon } = await spaceOf(setup, hackathonId);
 		expect(hackathon).toMatchObject({ status: "done", returnedToPlan: true });
 		expect(await hackathonsLeft(setup)).toBe(1);
+	});
+});
+
+describe("editing a published post", () => {
+	async function edit(
+		person: { as: Setup["founder"]["as"] },
+		hackathonId: Id<"hackathons">,
+		overrides: Parameters<typeof hackathonInput>[0] = {},
+	) {
+		await person.as.mutation(api.hackathons.update, {
+			hackathonId,
+			...hackathonInput(overrides),
+		});
+	}
+
+	async function hackathonFinishedRows(setup: Setup) {
+		return (
+			await setup.t.run(async (ctx) => await ctx.db.query("activity").take(50))
+		).filter((row) => row.kind === "hackathon_finished");
+	}
+
+	it("a Founder edits an open post nobody applied to", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+
+		await edit(setup.founder, hackathonId, {
+			job: {
+				title: "Growth",
+				discipline: "marketing",
+				pay: "equity",
+				mode: "hybrid",
+			},
+			participantsGet: "₹10,000 for the week",
+		});
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({
+			status: "open",
+			job: { title: "Growth" },
+			participantsGet: "₹10,000 for the week",
+		});
+	});
+
+	it("a Co-founder can edit it too", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const sam = await addContributor(setup, "Sam");
+		await setup.founder.as.mutation(api.contributors.setCoFounder, {
+			startupId: setup.startupId,
+			userId: sam.userId,
+			isFounder: true,
+		});
+
+		await edit(sam, hackathonId, { problem: "Nobody finishes onboarding." });
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon.problem).toBe("Nobody finishes onboarding.");
+	});
+
+	it("after the first application the post is locked", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await applicant(setup, hackathonId, "Ana");
+
+		await expect(edit(setup.founder, hackathonId)).rejects.toThrow(
+			"Someone has applied, so the post can't change now.",
+		);
+	});
+
+	it("a withdrawn application still locks it", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+		await ana.as.mutation(api.applications.withdraw, {
+			applicationId: ana.applicationId,
+		});
+
+		await expect(edit(setup.founder, hackathonId)).rejects.toThrow(
+			"Someone has applied, so the post can't change now.",
+		);
+	});
+
+	it("moving the start a week later moves when it goes live", async () => {
+		const setup = await setUpStartup(createTest());
+		const [first, second] = firstStarts(Date.now());
+		const hackathonId = await publishedHackathon(setup, { startsAt: first });
+
+		await edit(setup.founder, hackathonId, { startsAt: second });
+		await advancePast(setup.t, first - Date.now() + HOUR);
+
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("open");
+		await participants(setup, hackathonId, ["Ana"]);
+		await advancePast(setup.t, second - Date.now() + HOUR);
+		await advancePast(setup.t, 0);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon.status).toBe("live");
+		expect(hackathon.endsAt).toBe(second + 7 * DAY);
+		expect(hackathon.decideBy).toBe(second + 14 * DAY);
+	});
+
+	it("moving the start a week earlier runs on the new dates", async () => {
+		const setup = await setUpStartup(createTest());
+		const [first, second] = firstStarts(Date.now());
+		const hackathonId = await publishedHackathon(setup, { startsAt: second });
+
+		await edit(setup.founder, hackathonId, { startsAt: first });
+		await participants(setup, hackathonId, ["Ana"]);
+		await advancePast(setup.t, first - Date.now() + HOUR);
+		await advancePast(setup.t, 0);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("live");
+		await advancePast(setup.t, first + 7 * DAY - Date.now() + HOUR);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe(
+			"deciding",
+		);
+		await advancePast(setup.t, first + 14 * DAY - Date.now() + HOUR);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("done");
+
+		// The steps for the old dates fire too, and change nothing.
+		await advancePast(setup.t, second + 14 * DAY - Date.now() + HOUR);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("done");
+		expect(await hackathonFinishedRows(setup)).toHaveLength(1);
+	});
+
+	it("a live post can't be edited", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+
+		await expect(edit(setup.founder, hackathonId)).rejects.toThrow(
+			"Only drafts can be edited",
+		);
 	});
 });

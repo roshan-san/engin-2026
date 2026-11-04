@@ -8,7 +8,11 @@ import {
 	startHackathon,
 } from "../applications/applications.setup";
 import { DEFAULT_SLOTS, shiftWeek, weekOf } from "../cycles/rules";
-import { publishedHackathon } from "../hackathons/hackathons.setup";
+import {
+	hackathonInput,
+	publishedHackathon,
+} from "../hackathons/hackathons.setup";
+import { firstStarts } from "../hackathons/rules";
 import {
 	addContributor,
 	type Setup,
@@ -46,6 +50,28 @@ describe("timed emails", () => {
 
 		expect(await kindsTo(setup, "ana@example.com")).toContain(
 			"starting_tomorrow",
+		);
+	});
+
+	it("a reminder from the old start sends nothing", async () => {
+		const setup = await setUpStartup(createTest());
+		const [first, second] = firstStarts(Date.now());
+		const hackathonId = await publishedHackathon(setup, { startsAt: first });
+		await setup.founder.as.mutation(api.hackathons.update, {
+			hackathonId,
+			...hackathonInput({ startsAt: second }),
+		});
+		await participants(setup, hackathonId, ["Ana"]);
+
+		await advancePast(setup.t, first - Date.now() - DAY + HOUR);
+		expect(await kindsTo(setup, "ana@example.com")).not.toContain(
+			"starting_tomorrow",
+		);
+
+		await advancePast(setup.t, second - Date.now() - DAY + HOUR);
+		const kinds = await kindsTo(setup, "ana@example.com");
+		expect(kinds.filter((kind) => kind === "starting_tomorrow")).toHaveLength(
+			1,
 		);
 	});
 

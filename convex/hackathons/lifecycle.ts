@@ -44,6 +44,17 @@ export async function publish(
 		hackathonId: hackathon._id,
 		kind: "everyone",
 	});
+	await scheduleSteps(ctx, hackathon);
+}
+
+/**
+ * Schedules each step of a published Hackathon at its dates. Editing the dates
+ * calls this again; each step checks its own time, so the old ones do nothing.
+ */
+export async function scheduleSteps(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+): Promise<void> {
 	await ctx.scheduler.runAt(hackathon.startsAt, internal.hackathons.goLive, {
 		hackathonId: hackathon._id,
 	});
@@ -76,7 +87,7 @@ export async function goLive(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "open") {
+	if (hackathon?.status !== "open" || Date.now() < hackathon.startsAt) {
 		return;
 	}
 
@@ -160,7 +171,7 @@ export async function startDeciding(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "live") {
+	if (hackathon?.status !== "live" || Date.now() < hackathon.endsAt) {
 		return;
 	}
 	await ctx.db.patch(hackathon._id, { status: "deciding" });
@@ -175,7 +186,10 @@ export async function closeDeciding(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "live" && hackathon?.status !== "deciding") {
+	if (
+		(hackathon?.status !== "live" && hackathon?.status !== "deciding") ||
+		Date.now() < hackathon.decideBy
+	) {
 		return;
 	}
 	for (const participant of await loadParticipants(ctx, hackathon._id)) {
