@@ -87,7 +87,12 @@ export async function goLive(
 
 	const participants = await loadParticipants(ctx, hackathon._id);
 	if (participants.length === 0) {
-		// Nobody to build with: nothing was built, so there is nothing to log.
+		// Nobody to build with: nothing was built, so there is nothing to log,
+		// and the Hackathon goes back on the Founder's plan.
+		await ctx.db.patch(hackathon._id, {
+			publishedAt: undefined,
+			returnedToPlan: true,
+		});
 		await finish(ctx, hackathon, { log: false });
 		return;
 	}

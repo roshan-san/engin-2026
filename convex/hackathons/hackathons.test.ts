@@ -1013,3 +1013,75 @@ describe("what Builders get", () => {
 		).rejects.toThrow("Pick what Builders get");
 	});
 });
+
+describe("the plan's allowance", () => {
+	async function hackathonsLeft(setup: Setup) {
+		const plan = await setup.founder.as.query(api.billing.mine, {});
+		return plan?.hackathonsLeft;
+	}
+
+	async function monthlyHackathon(setup: Setup) {
+		await givePro(setup.t, setup.founder, "monthly");
+		return await publishedHackathon(setup);
+	}
+
+	it("a Hackathon nobody joined goes back on the plan", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		expect(await hackathonsLeft(setup)).toBe(0);
+
+		await startHackathon(setup, hackathonId);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({ status: "done", returnedToPlan: true });
+		expect(hackathon.publishedAt).toBeUndefined();
+		expect(await hackathonsLeft(setup)).toBe(1);
+	});
+
+	it("after it goes back, a used-up Founder can publish again", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		await startHackathon(setup, hackathonId);
+
+		const next = await draftHackathon(setup, {
+			startsAt: nextMonday() + 7 * DAY,
+		});
+		await setup.founder.as.mutation(api.hackathons.publish, {
+			hackathonId: next,
+		});
+
+		const { hackathon } = await spaceOf(setup, next);
+		expect(hackathon.status).toBe("open");
+	});
+
+	it("a Hackathon with a Builder still counts", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		await participants(setup, hackathonId, ["Ana"]);
+
+		await startHackathon(setup, hackathonId);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon.status).toBe("live");
+		expect(hackathon.returnedToPlan).toBeUndefined();
+		expect(await hackathonsLeft(setup)).toBe(0);
+	});
+
+	it("an accepted Builder who never confirmed doesn't keep it counted", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+		const { hackathon: before } = await spaceOf(setup, hackathonId);
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(ana.applicationId, { confirmBy: before.startsAt });
+		});
+
+		await startHackathon(setup, hackathonId);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({ status: "done", returnedToPlan: true });
+		expect(await hackathonsLeft(setup)).toBe(1);
+	});
+});
