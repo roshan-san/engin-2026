@@ -9,7 +9,7 @@ import { loadImageUrls } from "../files/model";
 import { phaseOf } from "../hackathons/rules";
 import { assertUrl, limitText, requireLimitedText } from "../lib/text";
 import { markActive, recordApproval } from "../momentum/credit";
-import { getTeamRole, requireTeam } from "../startups/team";
+import { getTeamRole, loadFounderIds, requireTeam } from "../startups/team";
 import { loadPublicUser } from "../users/model";
 import {
 	CARD_LIMITS,
@@ -54,7 +54,13 @@ export async function requireCardAccess(
 		const { startup, role } = await requireTeam(ctx, card.startupId, userId);
 		const { state } = await loadWeekContext(ctx, startup, Date.now());
 		const lock = state === "open" ? undefined : state;
-		return { card, startup, actor: { userId, role, phase: null, lock } };
+		const otherFounder =
+			role === "founder" && (await loadFounderIds(ctx, startup)).length > 1;
+		return {
+			card,
+			startup,
+			actor: { userId, role, phase: null, lock, otherFounder },
+		};
 	}
 	const [hackathon, startup] = await Promise.all([
 		ctx.db.get(card.hackathonId),

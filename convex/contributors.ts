@@ -5,7 +5,7 @@ import { toTeamPerson } from "./contributors/model";
 import { CONTRIBUTOR_TEXT, MAX_CONTRIBUTORS } from "./contributors/rules";
 import { requireUserId } from "./lib/auth";
 import { limitText } from "./lib/text";
-import { requireFounder, requireTeam } from "./startups/team";
+import { requireFounder, requireOwner, requireTeam } from "./startups/team";
 
 export const list = query({
 	args: { startupId: v.id("startups") },
@@ -27,7 +27,12 @@ export const list = query({
 			rows.map(async (row) => {
 				const person = await toPerson(row.userId);
 				return person
-					? { ...person, discipline: row.discipline, label: row.label ?? null }
+					? {
+							...person,
+							discipline: row.discipline,
+							label: row.label ?? null,
+							isFounder: row.isFounder === true,
+						}
 					: null;
 			}),
 		);
@@ -59,6 +64,32 @@ export const setMyLabel = mutation({
 				"Label",
 				CONTRIBUTOR_TEXT.label,
 			),
+		});
+		return null;
+	},
+});
+
+/** The Founder makes a Contributor a Co-founder, or back. */
+export const setCoFounder = mutation({
+	args: {
+		startupId: v.id("startups"),
+		userId: v.id("users"),
+		isFounder: v.boolean(),
+	},
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		await requireOwner(ctx, args.startupId, userId);
+		const contributor = await ctx.db
+			.query("contributors")
+			.withIndex("by_startup_and_user", (q) =>
+				q.eq("startupId", args.startupId).eq("userId", args.userId),
+			)
+			.unique();
+		if (!contributor) {
+			throw new ConvexError("That person isn't on this startup");
+		}
+		await ctx.db.patch(contributor._id, {
+			isFounder: args.isFounder || undefined,
 		});
 		return null;
 	},

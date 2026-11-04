@@ -22,6 +22,8 @@ export function StartupGate({
 			startup: found.startup,
 			role: found.role,
 			isFounder: found.role === "founder",
+			isOwner: found.isOwner,
+			otherFounder: found.otherFounder,
 			userId,
 		};
 	}, [found, userId]);

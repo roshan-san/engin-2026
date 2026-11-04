@@ -16,6 +16,8 @@ export type BoardScope =
 			readonly phase: null;
 			/** Set while the team's Board is locked between its meetings. */
 			readonly lock: "closing" | "planning" | undefined;
+			/** A Founder with another Founder: their own Cards wait in Review. */
+			readonly otherFounder: boolean;
 			/** The week new Cards join; Cards of earlier weeks that aren't done are hidden. */
 			readonly planningWeek: string | undefined;
 	  }

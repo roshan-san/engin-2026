@@ -1,6 +1,6 @@
 import type { PlanView } from "@convex/billing/rules";
 import { describe, expect, it } from "vitest";
-import { draftPublish, PAYMENT_ISSUE } from "./draftPublish";
+import { draftPublish, FOUNDER_PLAN, PAYMENT_ISSUE } from "./draftPublish";
 
 const plan: PlanView = {
 	plan: "six_months",
@@ -9,7 +9,12 @@ const plan: PlanView = {
 	hackathonsLeft: 15,
 	running: 0,
 };
-const free = { plan: null, hasPaymentIssue: false, isBackFromCheckout: false };
+const free = {
+	plan: null,
+	hasPaymentIssue: false,
+	isBackFromCheckout: false,
+	isOwner: true,
+};
 
 describe("draftPublish", () => {
 	it("while the plan loads, Publish goes straight to the server", () => {
@@ -68,5 +73,28 @@ describe("draftPublish", () => {
 			opensPlans: false,
 			managesBilling: false,
 		});
+	});
+
+	it("a Co-founder publishes on the Founder's plan, and is never sent to buy one", () => {
+		const coFounder = { ...free, isOwner: false };
+		expect(draftPublish(coFounder)).toEqual({
+			message: FOUNDER_PLAN,
+			isDisabled: true,
+			opensPlans: false,
+			managesBilling: false,
+		});
+		expect(draftPublish({ ...coFounder, hasPaymentIssue: true })).toEqual({
+			message: FOUNDER_PLAN,
+			isDisabled: true,
+			opensPlans: false,
+			managesBilling: false,
+		});
+		expect(draftPublish({ ...coFounder, plan })).toMatchObject({
+			message: null,
+			isDisabled: false,
+		});
+		expect(
+			draftPublish({ ...coFounder, plan: { ...plan, hackathonsLeft: 0 } }),
+		).toMatchObject({ message: FOUNDER_PLAN, isDisabled: true });
 	});
 });

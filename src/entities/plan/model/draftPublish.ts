@@ -7,6 +7,10 @@ import {
 export const PAYMENT_ISSUE =
 	"Your last payment didn't go through. Update your card in Manage billing to publish.";
 
+/** A Co-founder can't buy or fix the Founder's plan, only ask. */
+export const FOUNDER_PLAN =
+	"Publishing uses the Founder's Pro plan, which can't publish this now. Ask the Founder.";
+
 export type DraftPublish = {
 	/** Shown above the form; null when there's nothing to say. */
 	message: string | null;
@@ -17,15 +21,18 @@ export type DraftPublish = {
 	managesBilling: boolean;
 };
 
-/** What Publish does on a draft, given your plan. `undefined` means still loading. */
+/** What Publish does on a draft, given the Founder's plan. `undefined` means still loading. */
 export function draftPublish({
 	plan,
 	hasPaymentIssue,
 	isBackFromCheckout,
+	isOwner,
 }: {
 	plan: PlanView | null | undefined;
 	hasPaymentIssue: boolean | undefined;
 	isBackFromCheckout: boolean;
+	/** The Founder, whose plan it is; a Co-founder publishes on it. */
+	isOwner: boolean;
 }): DraftPublish {
 	const state: DraftPublish = {
 		message: null,
@@ -36,6 +43,11 @@ export function draftPublish({
 	// While loading, Publish goes to the server, which checks the plan anyway.
 	if (plan === undefined || hasPaymentIssue === undefined) {
 		return state;
+	}
+	if (!isOwner) {
+		return plan && !publishBlockFor(plan)
+			? state
+			: { ...state, message: FOUNDER_PLAN, isDisabled: true };
 	}
 	if (plan === null) {
 		if (hasPaymentIssue) {

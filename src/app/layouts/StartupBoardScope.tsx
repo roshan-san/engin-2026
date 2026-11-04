@@ -9,7 +9,7 @@ export function StartupBoardScope({
 }: {
 	readonly children: React.ReactNode;
 }) {
-	const { startup, userId, role } = useWorkspace();
+	const { startup, userId, role, otherFounder } = useWorkspace();
 	const cycle = useCycle(startup._id);
 	const state = cycle?.state;
 	const planningWeek = cycle?.planningWeek;
@@ -24,9 +24,10 @@ export function StartupBoardScope({
 			role,
 			phase: null,
 			lock,
+			otherFounder,
 			planningWeek,
 		}),
-		[startup._id, startup.slug, userId, role, lock, planningWeek],
+		[startup._id, startup.slug, userId, role, lock, otherFounder, planningWeek],
 	);
 
 	return (
