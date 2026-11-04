@@ -48,6 +48,7 @@ export function SettingsSheet({
 								<TeamSection
 									startupId={found.startup._id}
 									isFounder={isFounder}
+									isOwner={found.isOwner}
 								/>
 							</div>
 							{isFounder ? (

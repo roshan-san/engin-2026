@@ -5,6 +5,10 @@ export type Workspace = {
 	readonly startup: Doc<"startups">;
 	readonly role: "founder" | "contributor";
 	readonly isFounder: boolean;
+	/** The Founder who created the Startup; only they make Co-founders. */
+	readonly isOwner: boolean;
+	/** A Founder with another Founder, who approves their Cards. */
+	readonly otherFounder: boolean;
 	readonly userId: Id<"users">;
 };
 

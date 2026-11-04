@@ -16,12 +16,13 @@ import { Row, RowList } from "~/shared/ui/RowList";
 import { Section } from "~/shared/ui/Section";
 import { Skeleton } from "~/shared/ui/skeleton";
 
-/** The Founder and Contributors: face, name, team role and Momentum. */
+/** The Founder, Co-founders and Contributors: face, name, team role and Momentum. */
 export function PeopleList({
 	startupId,
 	people,
 	canRemove,
 	onRemove,
+	onSetCoFounder,
 }: {
 	readonly startupId: Id<"startups">;
 	readonly people: TeamPeople | undefined;
@@ -29,6 +30,11 @@ export function PeopleList({
 	readonly canRemove: boolean;
 	/** Resolves `true` once removed (the error is shown already otherwise). */
 	readonly onRemove: (person: TeamPerson) => Promise<boolean>;
+	/** Only the Founder makes Co-founders; absent for everyone else. */
+	readonly onSetCoFounder?: (
+		person: TeamPerson,
+		isFounder: boolean,
+	) => Promise<boolean>;
 }) {
 	const me = useMe();
 
@@ -51,11 +57,32 @@ export function PeopleList({
 					<PersonRow
 						key={person._id}
 						person={person}
-						position={`Contributor · ${teamRoleLine(person)}`}
+						position={`${person.isFounder ? "Co-founder" : "Contributor"} · ${teamRoleLine(person)}`}
 						actions={
 							<>
 								{person._id === me?._id ? (
 									<EditLabelButton startupId={startupId} label={person.label} />
+								) : null}
+								{onSetCoFounder ? (
+									<ConfirmButton
+										label={
+											person.isFounder ? "Make Contributor" : "Make Co-founder"
+										}
+										title={
+											person.isFounder
+												? `Make ${displayName(person)} a Contributor?`
+												: `Make ${displayName(person)} a Co-founder?`
+										}
+										description={
+											person.isFounder
+												? "They stop approving Cards and running Hackathons."
+												: "They can do everything you can, except billing and making Co-founders."
+										}
+										actionLabel={
+											person.isFounder ? "Make Contributor" : "Make Co-founder"
+										}
+										onConfirm={() => onSetCoFounder(person, !person.isFounder)}
+									/>
 								) : null}
 								{canRemove ? (
 									<ConfirmButton

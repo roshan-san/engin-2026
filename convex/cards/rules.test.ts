@@ -190,6 +190,15 @@ describe("submitLandsIn", () => {
 		expect(submitLandsIn(card("in_progress", sam), founder)).toBe("done");
 	});
 
+	it("with another Founder, the Founder's own Card goes to Review, and they can't approve it", () => {
+		const paired: CardActor = { ...founder, otherFounder: true };
+		expect(submitLandsIn(card("in_progress", sam), paired)).toBe("review");
+		expect(cardRefusal(card("review", sam), { kind: "verify" }, paired)).toBe(
+			"Another Founder approves your Card",
+		);
+		expect(cardRefusal(card("review"), { kind: "verify" }, paired)).toBeNull();
+	});
+
 	it("everyone else's Card goes to Review", () => {
 		expect(submitLandsIn(card("in_progress"), contributor)).toBe("review");
 		expect(submitLandsIn(card("in_progress"), participant("live"))).toBe(

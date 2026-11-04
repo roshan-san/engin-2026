@@ -56,6 +56,36 @@ describe("Co-founders", () => {
 		expect(after.contributors).toMatchObject([{ isFounder: false }]);
 	});
 
+	it("the workspace tells each Founder whether another Founder approves their Cards", async () => {
+		const setup = await setUpStartup(createTest());
+		const alone = await setup.founder.as.query(api.startups.getBySlug, {
+			slug: setup.slug,
+		});
+		expect(alone).toMatchObject({
+			role: "founder",
+			isOwner: true,
+			otherFounder: false,
+		});
+
+		const sam = await coFounder(setup, "Sam");
+		const lee = await addContributor(setup, "Lee");
+		expect(
+			await setup.founder.as.query(api.startups.getBySlug, {
+				slug: setup.slug,
+			}),
+		).toMatchObject({ isOwner: true, otherFounder: true });
+		expect(
+			await sam.as.query(api.startups.getBySlug, { slug: setup.slug }),
+		).toMatchObject({ role: "founder", isOwner: false, otherFounder: true });
+		expect(
+			await lee.as.query(api.startups.getBySlug, { slug: setup.slug }),
+		).toMatchObject({
+			role: "contributor",
+			isOwner: false,
+			otherFounder: false,
+		});
+	});
+
 	it("only the Founder makes Co-founders", async () => {
 		const setup = await setUpStartup(createTest());
 		const sam = await coFounder(setup, "Sam");

@@ -24,7 +24,7 @@ import {
 	startupCity,
 	startupStage,
 } from "./startups/rules";
-import { getTeamRole, requireFounder } from "./startups/team";
+import { getTeamRole, loadFounderIds, requireFounder } from "./startups/team";
 
 export const getBySlug = query({
 	args: { slug: v.string() },
@@ -35,7 +35,17 @@ export const getBySlug = query({
 			return null;
 		}
 		const role = await getTeamRole(ctx, startup._id, userId);
-		return role ? { startup, role } : null;
+		if (!role) {
+			return null;
+		}
+		const otherFounder =
+			role === "founder" && (await loadFounderIds(ctx, startup)).length > 1;
+		return {
+			startup,
+			role,
+			isOwner: startup.founderId === userId,
+			otherFounder,
+		};
 	},
 });
 

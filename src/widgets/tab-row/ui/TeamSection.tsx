@@ -7,19 +7,23 @@ import {
 	useInviteActions,
 } from "~/features/invite-contributor";
 import { useRemoveContributor } from "~/features/remove-contributor";
+import { useSetCoFounder } from "~/features/set-co-founder";
 import { EmptyState } from "~/shared/ui/EmptyState";
 import { PeopleList } from "./PeopleList";
 
-/** The Team: people and, for the Founder, invites and Remove. */
+/** The Team: people and, for Founders, invites and Remove; the Founder also makes Co-founders. */
 export function TeamSection({
 	startupId,
 	isFounder,
+	isOwner,
 }: {
 	readonly startupId: Id<"startups">;
 	readonly isFounder: boolean;
+	readonly isOwner: boolean;
 }) {
 	const people = useTeamPeople(startupId);
 	const remove = useRemoveContributor(startupId);
+	const setCoFounder = useSetCoFounder(startupId);
 	const invites = useStartupInvites(startupId, isFounder);
 	const { send, revoke } = useInviteActions(startupId);
 
@@ -38,6 +42,7 @@ export function TeamSection({
 				people={people}
 				canRemove={isFounder}
 				onRemove={remove}
+				onSetCoFounder={isOwner ? setCoFounder : undefined}
 			/>
 			{isFounder ? (
 				<>
