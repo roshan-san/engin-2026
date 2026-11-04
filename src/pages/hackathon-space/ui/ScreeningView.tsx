@@ -242,7 +242,24 @@ export function ScreeningView({
 									<MentorNote>{startNote}</MentorNote>
 								</div>
 							}
-							action={<CopyLinkButton hackathonId={hackathon._id} />}
+							action={
+								<div className="flex flex-wrap justify-center gap-2">
+									<CopyLinkButton hackathonId={hackathon._id} />
+									{hackathon.applicantCount === 0 ? (
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() =>
+												void navigate({
+													search: (search) => ({ ...search, edit: true }),
+												})
+											}
+										>
+											Edit post
+										</Button>
+									) : null}
+								</div>
+							}
 						/>
 					) : (
 						<ApplicantList
