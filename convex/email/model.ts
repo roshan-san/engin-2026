@@ -4,7 +4,14 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { normalizeEmail } from "../invites/model";
 import { notSelectedEmail } from "./copy";
-import { type EmailKind, siteUrl, unsubscribeUrl, withFooter } from "./rules";
+import {
+	type EmailKind,
+	type SendingSettings,
+	sendingSettings,
+	siteUrl,
+	unsubscribeUrl,
+	withFooter,
+} from "./rules";
 
 export type Email = {
 	to: string;
@@ -14,18 +21,18 @@ export type Email = {
 	dedupeKey?: string;
 };
 
-/** Live sending needs both; without them emails are only logged (tests, local, previews). */
-function resendIfConfigured(): { resend: Resend; from: string } | null {
-	const from = process.env.EMAIL_FROM;
-	if (!process.env.RESEND_API_KEY || !from) {
-		return null;
-	}
-	return {
-		resend: new Resend(components.resend, {
-			testMode: process.env.EMAIL_TEST_MODE !== "false",
-		}),
-		from,
-	};
+/** Resend and its settings when live sending is configured; else emails are only logged (tests, local, previews). */
+function resendIfConfigured(): {
+	resend: Resend;
+	settings: SendingSettings;
+} | null {
+	const settings = sendingSettings(process.env);
+	return settings
+		? {
+				resend: new Resend(components.resend, { testMode: settings.testMode }),
+				settings,
+			}
+		: null;
 }
 
 /** The address's prefs, made with a fresh unsubscribe token the first time. */
@@ -83,7 +90,8 @@ export async function sendEmail(
 	const live = resendIfConfigured();
 	if (live) {
 		await live.resend.sendEmail(ctx, {
-			from: live.from,
+			from: live.settings.from,
+			replyTo: live.settings.replyTo,
 			to,
 			subject: email.subject,
 			text,

@@ -35,3 +35,28 @@ export function unsubscribeUrl(token: string): string {
 export function withFooter(text: string, token: string): string {
 	return `${text}\n\n— engin\nUnsubscribe: ${unsubscribeUrl(token)}`;
 }
+
+export type SendingSettings = {
+	from: string;
+	replyTo: string[];
+	testMode: boolean;
+};
+
+/**
+ * How live email goes out, from the deployment's env: null (log only) without both
+ * RESEND_API_KEY and EMAIL_FROM. Replies go to EMAIL_REPLY_TO, else back to EMAIL_FROM,
+ * so they land in the mailbox behind it (a Hostinger inbox, say).
+ */
+export function sendingSettings(
+	env: Record<string, string | undefined>,
+): SendingSettings | null {
+	const from = env.EMAIL_FROM;
+	if (!env.RESEND_API_KEY || !from) {
+		return null;
+	}
+	return {
+		from,
+		replyTo: [env.EMAIL_REPLY_TO || from],
+		testMode: env.EMAIL_TEST_MODE !== "false",
+	};
+}

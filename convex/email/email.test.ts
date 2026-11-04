@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { internal } from "../_generated/api";
 import { createTest } from "../testing/test.setup";
 import { sendEmail } from "./model";
+import { sendingSettings } from "./rules";
 
 const EMAIL = {
 	to: "ana@example.com",
@@ -140,5 +141,33 @@ describe("unsubscribe link", () => {
 
 		expect(done.status).toBe(200);
 		expect(await optedOut(t)).toBe(true);
+	});
+});
+
+describe("sending settings", () => {
+	it("needs a key and a from address; replies go to EMAIL_REPLY_TO, else the from address", () => {
+		expect(sendingSettings({ EMAIL_FROM: "engin <hi@acme.in>" })).toBeNull();
+		expect(
+			sendingSettings({
+				RESEND_API_KEY: "re_1",
+				EMAIL_FROM: "engin <hi@acme.in>",
+			}),
+		).toEqual({
+			from: "engin <hi@acme.in>",
+			replyTo: ["engin <hi@acme.in>"],
+			testMode: true,
+		});
+		expect(
+			sendingSettings({
+				RESEND_API_KEY: "re_1",
+				EMAIL_FROM: "engin <noreply@acme.in>",
+				EMAIL_REPLY_TO: "founders@acme.in",
+				EMAIL_TEST_MODE: "false",
+			}),
+		).toEqual({
+			from: "engin <noreply@acme.in>",
+			replyTo: ["founders@acme.in"],
+			testMode: false,
+		});
 	});
 });
