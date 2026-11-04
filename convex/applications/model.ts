@@ -17,6 +17,7 @@ import {
 	normalizeEmail,
 } from "../invites/model";
 import { INVITE_TTL_MS } from "../invites/rules";
+import { getTeamRole } from "../startups/team";
 import {
 	type ApplicationAction,
 	applicationRefusal,
@@ -59,7 +60,7 @@ export async function getHackathonRole(
 	hackathonId: Id<"hackathons">,
 	userId: Id<"users">,
 ): Promise<"founder" | "participant" | null> {
-	if (startup.founderId === userId) {
+	if ((await getTeamRole(ctx, startup._id, userId)) === "founder") {
 		return "founder";
 	}
 	return (await isParticipant(ctx, hackathonId, userId)) ? "participant" : null;

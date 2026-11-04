@@ -6,6 +6,7 @@ import { emailUser, hackathonNames } from "../email/model";
 import { siteUrl } from "../email/rules";
 import { loadImageUrls } from "../files/model";
 import { limitText } from "../lib/text";
+import { loadFounderIds } from "../startups/team";
 import { markThreadRead } from "../threads/model";
 import { loadPublicUser, type PublicUser } from "../users/model";
 import {
@@ -167,21 +168,21 @@ export async function emailLateMessage(
 	if (hackathon?.status !== "done" || !startup) {
 		return;
 	}
-	const toFounder = authorId !== startup.founderId;
-	const recipient = toFounder ? startup.founderId : thread.participantId;
-	if (recipient === authorId) {
-		return;
-	}
+	const founderIds = await loadFounderIds(ctx, startup);
+	const toFounder = !founderIds.includes(authorId);
+	const recipients = (toFounder ? founderIds : [thread.participantId]).filter(
+		(id) => id !== authorId,
+	);
 	const author = await ctx.db.get(authorId);
-	await emailUser(ctx, recipient, {
-		kind: "thread_message",
-		...threadMessageEmail({
-			...(await hackathonNames(ctx, hackathon)),
-			fromName: author?.name ?? "Someone",
-			body: body || "(an image)",
-			url: toFounder
-				? `${siteUrl()}/s/${startup.slug}/hiring/${hackathon._id}`
-				: `${siteUrl()}/h/${hackathon._id}?panel=founder`,
-		}),
+	const email = threadMessageEmail({
+		...(await hackathonNames(ctx, hackathon)),
+		fromName: author?.name ?? "Someone",
+		body: body || "(an image)",
+		url: toFounder
+			? `${siteUrl()}/s/${startup.slug}/hiring/${hackathon._id}`
+			: `${siteUrl()}/h/${hackathon._id}?panel=founder`,
 	});
+	for (const recipient of recipients) {
+		await emailUser(ctx, recipient, { kind: "thread_message", ...email });
+	}
 }

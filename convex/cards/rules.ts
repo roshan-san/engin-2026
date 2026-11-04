@@ -11,6 +11,8 @@ export type CardActor = {
 	phase: HackathonPhase | null;
 	/** Set on a Startup Card while the team's Board is locked. */
 	lock?: "closing" | "planning";
+	/** A Founder on a Startup that has another Founder, who approves their Cards instead. */
+	otherFounder?: boolean;
 };
 
 export const LOCKED = {
@@ -67,6 +69,9 @@ export function cardRefusal(
 		case "verify":
 			if (actor.role !== "founder") {
 				return "Only the Founder can approve a Card";
+			}
+			if (actor.otherFounder && card.ownerId === actor.userId) {
+				return "Another Founder approves your Card";
 			}
 			return card.status === "review" ? null : "This Card isn't in Review";
 		case "retitle":
@@ -126,12 +131,14 @@ export function isNotFinished(
 	return isUnfinished(card) && (card.week ?? "") < currentWeek;
 }
 
-/** Where a submitted Card lands: the Founder's own goes straight to Done, self-verified. */
+/** Where a submitted Card lands: a solo Founder's own goes straight to Done, self-verified. */
 export function submitLandsIn(
 	card: RuledCard,
 	actor: CardActor,
 ): "review" | "done" {
-	return actor.role === "founder" && card.ownerId === actor.userId
+	return actor.role === "founder" &&
+		!actor.otherFounder &&
+		card.ownerId === actor.userId
 		? "done"
 		: "review";
 }

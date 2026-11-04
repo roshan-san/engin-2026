@@ -27,7 +27,7 @@ export async function getThreadAccess(
 	if (!startup) {
 		return null;
 	}
-	if (startup.founderId === userId) {
+	if ((await getTeamRole(ctx, startup._id, userId)) === "founder") {
 		return { thread, isFounder: true };
 	}
 	if (

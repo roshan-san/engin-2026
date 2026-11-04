@@ -287,7 +287,12 @@ export const publish = mutation({
 			args.hackathonId,
 			userId,
 		);
-		await lifecycle.publish(ctx, hackathon, userId);
+		// Billing is the Founder's, so a Co-founder publishes on the Founder's plan.
+		const startup = await ctx.db.get(hackathon.startupId);
+		if (!startup) {
+			throw new ConvexError("Startup not found");
+		}
+		await lifecycle.publish(ctx, hackathon, startup.founderId);
 	},
 });
 

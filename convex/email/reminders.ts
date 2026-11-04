@@ -3,6 +3,7 @@ import type { MutationCtx } from "../_generated/server";
 import { loadWeekContext } from "../cycles/model";
 import { weekOf } from "../cycles/rules";
 import { loadParticipants } from "../hackathons/model";
+import { loadFounderIds } from "../startups/team";
 import {
 	decisionDeadlineEmail,
 	mondayReminderEmail,
@@ -55,16 +56,19 @@ export async function remindDecision(
 	if (undecided === 0 || !startup) {
 		return;
 	}
-	await emailUser(ctx, startup.founderId, {
-		kind: "decision_deadline",
-		dedupeKey: `deadline:${hackathon._id}`,
-		...decisionDeadlineEmail({
-			...(await hackathonNames(ctx, hackathon)),
-			undecided,
-			decideBy: hackathon.decideBy,
-			url: `${siteUrl()}/s/${startup.slug}/hiring/${hackathon._id}`,
-		}),
+	const email = decisionDeadlineEmail({
+		...(await hackathonNames(ctx, hackathon)),
+		undecided,
+		decideBy: hackathon.decideBy,
+		url: `${siteUrl()}/s/${startup.slug}/hiring/${hackathon._id}`,
 	});
+	for (const founderId of await loadFounderIds(ctx, startup)) {
+		await emailUser(ctx, founderId, {
+			kind: "decision_deadline",
+			dedupeKey: `deadline:${hackathon._id}:${founderId}`,
+			...email,
+		});
+	}
 }
 
 /** Each morning: Founders hear how many Applicants arrived since the last digest. */
@@ -82,14 +86,14 @@ export async function newApplicantsDigest(ctx: MutationCtx): Promise<void> {
 		await ctx.db.patch(hackathon._id, {
 			applicantsEmailed: hackathon.applicantCount,
 		});
-		await emailUser(ctx, startup.founderId, {
-			kind: "new_applicants",
-			...newApplicantsEmail({
-				...(await hackathonNames(ctx, hackathon)),
-				count,
-				url: `${siteUrl()}/s/${startup.slug}/hiring/${hackathon._id}`,
-			}),
+		const email = newApplicantsEmail({
+			...(await hackathonNames(ctx, hackathon)),
+			count,
+			url: `${siteUrl()}/s/${startup.slug}/hiring/${hackathon._id}`,
 		});
+		for (const founderId of await loadFounderIds(ctx, startup)) {
+			await emailUser(ctx, founderId, { kind: "new_applicants", ...email });
+		}
 	}
 }
 
@@ -110,14 +114,17 @@ export async function mondayReminders(
 		if (state !== "planning") {
 			continue;
 		}
-		await emailUser(ctx, startup.founderId, {
-			kind: "monday_reminder",
-			dedupeKey: `monday:${startup._id}:${weekOf(now)}`,
-			...mondayReminderEmail({
-				startupName: startup.name,
-				url: `${siteUrl()}/s/${startup.slug}/cycle`,
-			}),
+		const email = mondayReminderEmail({
+			startupName: startup.name,
+			url: `${siteUrl()}/s/${startup.slug}/cycle`,
 		});
+		for (const founderId of await loadFounderIds(ctx, startup)) {
+			await emailUser(ctx, founderId, {
+				kind: "monday_reminder",
+				dedupeKey: `monday:${startup._id}:${weekOf(now)}:${founderId}`,
+				...email,
+			});
+		}
 	}
 	return page.isDone ? null : page.continueCursor;
 }
