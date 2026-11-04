@@ -6,22 +6,27 @@ import {
 	PendingInvites,
 	useInviteActions,
 } from "~/features/invite-contributor";
+import { useLeaveStartup } from "~/features/leave-startup";
 import { useRemoveContributor } from "~/features/remove-contributor";
 import { useSetCoFounder } from "~/features/set-co-founder";
+import { ConfirmButton } from "~/shared/ui/ConfirmButton";
 import { EmptyState } from "~/shared/ui/EmptyState";
 import { PeopleList } from "./PeopleList";
 
-/** The Team: people and, for Founders, invites and Remove; the Founder also makes Co-founders. */
+/** The Team: people and, for Founders, invites and Remove; the Founder also makes Co-founders. Everyone else can leave. */
 export function TeamSection({
 	startupId,
+	startupName,
 	isFounder,
 	isOwner,
 }: {
 	readonly startupId: Id<"startups">;
+	readonly startupName: string;
 	readonly isFounder: boolean;
 	readonly isOwner: boolean;
 }) {
 	const people = useTeamPeople(startupId);
+	const leave = useLeaveStartup(startupId, startupName);
 	const remove = useRemoveContributor(startupId);
 	const setCoFounder = useSetCoFounder(startupId);
 	const invites = useStartupInvites(startupId, isFounder);
@@ -61,6 +66,17 @@ export function TeamSection({
 					/>
 				</>
 			) : null}
+			{isOwner ? null : (
+				<div>
+					<ConfirmButton
+						label={`Leave ${startupName}`}
+						title={`Leave ${startupName}?`}
+						description="You'll lose the Board and the team's threads. The Founder can invite you back."
+						actionLabel="Leave"
+						onConfirm={leave}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }

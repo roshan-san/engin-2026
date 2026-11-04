@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import { cardOn, SHIPPED } from "../cards/cards.setup";
-import { nextMonday } from "../hackathons/hackathons.setup";
+import { WEEK_MS, weekOf, weekStart } from "../cycles/rules";
 import type { Setup } from "../startups/startups.setup";
 import { advancePast, HOUR, type TestConvex } from "../testing/test.setup";
 import type { Person } from "../users/users.setup";
@@ -50,7 +50,8 @@ async function approveCards(
 
 /** Moves time just past next Monday 00:00 IST, so this week is finished. */
 export async function toNextWeek(t: TestConvex): Promise<void> {
-	await advancePast(t, nextMonday() - Date.now() + HOUR);
+	const nextMonday = weekStart(weekOf(Date.now())) + WEEK_MS;
+	await advancePast(t, nextMonday - Date.now() + HOUR);
 }
 
 /** The weekly cron: scores every person, then every Startup, for the week that just ended. */

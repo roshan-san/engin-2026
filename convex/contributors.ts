@@ -116,3 +116,30 @@ export const remove = mutation({
 		await ctx.db.delete(contributor._id);
 	},
 });
+
+/** You leave a startup's team. Your Cards and threads stay, as when the Founder removes someone. */
+export const leave = mutation({
+	args: { startupId: v.id("startups") },
+	handler: async (ctx, args) => {
+		const userId = await requireUserId(ctx);
+		const startup = await ctx.db.get(args.startupId);
+		if (!startup) {
+			throw new ConvexError("Startup not found");
+		}
+		if (startup.founderId === userId) {
+			throw new ConvexError("The Founder can't leave");
+		}
+
+		const contributor = await ctx.db
+			.query("contributors")
+			.withIndex("by_startup_and_user", (q) =>
+				q.eq("startupId", args.startupId).eq("userId", userId),
+			)
+			.unique();
+		if (!contributor) {
+			throw new ConvexError("You're not on this startup");
+		}
+		await ctx.db.delete(contributor._id);
+		return null;
+	},
+});

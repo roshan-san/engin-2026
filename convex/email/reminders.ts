@@ -2,6 +2,9 @@ import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { loadWeekContext } from "../cycles/model";
 import { weekOf } from "../cycles/rules";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 import { loadParticipants } from "../hackathons/model";
 import { loadFounderIds } from "../startups/team";
 import {
@@ -23,7 +26,11 @@ export async function remindStart(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "open") {
+	// A step left from dates the Founder has since changed fires early and does nothing.
+	if (
+		hackathon?.status !== "open" ||
+		Date.now() < hackathon.startsAt - DAY_MS
+	) {
 		return;
 	}
 	const names = await hackathonNames(ctx, hackathon);
@@ -46,7 +53,10 @@ export async function remindDecision(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "live" && hackathon?.status !== "deciding") {
+	if (
+		(hackathon?.status !== "live" && hackathon?.status !== "deciding") ||
+		Date.now() < hackathon.decideBy - DAY_MS
+	) {
 		return;
 	}
 	const undecided = (await loadParticipants(ctx, hackathon._id)).filter(

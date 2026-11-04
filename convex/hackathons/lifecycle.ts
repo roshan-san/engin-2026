@@ -10,7 +10,7 @@ import {
 	loadParticipants,
 	loadPlanView,
 } from "./model";
-import { MAX_APPLICATIONS } from "./rules";
+import { canStartAt, MAX_APPLICATIONS, START_MESSAGE } from "./rules";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Not selected emails sent per scheduled batch. */
@@ -28,8 +28,8 @@ export async function publish(
 	if (hackathon.status !== "draft") {
 		throw new ConvexError("Already published");
 	}
-	if (hackathon.startsAt <= Date.now()) {
-		throw new ConvexError("Start on a coming Monday");
+	if (!canStartAt(hackathon.startsAt, Date.now())) {
+		throw new ConvexError(START_MESSAGE);
 	}
 	const block = publishBlockFor(await loadPlanView(ctx, founderId));
 	if (block) {
@@ -44,6 +44,17 @@ export async function publish(
 		hackathonId: hackathon._id,
 		kind: "everyone",
 	});
+	await scheduleSteps(ctx, hackathon);
+}
+
+/**
+ * Schedules each step of a published Hackathon at its dates. Editing the dates
+ * calls this again; each step checks its own time, so the old ones do nothing.
+ */
+export async function scheduleSteps(
+	ctx: MutationCtx,
+	hackathon: Doc<"hackathons">,
+): Promise<void> {
 	await ctx.scheduler.runAt(hackathon.startsAt, internal.hackathons.goLive, {
 		hackathonId: hackathon._id,
 	});
@@ -76,7 +87,7 @@ export async function goLive(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "open") {
+	if (hackathon?.status !== "open" || Date.now() < hackathon.startsAt) {
 		return;
 	}
 
@@ -87,7 +98,12 @@ export async function goLive(
 
 	const participants = await loadParticipants(ctx, hackathon._id);
 	if (participants.length === 0) {
-		// Nobody to build with: nothing was built, so there is nothing to log.
+		// Nobody to build with: nothing was built, so there is nothing to log,
+		// and the Hackathon goes back on the Founder's plan.
+		await ctx.db.patch(hackathon._id, {
+			publishedAt: undefined,
+			returnedToPlan: true,
+		});
 		await finish(ctx, hackathon, { log: false });
 		return;
 	}
@@ -155,7 +171,7 @@ export async function startDeciding(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "live") {
+	if (hackathon?.status !== "live" || Date.now() < hackathon.endsAt) {
 		return;
 	}
 	await ctx.db.patch(hackathon._id, { status: "deciding" });
@@ -170,7 +186,10 @@ export async function closeDeciding(
 	hackathonId: Id<"hackathons">,
 ): Promise<void> {
 	const hackathon = await ctx.db.get(hackathonId);
-	if (hackathon?.status !== "live" && hackathon?.status !== "deciding") {
+	if (
+		(hackathon?.status !== "live" && hackathon?.status !== "deciding") ||
+		Date.now() < hackathon.decideBy
+	) {
 		return;
 	}
 	for (const participant of await loadParticipants(ctx, hackathon._id)) {

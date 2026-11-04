@@ -6,8 +6,7 @@ import { draftPublish, useStartupPlan } from "~/entities/plan";
 import { useWorkspace } from "~/entities/startup";
 import { copyHackathonLink } from "~/features/copy-hackathon-link";
 import {
-	draftCard,
-	fromParticipantsGet,
+	draftOf,
 	type HackathonDraft,
 	HackathonForm,
 	useHackathonForm,
@@ -39,14 +38,7 @@ export function DraftView({
 	const hasPaymentIssue = billing?.hasPaymentIssue;
 	const { openPortal, isOpening } = usePortal();
 	const [isPlansOpen, setPlansOpen] = useState(false);
-	const [initial] = useState<HackathonDraft>(() => ({
-		job: hackathon.job,
-		problem: hackathon.problem,
-		weeks: hackathon.weeks,
-		startsAt: hackathon.startsAt,
-		participantsGet: fromParticipantsGet(hackathon.participantsGet ?? null),
-		cards: cards.map((card) => draftCard(card.title, card.notes)),
-	}));
+	const [initial] = useState<HackathonDraft>(() => draftOf(hackathon, cards));
 	const publishing = draftPublish({
 		plan,
 		hasPaymentIssue,
@@ -100,7 +92,7 @@ export function DraftView({
 											draft.startsAt === null
 												? ""
 												: ` and run until ${dayLabel(lastDay(draft.startsAt))}`
-										}. You can't edit the post after it's published.`,
+										}. You can edit it until someone applies.`,
 									},
 						onSubmit: async (draft) => {
 							if (!(await update(hackathon._id, draft))) return false;

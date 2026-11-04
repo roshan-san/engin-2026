@@ -8,6 +8,8 @@ export const Route = createFileRoute("/_shell/_authed/s/$slug/hiring/$id")({
 		card: z.string().optional(),
 		/** Dodo checkout sends the Founder back with this. */
 		checkout: z.literal("done").optional(),
+		/** The Founder is editing a published post nobody has applied to yet. */
+		edit: z.literal(true).optional(),
 	}),
 	component: HackathonSpacePage,
 });

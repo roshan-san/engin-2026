@@ -39,7 +39,7 @@ export function RunningView({
 }: {
 	readonly hackathon: Doc<"hackathons">;
 }) {
-	const { userId } = useWorkspace();
+	const { userId, isFounder } = useWorkspace();
 	const applicants = useApplicants(hackathon._id);
 	const queue = useReviewQueue(hackathon._id);
 	const threads = useHackathonThreads(hackathon._id);
@@ -84,7 +84,14 @@ export function RunningView({
 	// Participant is a Screening-only action, and goLive ends it at the start otherwise.
 	if (applicants !== undefined && participants.length === 0 && isClosed) {
 		return (
-			<EmptyState title="Nobody was accepted, so this Hackathon ended when it was due to start." />
+			<EmptyState
+				title="Nobody was accepted, so this Hackathon ended when it was due to start."
+				body={
+					isFounder && hackathon.returnedToPlan
+						? "It didn't count against your plan."
+						: undefined
+				}
+			/>
 		);
 	}
 

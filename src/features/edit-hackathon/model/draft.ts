@@ -1,3 +1,4 @@
+import type { Doc } from "@convex/_generated/dataModel";
 import { MIN_HACKATHON_CARDS } from "@convex/hackathons/rules";
 import type { Discipline } from "~/shared/config/disciplines";
 import type { Job, JobMode, JobPay } from "~/shared/config/jobs";
@@ -28,6 +29,21 @@ export type HackathonDraft = {
 
 export function draftCard(title = "", notes = "") {
 	return { key: crypto.randomUUID(), title, notes };
+}
+
+/** A saved Hackathon and its Cards, as the form edits them. */
+export function draftOf(
+	hackathon: Doc<"hackathons">,
+	cards: readonly Doc<"cards">[],
+): HackathonDraft {
+	return {
+		job: hackathon.job,
+		problem: hackathon.problem,
+		weeks: hackathon.weeks,
+		startsAt: hackathon.startsAt,
+		participantsGet: fromParticipantsGet(hackathon.participantsGet ?? null),
+		cards: cards.map((card) => draftCard(card.title, card.notes)),
+	};
 }
 
 export function emptyDraft(now: number): HackathonDraft {

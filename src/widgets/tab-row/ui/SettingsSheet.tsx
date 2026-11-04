@@ -47,6 +47,7 @@ export function SettingsSheet({
 							<div className="px-4">
 								<TeamSection
 									startupId={found.startup._id}
+									startupName={found.startup.name}
 									isFounder={isFounder}
 									isOwner={found.isOwner}
 								/>

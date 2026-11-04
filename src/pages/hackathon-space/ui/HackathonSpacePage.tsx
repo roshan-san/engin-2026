@@ -11,6 +11,7 @@ import { Button } from "~/shared/ui/button";
 import { GlobalNotFound } from "~/shared/ui/GlobalNotFound";
 import { GlobalSpinner } from "~/shared/ui/GlobalSpinner";
 import { DraftView } from "./DraftView";
+import { EditPostView } from "./EditPostView";
 import { RunningView } from "./RunningView";
 import { ScreeningView } from "./ScreeningView";
 
@@ -42,6 +43,7 @@ function SpaceBody({
 	readonly slug: string;
 }) {
 	const { hackathon, cards } = space;
+	const isEditing = route.useSearch({ select: (search) => search.edit });
 	const applicants = useApplicants(hackathon._id);
 	const hires =
 		applicants?.filter((row) => row.application.joinedAt !== null).length ?? 0;
@@ -103,6 +105,8 @@ function SpaceBody({
 		>
 			{hackathon.status === "draft" ? (
 				<DraftView hackathon={hackathon} cards={cards} />
+			) : hackathon.status === "open" && isEditing ? (
+				<EditPostView hackathon={hackathon} cards={cards} />
 			) : hackathon.status === "open" ? (
 				<ScreeningView hackathon={hackathon} cards={cards} />
 			) : (

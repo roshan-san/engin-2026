@@ -26,8 +26,10 @@ export const hackathonsTables = {
 		finishedAt: v.optional(v.number()),
 		participantsGet: v.optional(v.string()),
 		applicantCount: v.number(),
-		/** Set when published; counts against the plan's Hackathons for the billing period. */
+		/** Set when published; counts against the plan's Hackathons for the billing period. Cleared when nobody joined (see `returnedToPlan`). */
 		publishedAt: v.optional(v.number()),
+		/** Set when it reached its start with no Builders, so it no longer counts against the plan. */
+		returnedToPlan: v.optional(v.literal(true)),
 	})
 		.index("by_startup", ["startupId"])
 		.index("by_startup_and_status", ["startupId", "status"])

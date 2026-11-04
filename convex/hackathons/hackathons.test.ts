@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import {
+	applicant,
 	closeHackathon,
 	decidedHackathon,
 	endHackathon,
@@ -9,6 +10,7 @@ import {
 	startHackathon,
 } from "../applications/applications.setup";
 import { givePro } from "../billing/billing.setup";
+import { weekOf, weekStart } from "../cycles/rules";
 import {
 	addContributor,
 	type Setup,
@@ -23,7 +25,7 @@ import {
 	publishedHackathon,
 } from "./hackathons.setup";
 import { finishIfDecided } from "./lifecycle";
-import { MAX_LISTED_HACKATHONS } from "./rules";
+import { firstStarts, MAX_LISTED_HACKATHONS } from "./rules";
 
 /** The Founder's space, which must exist. */
 async function spaceOf(setup: Setup, hackathonId: Id<"hackathons">) {
@@ -66,8 +68,12 @@ describe("drafts", () => {
 		const midweek = draftHackathon(setup, { startsAt: nextMonday() + HOUR });
 		const past = draftHackathon(setup, { startsAt: nextMonday() - 7 * DAY });
 
-		await expect(midweek).rejects.toThrow("Start on a coming Monday");
-		await expect(past).rejects.toThrow("Start on a coming Monday");
+		await expect(midweek).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
+		await expect(past).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
 	});
 
 	it("a Hackathon has 3–5 Cards", async () => {
@@ -138,18 +144,6 @@ describe("drafts", () => {
 		const { hackathon, cards } = await spaceOf(setup, hackathonId);
 		expect(hackathon.problem).toBe("New problem");
 		expect(cards.map((card) => card.title)).toEqual(["One", "Two", "Three"]);
-	});
-
-	it("a published Hackathon can't be edited", async () => {
-		const setup = await setUpStartup(createTest());
-		const hackathonId = await publishedHackathon(setup);
-
-		const edit = setup.founder.as.mutation(api.hackathons.update, {
-			hackathonId,
-			...hackathonInput(),
-		});
-
-		await expect(edit).rejects.toThrow("Only drafts can be edited");
 	});
 
 	it("the Founder space is for the Founder only", async () => {
@@ -319,6 +313,33 @@ describe("publish", () => {
 		await expect(again).rejects.toThrow("Already published");
 	});
 
+	it("a start under 3 days away is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		// The tests run on a Saturday, so the coming Monday is 1.5 days away.
+		const soon = weekStart(weekOf(Date.now())) + 7 * DAY;
+
+		const draft = draftHackathon(setup, { startsAt: soon });
+
+		await expect(draft).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
+	});
+
+	it("a saved draft whose start comes too close can't be published", async () => {
+		const setup = await setUpStartup(createTest());
+		await givePro(setup.t, setup.founder);
+		const hackathonId = await draftHackathon(setup);
+		vi.setSystemTime(nextMonday() - 2 * DAY);
+
+		const publish = setup.founder.as.mutation(api.hackathons.publish, {
+			hackathonId,
+		});
+
+		await expect(publish).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
+	});
+
 	it("a draft whose start has passed can't be published", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await draftHackathon(setup);
@@ -328,7 +349,9 @@ describe("publish", () => {
 			hackathonId,
 		});
 
-		await expect(publish).rejects.toThrow("Start on a coming Monday");
+		await expect(publish).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
 	});
 
 	it("drafts show on the Hiring tab for the Founder only", async () => {
@@ -1011,5 +1034,236 @@ describe("what Builders get", () => {
 		await expect(
 			draftHackathon(setup, { participantsGet: "  " }),
 		).rejects.toThrow("Pick what Builders get");
+	});
+});
+
+describe("the plan's allowance", () => {
+	async function hackathonsLeft(setup: Setup) {
+		const plan = await setup.founder.as.query(api.billing.mine, {});
+		return plan?.hackathonsLeft;
+	}
+
+	async function monthlyHackathon(setup: Setup) {
+		await givePro(setup.t, setup.founder, "monthly");
+		return await publishedHackathon(setup);
+	}
+
+	it("a Hackathon nobody joined goes back on the plan", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		expect(await hackathonsLeft(setup)).toBe(0);
+
+		await startHackathon(setup, hackathonId);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({ status: "done", returnedToPlan: true });
+		expect(hackathon.publishedAt).toBeUndefined();
+		expect(await hackathonsLeft(setup)).toBe(1);
+	});
+
+	it("after it goes back, a used-up Founder can publish again", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		await startHackathon(setup, hackathonId);
+
+		const next = await draftHackathon(setup, {
+			startsAt: nextMonday() + 7 * DAY,
+		});
+		await setup.founder.as.mutation(api.hackathons.publish, {
+			hackathonId: next,
+		});
+
+		const { hackathon } = await spaceOf(setup, next);
+		expect(hackathon.status).toBe("open");
+	});
+
+	it("a Hackathon with a Builder still counts", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		await participants(setup, hackathonId, ["Ana"]);
+
+		await startHackathon(setup, hackathonId);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon.status).toBe("live");
+		expect(hackathon.returnedToPlan).toBeUndefined();
+		expect(await hackathonsLeft(setup)).toBe(0);
+	});
+
+	it("an accepted Builder who never confirmed doesn't keep it counted", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await monthlyHackathon(setup);
+		const [ana] = await participants(setup, hackathonId, ["Ana"], {
+			confirm: false,
+		});
+		const { hackathon: before } = await spaceOf(setup, hackathonId);
+		await setup.t.run(async (ctx) => {
+			await ctx.db.patch(ana.applicationId, { confirmBy: before.startsAt });
+		});
+
+		await startHackathon(setup, hackathonId);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({ status: "done", returnedToPlan: true });
+		expect(await hackathonsLeft(setup)).toBe(1);
+	});
+});
+
+describe("editing a published post", () => {
+	async function edit(
+		person: { as: Setup["founder"]["as"] },
+		hackathonId: Id<"hackathons">,
+		overrides: Parameters<typeof hackathonInput>[0] = {},
+	) {
+		await person.as.mutation(api.hackathons.update, {
+			hackathonId,
+			...hackathonInput(overrides),
+		});
+	}
+
+	async function hackathonFinishedRows(setup: Setup) {
+		return (
+			await setup.t.run(async (ctx) => await ctx.db.query("activity").take(50))
+		).filter((row) => row.kind === "hackathon_finished");
+	}
+
+	it("a Founder edits an open post nobody applied to", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+
+		await edit(setup.founder, hackathonId, {
+			job: {
+				title: "Growth",
+				discipline: "marketing",
+				pay: "equity",
+				mode: "hybrid",
+			},
+			participantsGet: "₹10,000 for the week",
+		});
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({
+			status: "open",
+			job: { title: "Growth" },
+			participantsGet: "₹10,000 for the week",
+		});
+	});
+
+	it("a Co-founder can edit it too", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const sam = await addContributor(setup, "Sam");
+		await setup.founder.as.mutation(api.contributors.setCoFounder, {
+			startupId: setup.startupId,
+			userId: sam.userId,
+			isFounder: true,
+		});
+
+		await edit(sam, hackathonId, { problem: "Nobody finishes onboarding." });
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon.problem).toBe("Nobody finishes onboarding.");
+	});
+
+	it("after the first application the post is locked", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await applicant(setup, hackathonId, "Ana");
+
+		await expect(edit(setup.founder, hackathonId)).rejects.toThrow(
+			"Someone has applied, so the post can't change now.",
+		);
+	});
+
+	it("a withdrawn application still locks it", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		const ana = await applicant(setup, hackathonId, "Ana");
+		await ana.as.mutation(api.applications.withdraw, {
+			applicationId: ana.applicationId,
+		});
+
+		await expect(edit(setup.founder, hackathonId)).rejects.toThrow(
+			"Someone has applied, so the post can't change now.",
+		);
+	});
+
+	it("moving the start a week later moves when it goes live", async () => {
+		const setup = await setUpStartup(createTest());
+		const [first, second] = firstStarts(Date.now());
+		const hackathonId = await publishedHackathon(setup, { startsAt: first });
+
+		await edit(setup.founder, hackathonId, { startsAt: second });
+		await advancePast(setup.t, first - Date.now() + HOUR);
+
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("open");
+		await participants(setup, hackathonId, ["Ana"]);
+		await advancePast(setup.t, second - Date.now() + HOUR);
+		await advancePast(setup.t, 0);
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon.status).toBe("live");
+		expect(hackathon.endsAt).toBe(second + 7 * DAY);
+		expect(hackathon.decideBy).toBe(second + 14 * DAY);
+	});
+
+	it("moving the start a week earlier runs on the new dates", async () => {
+		const setup = await setUpStartup(createTest());
+		const [first, second] = firstStarts(Date.now());
+		const hackathonId = await publishedHackathon(setup, { startsAt: second });
+
+		await edit(setup.founder, hackathonId, { startsAt: first });
+		await participants(setup, hackathonId, ["Ana"]);
+		await advancePast(setup.t, first - Date.now() + HOUR);
+		await advancePast(setup.t, 0);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("live");
+		await advancePast(setup.t, first + 7 * DAY - Date.now() + HOUR);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe(
+			"deciding",
+		);
+		await advancePast(setup.t, first + 14 * DAY - Date.now() + HOUR);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("done");
+
+		// The steps for the old dates fire too, and change nothing.
+		await advancePast(setup.t, second + 14 * DAY - Date.now() + HOUR);
+		expect((await spaceOf(setup, hackathonId)).hackathon.status).toBe("done");
+		expect(await hackathonFinishedRows(setup)).toHaveLength(1);
+	});
+
+	it("an open post can be edited close to its start without moving it", async () => {
+		const setup = await setUpStartup(createTest());
+		const startsAt = nextMonday();
+		const hackathonId = await publishedHackathon(setup, { startsAt });
+		vi.setSystemTime(startsAt - DAY);
+
+		await edit(setup.founder, hackathonId, {
+			startsAt,
+			problem: "Fixed a typo.",
+		});
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({ startsAt, problem: "Fixed a typo." });
+	});
+
+	it("moving an open post's start still needs 3 days' notice", async () => {
+		const setup = await setUpStartup(createTest());
+		const [, second] = firstStarts(Date.now());
+		const hackathonId = await publishedHackathon(setup, { startsAt: second });
+		vi.setSystemTime(second - 8 * DAY);
+
+		await expect(
+			edit(setup.founder, hackathonId, { startsAt: second - 7 * DAY }),
+		).rejects.toThrow("Start on a Monday at least 3 days away");
+	});
+
+	it("a live post can't be edited", async () => {
+		const setup = await setUpStartup(createTest());
+		const hackathonId = await publishedHackathon(setup);
+		await participants(setup, hackathonId, ["Ana"]);
+		await startHackathon(setup, hackathonId);
+
+		await expect(edit(setup.founder, hackathonId)).rejects.toThrow(
+			"Only drafts can be edited",
+		);
 	});
 });
