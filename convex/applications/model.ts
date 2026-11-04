@@ -3,7 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { appendActivity } from "../activity/model";
 import { offerEmail, placeReleasedEmail } from "../email/copy";
-import { emailUser, hackathonNames, sendEmail } from "../email/model";
+import { emailUser, hackathonNames } from "../email/model";
 import { siteUrl } from "../email/rules";
 import {
 	loadHackathonCards,
@@ -281,8 +281,7 @@ export async function sendOffer(
 		terms,
 	});
 	if (sent === "invited") {
-		await sendEmail(ctx, {
-			to: participant.email,
+		await emailUser(ctx, participant._id, {
 			kind: "offer",
 			...offerEmail({
 				...(await hackathonNames(ctx, hackathon)),

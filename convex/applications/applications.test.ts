@@ -242,7 +242,7 @@ describe("applying", () => {
 		});
 		expect(stillApplied).toEqual([]);
 		expect(hackathon?.status).toBe("live");
-	});
+	}, 20_000); // 501 applicants, each emailed: slow under a full parallel run.
 
 	it("the Founder always sees their Participants, however many applied", async () => {
 		const setup = await setUpStartup(createTest());

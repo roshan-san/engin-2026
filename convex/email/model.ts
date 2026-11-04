@@ -3,6 +3,7 @@ import { components } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { normalizeEmail } from "../invites/model";
+import { pushToUser } from "../push/model";
 import { notSelectedEmail } from "./copy";
 import {
 	type EmailKind,
@@ -67,9 +68,16 @@ export async function sendEmail(
 	ctx: MutationCtx,
 	email: Email,
 ): Promise<"sent" | "skipped"> {
+	return (await deliver(ctx, email)) === "sent" ? "sent" : "skipped";
+}
+
+async function deliver(
+	ctx: MutationCtx,
+	email: Email,
+): Promise<"sent" | "duplicate" | "opted_out" | "no_address"> {
 	const to = normalizeEmail(email.to);
 	if (!to) {
-		return "skipped";
+		return "no_address";
 	}
 	if (email.dedupeKey) {
 		const key = email.dedupeKey;
@@ -78,12 +86,23 @@ export async function sendEmail(
 			.withIndex("by_dedupeKey", (q) => q.eq("dedupeKey", key))
 			.first();
 		if (sent) {
-			return "skipped";
+			return "duplicate";
 		}
 	}
 	const prefs = await ensurePrefs(ctx, to);
 	if (prefs.optedOut) {
-		return "skipped";
+		// Logged with no text, so the dedupeKey still holds for push.
+		if (email.dedupeKey) {
+			await ctx.db.insert("emails", {
+				to,
+				kind: email.kind,
+				subject: email.subject,
+				text: "",
+				dedupeKey: email.dedupeKey,
+				status: "logged",
+			});
+		}
+		return "opted_out";
 	}
 
 	const text = withFooter(email.text, prefs.token);
@@ -112,17 +131,23 @@ export async function sendEmail(
 	return "sent";
 }
 
-/** `sendEmail` to a user's sign-in address; skipped when they have none. */
+/**
+ * Tells a user: by email to their sign-in address, and by push to their devices.
+ * Opting out of email leaves push on; a repeated `dedupeKey` sends neither.
+ */
 export async function emailUser(
 	ctx: MutationCtx,
 	userId: Id<"users">,
 	email: Omit<Email, "to">,
 ): Promise<"sent" | "skipped"> {
 	const user = await ctx.db.get(userId);
-	if (!user?.email) {
-		return "skipped";
+	const result = user?.email
+		? await deliver(ctx, { ...email, to: user.email })
+		: "no_address";
+	if (result !== "duplicate") {
+		await pushToUser(ctx, userId, email);
 	}
-	return await sendEmail(ctx, { ...email, to: user.email });
+	return result === "sent" ? "sent" : "skipped";
 }
 
 /** The names a Hackathon email needs. */

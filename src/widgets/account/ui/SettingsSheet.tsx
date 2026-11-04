@@ -10,6 +10,7 @@ import {
 	toProfileDraft,
 	useUpdateProfile,
 } from "~/features/edit-profile";
+import { PushSetting } from "~/features/enable-push";
 import { DISCIPLINES } from "~/shared/config/disciplines";
 import {
 	useDiscardGuard,
@@ -58,6 +59,10 @@ export function SettingsSheet({
 					{me ? (
 						<>
 							<PlanSection />
+							<Separator className="mx-4 w-auto" />
+							<div className="px-4">
+								<PushSetting />
+							</div>
 							<Separator className="mx-4 w-auto" />
 							<SettingsForm
 								me={me}

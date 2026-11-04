@@ -23,6 +23,13 @@ declare module "@tanstack/react-router" {
 	}
 }
 
+// The service worker shows push notifications; it's registered once the page has loaded.
+if ("serviceWorker" in navigator) {
+	window.addEventListener("load", () => {
+		void navigator.serviceWorker.register("/sw.js");
+	});
+}
+
 const rootElement = document.getElementById("app");
 
 if (!rootElement) {
