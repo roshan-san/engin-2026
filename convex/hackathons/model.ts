@@ -50,9 +50,20 @@ type DraftInput = {
 	cards: { title: string; notes?: string }[];
 };
 
-/** Checks a draft and returns its normalized fields with the derived dates. */
-export function requireValidDraft(input: DraftInput, now: number) {
-	if (!canStartAt(input.startsAt, now)) {
+/**
+ * Checks a draft and returns its normalized fields with the derived dates.
+ * `savedStart` is an open post's start: kept as it is, it needs no notice, only to be still to come.
+ */
+export function requireValidDraft(
+	input: DraftInput,
+	now: number,
+	savedStart?: number,
+) {
+	const keepsStart =
+		savedStart !== undefined &&
+		input.startsAt === savedStart &&
+		savedStart > now;
+	if (!keepsStart && !canStartAt(input.startsAt, now)) {
 		throw new ConvexError(START_MESSAGE);
 	}
 	if (input.weeks !== 1 && input.weeks !== 2) {

@@ -105,9 +105,7 @@ function SpaceBody({
 		>
 			{hackathon.status === "draft" ? (
 				<DraftView hackathon={hackathon} cards={cards} />
-			) : hackathon.status === "open" &&
-				hackathon.applicantCount === 0 &&
-				isEditing ? (
+			) : hackathon.status === "open" && isEditing ? (
 				<EditPostView hackathon={hackathon} cards={cards} />
 			) : hackathon.status === "open" ? (
 				<ScreeningView hackathon={hackathon} cards={cards} />

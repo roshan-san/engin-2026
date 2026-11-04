@@ -30,6 +30,7 @@ export function HackathonForm({
 	submitLabel,
 	onSubmit,
 	secondary,
+	savedStart,
 }: {
 	/** Shown in the preview: "<name> is hiring". */
 	readonly startupName: string;
@@ -37,6 +38,8 @@ export function HackathonForm({
 	readonly submitLabel: string;
 	/** Resolves `false` when it didn't save (the error is shown already). */
 	readonly onSubmit: (draft: HackathonDraft) => Promise<boolean>;
+	/** An open post's start, offered even when it's now under 3 days away. */
+	readonly savedStart?: number;
 	/** A second way to submit, beside the first: Publish saves, then publishes. */
 	readonly secondary?: {
 		readonly label: string;
@@ -70,7 +73,7 @@ export function HackathonForm({
 			),
 		[initial],
 	);
-	const [options] = useState(() => startOptions(Date.now()));
+	const [options] = useState(() => startOptions(Date.now(), savedStart));
 	// A saved start that has passed isn't offered; the Founder picks a new one.
 	const startValue =
 		draft.startsAt !== null &&

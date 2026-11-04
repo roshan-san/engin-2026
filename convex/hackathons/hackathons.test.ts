@@ -1230,6 +1230,32 @@ describe("editing a published post", () => {
 		expect(await hackathonFinishedRows(setup)).toHaveLength(1);
 	});
 
+	it("an open post can be edited close to its start without moving it", async () => {
+		const setup = await setUpStartup(createTest());
+		const startsAt = nextMonday();
+		const hackathonId = await publishedHackathon(setup, { startsAt });
+		vi.setSystemTime(startsAt - DAY);
+
+		await edit(setup.founder, hackathonId, {
+			startsAt,
+			problem: "Fixed a typo.",
+		});
+
+		const { hackathon } = await spaceOf(setup, hackathonId);
+		expect(hackathon).toMatchObject({ startsAt, problem: "Fixed a typo." });
+	});
+
+	it("moving an open post's start still needs 3 days' notice", async () => {
+		const setup = await setUpStartup(createTest());
+		const [, second] = firstStarts(Date.now());
+		const hackathonId = await publishedHackathon(setup, { startsAt: second });
+		vi.setSystemTime(second - 8 * DAY);
+
+		await expect(
+			edit(setup.founder, hackathonId, { startsAt: second - 7 * DAY }),
+		).rejects.toThrow("Start on a Monday at least 3 days away");
+	});
+
 	it("a live post can't be edited", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await publishedHackathon(setup);

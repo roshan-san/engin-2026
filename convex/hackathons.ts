@@ -276,7 +276,11 @@ export const update = mutation({
 		if (hackathon.status !== "draft" && hackathon.status !== "open") {
 			throw new ConvexError("Only drafts can be edited");
 		}
-		const { cards, ...draft } = requireValidDraft(args, Date.now());
+		const { cards, ...draft } = requireValidDraft(
+			args,
+			Date.now(),
+			hackathon.status === "open" ? hackathon.startsAt : undefined,
+		);
 
 		// A patch with `undefined` removes the field, so clearing it works.
 		await ctx.db.patch(hackathon._id, draft);

@@ -38,4 +38,16 @@ describe("startOptions", () => {
 			startsAt: ist(19, 0),
 		});
 	});
+
+	it("an open post's saved start stays on offer though it's under 3 days away", () => {
+		expect(startOptions(ist(17, 12), ist(19, 0))).toEqual([
+			{ label: "Next Monday", startsAt: ist(19, 0) },
+			{ label: "Monday after", startsAt: ist(26, 0) },
+			{ label: "In 2 weeks", startsAt: ist(33, 0) },
+		]);
+	});
+
+	it("a saved start already offered isn't offered twice", () => {
+		expect(startOptions(ist(14, 12), ist(19, 0))).toHaveLength(2);
+	});
 });

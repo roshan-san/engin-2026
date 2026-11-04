@@ -14,7 +14,7 @@ import { Page } from "~/shared/ui/Page";
 
 const route = getRouteApi("/_shell/_authed/s/$slug/hiring/$id");
 
-/** A published post nobody has applied to yet: edit it, then go back to Screening. */
+/** A published post nobody has applied to yet: edit it, then go back to Screening. If someone applies meanwhile, it says so and Save is refused. */
 export function EditPostView({
 	hackathon,
 	cards,
@@ -35,8 +35,11 @@ export function EditPostView({
 		<div className="min-h-0 flex-1 overflow-y-auto">
 			<Page>
 				<div className="mb-6 flex flex-wrap items-center gap-3">
+					{/* Stays open when someone applies mid-edit, so the change isn't lost without a word. */}
 					<p className="text-sm text-muted-foreground">
-						You can edit the post until someone applies.
+						{hackathon.applicantCount > 0
+							? "Someone has applied, so the post can't change now."
+							: "You can edit the post until someone applies."}
 					</p>
 					<Button variant="ghost" size="sm" onClick={close}>
 						Cancel
@@ -45,6 +48,7 @@ export function EditPostView({
 				<HackathonForm
 					startupName={startup.name}
 					initial={initial}
+					savedStart={hackathon.startsAt}
 					submitLabel="Save"
 					onSubmit={async (draft) => {
 						const isSaved = await update(hackathon._id, draft);
