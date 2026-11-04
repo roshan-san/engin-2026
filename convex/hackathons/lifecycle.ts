@@ -10,7 +10,7 @@ import {
 	loadParticipants,
 	loadPlanView,
 } from "./model";
-import { MAX_APPLICATIONS } from "./rules";
+import { canStartAt, MAX_APPLICATIONS, START_MESSAGE } from "./rules";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Not selected emails sent per scheduled batch. */
@@ -28,8 +28,8 @@ export async function publish(
 	if (hackathon.status !== "draft") {
 		throw new ConvexError("Already published");
 	}
-	if (hackathon.startsAt <= Date.now()) {
-		throw new ConvexError("Start on a coming Monday");
+	if (!canStartAt(hackathon.startsAt, Date.now())) {
+		throw new ConvexError(START_MESSAGE);
 	}
 	const block = publishBlockFor(await loadPlanView(ctx, founderId));
 	if (block) {

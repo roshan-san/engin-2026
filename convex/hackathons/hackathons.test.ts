@@ -9,6 +9,7 @@ import {
 	startHackathon,
 } from "../applications/applications.setup";
 import { givePro } from "../billing/billing.setup";
+import { weekOf, weekStart } from "../cycles/rules";
 import {
 	addContributor,
 	type Setup,
@@ -66,8 +67,12 @@ describe("drafts", () => {
 		const midweek = draftHackathon(setup, { startsAt: nextMonday() + HOUR });
 		const past = draftHackathon(setup, { startsAt: nextMonday() - 7 * DAY });
 
-		await expect(midweek).rejects.toThrow("Start on a coming Monday");
-		await expect(past).rejects.toThrow("Start on a coming Monday");
+		await expect(midweek).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
+		await expect(past).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
 	});
 
 	it("a Hackathon has 3–5 Cards", async () => {
@@ -319,6 +324,33 @@ describe("publish", () => {
 		await expect(again).rejects.toThrow("Already published");
 	});
 
+	it("a start under 3 days away is refused", async () => {
+		const setup = await setUpStartup(createTest());
+		// The tests run on a Saturday, so the coming Monday is 1.5 days away.
+		const soon = weekStart(weekOf(Date.now())) + 7 * DAY;
+
+		const draft = draftHackathon(setup, { startsAt: soon });
+
+		await expect(draft).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
+	});
+
+	it("a saved draft whose start comes too close can't be published", async () => {
+		const setup = await setUpStartup(createTest());
+		await givePro(setup.t, setup.founder);
+		const hackathonId = await draftHackathon(setup);
+		vi.setSystemTime(nextMonday() - 2 * DAY);
+
+		const publish = setup.founder.as.mutation(api.hackathons.publish, {
+			hackathonId,
+		});
+
+		await expect(publish).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
+	});
+
 	it("a draft whose start has passed can't be published", async () => {
 		const setup = await setUpStartup(createTest());
 		const hackathonId = await draftHackathon(setup);
@@ -328,7 +360,9 @@ describe("publish", () => {
 			hackathonId,
 		});
 
-		await expect(publish).rejects.toThrow("Start on a coming Monday");
+		await expect(publish).rejects.toThrow(
+			"Start on a Monday at least 3 days away",
+		);
 	});
 
 	it("drafts show on the Hiring tab for the Founder only", async () => {

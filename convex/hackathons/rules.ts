@@ -1,5 +1,5 @@
 import { type Infer, v } from "convex/values";
-import { WEEK_MS } from "../cycles/rules";
+import { WEEK_MS, weekOf, weekStart } from "../cycles/rules";
 
 export type HackathonPhase = Infer<typeof hackathonStatus>;
 
@@ -43,6 +43,25 @@ export const MIN_HACKATHON_CARDS = 3;
 export const MAX_HACKATHON_CARDS = 5;
 export const MAX_LISTED_HACKATHONS = 50;
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** How far ahead a start must be, so Builders have time to apply. */
+export const MIN_NOTICE_MS = 3 * DAY_MS;
+export const START_MESSAGE = "Start on a Monday at least 3 days away";
+
+/** Whether a Hackathon may start at `startsAt`: a Monday 00:00 IST at least 3 days from `now`. */
+export function canStartAt(startsAt: number, now: number): boolean {
+	return (
+		startsAt === weekStart(weekOf(startsAt)) && startsAt - now >= MIN_NOTICE_MS
+	);
+}
+
+/** The first two Mondays a Hackathon can start on. */
+export function firstStarts(now: number): [number, number] {
+	const next = weekStart(weekOf(now)) + WEEK_MS;
+	const first = canStartAt(next, now) ? next : next + WEEK_MS;
+	return [first, first + WEEK_MS];
+}
+
 /** How long after a Hackathon ends the Founder has to decide. */
 export const DECIDE_GRACE_MS = 7 * DAY_MS;
 export const hackathonStatus = v.union(

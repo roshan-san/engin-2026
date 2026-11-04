@@ -18,7 +18,24 @@ describe("startOptions", () => {
 		expect(startOptions(ist(19, 0))[0].startsAt).toBe(ist(26, 0));
 	});
 
-	it("late on Sunday, tomorrow is still next Monday", () => {
-		expect(startOptions(ist(18, 23, 30))[0].startsAt).toBe(ist(19, 0));
+	it("late on Sunday, tomorrow is too soon", () => {
+		expect(startOptions(ist(18, 23, 30))).toEqual([
+			{ label: "Monday after", startsAt: ist(26, 0) },
+			{ label: "In 2 weeks", startsAt: ist(33, 0) },
+		]);
+	});
+
+	it("Friday just after midnight skips next Monday", () => {
+		expect(startOptions(ist(16, 0, 1))).toEqual([
+			{ label: "Monday after", startsAt: ist(26, 0) },
+			{ label: "In 2 weeks", startsAt: ist(33, 0) },
+		]);
+	});
+
+	it("Thursday still offers next Monday", () => {
+		expect(startOptions(ist(15, 23, 59))[0]).toEqual({
+			label: "Next Monday",
+			startsAt: ist(19, 0),
+		});
 	});
 });

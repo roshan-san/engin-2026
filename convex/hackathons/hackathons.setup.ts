@@ -2,12 +2,12 @@ import type { FunctionArgs } from "convex/server";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { givePro } from "../billing/billing.setup";
-import { WEEK_MS, weekOf, weekStart } from "../cycles/rules";
 import type { Setup } from "../startups/startups.setup";
+import { firstStarts } from "./rules";
 
-/** The Monday 00:00 IST that starts next week. */
+/** The first Monday a Hackathon can start on. */
 export function nextMonday(): number {
-	return weekStart(weekOf(Date.now())) + WEEK_MS;
+	return firstStarts(Date.now())[0];
 }
 
 type HackathonInput = Omit<

@@ -4,13 +4,13 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { loadPlan, planViewFor } from "../billing/model";
 import { MAX_OPEN_HACKATHONS, PLANS, type PlanView } from "../billing/rules";
 import { CARD_TEXT } from "../cards/rules";
-import { weekOf, weekStart } from "../cycles/rules";
 import { discipline } from "../lib/disciplines";
 import { limitText, requireLimitedText } from "../lib/text";
 import { loadFoundedStartups } from "../startups/model";
 import { requireFounder } from "../startups/team";
 import type { HiringRecord } from "./record";
 import {
+	canStartAt,
 	HACKATHON_TEXT,
 	hackathonDates,
 	isPaid,
@@ -21,6 +21,7 @@ import {
 	MIN_HACKATHON_CARDS,
 	NOTHING,
 	RUNNING,
+	START_MESSAGE,
 } from "./rules";
 
 /** What a Founder fills in to draft a Hackathon. */
@@ -51,11 +52,8 @@ type DraftInput = {
 
 /** Checks a draft and returns its normalized fields with the derived dates. */
 export function requireValidDraft(input: DraftInput, now: number) {
-	if (
-		input.startsAt !== weekStart(weekOf(input.startsAt)) ||
-		input.startsAt <= now
-	) {
-		throw new ConvexError("Start on a coming Monday");
+	if (!canStartAt(input.startsAt, now)) {
+		throw new ConvexError(START_MESSAGE);
 	}
 	if (input.weeks !== 1 && input.weeks !== 2) {
 		throw new ConvexError("Run it for 1 or 2 weeks");
